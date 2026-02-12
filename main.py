@@ -50,7 +50,7 @@ def get_gif_links(page_url):
 
 def process_gif(url):
     try:
-        time.sleep(random.uniform(0.5, 1.5))
+        time.sleep(random.uniform(0.1, 0.3))
         filename = url.split('/')[-1]
         today_str = datetime.date.today().isoformat()
         headers = {'User-Agent': 'Mozilla/5.0'}
@@ -84,7 +84,7 @@ def main():
         print("No URLs found.")
         return
     print(f"Processing {len(gif_urls)} files for {datetime.date.today().isoformat()}...")
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         results = list(tqdm(executor.map(process_gif, gif_urls), total=len(gif_urls)))
     success_count = results.count(True)
     print(f"Done. Success: {success_count} | Failed: {len(gif_urls) - success_count}")
