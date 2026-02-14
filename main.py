@@ -5,6 +5,8 @@ import random
 import requests
 import boto3
 import datetime
+from io import BytesIO
+from PIL import Image
 from dotenv import load_dotenv
 from botocore.config import Config
 from concurrent.futures import ThreadPoolExecutor
@@ -51,28 +53,46 @@ def get_gif_links(page_url):
 def process_gif(url):
     try:
         time.sleep(random.uniform(0.1, 0.3))
-        filename = url.split('/')[-1]
+        filename = url.split('/')[-1].replace('.gif', '.jpg')
         today_str = datetime.date.today().isoformat()
         headers = {'User-Agent': 'Mozilla/5.0'}
-        with requests.get(url, stream=True, timeout=15, headers=headers) as r:
-            if r.status_code != 200:
-                return False
 
-            if LOCAL_MODE:
-                date_dir = os.path.join(LOCAL_DOWNLOAD_DIR, today_str)
-                os.makedirs(date_dir, exist_ok=True)
-                file_path = os.path.join(date_dir, filename)
-                with open(file_path, 'wb') as f:
-                    for chunk in r.iter_content(chunk_size=8192):
-                        f.write(chunk)
-            else:
-                object_name = f"{today_str}/{filename}"
-                s3_client.upload_fileobj(
-                    r.raw,
-                    R2_BUCKET_NAME,
-                    object_name,
-                    ExtraArgs={'ContentType': 'image/gif'}
-                )
+        # Download GIF to memory
+        response = requests.get(url, timeout=15, headers=headers)
+        if response.status_code != 200:
+            return False
+
+        # Convert GIF to JPG in memory
+        gif_data = BytesIO(response.content)
+        img = Image.open(gif_data)
+
+        # Convert to RGB (remove transparency/palette)
+        if img.mode in ('RGBA', 'P', 'LA'):
+            rgb_img = Image.new('RGB', img.size, (255, 255, 255))
+            rgb_img.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            img = rgb_img
+        elif img.mode != 'RGB':
+            img = img.convert('RGB')
+
+        # Save as JPG to memory buffer
+        jpg_buffer = BytesIO()
+        img.save(jpg_buffer, format='JPEG', quality=85, optimize=True)
+        jpg_buffer.seek(0)
+
+        if LOCAL_MODE:
+            date_dir = os.path.join(LOCAL_DOWNLOAD_DIR, today_str)
+            os.makedirs(date_dir, exist_ok=True)
+            file_path = os.path.join(date_dir, filename)
+            with open(file_path, 'wb') as f:
+                f.write(jpg_buffer.read())
+        else:
+            object_name = f"{today_str}/{filename}"
+            s3_client.upload_fileobj(
+                jpg_buffer,
+                R2_BUCKET_NAME,
+                object_name,
+                ExtraArgs={'ContentType': 'image/jpeg'}
+            )
         return True
 
     except Exception:
