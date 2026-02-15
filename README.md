@@ -1,31 +1,42 @@
-# IMD Meteograms Scraper
+# sv
 
-Downloads weather meteogram GIFs from India Meteorological Department (IMD) and uploads them to Cloudflare R2 storage.
+Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
-## Setup
+## Creating a project
 
-1. Install dependencies:
-```bash
-pip install requests boto3 python-dotenv tqdm
+If you're seeing this, you've probably already done this step. Congrats!
+
+```sh
+# create a new project
+npx sv create my-app
 ```
 
-2. Create `.env` file:
-```env
-R2_ACCOUNT_ID=your_account_id
-R2_ACCESS_KEY_ID=your_access_key
-R2_SECRET_ACCESS_KEY=your_secret_key
-R2_BUCKET_NAME=your_bucket_name
+To recreate this project with the same configuration:
+
+```sh
+# recreate this project
+pnpm dlx sv create --template minimal --types ts --add prettier eslint tailwindcss="plugins:none" sveltekit-adapter="adapter:static" devtools-json --install pnpm .
 ```
 
-## Usage
+## Developing
 
-```bash
-python main.py
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+
+```sh
+npm run dev
+
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
 ```
 
-Files are organized by date: `YYYY-MM-DD/filename.gif`
+## Building
 
-## Configuration
+To create a production version of your app:
 
-- `LOCAL_MODE = True`: Save files locally to `weather_data/` directory
-- `LOCAL_MODE = False`: Upload to Cloudflare R2 (default)
+```sh
+npm run build
+```
+
+You can preview the production build with `npm run preview`.
+
+> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
