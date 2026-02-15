@@ -1,83 +1,84 @@
 import cv2
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+import csv
+import re
 from datetime import datetime, timedelta
+from pathlib import Path
 
-station = 'BNG'
-img_bgr = cv2.imread(f'data/2026-02-14_{station}-meteogram.jpg')
+input_path = 'data/2026-02-14_BNG-meteogram.jpg'
+
+filename = Path(input_path).name
+match = re.match(r'(\d{4})-(\d{2})-(\d{2})_', filename)
+if not match:
+    raise ValueError(f"Could not extract date from filename: {filename}")
+start_dt = datetime(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+
+csv_path = 'data/cloud_data.csv'
+plot_path = 'data/recreation_wallpaper.png'
+
+img_bgr = cv2.imread(input_path)
 cropped = img_bgr[866:952, 70:1090]
-img_rgb = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
-h, w = img_rgb.shape[:2]
+h, w = cropped.shape[:2]
 
 samples = 80
 x_indices = np.linspace(80, w - 5, samples).astype(int)
-sampled_img = img_rgb[:, x_indices, :]
+sampled_img = cropped[:, x_indices, :]
 
-# Split the vertical height into 3 equal bands (High, Middle, Low)
 bands = np.array_split(sampled_img, 3, axis=0)
 cloud_data = []
 
 for band in bands:
     band_h = band.shape[0]
-    # Create a boolean mask where pixels are "white" (R, G, and B > 200)
     is_white = (band > 200).all(axis=2)
 
-    # For each column, find the first 'True' index from the top
-    # argmax returns the first index of the max value (True)
-    first_white_idx = np.where(is_white.any(axis=0), is_white.argmax(axis=0), band_h)
+    has_white = is_white.any(axis=0)
+    first_white_idx = np.where(has_white, is_white.argmax(axis=0), band_h)
 
-    # Calculate percentage based on height from the bottom
     percentage = ((band_h - first_white_idx) / band_h) * 100
     cloud_data.append(percentage)
 
-# get from file name
-start_date = datetime(2026, 2, 14)
-times = [start_date + timedelta(hours=i*3) for i in range(samples)]
+times = [start_dt + timedelta(hours=i*3) for i in range(samples)]
 
-df = pd.DataFrame({
-    'datetime': times,
-    'high': cloud_data[0],
-    'middle': cloud_data[1],
-    'low': cloud_data[2]
-})
-df.to_csv('data/cloud_data.csv', index=False)
+with open(csv_path, 'w', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow(['datetime', 'high', 'middle', 'low'])
+    rows = zip(times, cloud_data[0], cloud_data[1], cloud_data[2])
+    writer.writerows(rows)
 
-fig, ax = plt.subplots(figsize=(14, 4))
-ax.set_facecolor('#4a7ba7')
+H_PLOT, W_PLOT = 1080, 1920
+canvas = np.full((H_PLOT, W_PLOT, 3), (167, 123, 74), dtype=np.uint8)
 
+step_w = W_PLOT / samples
 layers = [
-    (0, 66, 0.34, 'high'),
-    (1, 33, 0.33, 'middle'),
-    (2, 0,  0.33, 'low')
+    (0, 66, 0.34, 'HIGH'),
+    (1, 33, 0.33, 'MIDDLE'),
+    (2, 0,  0.33, 'LOW')
 ]
 
-for idx, base_y, mult, label in layers:
-    # Scale 0-100% to the specific band height in the plot
-    y_values = (cloud_data[idx] * mult) + base_y
+for y_pct in [33, 66]:
+    y_px = int(H_PLOT - (y_pct / 100 * H_PLOT))
+    cv2.line(canvas, (0, y_px), (W_PLOT, y_px), (255, 255, 255), 1)
 
-    ax.fill_between(range(samples), base_y, y_values,
-                    step='post', color='white', alpha=1, lw=0)
+for idx, base_y_pct, mult, label in layers:
+    data = cloud_data[idx]
 
-    # Add band labels on the left
-    ax.text(-2, base_y + 16.5, label, fontweight='bold', ha='right', va='center')
+    for i in range(samples):
+        val = (data[i] * mult) + base_y_pct
 
-    # Draw divider lines between bands
-    if base_y > 0:
-        ax.axhline(base_y, color='white', linewidth=0.8, alpha=0.3)
+        y_bottom = int(H_PLOT - (base_y_pct / 100 * H_PLOT))
+        y_top = int(H_PLOT - (val / 100 * H_PLOT))
 
-# Clean up axes
-ax.set_ylim(0, 100)
-ax.set_xlim(0, samples - 1)
-ax.set_yticks([])
-ax.grid(True, alpha=0.15, color='white', axis='x')
+        x_start = int(i * step_w)
+        x_end = int((i + 1) * step_w)
 
-for spine in ['top', 'right', 'left', 'bottom']:
-    ax.spines[spine].set_visible(False)
+        if y_top < y_bottom:
+            cv2.rectangle(canvas, (x_start, y_top), (x_end, y_bottom), (255, 255, 255), -1)
 
 tick_indices = range(0, samples, 8)
-ax.set_xticks(tick_indices)
-ax.set_xticklabels([times[i].strftime('%d %b').upper() for i in tick_indices], fontsize=9)
+for i in tick_indices:
+    x_pos = int(i * step_w)
+    date_str = times[i].strftime('%d %b').upper()
+    cv2.putText(canvas, date_str, (x_pos + 5, H_PLOT - 10), cv2.FONT_HERSHEY_SIMPLEX,
+                0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
-plt.tight_layout()
-plt.savefig('data/recreation.png', dpi=200, bbox_inches='tight')
+cv2.imwrite(plot_path, canvas)

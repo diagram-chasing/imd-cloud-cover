@@ -1,0 +1,16 @@
+# Core dependencies
+boto3==1.35.36
+python-dotenv==1.0.1
+requests==2.32.3
+
+# Image processing
+opencv-python-headless==4.10.0.84
+Pillow==10.4.0
+numpy==1.26.4
+
+# API server
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+
+# Utilities
+tqdm==4.66.5

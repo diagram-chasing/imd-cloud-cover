@@ -20,7 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests boto3 python-dotenv tqdm
+          pip install -r requirements.txt
 
       - name: Run scraper
         env:
