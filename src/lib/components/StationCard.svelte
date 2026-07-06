@@ -121,7 +121,7 @@
 	{/if}
 
 	<!-- Priority 3: stats + links, if space -->
-	{#if current}
+	<!-- {#if current}
 		<Separator />
 		<section class="readout">
 			{#each ROWS as r (r.key)}
@@ -131,7 +131,7 @@
 				</div>
 			{/each}
 		</section>
-	{/if}
+	{/if} -->
 
 	<footer class="links">
 		<Button variant="link" size="xs" href={meteogramImageUrl(date, code)} target="_blank"

@@ -25,12 +25,12 @@
 
 	const WORLD_W = 1024;
 	const PAD = 4;
-	const MARK_CELL = 4; // px per logical cell of a tower mark
+	const MARK_CELL = 3; // px per logical cell of a tower mark
 	// Two constraints keep towers readable (glyphs cap at 3 rows tall):
 	//   1. bands separate WITHIN a tower  → TOWER_GAP must clear a mark's height
 	//   2. towers separate FROM EACH OTHER → BIN must clear a whole tower's height
 	// Break either (e.g. TOWER_GAP > BIN) and the three bands overlap into blocks.
-	const TOWER_GAP = MARK_CELL * 3; // centre-to-centre px between adjacent bands
+	const TOWER_GAP = MARK_CELL * 3.5; // centre-to-centre px between adjacent bands
 	const BIN = TOWER_GAP * 2 + MARK_CELL * 4; // aggregation grid spacing (px)
 	const HIT_R = BIN * 0.7; // hover/select radius; >= BIN/sqrt(2) so bins have no dead zones
 	const GHOST_ALPHA = 0.1; // non-focused bands while one band is isolated
@@ -68,6 +68,7 @@
 	let skyGfx: Graphics | null = null;
 	let titleText: Text | null = null;
 	let hoverGfx: Graphics | null = null;
+	let selGfx: Graphics | null = null;
 	let bins: Bin[] = [];
 	const pool: Record<BandKey, Sprite[]> = { low: [], middle: [], high: [] };
 	let layers: Record<BandKey, Container> | null = null;
@@ -229,12 +230,17 @@
 		}));
 		quad = buildQuadtree(points);
 
+		// Selected highlight sits under the hover box so hovering the selected
+		// cell still reads. Both live in camera space so they track pan/zoom.
+		selGfx = new Graphics();
+		camera.addChild(selGfx);
 		hoverGfx = new Graphics();
 		camera.addChild(hoverGfx);
 
 		fitCamera();
 		drawSky();
 		drawTitle();
+		drawSelected();
 		updateClouds();
 		bindPointer();
 		app.ticker.add(tick);
@@ -329,6 +335,24 @@
 			.stroke({ width: 2, color: night ? UI.focus : 0xffffff, alignment: 0.5 });
 	}
 
+	// Persistent box around the open station, so it's clear which cell the card
+	// belongs to. Focus colour + faint fill distinguish it from the hover box.
+	function drawSelected() {
+		if (!selGfx || !geo) return;
+		selGfx.clear();
+		const code = sky.selectedCode;
+		if (!code) return;
+		const b = bins.find((x) => x.code === code);
+		if (!b) return;
+		const halfW = 18;
+		const top = b.py - TOWER_GAP - 12;
+		const height = TOWER_GAP * 2 + 24;
+		selGfx
+			.rect(b.px - halfW, top, halfW * 2, height)
+			.fill({ color: UI.focus, alpha: 0.12 })
+			.stroke({ width: 2, color: UI.focus, alignment: 0.5 });
+	}
+
 	let lastDrift = 0;
 	let reduced = false;
 	function tick(t: Ticker) {
@@ -378,6 +402,8 @@
 				applyCamera();
 				sky.hoverCode = null;
 				onhover?.(null);
+				// Panning detaches the card from its cell — dismiss it.
+				if (moved && sky.selectedCode) sky.selectedCode = null;
 				return;
 			}
 			const { ox, oy } = clientToWorld(e.clientX, e.clientY);
@@ -393,7 +419,13 @@
 				const p = quad ? nearest(quad, ox, oy, HIT_R) : null;
 				if (p) {
 					sky.selectedCode = p.code;
-					onselect?.(p.code, { x: e.clientX, y: e.clientY });
+					// Anchor the card to the cell's screen centre (not the raw cursor)
+					// so it visibly points at the tower it describes.
+					const rect = app!.canvas.getBoundingClientRect();
+					onselect?.(p.code, {
+						x: rect.left + (p.x - panX) * zoom,
+						y: rect.top + (p.y - panY) * zoom
+					});
 				}
 			}
 			dragging = false;
@@ -425,6 +457,8 @@
 		panY = oy - sy / zoom;
 		clampPan();
 		applyCamera();
+		// Zooming moves the cell out from under the card — dismiss it.
+		if (sky.selectedCode) sky.selectedCode = null;
 	}
 	function clampPan() {
 		const b = worldBBox();
@@ -494,17 +528,39 @@
 		void sky.hoverCode;
 		if (app) drawHover();
 	});
+	$effect(() => {
+		void sky.selectedCode;
+		if (app) drawSelected();
+	});
 </script>
 
 <div class="pixel-map" bind:this={host}>
 	<div class="zoom-ctl">
-		<Button variant="outline" size="icon" class={ctlClass} aria-label="Zoom in" onclick={() => zoomButton(1)}>
+		<Button
+			variant="outline"
+			size="icon"
+			class={ctlClass}
+			aria-label="Zoom in"
+			onclick={() => zoomButton(1)}
+		>
 			<HugeiconsIcon icon={PlusSignIcon} strokeWidth={2.5} />
 		</Button>
-		<Button variant="outline" size="icon" class={ctlClass} aria-label="Zoom out" onclick={() => zoomButton(-1)}>
+		<Button
+			variant="outline"
+			size="icon"
+			class={ctlClass}
+			aria-label="Zoom out"
+			onclick={() => zoomButton(-1)}
+		>
 			<HugeiconsIcon icon={MinusSignIcon} strokeWidth={2.5} />
 		</Button>
-		<Button variant="outline" size="icon" class={ctlClass} aria-label="Reset view" onclick={resetView}>
+		<Button
+			variant="outline"
+			size="icon"
+			class={ctlClass}
+			aria-label="Reset view"
+			onclick={resetView}
+		>
 			<HugeiconsIcon icon={Maximize01Icon} strokeWidth={2.5} />
 		</Button>
 	</div>

@@ -35,6 +35,16 @@
 		return () => mq.removeEventListener('change', on);
 	});
 
+	// The desktop popover is anchored to a fixed screen point, so scrolling the
+	// page would leave it stranded. Dismiss on page scroll. (window's scroll only
+	// fires for the viewport, not the card's own internal scroll area.)
+	$effect(() => {
+		if (isMobile) return;
+		const onScroll = () => onclose();
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => window.removeEventListener('scroll', onScroll);
+	});
+
 	// A virtual anchor at the click point for the desktop popover. Falls back to
 	// upper-centre when opened without a point (search / streak selection).
 	let anchor = $derived({

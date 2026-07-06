@@ -10,7 +10,7 @@
 	} from '$lib/components/ui/command';
 	import { Button } from '$lib/components/ui/button';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { SearchIcon, Location01Icon } from '@hugeicons/core-free-icons';
+	import { SearchIcon } from '@hugeicons/core-free-icons';
 
 	interface Props {
 		manifest: StationsManifest;
@@ -70,21 +70,26 @@
 	<PopoverContent
 		align="end"
 		sideOffset={6}
-		class="w-[280px] rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] p-0 text-[var(--ink)] shadow-[3px_3px_0_0_var(--ink)] ring-0"
+		class="w-[300px] rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] p-0 text-[var(--ink)] shadow-[3px_3px_0_0_var(--ink)] ring-0
+			[&_[data-slot=command-input-wrapper]]:p-0
+			[&_[data-slot=input-group]]:!h-9 [&_[data-slot=input-group]]:!rounded-none [&_[data-slot=input-group]]:!border-0 [&_[data-slot=input-group]]:!border-b-2 [&_[data-slot=input-group]]:!border-[var(--ink)] [&_[data-slot=input-group]]:!bg-[var(--paper)] [&_[data-slot=input-group]]:!shadow-none"
 	>
 		<Command shouldFilter={false} class="rounded-none bg-transparent p-0">
 			<CommandInput bind:value={query} placeholder="Search name or code…" />
-			<CommandList class="max-h-[280px]">
-				<CommandEmpty>No station found.</CommandEmpty>
+			<CommandList class="max-h-[280px] p-1">
+				<CommandEmpty class="py-4 text-center text-[11px] tracking-wider [font-family:var(--font-display)]"
+					>No station found.</CommandEmpty
+				>
 				{#each results as st (st.code)}
 					<CommandItem
 						value={st.code}
 						onSelect={() => pick(st.code)}
-						class="rounded-none data-selected:bg-[var(--cloud-block)] data-selected:text-[var(--ink)]"
+						class="flex items-center gap-2 rounded-none px-2 py-1 data-selected:bg-[var(--cloud-block)] data-selected:text-[var(--ink)]"
 					>
-						<HugeiconsIcon icon={Location01Icon} strokeWidth={2} class="opacity-50" />
-						<span class="name">{st.name}</span>
-						{#if st.state}<span class="state">{st.state}</span>{/if}
+						<span class="label">
+							<span class="name">{st.name}</span>
+							{#if st.state}<span class="state">{st.state}</span>{/if}
+						</span>
 						<span class="code">{st.code}</span>
 					</CommandItem>
 				{/each}
@@ -94,24 +99,30 @@
 </Popover>
 
 <style>
-	.name {
-		font-family: var(--font-body);
-		font-size: 13px;
-		white-space: nowrap;
+	/* Name + state truncate together as one label so the code column stays
+	   aligned on the right and names only clip when the row is genuinely full. */
+	.label {
+		flex: 1 1 auto;
+		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-family: var(--font-body);
+		font-size: 13px;
+	}
+	.name {
+		color: var(--ink);
 	}
 	.state {
+		margin-left: 6px;
 		font-size: 11px;
-		opacity: 0.55;
-		white-space: nowrap;
+		opacity: 0.5;
 	}
 	.code {
-		margin-left: auto;
+		flex: 0 0 auto;
 		font-family: var(--font-display);
 		font-size: 9px;
 		letter-spacing: 0.05em;
-		opacity: 0.65;
-		flex-shrink: 0;
+		opacity: 0.55;
 	}
 </style>

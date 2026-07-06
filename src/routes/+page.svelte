@@ -66,7 +66,7 @@
 </script>
 
 <svelte:head>
-	<title>Aaj Ka Aasmaan — India's Sky, Daily</title>
+	<title>Reading The Clouds</title>
 	<meta
 		name="description"
 		content="A daily pixel map of cloud cover over India, read from IMD meteograms."
@@ -90,7 +90,6 @@
 
 	<!-- top overlay -->
 	<div class="bar top">
-		<span class="brand">AAJ KA AASMAAN</span>
 		<div class="bar-mid"><ViewTabs /></div>
 		<div class="bar-right">
 			{#if core}<StationSearch manifest={core.manifest} onselect={openStation} />{/if}
@@ -120,27 +119,13 @@
 <!-- Short scroll below the map -->
 <div class="content">
 	{#if core}
-		<section class="headline-row">
-			<HeadlineStat summary={core.summary} {today} />
-			<span class="asof">{core.summary.date} · updates daily 11:00 IST</span>
-		</section>
-
-		<SeasonalLens
-			manifest={core.manifest}
-			latest={core.latest}
-			rollup7={core.rollup7}
-			date={core.summary.date}
-			onwatch={watchAfternoon}
-		/>
-
 		<section class="streak-section">
-			<h2>THE RECORD BOOKS</h2>
 			<StreakBoard summary={core.summary} onselect={openStation} />
 		</section>
 	{/if}
 
 	<section class="method">
-		<h2>HOW WE READ THE SKY</h2>
+		<h2>HOW TO READ THE CLOUDS</h2>
 		<div class="method-grid">
 			<figure>
 				<img
@@ -152,16 +137,7 @@
 			<div class="method-text">
 				<p>
 					A <strong>meteogram</strong> is a strip chart the India Meteorological Department publishes
-					for each station — a 10-day forecast of cloud, rain, wind and temperature.
-				</p>
-				<p>
-					Every day we read the pixels of just the cloud-cover panel — three bands for high, middle
-					and low cloud — for all {core?.manifest.count ?? '1,200+'} stations, and stack them in
-					place as three printed layers, like the meteogram's own strip.
-				</p>
-				<p>
-					What you see is the model's <strong>day-0 forecast</strong> — eight 3-hourly steps from
-					midnight — not a satellite observation.
+					for each station for a 10-day forecast of cloud, rain, wind and temperature.
 				</p>
 			</div>
 		</div>
@@ -171,7 +147,12 @@
 </div>
 
 {#if tip && tipStation}
-	<StationTooltip station={tipStation} values={tipValues} clientX={tip.clientX} clientY={tip.clientY} />
+	<StationTooltip
+		station={tipStation}
+		values={tipValues}
+		clientX={tip.clientX}
+		clientY={tip.clientY}
+	/>
 {/if}
 
 {#if panelStation && sky.selectedCode && core}
@@ -228,13 +209,7 @@
 		gap: 12px 20px;
 		background: linear-gradient(transparent, rgba(11, 29, 58, 0.45));
 	}
-	.brand {
-		font-family: var(--font-display);
-		font-size: 13px;
-		letter-spacing: 0.05em;
-		color: #fff;
-		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
-	}
+
 	.bar-mid {
 		flex: 0 0 auto;
 	}
@@ -261,26 +236,9 @@
 		margin: 0 auto;
 		padding: 40px 20px 60px;
 	}
-	.headline-row {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: 24px;
-		flex-wrap: wrap;
-		padding-bottom: 24px;
-		border-bottom: 2px solid var(--ink);
-	}
-	.asof {
-		font-family: var(--font-display);
-		font-size: 10px;
-		letter-spacing: 0.05em;
-		opacity: 0.7;
-		white-space: nowrap;
-	}
+
 	.streak-section {
 		margin: 48px 0;
-		border-top: 2px solid var(--ink);
-		padding-top: 24px;
 	}
 	.streak-section h2,
 	.method h2 {
@@ -290,8 +248,6 @@
 	}
 	.method {
 		margin-top: 48px;
-		border-top: 2px solid var(--ink);
-		padding-top: 24px;
 	}
 	.method-grid {
 		display: grid;

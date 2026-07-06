@@ -1,5 +1,3 @@
-// Cloud sprites: literal 0/1 pixel patterns pre-rendered into an offscreen atlas
-// at the current CELL size. Three species (low/middle/high) x 4 tiers.
 import { CLOUD, type BandKey } from '$lib/theme';
 import { fnv1a, mulberry32 } from './hash';
 
@@ -79,9 +77,9 @@ function drawPattern(pattern: Pattern, band: BandKey, cell: number): Sprite {
 		typeof OffscreenCanvas !== 'undefined'
 			? new OffscreenCanvas(cols * cell, totalRows * cell)
 			: Object.assign(document.createElement('canvas'), {
-					width: cols * cell,
-					height: totalRows * cell
-				});
+				width: cols * cell,
+				height: totalRows * cell
+			});
 	const ctx = (canvas as HTMLCanvasElement).getContext('2d')!;
 	ctx.imageSmoothingEnabled = false;
 
@@ -158,6 +156,12 @@ const HIGH_W = [3, 5, 7, 9]; // cirrus streak width per tier (always 2 rows)
 // separated top mark stays legible against both sky and land.
 const MARK_ALPHA: Record<BandKey, number> = { high: 0.8, middle: 0.95, low: 1 };
 
+// Cover tier → luminance ramp. Size alone barely separates tiers when zoomed
+// out, so we also fade low-cover marks and drive high-cover ones to full
+// opacity. This is the dominant cue: dense regions visibly glow, sparse ones
+// recede, and spatial patterns read at any zoom. Indexed by tier-1 (tiers 1-4).
+const TIER_ALPHA = [0.5, 0.62, 0.82, 1];
+
 /** A bumpy-topped, flat-bottomed height profile → the body of a puff cloud. */
 function puffProfile(rand: () => number, w: number, maxH: number, rough: number): number[] {
 	// Peak wanders off-centre for asymmetry; height falls off toward the edges.
@@ -215,7 +219,7 @@ function makePattern(band: BandKey, tier: number, variant: number): Pattern {
 	return profileToPattern(puffProfile(rand, w, maxH, rough), maxH);
 }
 
-function drawMark(pattern: Pattern, band: BandKey, cell: number): Sprite {
+function drawMark(pattern: Pattern, band: BandKey, tier: number, cell: number): Sprite {
 	const rows = pattern.length;
 	const cols = Math.max(...pattern.map((r) => r.length));
 
@@ -223,13 +227,13 @@ function drawMark(pattern: Pattern, band: BandKey, cell: number): Sprite {
 		typeof OffscreenCanvas !== 'undefined'
 			? new OffscreenCanvas(cols * cell, rows * cell)
 			: Object.assign(document.createElement('canvas'), {
-					width: cols * cell,
-					height: rows * cell
-				});
+				width: cols * cell,
+				height: rows * cell
+			});
 	const ctx = (canvas as HTMLCanvasElement).getContext('2d')!;
 	ctx.imageSmoothingEnabled = false;
 
-	ctx.globalAlpha = MARK_ALPHA[band];
+	ctx.globalAlpha = MARK_ALPHA[band] * TIER_ALPHA[tier - 1];
 	ctx.fillStyle = CLOUD[band].fill;
 	for (let y = 0; y < rows; y++) {
 		const row = pattern[y];
@@ -260,7 +264,7 @@ export function buildMarkAtlas(cell: number): SpriteAtlas {
 	for (const band of ['low', 'middle', 'high'] as BandKey[]) {
 		for (let tier = 1; tier <= 4; tier++) {
 			for (let v = 0; v < MARK_VARIANTS; v++) {
-				cache.set(`${band}:${tier}:${v}`, drawMark(makePattern(band, tier, v), band, cell));
+				cache.set(`${band}:${tier}:${v}`, drawMark(makePattern(band, tier, v), band, tier, cell));
 			}
 		}
 	}

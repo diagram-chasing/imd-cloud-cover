@@ -24,15 +24,15 @@
 	}
 
 	const itemClass =
-		'gap-1.5 rounded-none border-0 border-r-2 border-[var(--ink)] bg-[var(--paper)] px-2 text-[10px] tracking-wider text-[var(--ink)] [font-family:var(--font-display)] last:border-r-0 ' +
-		'hover:bg-[var(--cloud-block)] hover:text-[var(--ink)] data-[state=on]:bg-[var(--ink)] data-[state=on]:text-[var(--paper)]';
+		'gap-1.5 rounded-none border-0 border-r-2 border-[var(--ink)] bg-[var(--paper)] px-2 text-sm tracking-wider text-[var(--ink)] [font-family:var(--font-display)] h-10 last:border-r-0 ' +
+		'hover:bg-[var(--cloud-block)] hover:text-[var(--ink)] data-[state=on]:bg-[var(--ink)] data-[state=on]:text-[var(--paper)] data-[state=on]:bg-yellow-600 flex items-center justify-center';
 </script>
 
 <ToggleGroup
 	type="single"
 	value={sky.focusBand ?? 'all'}
 	onValueChange={(v) => (sky.focusBand = v && v !== 'all' ? (v as BandKey) : null)}
-	class="rounded-none border-2 border-[var(--ink)]"
+	class="flex justify-center rounded-none border-2 border-[var(--ink)]"
 	aria-label="Isolate cloud layer"
 >
 	<ToggleGroupItem value="all" class={itemClass}>ALL</ToggleGroupItem>
