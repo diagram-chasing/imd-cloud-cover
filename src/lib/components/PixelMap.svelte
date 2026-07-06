@@ -5,8 +5,9 @@
 	import { CELL, SKY, SKY_BANDS, skyMode, coverTier, UI, type BandKey } from '$lib/theme';
 	import { lerpHex } from '$lib/map/color';
 	import { buildGeo, type Geo } from '$lib/map/geo';
-	import { buildAtlas } from '$lib/map/sprites';
+	import { buildMarkAtlas, MARK_VARIANTS } from '$lib/map/sprites';
 	import { buildQuadtree, nearest, type StationPoint } from '$lib/map/hit';
+	import { fnv1a, jitter } from '$lib/map/hash';
 	import { sky } from '$lib/state/sky.svelte';
 
 	interface Props {
@@ -20,18 +21,22 @@
 	}
 	let { india, manifest, values, enableTooltip = true, onhover, onselect }: Props = $props();
 
-	// --- Flat map tunables (straight-down "acetate stack") ---
 	const WORLD_W = 1024;
-	const PAD = 24; // world-px breathing room around the map
-	const BIN = 36; // aggregation grid spacing in projected px (keeps marks apart)
-	const HIT_R = BIN * 0.75; // hover/select radius; must stay >= BIN/sqrt(2) so bins have no dead zones
-	const GHOST_ALPHA = 0.15; // non-focused bands while one band is isolated
-	// Offset-print nudge per band, in cells: bands stack in place but never
-	// perfectly occlude, so the three patterns stay readable when overlaid.
-	const BAND_NUDGE: Record<BandKey, { x: number; y: number }> = {
-		low: { x: 0, y: 1 },
-		middle: { x: -1, y: 0 },
-		high: { x: 1, y: -2 }
+	const PAD = 4;
+	const MARK_CELL = 3; // px per logical cell of a tower mark
+	// Two constraints keep towers readable (glyphs cap at 3 rows tall):
+	//   1. bands separate WITHIN a tower  → TOWER_GAP must clear a mark's height
+	//   2. towers separate FROM EACH OTHER → BIN must clear a whole tower's height
+	// Break either (e.g. TOWER_GAP > BIN) and the three bands overlap into blocks.
+	const TOWER_GAP = MARK_CELL * 3; // centre-to-centre px between adjacent bands
+	const BIN = TOWER_GAP * 2 + MARK_CELL * 4; // aggregation grid spacing (px)
+	const HIT_R = BIN * 0.7; // hover/select radius; >= BIN/sqrt(2) so bins have no dead zones
+	const GHOST_ALPHA = 0.1; // non-focused bands while one band is isolated
+	// Vertical offset of each band's mark from the bin centre, in px.
+	const BAND_OFFSET: Record<BandKey, number> = {
+		high: -TOWER_GAP,
+		middle: 0,
+		low: TOWER_GAP
 	};
 	const BAND_KEYS: BandKey[] = ['low', 'middle', 'high'];
 	const VAL_KEY: Record<BandKey, 'h' | 'm' | 'l'> = { high: 'h', middle: 'm', low: 'l' };
@@ -41,6 +46,7 @@
 		py: number;
 		members: number[];
 		code: string;
+		variant: number; // stable per-station shape pick, so the field isn't uniform
 	}
 
 	let host = $state<HTMLDivElement>();
@@ -57,7 +63,8 @@
 	const pool: Record<BandKey, Sprite[]> = { low: [], middle: [], high: [] };
 	let layers: Record<BandKey, Container> | null = null;
 	const alphaTarget: Record<BandKey, number> = { low: 1, middle: 1, high: 1 };
-	let cloudTex: Record<BandKey, Texture[]> = { low: [], middle: [], high: [] };
+	// cloudTex[band][tier][variant]
+	let cloudTex: Record<BandKey, Texture[][]> = { low: [], middle: [], high: [] };
 	let quad: ReturnType<typeof buildQuadtree> | null = null;
 
 	let zoom = 1;
@@ -102,7 +109,7 @@
 			const key = `${bx},${by}`;
 			let b = map.get(key);
 			if (!b) {
-				b = { px: (bx + 0.5) * BIN, py: (by + 0.5) * BIN, members: [], code: st.code };
+				b = { px: (bx + 0.5) * BIN, py: (by + 0.5) * BIN, members: [], code: st.code, variant: 0 };
 				map.set(key, b);
 			}
 			b.members.push(i);
@@ -118,6 +125,11 @@
 					b.code = st.code;
 				}
 			}
+			// Break the grid: nudge each tower a few px and pick a stable shape
+			// variant, both keyed off the station so the render stays deterministic.
+			b.px += jitter(b.code, 'jx', 3);
+			b.py += jitter(b.code, 'jy', 2);
+			b.variant = fnv1a(b.code) % MARK_VARIANTS;
 		}
 		// north-first so nearer (south) marks overdraw
 		return [...map.values()].sort((a, b) => a.py - b.py);
@@ -125,7 +137,7 @@
 
 	async function init() {
 		if (!host) return;
-		const atlas = buildAtlas(CELL);
+		const atlas = buildMarkAtlas(MARK_CELL);
 		geo = buildGeo(india, manifest, WORLD_W, CELL);
 		bins = buildBins();
 
@@ -157,7 +169,10 @@
 		cloudTex = { low: [], middle: [], high: [] };
 		for (const band of BAND_KEYS) {
 			for (let tier = 1; tier <= 4; tier++) {
-				cloudTex[band][tier] = mkTex(atlas.get(band, tier as 1 | 2 | 3 | 4).canvas);
+				cloudTex[band][tier] = [];
+				for (let v = 0; v < MARK_VARIANTS; v++) {
+					cloudTex[band][tier][v] = mkTex(atlas.get(band, tier as 1 | 2 | 3 | 4, v).canvas);
+				}
 			}
 		}
 
@@ -167,11 +182,10 @@
 			camera.addChild(layer);
 			layerMap[band] = layer;
 			pool[band] = bins.map((b) => {
-				const s = new Sprite(cloudTex[band][1]);
+				const s = new Sprite(cloudTex[band][1][b.variant]);
 				s.anchor.set(0.5, 0.5);
-				s.x = b.px + BAND_NUDGE[band].x * CELL;
-				s.y = b.py + BAND_NUDGE[band].y * CELL;
-				s.scale.set(1.4);
+				s.x = b.px;
+				s.y = b.py + BAND_OFFSET[band];
 				s.visible = false;
 				layer.addChild(s);
 				return s;
@@ -207,12 +221,6 @@
 		if (!skyGfx) return;
 		const pal = SKY[skyMode(sky.timeIndex)];
 		skyGfx.clear();
-		const bandH = vh / SKY_BANDS;
-		for (let i = 0; i < SKY_BANDS; i++) {
-			skyGfx
-				.rect(0, i * bandH, vw, bandH + 1)
-				.fill(lerpHex(pal.top, pal.bottom, i / (SKY_BANDS - 1)));
-		}
 	}
 
 	function updateGround() {
@@ -249,7 +257,7 @@
 					continue;
 				}
 				sp.visible = true;
-				sp.texture = cloudTex[band][tier];
+				sp.texture = cloudTex[band][tier][bins[i].variant];
 			}
 		}
 	}
@@ -268,8 +276,12 @@
 		const b = bins.find((x) => x.code === code);
 		if (!b) return;
 		const night = skyMode(sky.timeIndex) === 'night';
+		// Frame the whole tower: from above the high mark to below the low mark.
+		const halfW = 18;
+		const top = b.py - TOWER_GAP - 12;
+		const height = TOWER_GAP * 2 + 24;
 		hoverGfx
-			.rect(b.px - 24, b.py - 28, 48, 52)
+			.rect(b.px - halfW, top, halfW * 2, height)
 			.stroke({ width: 2, color: night ? UI.focus : 0xffffff, alignment: 0.5 });
 	}
 
@@ -290,7 +302,9 @@
 		if (now - lastDrift > 1200) {
 			lastDrift = now;
 			driftTick = (driftTick + 1) % 4;
-			if (layers) layers.high.x = driftTick * CELL;
+			// Subtle wisp: nudge the whole high layer a couple px so cirrus feels
+			// alive without detaching the small marks from their towers.
+			if (layers) layers.high.x = driftTick * 2;
 		}
 	}
 

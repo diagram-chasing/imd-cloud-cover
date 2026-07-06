@@ -7,8 +7,8 @@
 	}
 	let { forecast }: Props = $props();
 
-	const W = 320;
-	const H = 180;
+	let W = $state(320);
+	const H = 100;
 
 	function draw(canvas: HTMLCanvasElement, fc: Forecast | null) {
 		const dpr = window.devicePixelRatio || 1;
@@ -54,13 +54,14 @@
 	}
 </script>
 
-<canvas use:meteogram aria-label="10-day cloud-cover forecast for this station"></canvas>
+<canvas use:meteogram bind:clientWidth={W} aria-label="10-day cloud-cover forecast for this station"
+></canvas>
 
 <style>
 	canvas {
 		display: block;
 		width: 100%;
-		max-width: 320px;
+
 		box-shadow: 0 0 0 2px var(--ink);
 		image-rendering: pixelated;
 	}
