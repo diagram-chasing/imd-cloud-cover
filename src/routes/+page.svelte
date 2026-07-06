@@ -1,65 +1,55 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { Topology } from 'topojson-specification';
-	import type { FeatureCollection } from 'geojson';
-	import type { StationsManifest, AllStations, Summary, Station } from '$lib/types';
-	import { fetchStations, fetchLatest, fetchSummary } from '$lib/api/r2';
-	import { topoToIndia } from '$lib/map/projection';
+	import type { Station } from '$lib/types';
+	import { loadCore, type CoreData } from '$lib/api/load';
 	import { sky } from '$lib/state/sky.svelte';
-	import type { BandValues } from '$lib/map/render';
+	import { computeValues, computePersistence, rollupForView } from '$lib/data';
 
 	import PixelMap from '$lib/components/PixelMap.svelte';
 	import TimeScrubber from '$lib/components/TimeScrubber.svelte';
+	import WindowScrubber from '$lib/components/WindowScrubber.svelte';
 	import BandToggle from '$lib/components/BandToggle.svelte';
+	import ViewTabs from '$lib/components/ViewTabs.svelte';
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
 	import HeadlineStat from '$lib/components/HeadlineStat.svelte';
+	import StreakBoard from '$lib/components/StreakBoard.svelte';
+	import StationSearch from '$lib/components/StationSearch.svelte';
+	import StationPanel from '$lib/components/StationPanel.svelte';
 
-	let india = $state<FeatureCollection>();
-	let manifest = $state<StationsManifest>();
-	let latest = $state<AllStations>();
-	let summary = $state<Summary>();
+	let core = $state<CoreData>();
 	let error = $state<string | null>(null);
 
 	const today = new Date().toISOString().slice(0, 10);
-
-	// Tooltip state.
 	let tip = $state<{ code: string; clientX: number; clientY: number } | null>(null);
 
 	onMount(async () => {
 		try {
-			const [topo, m, l, s] = await Promise.all([
-				fetch('/data/india.json').then((r) => r.json() as Promise<Topology>),
-				fetchStations(),
-				fetchLatest(),
-				fetchSummary()
-			]);
-			india = topoToIndia(topo);
-			manifest = m;
-			latest = l;
-			summary = s;
+			core = await loadCore();
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load data';
 		}
 	});
 
-	// Per-station cover at the current time step (TODAY view).
-	let values = $derived.by<BandValues>(() => {
-		const out: BandValues = {};
-		if (!latest) return out;
-		const ti = sky.timeIndex;
-		for (const [code, b] of Object.entries(latest.stations)) {
-			out[code] = { h: b.h[ti] ?? 0, m: b.m[ti] ?? 0, l: b.l[ti] ?? 0 };
-		}
-		return out;
-	});
+	let activeRollup = $derived(rollupForView(sky.view, core?.rollup7, core?.rollup30));
+	let values = $derived(
+		computeValues(sky.view, core?.latest, activeRollup, sky.timeIndex, sky.windowDayIndex)
+	);
+	let persistence = $derived(computePersistence(activeRollup));
 
 	let tipStation = $derived<Station | null>(
-		tip && manifest ? (manifest.stations[tip.code] ?? null) : null
+		tip && core ? (core.manifest.stations[tip.code] ?? null) : null
 	);
 	let tipValues = $derived(tip ? (values[tip.code] ?? null) : null);
 
-	function onselect() {
-		// Station panel arrives in Phase 3; for now selection lives in sky state.
+	// Station panel.
+	let panelStation = $derived<Station | null>(
+		sky.selectedCode && core ? (core.manifest.stations[sky.selectedCode] ?? null) : null
+	);
+	function openStation(code: string) {
+		sky.selectedCode = code;
+	}
+	function closePanel() {
+		sky.selectedCode = null;
 	}
 </script>
 
@@ -74,35 +64,62 @@
 <main>
 	<header class="masthead">
 		<span>AAJ KA AASMAAN · INDIA'S SKY, DAILY</span>
-		<span class="mast-right">{summary?.date ?? today} · UPDATES DAILY 11:00 IST</span>
+		<span class="mast-right">{core?.summary.date ?? today} · UPDATES DAILY 11:00 IST</span>
 	</header>
 
 	{#if error}
 		<p class="error">Couldn’t load today’s sky: {error}</p>
 	{/if}
 
-	{#if summary}
+	{#if core}
 		<section class="hero-copy">
-			<HeadlineStat {summary} {today} />
+			<HeadlineStat summary={core.summary} {today} />
 		</section>
 	{/if}
 
+	<!-- Accessible mirror of the map -->
+	<p class="sr-only">
+		Interactive pixel map of cloud cover over India.
+		{#if core}{core.summary.station_count} stations; use the station search to explore.{/if}
+	</p>
+
 	<section class="map-block">
 		<div class="controls-top">
-			<span class="view-label">TODAY</span>
+			<ViewTabs />
+			{#if core}
+				<StationSearch manifest={core.manifest} onselect={openStation} />
+			{/if}
 		</div>
 
-		{#if india && manifest}
-			<PixelMap {india} {manifest} {values} onhover={(info) => (tip = info)} {onselect} />
+		{#if core}
+			<PixelMap
+				india={core.india}
+				manifest={core.manifest}
+				{values}
+				{persistence}
+				onhover={(info) => (tip = info)}
+				onselect={openStation}
+			/>
 		{:else if !error}
 			<div class="loading">Reading the skies…</div>
 		{/if}
 
 		<div class="controls-under">
-			<TimeScrubber />
+			{#if sky.view === 'today'}
+				<TimeScrubber />
+			{:else if activeRollup}
+				<WindowScrubber dates={activeRollup.dates} />
+			{/if}
 			<BandToggle />
 		</div>
 	</section>
+
+	{#if core}
+		<section class="streak-section">
+			<h2>THE RECORD BOOKS</h2>
+			<StreakBoard summary={core.summary} onselect={openStation} />
+		</section>
+	{/if}
 
 	<!-- Method note -->
 	<section class="method">
@@ -121,7 +138,7 @@
 					publishes for each station — a 10-day forecast of cloud, rain, wind and temperature.
 				</p>
 				<p>
-					Every day we download all {manifest?.count ?? '1,200+'} station meteograms and read the
+					Every day we download all {core?.manifest.count ?? '1,200+'} station meteograms and read the
 					pixels of just the cloud-cover panel: three bands for high, middle and low cloud.
 				</p>
 				<p>
@@ -139,6 +156,21 @@
 
 {#if tip && tipStation}
 	<StationTooltip station={tipStation} values={tipValues} clientX={tip.clientX} clientY={tip.clientY} />
+{/if}
+
+<!-- Station drill-down slide-in -->
+{#if panelStation && sky.selectedCode && core}
+	<button class="scrim" aria-label="Close station panel" onclick={closePanel}></button>
+	<aside class="slide-in">
+		<StationPanel
+			code={sky.selectedCode}
+			station={panelStation}
+			current={values[sky.selectedCode] ?? null}
+			rollup={core.rollup30}
+			date={core.summary.date}
+			onclose={closePanel}
+		/>
+	</aside>
 {/if}
 
 <style>
@@ -168,15 +200,12 @@
 		margin: 24px 0 48px;
 	}
 	.controls-top {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 16px;
+		flex-wrap: wrap;
 		margin-bottom: 12px;
-	}
-	.view-label {
-		font-family: var(--font-display);
-		font-size: 14px;
-		background: var(--ink);
-		color: var(--ink-on-dark);
-		padding: 4px 8px;
-		letter-spacing: 0.05em;
 	}
 	.controls-under {
 		display: flex;
@@ -194,15 +223,21 @@
 		font-family: var(--font-display);
 		font-size: 12px;
 	}
-	.method {
-		margin-top: 48px;
+	.streak-section {
+		margin: 48px 0;
 		border-top: 2px solid var(--ink);
 		padding-top: 24px;
 	}
+	.streak-section h2,
 	.method h2 {
 		font-family: var(--font-display);
 		font-size: 20px;
 		letter-spacing: 0.05em;
+	}
+	.method {
+		margin-top: 48px;
+		border-top: 2px solid var(--ink);
+		padding-top: 24px;
 	}
 	.method-grid {
 		display: grid;
@@ -241,9 +276,69 @@
 		letter-spacing: 0.05em;
 		opacity: 0.7;
 	}
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+	.scrim {
+		position: fixed;
+		inset: 0;
+		z-index: 45;
+		background: rgba(11, 29, 58, 0.35);
+		border: 0;
+		cursor: pointer;
+	}
+	.slide-in {
+		position: fixed;
+		top: 0;
+		right: 0;
+		z-index: 46;
+		width: 380px;
+		max-width: 100vw;
+		height: 100vh;
+		background: var(--paper);
+		box-shadow: -2px 0 0 0 var(--ink);
+		animation: slide 150ms ease-out;
+	}
+	@keyframes slide {
+		from {
+			transform: translateX(100%);
+		}
+		to {
+			transform: translateX(0);
+		}
+	}
 	@media (max-width: 640px) {
 		.method-grid {
 			grid-template-columns: 1fr;
+		}
+		.slide-in {
+			top: auto;
+			bottom: 0;
+			width: 100vw;
+			height: 70vh;
+			box-shadow: 0 -2px 0 0 var(--ink);
+			animation: slideup 150ms ease-out;
+		}
+	}
+	@keyframes slideup {
+		from {
+			transform: translateY(100%);
+		}
+		to {
+			transform: translateY(0);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.slide-in {
+			animation: none;
 		}
 	}
 </style>

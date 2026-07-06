@@ -18,6 +18,10 @@ __pycache__/
 .venv/
 scraper/weather_data/
 
+# Local dev fixtures (per-station data); committed sample keeps only singletons
+static/sample/history/
+static/sample/20*/
+
 # Env
 .env
 .env.*

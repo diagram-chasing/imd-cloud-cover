@@ -136,11 +136,23 @@ export function drawClouds(
 		frameW: number;
 		frameH: number;
 		driftTick?: number;
+		persistence?: Record<string, number>;
 	}
 ) {
 	const { points, values, bands, atlas, cell, frameW, frameH } = opts;
 	ctx.clearRect(0, 0, frameW, frameH);
 	ctx.imageSmoothingEnabled = false;
+
+	// Persistence columns first, so clouds overdraw them (A7).
+	if (opts.persistence) {
+		ctx.fillStyle = UI.persistence;
+		for (const p of points) {
+			const n = opts.persistence[p.code] ?? 0;
+			for (let i = 0; i < n; i++) {
+				ctx.fillRect(p.cellX * cell, (p.cellY + 1 + i) * cell, cell, cell);
+			}
+		}
+	}
 
 	// Draw per band so parallax layering reads consistently; within a band the
 	// points are already north-first sorted so southern clouds overdraw northern.

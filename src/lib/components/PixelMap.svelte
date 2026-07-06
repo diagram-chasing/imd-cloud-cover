@@ -16,6 +16,7 @@
 		india: FeatureCollection;
 		manifest: StationsManifest;
 		values: BandValues;
+		persistence?: Record<string, number>;
 		driftTick?: number;
 		enableTooltip?: boolean;
 		onhover?: (info: { code: string; clientX: number; clientY: number } | null) => void;
@@ -26,6 +27,7 @@
 		india,
 		manifest,
 		values,
+		persistence,
 		driftTick = 0,
 		enableTooltip = true,
 		onhover,
@@ -98,7 +100,17 @@
 	$effect(() => {
 		if (!cloudCanvas) return;
 		const ctx = setupCanvas(cloudCanvas);
-		drawClouds(ctx, { points, values, bands: sky.bands, atlas, cell, frameW, frameH, driftTick });
+		drawClouds(ctx, {
+			points,
+			values,
+			bands: sky.bands,
+			atlas,
+			cell,
+			frameW,
+			frameH,
+			driftTick,
+			persistence: sky.persistence ? persistence : undefined
+		});
 	});
 
 	// UI layer: hover highlight only.
