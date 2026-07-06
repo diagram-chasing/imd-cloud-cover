@@ -1,0 +1,7476 @@
+{
+  "version": 1,
+  "count": 1245,
+  "stations": {
+    "A-MALWA": {
+      "name": "A-Malwa",
+      "state": "Madhya Pradesh",
+      "lat": 23.8,
+      "lon": 76.05
+    },
+    "AAA": {
+      "name": "Aaa",
+      "state": "Maharashtra",
+      "lat": 19.08,
+      "lon": 74.8
+    },
+    "ABG": {
+      "name": "Abg",
+      "state": null,
+      "lat": 18.63,
+      "lon": 72.87
+    },
+    "ABP": {
+      "name": "Abp",
+      "state": "Chhattisgarh",
+      "lat": 23.17,
+      "lon": 83.25
+    },
+    "ADILABAD": {
+      "name": "Adilabad",
+      "state": "Andhra Pradesh",
+      "lat": 19.55,
+      "lon": 78.57
+    },
+    "AGA": {
+      "name": "Aga",
+      "state": null,
+      "lat": 10.82,
+      "lon": 72.17
+    },
+    "AGB": {
+      "name": "Agb",
+      "state": "Karnataka",
+      "lat": 13.5,
+      "lon": 75.08
+    },
+    "AGD": {
+      "name": "Agd",
+      "state": "Maharashtra",
+      "lat": 19.85,
+      "lon": 75.4
+    },
+    "AGR": {
+      "name": "Agr",
+      "state": "Uttar Pradesh",
+      "lat": 27.17,
+      "lon": 78.03
+    },
+    "AGRA": {
+      "name": "Agra",
+      "state": "Uttar Pradesh",
+      "lat": 27.08,
+      "lon": 78.04
+    },
+    "AGT": {
+      "name": "Agt",
+      "state": "Tripura",
+      "lat": 23.88,
+      "lon": 91.25
+    },
+    "AHM": {
+      "name": "Ahm",
+      "state": "Gujarat",
+      "lat": 23.07,
+      "lon": 72.63
+    },
+    "AHMEDABAD": {
+      "name": "Ahmedabad",
+      "state": "Gujarat",
+      "lat": 22.9,
+      "lon": 72.32
+    },
+    "AHMEDNAGAR": {
+      "name": "Ahmednagar",
+      "state": "Maharashtra",
+      "lat": 19.16,
+      "lon": 74.6
+    },
+    "AIZWAL": {
+      "name": "Aizwal",
+      "state": "Mizoram",
+      "lat": 23.84,
+      "lon": 92.92
+    },
+    "AJM": {
+      "name": "Ajm",
+      "state": "Rajasthan",
+      "lat": 26.45,
+      "lon": 74.62
+    },
+    "AJMER": {
+      "name": "Ajmer",
+      "state": "Rajasthan",
+      "lat": 26.31,
+      "lon": 74.64
+    },
+    "AKL": {
+      "name": "Akl",
+      "state": "Maharashtra",
+      "lat": 20.7,
+      "lon": 77.07
+    },
+    "AKOLA": {
+      "name": "Akola",
+      "state": "Maharashtra",
+      "lat": 20.76,
+      "lon": 77.15
+    },
+    "ALA": {
+      "name": "Ala",
+      "state": null,
+      "lat": 9.55,
+      "lon": 76.42
+    },
+    "ALAPPUZHA": {
+      "name": "Alappuzha",
+      "state": "Kerala",
+      "lat": 9.49,
+      "lon": 76.49
+    },
+    "ALB": {
+      "name": "Prayagraj",
+      "state": "Uttar Pradesh",
+      "lat": 25.45,
+      "lon": 81.73
+    },
+    "ALD": {
+      "name": "Ald",
+      "state": "Andhra Pradesh",
+      "lat": 19.65,
+      "lon": 78.53
+    },
+    "ALG": {
+      "name": "Alg",
+      "state": "Uttar Pradesh",
+      "lat": 27.88,
+      "lon": 78.07
+    },
+    "ALIGARH": {
+      "name": "Aligarh",
+      "state": "Uttar Pradesh",
+      "lat": 27.88,
+      "lon": 78.05
+    },
+    "ALIRAJPUR": {
+      "name": "Alirajpur",
+      "state": "Madhya Pradesh",
+      "lat": 22.28,
+      "lon": 74.39
+    },
+    "ALJ": {
+      "name": "Alj",
+      "state": "Madhya Pradesh",
+      "lat": 22.28,
+      "lon": 74.4
+    },
+    "ALMORA": {
+      "name": "Almora",
+      "state": "Uttaranchal",
+      "lat": 29.7,
+      "lon": 79.56
+    },
+    "ALN": {
+      "name": "Aln",
+      "state": "Arunachal Pradesh",
+      "lat": 28.16,
+      "lon": 94.8
+    },
+    "ALP": {
+      "name": "Alp",
+      "state": "West Bengal",
+      "lat": 22.53,
+      "lon": 88.33
+    },
+    "ALW": {
+      "name": "Alw",
+      "state": "Rajasthan",
+      "lat": 27.5,
+      "lon": 76.58
+    },
+    "ALWAR": {
+      "name": "Alwar",
+      "state": "Rajasthan",
+      "lat": 27.64,
+      "lon": 76.67
+    },
+    "AMB": {
+      "name": "Amb",
+      "state": "Haryana",
+      "lat": 30.38,
+      "lon": 76.77
+    },
+    "AMBALA": {
+      "name": "Ambala",
+      "state": "Haryana",
+      "lat": 30.33,
+      "lon": 76.88
+    },
+    "AMBEDKAR": {
+      "name": "Ambedkar",
+      "state": "Uttar Pradesh",
+      "lat": 26.43,
+      "lon": 82.7
+    },
+    "AMETHI": {
+      "name": "Amethi",
+      "state": "Uttar Pradesh",
+      "lat": 26.35,
+      "lon": 81.63
+    },
+    "AML": {
+      "name": "Aml",
+      "state": "Gujarat",
+      "lat": 21.6,
+      "lon": 71.22
+    },
+    "AMN": {
+      "name": "Amn",
+      "state": null,
+      "lat": 11.12,
+      "lon": 72.73
+    },
+    "AMR": {
+      "name": "Amr",
+      "state": "Punjab",
+      "lat": 31.63,
+      "lon": 74.87
+    },
+    "AMRAVATI": {
+      "name": "Amravati",
+      "state": "Maharashtra",
+      "lat": 21.16,
+      "lon": 77.54
+    },
+    "AMRELI": {
+      "name": "Amreli",
+      "state": "Gujarat",
+      "lat": 21.37,
+      "lon": 71.2
+    },
+    "AMRITSAR": {
+      "name": "Amritsar",
+      "state": "Punjab",
+      "lat": 31.76,
+      "lon": 74.94
+    },
+    "AMT": {
+      "name": "Amt",
+      "state": "Maharashtra",
+      "lat": 20.93,
+      "lon": 77.78
+    },
+    "ANAND": {
+      "name": "Anand",
+      "state": "Gujarat",
+      "lat": 22.44,
+      "lon": 72.78
+    },
+    "ANANTNAG": {
+      "name": "Anantnag",
+      "state": "Jammu and Kashmir",
+      "lat": 33.67,
+      "lon": 75.17
+    },
+    "ANANTPUR": {
+      "name": "Anantpur",
+      "state": "Andhra Pradesh",
+      "lat": 14.45,
+      "lon": 77.62
+    },
+    "ANATNAG": {
+      "name": "Anatnag",
+      "state": "Jammu and Kashmir",
+      "lat": 33.59,
+      "lon": 75.38
+    },
+    "ANDAMAN": {
+      "name": "Andaman",
+      "state": null,
+      "lat": 11.41,
+      "lon": 93.04
+    },
+    "ANG": {
+      "name": "Ang",
+      "state": "Orissa",
+      "lat": 20.83,
+      "lon": 85.1
+    },
+    "ANGUL": {
+      "name": "Angul",
+      "state": "Orissa",
+      "lat": 20.9,
+      "lon": 84.83
+    },
+    "ANJAW": {
+      "name": "Anjaw",
+      "state": "Arunachal Pradesh",
+      "lat": 28.04,
+      "lon": 96.85
+    },
+    "ANP": {
+      "name": "Anp",
+      "state": "Rajasthan",
+      "lat": 29.17,
+      "lon": 73.17
+    },
+    "ANT": {
+      "name": "Ant",
+      "state": "Andhra Pradesh",
+      "lat": 14.68,
+      "lon": 77.62
+    },
+    "ANUPPUR": {
+      "name": "Anuppur",
+      "state": "Madhya Pradesh",
+      "lat": 23.03,
+      "lon": 81.66
+    },
+    "ARA": {
+      "name": "Ara",
+      "state": "Bihar",
+      "lat": 25.57,
+      "lon": 84.67
+    },
+    "ARARIA": {
+      "name": "Araria",
+      "state": "Bihar",
+      "lat": 26.26,
+      "lon": 87.37
+    },
+    "ARAVALLI": {
+      "name": "Aravalli",
+      "state": "Gujarat",
+      "lat": 23.49,
+      "lon": 73.42
+    },
+    "ARIYALUR": {
+      "name": "Ariyalur",
+      "state": "Tamil Nadu",
+      "lat": 11.15,
+      "lon": 79.23
+    },
+    "ARP": {
+      "name": "Arp",
+      "state": "Tamil Nadu",
+      "lat": 10.33,
+      "lon": 79.38
+    },
+    "ART": {
+      "name": "Art",
+      "state": null,
+      "lat": 10.8,
+      "lon": 73.68
+    },
+    "ARV": {
+      "name": "Arv",
+      "state": "Andhra Pradesh",
+      "lat": 13.53,
+      "lon": 78.5
+    },
+    "ARWAL": {
+      "name": "Arwal",
+      "state": "Bihar",
+      "lat": 25.18,
+      "lon": 84.38
+    },
+    "ASHOKNAGAR": {
+      "name": "Ashoknagar",
+      "state": "Madhya Pradesh",
+      "lat": 24.62,
+      "lon": 77.88
+    },
+    "AUGUSTMUNI": {
+      "name": "Augustmuni",
+      "state": "Uttaranchal",
+      "lat": 30.39,
+      "lon": 79.02
+    },
+    "AURAIYA": {
+      "name": "Auraiya",
+      "state": "Uttar Pradesh",
+      "lat": 26.66,
+      "lon": 79.5
+    },
+    "AURANGABAD": {
+      "name": "Aurangabad",
+      "state": "Bihar",
+      "lat": 24.81,
+      "lon": 84.38
+    },
+    "AVADI": {
+      "name": "Avadi",
+      "state": "Tamil Nadu",
+      "lat": 13.12,
+      "lon": 80.08
+    },
+    "AYL": {
+      "name": "Ayl",
+      "state": "Tamil Nadu",
+      "lat": 11.23,
+      "lon": 79.29
+    },
+    "AZAMGARH": {
+      "name": "Azamgarh",
+      "state": "Uttar Pradesh",
+      "lat": 26.05,
+      "lon": 83.09
+    },
+    "AZG": {
+      "name": "Azg",
+      "state": "Uttar Pradesh",
+      "lat": 26.05,
+      "lon": 83.22
+    },
+    "AZL": {
+      "name": "Azl",
+      "state": "Mizoram",
+      "lat": 23.73,
+      "lon": 92.71
+    },
+    "Airport_IMD": {
+      "name": "Airport_IMD",
+      "state": "Gujarat",
+      "lat": 23.0768,
+      "lon": 72.6279
+    },
+    "BABATPUR": {
+      "name": "Babatpur",
+      "state": "Uttar Pradesh",
+      "lat": 25.26,
+      "lon": 82.51
+    },
+    "BADAYUN": {
+      "name": "Badayun",
+      "state": "Uttar Pradesh",
+      "lat": 28.06,
+      "lon": 78.89
+    },
+    "BADGAM": {
+      "name": "Badgam",
+      "state": "Jammu and Kashmir",
+      "lat": 33.86,
+      "lon": 74.66
+    },
+    "BADRADRI": {
+      "name": "Badradri",
+      "state": "Andhra Pradesh",
+      "lat": 17.72,
+      "lon": 80.76
+    },
+    "BADRINATH": {
+      "name": "Badrinath",
+      "state": "Uttaranchal",
+      "lat": 30.74,
+      "lon": 79.49
+    },
+    "BADWANI": {
+      "name": "Badwani",
+      "state": "Madhya Pradesh",
+      "lat": 21.75,
+      "lon": 75.03
+    },
+    "BAG": {
+      "name": "Bag",
+      "state": "West Bengal",
+      "lat": 22.98,
+      "lon": 88.37
+    },
+    "BAGALKOT": {
+      "name": "Bagalkot",
+      "state": "Karnataka",
+      "lat": 16.17,
+      "lon": 75.65
+    },
+    "BAGALKOTE": {
+      "name": "Bagalkote",
+      "state": "Karnataka",
+      "lat": 16.29,
+      "lon": 75.66
+    },
+    "BAGESHWAR": {
+      "name": "Bageshwar",
+      "state": "Uttaranchal",
+      "lat": 29.9,
+      "lon": 79.82
+    },
+    "BAGHPAT": {
+      "name": "Baghpat",
+      "state": "Uttar Pradesh",
+      "lat": 29.04,
+      "lon": 77.32
+    },
+    "BAHRAICH": {
+      "name": "Bahraich",
+      "state": "Uttar Pradesh",
+      "lat": 27.73,
+      "lon": 81.4
+    },
+    "BAKSHA": {
+      "name": "Baksha",
+      "state": "Assam",
+      "lat": 26.65,
+      "lon": 91.31
+    },
+    "BALAGHAT": {
+      "name": "Balaghat",
+      "state": "Madhya Pradesh",
+      "lat": 21.86,
+      "lon": 80.28
+    },
+    "BALAGIR": {
+      "name": "Balagir",
+      "state": "Orissa",
+      "lat": 20.61,
+      "lon": 83.18
+    },
+    "BALASORE": {
+      "name": "Balasore",
+      "state": "Orissa",
+      "lat": 21.28,
+      "lon": 86.68
+    },
+    "BALLIA": {
+      "name": "Ballia",
+      "state": "Uttar Pradesh",
+      "lat": 25.88,
+      "lon": 84.16
+    },
+    "BALOD": {
+      "name": "Balod",
+      "state": "Chhattisgarh",
+      "lat": 20.7,
+      "lon": 81.18
+    },
+    "BALODABAZAR": {
+      "name": "Balodabazar",
+      "state": "Chhattisgarh",
+      "lat": 21.54,
+      "lon": 82.32
+    },
+    "BALRAMPUR": {
+      "name": "Balrampur",
+      "state": "Chhattisgarh",
+      "lat": 23.85,
+      "lon": 83.35
+    },
+    "BALTAL": {
+      "name": "Baltal",
+      "state": "Jammu and Kashmir",
+      "lat": 34.26,
+      "lon": 75.42
+    },
+    "BANASKANTHA": {
+      "name": "Banaskantha",
+      "state": "Gujarat",
+      "lat": 24.27,
+      "lon": 72.15
+    },
+    "BANDA": {
+      "name": "Banda",
+      "state": "Uttar Pradesh",
+      "lat": 25.44,
+      "lon": 80.57
+    },
+    "BANGALORE-RURAL": {
+      "name": "Bangalore-Rural",
+      "state": "Karnataka",
+      "lat": 13.27,
+      "lon": 77.57
+    },
+    "BANKA": {
+      "name": "Banka",
+      "state": "Bihar",
+      "lat": 24.83,
+      "lon": 86.83
+    },
+    "BANSWARA": {
+      "name": "Banswara",
+      "state": "Rajasthan",
+      "lat": 23.49,
+      "lon": 74.36
+    },
+    "BARABANKI": {
+      "name": "Barabanki",
+      "state": "Uttar Pradesh",
+      "lat": 26.94,
+      "lon": 81.33
+    },
+    "BARAGARH": {
+      "name": "Baragarh",
+      "state": "Orissa",
+      "lat": 21.24,
+      "lon": 83.55
+    },
+    "BARAMULLAH": {
+      "name": "Baramullah",
+      "state": "Jammu and Kashmir",
+      "lat": 34.1,
+      "lon": 74.42
+    },
+    "BARAN": {
+      "name": "Baran",
+      "state": "Rajasthan",
+      "lat": 24.92,
+      "lon": 76.82
+    },
+    "BAREILLY": {
+      "name": "Bareilly",
+      "state": "Uttar Pradesh",
+      "lat": 28.45,
+      "lon": 79.38
+    },
+    "BARKOT": {
+      "name": "Barkot",
+      "state": "Uttaranchal",
+      "lat": 30.81,
+      "lon": 78.21
+    },
+    "BARMER": {
+      "name": "Barmer",
+      "state": "Rajasthan",
+      "lat": 25.58,
+      "lon": 71.47
+    },
+    "BARNALA": {
+      "name": "Barnala",
+      "state": "Punjab",
+      "lat": 30.39,
+      "lon": 75.5
+    },
+    "BARODA": {
+      "name": "Baroda",
+      "state": "Gujarat",
+      "lat": 22.31,
+      "lon": 73.27
+    },
+    "BARPETA": {
+      "name": "Barpeta",
+      "state": "Assam",
+      "lat": 26.43,
+      "lon": 91.09
+    },
+    "BASTER": {
+      "name": "Baster",
+      "state": "Chhattisgarh",
+      "lat": 19.14,
+      "lon": 81.77
+    },
+    "BASTI": {
+      "name": "Basti",
+      "state": "Uttar Pradesh",
+      "lat": 26.76,
+      "lon": 82.6
+    },
+    "BAUDA": {
+      "name": "Bauda",
+      "state": "Orissa",
+      "lat": 20.75,
+      "lon": 84.18
+    },
+    "BBS": {
+      "name": "Bbs",
+      "state": "Orissa",
+      "lat": 20.25,
+      "lon": 85.83
+    },
+    "BDA": {
+      "name": "Bda",
+      "state": "Uttar Pradesh",
+      "lat": 25.47,
+      "lon": 80.37
+    },
+    "BDG": {
+      "name": "Bdg",
+      "state": "West Bengal",
+      "lat": 26.63,
+      "lon": 88.32
+    },
+    "BDI": {
+      "name": "Bdi",
+      "state": "Rajasthan",
+      "lat": 25.45,
+      "lon": 75.63
+    },
+    "BDN": {
+      "name": "Bdn",
+      "state": "Maharashtra",
+      "lat": 20.53,
+      "lon": 76.23
+    },
+    "BDS": {
+      "name": "Bds",
+      "state": "Uttar Pradesh",
+      "lat": 28.4,
+      "lon": 77.87
+    },
+    "BDU": {
+      "name": "Bdu",
+      "state": "Uttar Pradesh",
+      "lat": 28.05,
+      "lon": 79.12
+    },
+    "BEGUSARAI": {
+      "name": "Begusarai",
+      "state": "Bihar",
+      "lat": 25.51,
+      "lon": 86.13
+    },
+    "BELGAUM": {
+      "name": "Belgaum",
+      "state": "Karnataka",
+      "lat": 16.16,
+      "lon": 74.77
+    },
+    "BELLARY": {
+      "name": "Bellary",
+      "state": "Karnataka",
+      "lat": 15.19,
+      "lon": 76.42
+    },
+    "BEMATARA": {
+      "name": "Bematara",
+      "state": "Chhattisgarh",
+      "lat": 21.65,
+      "lon": 81.45
+    },
+    "BETUL": {
+      "name": "Betul",
+      "state": "Madhya Pradesh",
+      "lat": 21.88,
+      "lon": 77.78
+    },
+    "BGK": {
+      "name": "Bgk",
+      "state": "Karnataka",
+      "lat": 16.7,
+      "lon": 75.25
+    },
+    "BGP": {
+      "name": "Bgp",
+      "state": "Bihar",
+      "lat": 25.23,
+      "lon": 86.95
+    },
+    "BGT": {
+      "name": "Bgt",
+      "state": "West Bengal",
+      "lat": 25.22,
+      "lon": 88.78
+    },
+    "BHABUA": {
+      "name": "Bhabua",
+      "state": "Bihar",
+      "lat": 24.98,
+      "lon": 83.61
+    },
+    "BHADRAK": {
+      "name": "Bhadrak",
+      "state": "Orissa",
+      "lat": 20.99,
+      "lon": 86.62
+    },
+    "BHAGALPUR": {
+      "name": "Bhagalpur",
+      "state": "Bihar",
+      "lat": 25.28,
+      "lon": 87.1
+    },
+    "BHANDARA": {
+      "name": "Bhandara",
+      "state": "Maharashtra",
+      "lat": 21.12,
+      "lon": 79.77
+    },
+    "BHARATPUR": {
+      "name": "Bharatpur",
+      "state": "Rajasthan",
+      "lat": 27.06,
+      "lon": 77.32
+    },
+    "BHATINDA": {
+      "name": "Bhatinda",
+      "state": "Punjab",
+      "lat": 30.18,
+      "lon": 75.0
+    },
+    "BHATWARI": {
+      "name": "Bhatwari",
+      "state": "Uttaranchal",
+      "lat": 30.81,
+      "lon": 78.61
+    },
+    "BHAVNAGAR": {
+      "name": "Bhavnagar",
+      "state": "Gujarat",
+      "lat": 21.67,
+      "lon": 71.95
+    },
+    "BHILWARA": {
+      "name": "Bhilwara",
+      "state": "Rajasthan",
+      "lat": 25.49,
+      "lon": 74.74
+    },
+    "BHIND": {
+      "name": "Bhind",
+      "state": "Madhya Pradesh",
+      "lat": 26.35,
+      "lon": 78.68
+    },
+    "BHIWANI": {
+      "name": "Bhiwani",
+      "state": "Haryana",
+      "lat": 28.73,
+      "lon": 75.98
+    },
+    "BHJ": {
+      "name": "Bhj",
+      "state": "Gujarat",
+      "lat": 23.25,
+      "lon": 69.67
+    },
+    "BHOJPUR": {
+      "name": "Bhojpur",
+      "state": "Bihar",
+      "lat": 25.45,
+      "lon": 84.57
+    },
+    "BHOPAL": {
+      "name": "Bhopal",
+      "state": "Madhya Pradesh",
+      "lat": 23.49,
+      "lon": 77.41
+    },
+    "BHP": {
+      "name": "Bhp",
+      "state": "Madhya Pradesh",
+      "lat": 23.28,
+      "lon": 77.35
+    },
+    "BHU": {
+      "name": "Bhu",
+      "state": "Gujarat",
+      "lat": 21.75,
+      "lon": 72.2
+    },
+    "BHUNTAR": {
+      "name": "Bhuntar",
+      "state": "Himachal Pradesh",
+      "lat": 31.87,
+      "lon": 77.15
+    },
+    "BID": {
+      "name": "Bid",
+      "state": "Maharashtra",
+      "lat": 18.94,
+      "lon": 75.77
+    },
+    "BIDAR": {
+      "name": "Bidar",
+      "state": "Karnataka",
+      "lat": 18.03,
+      "lon": 77.18
+    },
+    "BIJAPUR": {
+      "name": "Bijapur",
+      "state": "Karnataka",
+      "lat": 16.81,
+      "lon": 75.9
+    },
+    "BIJNORE": {
+      "name": "Bijnore",
+      "state": "Uttar Pradesh",
+      "lat": 29.41,
+      "lon": 78.46
+    },
+    "BIKANER": {
+      "name": "Bikaner",
+      "state": "Rajasthan",
+      "lat": 28.12,
+      "lon": 73.13
+    },
+    "BIL": {
+      "name": "Bil",
+      "state": "Himachal Pradesh",
+      "lat": 31.25,
+      "lon": 76.67
+    },
+    "BILASPUR": {
+      "name": "Bilaspur",
+      "state": "Chhattisgarh",
+      "lat": 22.62,
+      "lon": 82.0
+    },
+    "BILASPUR-HP": {
+      "name": "Bilaspur-Hp",
+      "state": "Himachal Pradesh",
+      "lat": 31.35,
+      "lon": 76.66
+    },
+    "BIR": {
+      "name": "Bir",
+      "state": "Maharashtra",
+      "lat": 19.0,
+      "lon": 75.72
+    },
+    "BIRBHUM": {
+      "name": "Birbhum",
+      "state": "West Bengal",
+      "lat": 23.85,
+      "lon": 87.56
+    },
+    "BISHNUPUR": {
+      "name": "Bishnupur",
+      "state": "Manipur",
+      "lat": 24.51,
+      "lon": 93.8
+    },
+    "BISWANATH": {
+      "name": "Biswanath",
+      "state": "Assam",
+      "lat": 26.89,
+      "lon": 93.42
+    },
+    "BITRA": {
+      "name": "Bitra",
+      "state": null,
+      "lat": 11.55,
+      "lon": 72.15
+    },
+    "BJC_CHA": {
+      "name": "Bijapur",
+      "state": "Chhattisgarh",
+      "lat": 18.77,
+      "lon": 80.74
+    },
+    "BJP": {
+      "name": "Bjp",
+      "state": "Karnataka",
+      "lat": 16.82,
+      "lon": 75.72
+    },
+    "BKN": {
+      "name": "Bkn",
+      "state": "Rajasthan",
+      "lat": 28.0,
+      "lon": 73.3
+    },
+    "BLA": {
+      "name": "Bla",
+      "state": "Uttar Pradesh",
+      "lat": 25.75,
+      "lon": 84.17
+    },
+    "BLD": {
+      "name": "Bld",
+      "state": "Chhattisgarh",
+      "lat": 18.71,
+      "lon": 81.23
+    },
+    "BLG": {
+      "name": "Blg",
+      "state": "Karnataka",
+      "lat": 15.85,
+      "lon": 74.62
+    },
+    "BLN": {
+      "name": "Bln",
+      "state": "Karnataka",
+      "lat": 13.37,
+      "lon": 75.45
+    },
+    "BLR": {
+      "name": "Blr",
+      "state": "Orissa",
+      "lat": 20.7,
+      "lon": 83.5
+    },
+    "BLS": {
+      "name": "Bls",
+      "state": "Orissa",
+      "lat": 21.52,
+      "lon": 86.93
+    },
+    "BLW": {
+      "name": "Blw",
+      "state": "Rajasthan",
+      "lat": 25.35,
+      "lon": 74.63
+    },
+    "BLY": {
+      "name": "Bly",
+      "state": "Karnataka",
+      "lat": 15.15,
+      "lon": 76.85
+    },
+    "BMB": {
+      "name": "Bmb",
+      "state": "Maharashtra",
+      "lat": 19.12,
+      "lon": 72.83
+    },
+    "BMD": {
+      "name": "Bmd",
+      "state": "Arunachal Pradesh",
+      "lat": 27.42,
+      "lon": 92.85
+    },
+    "BMP": {
+      "name": "Bmp",
+      "state": "Maharashtra",
+      "lat": 20.6,
+      "lon": 79.85
+    },
+    "BMT": {
+      "name": "Bmt",
+      "state": "Maharashtra",
+      "lat": 18.15,
+      "lon": 74.58
+    },
+    "BND": {
+      "name": "Bnd",
+      "state": "Madhya Pradesh",
+      "lat": 26.57,
+      "lon": 78.8
+    },
+    "BNG": {
+      "name": "Bng",
+      "state": "Karnataka",
+      "lat": 12.97,
+      "lon": 77.58
+    },
+    "BNG-URBAN": {
+      "name": "Bng-Urban",
+      "state": "Karnataka",
+      "lat": 12.94,
+      "lon": 77.78
+    },
+    "BNK": {
+      "name": "Bnk",
+      "state": "West Bengal",
+      "lat": 23.25,
+      "lon": 87.05
+    },
+    "BNL": {
+      "name": "Bnl",
+      "state": "Jammu and Kashmir",
+      "lat": 33.43,
+      "lon": 75.19
+    },
+    "BNT": {
+      "name": "Bnt",
+      "state": "Himachal Pradesh",
+      "lat": 31.83,
+      "lon": 77.17
+    },
+    "BOKARO": {
+      "name": "Bokaro",
+      "state": "Jharkhand",
+      "lat": 23.69,
+      "lon": 86.01
+    },
+    "BONGAIGAON": {
+      "name": "Bongaigaon",
+      "state": "Assam",
+      "lat": 26.35,
+      "lon": 90.62
+    },
+    "BOTAD": {
+      "name": "Botad",
+      "state": "Gujarat",
+      "lat": 22.15,
+      "lon": 71.75
+    },
+    "BPD": {
+      "name": "Bpd",
+      "state": "Orissa",
+      "lat": 21.93,
+      "lon": 86.77
+    },
+    "BPT": {
+      "name": "Bpt",
+      "state": "Andhra Pradesh",
+      "lat": 15.9,
+      "lon": 80.47
+    },
+    "BRA": {
+      "name": "Bra",
+      "state": "Maharashtra",
+      "lat": 18.45,
+      "lon": 73.4
+    },
+    "BRC": {
+      "name": "Brc",
+      "state": "Uttar Pradesh",
+      "lat": 27.57,
+      "lon": 81.6
+    },
+    "BRD": {
+      "name": "Brd",
+      "state": "Gujarat",
+      "lat": 22.3,
+      "lon": 73.25
+    },
+    "BRH": {
+      "name": "Brh",
+      "state": "Gujarat",
+      "lat": 21.73,
+      "lon": 73.0
+    },
+    "BRL": {
+      "name": "Brl",
+      "state": "Uttar Pradesh",
+      "lat": 28.37,
+      "lon": 79.4
+    },
+    "BRM": {
+      "name": "Brm",
+      "state": "Rajasthan",
+      "lat": 25.75,
+      "lon": 71.38
+    },
+    "BROACH": {
+      "name": "Broach",
+      "state": "Gujarat",
+      "lat": 21.73,
+      "lon": 73.0
+    },
+    "BRP": {
+      "name": "Brp",
+      "state": "West Bengal",
+      "lat": 24.13,
+      "lon": 88.27
+    },
+    "BRT": {
+      "name": "Brt",
+      "state": "Rajasthan",
+      "lat": 27.22,
+      "lon": 77.5
+    },
+    "BST": {
+      "name": "Bst",
+      "state": "Uttar Pradesh",
+      "lat": 26.8,
+      "lon": 82.73
+    },
+    "BSW": {
+      "name": "Bsw",
+      "state": "Rajasthan",
+      "lat": 23.55,
+      "lon": 74.45
+    },
+    "BTD": {
+      "name": "Btd",
+      "state": "Punjab",
+      "lat": 30.21,
+      "lon": 74.94
+    },
+    "BTL": {
+      "name": "Btl",
+      "state": "Madhya Pradesh",
+      "lat": 21.87,
+      "lon": 77.93
+    },
+    "BTT": {
+      "name": "Btt",
+      "state": "Jammu and Kashmir",
+      "lat": 33.07,
+      "lon": 75.19
+    },
+    "BUL": {
+      "name": "Bul",
+      "state": "Gujarat",
+      "lat": 20.62,
+      "lon": 72.93
+    },
+    "BULANDSHAHR": {
+      "name": "Bulandshahr",
+      "state": "Uttar Pradesh",
+      "lat": 28.39,
+      "lon": 78.07
+    },
+    "BULDHANA": {
+      "name": "Buldhana",
+      "state": "Maharashtra",
+      "lat": 20.57,
+      "lon": 76.38
+    },
+    "BUNDI": {
+      "name": "Bundi",
+      "state": "Rajasthan",
+      "lat": 25.44,
+      "lon": 75.79
+    },
+    "BURDWAN": {
+      "name": "Burdwan",
+      "state": "West Bengal",
+      "lat": 23.4,
+      "lon": 87.75
+    },
+    "BURHANPUR": {
+      "name": "Burhanpur",
+      "state": "Madhya Pradesh",
+      "lat": 21.33,
+      "lon": 76.37
+    },
+    "BUXAR": {
+      "name": "Buxar",
+      "state": "Bihar",
+      "lat": 25.51,
+      "lon": 84.08
+    },
+    "BWN": {
+      "name": "Bwn",
+      "state": "West Bengal",
+      "lat": 23.23,
+      "lon": 87.85
+    },
+    "BWP": {
+      "name": "Bwp",
+      "state": "Orissa",
+      "lat": 19.92,
+      "lon": 83.18
+    },
+    "Bihta_bihar": {
+      "name": "Bihta_bihar",
+      "state": "Bihar",
+      "lat": 25.557,
+      "lon": 84.8917
+    },
+    "CACHER": {
+      "name": "Cacher",
+      "state": "Assam",
+      "lat": 24.76,
+      "lon": 92.86
+    },
+    "CAVE": {
+      "name": "Cave",
+      "state": "Jammu and Kashmir",
+      "lat": 34.22,
+      "lon": 75.51
+    },
+    "CBL": {
+      "name": "Cbl",
+      "state": "Orissa",
+      "lat": 20.78,
+      "lon": 86.73
+    },
+    "CBS": {
+      "name": "Cbs",
+      "state": "Jharkhand",
+      "lat": 22.55,
+      "lon": 85.82
+    },
+    "CDL": {
+      "name": "Cdl",
+      "state": "Tamil Nadu",
+      "lat": 11.77,
+      "lon": 79.77
+    },
+    "CDP": {
+      "name": "Cdp",
+      "state": "Andhra Pradesh",
+      "lat": 14.48,
+      "lon": 78.83
+    },
+    "CENTRAL-DELHI": {
+      "name": "Central-Delhi",
+      "state": "Delhi",
+      "lat": 28.67,
+      "lon": 77.22
+    },
+    "CENTRAL-SIKKIM": {
+      "name": "Central-Sikkim",
+      "state": "Sikkim",
+      "lat": 27.6,
+      "lon": 88.51
+    },
+    "CHA": {
+      "name": "Cha",
+      "state": "Bihar",
+      "lat": 25.78,
+      "lon": 84.73
+    },
+    "CHAMARAJNAGAR": {
+      "name": "Chamarajnagar",
+      "state": "Karnataka",
+      "lat": 11.94,
+      "lon": 77.09
+    },
+    "CHAMBA": {
+      "name": "Chamba",
+      "state": "Himachal Pradesh",
+      "lat": 32.69,
+      "lon": 76.34
+    },
+    "CHAMPAWAT": {
+      "name": "Champawat",
+      "state": "Uttaranchal",
+      "lat": 29.29,
+      "lon": 80.06
+    },
+    "CHAMPHAI": {
+      "name": "Champhai",
+      "state": "Mizoram",
+      "lat": 23.54,
+      "lon": 93.23
+    },
+    "CHANDAULI": {
+      "name": "Chandauli",
+      "state": "Bihar",
+      "lat": 25.22,
+      "lon": 83.49
+    },
+    "CHANDEL": {
+      "name": "Chandel",
+      "state": "Manipur",
+      "lat": 24.1,
+      "lon": 94.07
+    },
+    "CHANDIGARH": {
+      "name": "Chandigarh",
+      "state": "Chandigarh",
+      "lat": 30.73,
+      "lon": 76.77
+    },
+    "CHANDRAPUR": {
+      "name": "Chandrapur",
+      "state": "Maharashtra",
+      "lat": 20.09,
+      "lon": 79.4
+    },
+    "CHANGLANG": {
+      "name": "Changlang",
+      "state": "Arunachal Pradesh",
+      "lat": 27.47,
+      "lon": 96.4
+    },
+    "CHARAIDEO": {
+      "name": "Charaideo",
+      "state": "Assam",
+      "lat": 27.07,
+      "lon": 95.07
+    },
+    "CHARKHI-DADRI": {
+      "name": "Charkhi-Dadri",
+      "state": "Haryana",
+      "lat": 28.6,
+      "lon": 76.15
+    },
+    "CHATRAI": {
+      "name": "Chatrai",
+      "state": "Jharkhand",
+      "lat": 24.1,
+      "lon": 84.9
+    },
+    "CHB": {
+      "name": "Chb",
+      "state": "West Bengal",
+      "lat": 26.33,
+      "lon": 89.47
+    },
+    "CHD": {
+      "name": "Chd",
+      "state": "Haryana",
+      "lat": 30.73,
+      "lon": 76.88
+    },
+    "CHEMBARAPAKKAM": {
+      "name": "Chembarapakkam",
+      "state": "Tamil Nadu",
+      "lat": 13.02,
+      "lon": 80.04
+    },
+    "CHENNAI": {
+      "name": "Chennai",
+      "state": "Tamil Nadu",
+      "lat": 13.07,
+      "lon": 80.25
+    },
+    "CHETLAT": {
+      "name": "Chetlat",
+      "state": null,
+      "lat": 11.69,
+      "lon": 72.7
+    },
+    "CHHATARPUR": {
+      "name": "Chhatarpur",
+      "state": "Madhya Pradesh",
+      "lat": 24.76,
+      "lon": 79.71
+    },
+    "CHHINDWARA": {
+      "name": "Chhindwara",
+      "state": "Madhya Pradesh",
+      "lat": 22.14,
+      "lon": 78.83
+    },
+    "CHIKBALLAPUR": {
+      "name": "Chikballapur",
+      "state": "Karnataka",
+      "lat": 13.59,
+      "lon": 77.79
+    },
+    "CHIKMAGALUR": {
+      "name": "Chikmagalur",
+      "state": "Karnataka",
+      "lat": 13.4,
+      "lon": 75.72
+    },
+    "CHILAS": {
+      "name": "Chilas",
+      "state": null,
+      "lat": 35.3,
+      "lon": 74.25
+    },
+    "CHINYALISOUR": {
+      "name": "Chinyalisour",
+      "state": "Uttaranchal",
+      "lat": 30.57,
+      "lon": 78.32
+    },
+    "CHIRANG": {
+      "name": "Chirang",
+      "state": "Assam",
+      "lat": 26.65,
+      "lon": 90.65
+    },
+    "CHITRADURGA": {
+      "name": "Chitradurga",
+      "state": "Karnataka",
+      "lat": 14.31,
+      "lon": 76.53
+    },
+    "CHITRAKUT": {
+      "name": "Chitrakut",
+      "state": "Uttar Pradesh",
+      "lat": 25.22,
+      "lon": 81.12
+    },
+    "CHITTAURGARH": {
+      "name": "Chittaurgarh",
+      "state": "Rajasthan",
+      "lat": 24.92,
+      "lon": 74.76
+    },
+    "CHITTOOR": {
+      "name": "Chittoor",
+      "state": "Andhra Pradesh",
+      "lat": 13.31,
+      "lon": 79.06
+    },
+    "CHM": {
+      "name": "Chm",
+      "state": "Uttaranchal",
+      "lat": 30.4,
+      "lon": 79.33
+    },
+    "CHN": {
+      "name": "Chn",
+      "state": null,
+      "lat": 9.95,
+      "lon": 76.27
+    },
+    "CHOTA-UDEPUR": {
+      "name": "Chota-Udepur",
+      "state": "Gujarat",
+      "lat": 22.22,
+      "lon": 73.89
+    },
+    "CHP": {
+      "name": "Chp",
+      "state": "Chhattisgarh",
+      "lat": 22.03,
+      "lon": 82.7
+    },
+    "CHT": {
+      "name": "Cht",
+      "state": "Karnataka",
+      "lat": 14.23,
+      "lon": 76.43
+    },
+    "CHURACHANDPUR": {
+      "name": "Churachandpur",
+      "state": "Manipur",
+      "lat": 24.28,
+      "lon": 93.43
+    },
+    "CHURU": {
+      "name": "Churu",
+      "state": "Rajasthan",
+      "lat": 28.4,
+      "lon": 74.76
+    },
+    "CHW": {
+      "name": "Chw",
+      "state": "Madhya Pradesh",
+      "lat": 22.1,
+      "lon": 79.0
+    },
+    "CKG": {
+      "name": "Ckg",
+      "state": "Karnataka",
+      "lat": 13.25,
+      "lon": 75.75
+    },
+    "CLB": {
+      "name": "Clb",
+      "state": null,
+      "lat": 18.9,
+      "lon": 72.82
+    },
+    "CMB": {
+      "name": "Cmb",
+      "state": "Tamil Nadu",
+      "lat": 11.0,
+      "lon": 76.97
+    },
+    "CML": {
+      "name": "Cml",
+      "state": "Rajasthan",
+      "lat": 24.92,
+      "lon": 75.58
+    },
+    "CNB": {
+      "name": "Cnb",
+      "state": "Andaman and Nicobar",
+      "lat": 9.17,
+      "lon": 92.83
+    },
+    "CNG": {
+      "name": "Cng",
+      "state": "West Bengal",
+      "lat": 22.25,
+      "lon": 88.67
+    },
+    "CNN": {
+      "name": "Cnn",
+      "state": null,
+      "lat": 11.83,
+      "lon": 75.33
+    },
+    "CNR": {
+      "name": "Cnr",
+      "state": "Tamil Nadu",
+      "lat": 11.35,
+      "lon": 76.8
+    },
+    "CNT": {
+      "name": "Cnt",
+      "state": "West Bengal",
+      "lat": 21.78,
+      "lon": 87.75
+    },
+    "CNW": {
+      "name": "Cnw",
+      "state": "Jammu and Kashmir",
+      "lat": 34.14,
+      "lon": 74.12
+    },
+    "COIMBATORE": {
+      "name": "Coimbatore",
+      "state": "Tamil Nadu",
+      "lat": 10.95,
+      "lon": 76.98
+    },
+    "CPJ": {
+      "name": "Cpj",
+      "state": "Meghalaya",
+      "lat": 25.25,
+      "lon": 91.73
+    },
+    "CPM": {
+      "name": "Cpm",
+      "state": "Assam",
+      "lat": 26.2,
+      "lon": 92.52
+    },
+    "CPR": {
+      "name": "Cpr",
+      "state": "Maharashtra",
+      "lat": 19.97,
+      "lon": 79.3
+    },
+    "CRU": {
+      "name": "Cru",
+      "state": "Rajasthan",
+      "lat": 28.25,
+      "lon": 74.92
+    },
+    "CTG": {
+      "name": "Ctg",
+      "state": "Rajasthan",
+      "lat": 24.88,
+      "lon": 74.63
+    },
+    "CTK": {
+      "name": "Ctk",
+      "state": "Orissa",
+      "lat": 20.47,
+      "lon": 85.93
+    },
+    "CUDDALORE": {
+      "name": "Cuddalore",
+      "state": "Tamil Nadu",
+      "lat": 11.52,
+      "lon": 79.45
+    },
+    "CUDDEPAH": {
+      "name": "Cuddepah",
+      "state": "Andhra Pradesh",
+      "lat": 14.4,
+      "lon": 78.65
+    },
+    "CUTTACK": {
+      "name": "Cuttack",
+      "state": "Orissa",
+      "lat": 20.5,
+      "lon": 85.84
+    },
+    "Chandkheda": {
+      "name": "Chandkheda",
+      "state": "Gujarat",
+      "lat": 23.108,
+      "lon": 72.5746
+    },
+    "DAKSHAN-DINAJPUR": {
+      "name": "Dakshan-Dinajpur",
+      "state": "West Bengal",
+      "lat": 25.38,
+      "lon": 88.6
+    },
+    "DAKSHINA-KANNAD": {
+      "name": "Dakshina-Kannad",
+      "state": "Karnataka",
+      "lat": 13.07,
+      "lon": 75.17
+    },
+    "DAL": {
+      "name": "Dal",
+      "state": "Himachal Pradesh",
+      "lat": 32.53,
+      "lon": 75.97
+    },
+    "DAMOH": {
+      "name": "Damoh",
+      "state": "Madhya Pradesh",
+      "lat": 23.8,
+      "lon": 79.51
+    },
+    "DANGS": {
+      "name": "Dangs",
+      "state": "Gujarat",
+      "lat": 20.82,
+      "lon": 73.71
+    },
+    "DANTEWADA": {
+      "name": "Dantewada",
+      "state": "Chhattisgarh",
+      "lat": 18.77,
+      "lon": 81.44
+    },
+    "DARBHANGA": {
+      "name": "Darbhanga",
+      "state": "Bihar",
+      "lat": 26.16,
+      "lon": 86.04
+    },
+    "DARJEELING": {
+      "name": "Darjeeling",
+      "state": "West Bengal",
+      "lat": 26.85,
+      "lon": 88.25
+    },
+    "DARRANG": {
+      "name": "Darrang",
+      "state": "Assam",
+      "lat": 26.44,
+      "lon": 92.07
+    },
+    "DATIA": {
+      "name": "Datia",
+      "state": "Madhya Pradesh",
+      "lat": 25.92,
+      "lon": 78.53
+    },
+    "DAUSA": {
+      "name": "Dausa",
+      "state": "Rajasthan",
+      "lat": 26.81,
+      "lon": 76.62
+    },
+    "DBG": {
+      "name": "Dbg",
+      "state": "Bihar",
+      "lat": 26.17,
+      "lon": 85.9
+    },
+    "DBH": {
+      "name": "Dbh",
+      "state": "Assam",
+      "lat": 27.48,
+      "lon": 95.02
+    },
+    "DDM": {
+      "name": "Ddm",
+      "state": "West Bengal",
+      "lat": 22.65,
+      "lon": 88.45
+    },
+    "DDN": {
+      "name": "Ddn",
+      "state": "Uttaranchal",
+      "lat": 30.32,
+      "lon": 78.03
+    },
+    "DEHRADUN": {
+      "name": "Dehradun",
+      "state": "Uttaranchal",
+      "lat": 30.4,
+      "lon": 77.85
+    },
+    "DEMAJ": {
+      "name": "Demaj",
+      "state": "Assam",
+      "lat": 27.54,
+      "lon": 94.7
+    },
+    "DEOGARH": {
+      "name": "Deogarh",
+      "state": "Orissa",
+      "lat": 21.49,
+      "lon": 84.8
+    },
+    "DEOGHAR": {
+      "name": "Deoghar",
+      "state": "Jharkhand",
+      "lat": 24.33,
+      "lon": 86.76
+    },
+    "DEORIA": {
+      "name": "Deoria",
+      "state": "Uttar Pradesh",
+      "lat": 26.42,
+      "lon": 83.84
+    },
+    "DER": {
+      "name": "Der",
+      "state": "Bihar",
+      "lat": 24.92,
+      "lon": 84.18
+    },
+    "DEVANGERE": {
+      "name": "Devangere",
+      "state": "Karnataka",
+      "lat": 14.37,
+      "lon": 75.96
+    },
+    "DEVBHOOMI-DWARKA": {
+      "name": "Devbhoomi-Dwarka",
+      "state": "Gujarat",
+      "lat": 22.14,
+      "lon": 69.44
+    },
+    "DEVPRAYAG": {
+      "name": "Devprayag",
+      "state": "Uttaranchal",
+      "lat": 30.14,
+      "lon": 78.61
+    },
+    "DEWAS": {
+      "name": "Dewas",
+      "state": "Madhya Pradesh",
+      "lat": 22.71,
+      "lon": 76.51
+    },
+    "DGB": {
+      "name": "Dgb",
+      "state": "Assam",
+      "lat": 27.55,
+      "lon": 95.62
+    },
+    "DGH": {
+      "name": "Dgh",
+      "state": "West Bengal",
+      "lat": 21.83,
+      "lon": 87.78
+    },
+    "DGR": {
+      "name": "Dgr",
+      "state": "Rajasthan",
+      "lat": 23.83,
+      "lon": 73.67
+    },
+    "DHALAI": {
+      "name": "Dhalai",
+      "state": "Tripura",
+      "lat": 23.83,
+      "lon": 91.96
+    },
+    "DHAMTARI": {
+      "name": "Dhamtari",
+      "state": "Chhattisgarh",
+      "lat": 20.63,
+      "lon": 81.79
+    },
+    "DHANBAD": {
+      "name": "Dhanbad",
+      "state": "Jharkhand",
+      "lat": 23.84,
+      "lon": 86.47
+    },
+    "DHAR": {
+      "name": "Dhar",
+      "state": "Madhya Pradesh",
+      "lat": 22.58,
+      "lon": 75.09
+    },
+    "DHARMAPURI": {
+      "name": "Dharmapuri",
+      "state": "Tamil Nadu",
+      "lat": 12.14,
+      "lon": 78.21
+    },
+    "DHARWAD": {
+      "name": "Dharwad",
+      "state": "Karnataka",
+      "lat": 15.37,
+      "lon": 75.15
+    },
+    "DHAULPUR": {
+      "name": "Dhaulpur",
+      "state": "Rajasthan",
+      "lat": 26.66,
+      "lon": 77.75
+    },
+    "DHB": {
+      "name": "Dhb",
+      "state": "Assam",
+      "lat": 26.02,
+      "lon": 89.98
+    },
+    "DHD": {
+      "name": "Dhd",
+      "state": "Gujarat",
+      "lat": 22.83,
+      "lon": 74.27
+    },
+    "DHENKANAL": {
+      "name": "Dhenkanal",
+      "state": "Orissa",
+      "lat": 20.84,
+      "lon": 85.6
+    },
+    "DHN": {
+      "name": "Dhn",
+      "state": "Maharashtra",
+      "lat": 19.97,
+      "lon": 72.72
+    },
+    "DHR": {
+      "name": "Dhr",
+      "state": "Madhya Pradesh",
+      "lat": 22.6,
+      "lon": 75.3
+    },
+    "DHUBR": {
+      "name": "Dhubr",
+      "state": "Assam",
+      "lat": 26.1,
+      "lon": 90.0
+    },
+    "DHULE": {
+      "name": "Dhule",
+      "state": "Maharashtra",
+      "lat": 21.13,
+      "lon": 74.53
+    },
+    "DIBRUGARH": {
+      "name": "Dibrugarh",
+      "state": "Assam",
+      "lat": 27.4,
+      "lon": 95.03
+    },
+    "DIMAPUR": {
+      "name": "Dimapur",
+      "state": "Nagaland",
+      "lat": 25.81,
+      "lon": 93.77
+    },
+    "DINDIGUL": {
+      "name": "Dindigul",
+      "state": "Tamil Nadu",
+      "lat": 10.43,
+      "lon": 77.8
+    },
+    "DINDORI": {
+      "name": "Dindori",
+      "state": "Madhya Pradesh",
+      "lat": 23.05,
+      "lon": 80.9
+    },
+    "DIU": {
+      "name": "Diu",
+      "state": "Daman and Diu",
+      "lat": 20.72,
+      "lon": 70.92
+    },
+    "DJL": {
+      "name": "Djl",
+      "state": "West Bengal",
+      "lat": 27.05,
+      "lon": 88.27
+    },
+    "DLP": {
+      "name": "Dlp",
+      "state": "Rajasthan",
+      "lat": 26.67,
+      "lon": 77.83
+    },
+    "DMD": {
+      "name": "Dmd",
+      "state": "West Bengal",
+      "lat": 22.18,
+      "lon": 88.2
+    },
+    "DMH": {
+      "name": "Dmh",
+      "state": "Madhya Pradesh",
+      "lat": 23.83,
+      "lon": 79.45
+    },
+    "DMK": {
+      "name": "Dmk",
+      "state": "Jharkhand",
+      "lat": 24.27,
+      "lon": 87.25
+    },
+    "DMN": {
+      "name": "Dmn",
+      "state": "Gujarat",
+      "lat": 20.42,
+      "lon": 72.85
+    },
+    "DNB": {
+      "name": "Dnb",
+      "state": "Jharkhand",
+      "lat": 23.78,
+      "lon": 86.43
+    },
+    "DODA": {
+      "name": "Doda",
+      "state": "Jammu and Kashmir",
+      "lat": 33.12,
+      "lon": 75.7
+    },
+    "DOHAD": {
+      "name": "Dohad",
+      "state": "Gujarat",
+      "lat": 22.92,
+      "lon": 74.14
+    },
+    "DPR": {
+      "name": "Dpr",
+      "state": "Tamil Nadu",
+      "lat": 12.13,
+      "lon": 78.03
+    },
+    "DRC": {
+      "name": "Drc",
+      "state": "Uttaranchal",
+      "lat": 29.85,
+      "lon": 80.53
+    },
+    "DRG": {
+      "name": "Drg",
+      "state": "Chhattisgarh",
+      "lat": 21.18,
+      "lon": 81.28
+    },
+    "DRM": {
+      "name": "Drm",
+      "state": "Himachal Pradesh",
+      "lat": 32.21,
+      "lon": 76.32
+    },
+    "DRP": {
+      "name": "Drp",
+      "state": "Himachal Pradesh",
+      "lat": 30.9,
+      "lon": 77.02
+    },
+    "DRS": {
+      "name": "Drs",
+      "state": "Jammu and Kashmir",
+      "lat": 34.43,
+      "lon": 75.77
+    },
+    "DSA": {
+      "name": "Dsa",
+      "state": "Gujarat",
+      "lat": 24.2,
+      "lon": 72.2
+    },
+    "DTA": {
+      "name": "Dta",
+      "state": "Madhya Pradesh",
+      "lat": 25.67,
+      "lon": 78.47
+    },
+    "DTG": {
+      "name": "Dtg",
+      "state": "Jharkhand",
+      "lat": 24.05,
+      "lon": 84.07
+    },
+    "DUMKA": {
+      "name": "Dumka",
+      "state": "Jharkhand",
+      "lat": 24.31,
+      "lon": 87.29
+    },
+    "DUNGARPUR": {
+      "name": "Dungarpur",
+      "state": "Rajasthan",
+      "lat": 23.67,
+      "lon": 73.87
+    },
+    "DURG": {
+      "name": "Durg",
+      "state": "Chhattisgarh",
+      "lat": 21.2,
+      "lon": 81.38
+    },
+    "DVG": {
+      "name": "Dvg",
+      "state": null,
+      "lat": 16.38,
+      "lon": 73.35
+    },
+    "DWK": {
+      "name": "Dwk",
+      "state": "Gujarat",
+      "lat": 22.37,
+      "lon": 69.08
+    },
+    "Dhule": {
+      "name": "Dhule",
+      "state": "Maharashtra",
+      "lat": 20.9042,
+      "lon": 74.7749
+    },
+    "E-JAINTIA": {
+      "name": "E-Jaintia",
+      "state": "Meghalaya",
+      "lat": 25.25,
+      "lon": 92.5
+    },
+    "EAST": {
+      "name": "East",
+      "state": "Sikkim",
+      "lat": 27.28,
+      "lon": 88.68
+    },
+    "EAST-DELHI": {
+      "name": "East-Delhi",
+      "state": "Delhi",
+      "lat": 28.61,
+      "lon": 77.31
+    },
+    "EAST-GARO": {
+      "name": "East-Garo",
+      "state": "Meghalaya",
+      "lat": 25.7,
+      "lon": 90.69
+    },
+    "EAST-GODAVARI": {
+      "name": "East-Godavari",
+      "state": "Andhra Pradesh",
+      "lat": 17.5,
+      "lon": 82.09
+    },
+    "EAST-KAMENG": {
+      "name": "East-Kameng",
+      "state": "Arunachal Pradesh",
+      "lat": 27.4,
+      "lon": 93.2
+    },
+    "EAST-KHASI": {
+      "name": "East-Khasi",
+      "state": "Meghalaya",
+      "lat": 25.35,
+      "lon": 91.8
+    },
+    "EAST-SIANG": {
+      "name": "East-Siang",
+      "state": "Arunachal Pradesh",
+      "lat": 27.95,
+      "lon": 95.26
+    },
+    "EAST-SINGBHUM": {
+      "name": "East-Singbhum",
+      "state": "Jharkhand",
+      "lat": 22.61,
+      "lon": 86.48
+    },
+    "EDAKALINADU": {
+      "name": "Edakalinadu",
+      "state": "Tamil Nadu",
+      "lat": 12.28,
+      "lon": 79.8
+    },
+    "ENNORE-PORT": {
+      "name": "Ennore-Port",
+      "state": null,
+      "lat": 13.27,
+      "lon": 88.33
+    },
+    "ENP": {
+      "name": "Enp",
+      "state": "Rajasthan",
+      "lat": 25.08,
+      "lon": 73.14
+    },
+    "ERNAKULAM": {
+      "name": "Ernakulam",
+      "state": "Kerala",
+      "lat": 10.05,
+      "lon": 76.5
+    },
+    "ERODE": {
+      "name": "Erode",
+      "state": "Tamil Nadu",
+      "lat": 11.49,
+      "lon": 77.38
+    },
+    "ETAH": {
+      "name": "Etah",
+      "state": "Uttar Pradesh",
+      "lat": 27.55,
+      "lon": 78.73
+    },
+    "ETAWAH": {
+      "name": "Etawah",
+      "state": "Uttar Pradesh",
+      "lat": 26.72,
+      "lon": 79.04
+    },
+    "ETW": {
+      "name": "Etw",
+      "state": "Madhya Pradesh",
+      "lat": 26.45,
+      "lon": 79.02
+    },
+    "FAIZABAD": {
+      "name": "Faizabad",
+      "state": "Uttar Pradesh",
+      "lat": 26.67,
+      "lon": 82.01
+    },
+    "FARIDABAD": {
+      "name": "Faridabad",
+      "state": "Haryana",
+      "lat": 28.33,
+      "lon": 77.35
+    },
+    "FARIDKOT": {
+      "name": "Faridkot",
+      "state": "Punjab",
+      "lat": 30.6,
+      "lon": 74.76
+    },
+    "FARRUKHABAD": {
+      "name": "Farrukhabad",
+      "state": "Uttar Pradesh",
+      "lat": 27.33,
+      "lon": 79.63
+    },
+    "FATEHABAD": {
+      "name": "Fatehabad",
+      "state": "Haryana",
+      "lat": 29.53,
+      "lon": 75.59
+    },
+    "FATEHGARH": {
+      "name": "Fatehgarh",
+      "state": "Uttar Pradesh",
+      "lat": 27.45,
+      "lon": 79.5
+    },
+    "FATEHGARH-SAHIB": {
+      "name": "Fatehgarh-Sahib",
+      "state": "Punjab",
+      "lat": 30.6,
+      "lon": 76.33
+    },
+    "FATEHPUR": {
+      "name": "Fatehpur",
+      "state": "Uttar Pradesh",
+      "lat": 25.83,
+      "lon": 80.78
+    },
+    "FAZILIKA": {
+      "name": "Fazilika",
+      "state": "Punjab",
+      "lat": 30.36,
+      "lon": 74.17
+    },
+    "FBG": {
+      "name": "Fbg",
+      "state": "Bihar",
+      "lat": 26.3,
+      "lon": 87.27
+    },
+    "FEROZEPUR": {
+      "name": "Ferozepur",
+      "state": "Punjab",
+      "lat": 30.9,
+      "lon": 74.8
+    },
+    "FIROZABAD": {
+      "name": "Firozabad",
+      "state": "Uttar Pradesh",
+      "lat": 27.19,
+      "lon": 78.51
+    },
+    "FTP": {
+      "name": "Ftp",
+      "state": "Uttar Pradesh",
+      "lat": 25.93,
+      "lon": 80.83
+    },
+    "FURSATGANJ": {
+      "name": "Fursatganj",
+      "state": "Uttar Pradesh",
+      "lat": 26.25,
+      "lon": 81.3
+    },
+    "FZB": {
+      "name": "Fzb",
+      "state": "Uttar Pradesh",
+      "lat": 26.75,
+      "lon": 82.08
+    },
+    "FZP": {
+      "name": "Fzp",
+      "state": "Punjab",
+      "lat": 30.92,
+      "lon": 74.67
+    },
+    "GADAG": {
+      "name": "Gadag",
+      "state": "Karnataka",
+      "lat": 15.41,
+      "lon": 75.66
+    },
+    "GADCHIROLI": {
+      "name": "Gadchiroli",
+      "state": "Maharashtra",
+      "lat": 19.76,
+      "lon": 80.32
+    },
+    "GAJAPATI": {
+      "name": "Gajapati",
+      "state": "Orissa",
+      "lat": 18.92,
+      "lon": 84.12
+    },
+    "GANDERBAL": {
+      "name": "Ganderbal",
+      "state": "Jammu and Kashmir",
+      "lat": 34.31,
+      "lon": 75.19
+    },
+    "GANDHINAGAR": {
+      "name": "Gandhinagar",
+      "state": "Gujarat",
+      "lat": 23.2,
+      "lon": 72.78
+    },
+    "GANGANAGAR": {
+      "name": "Ganganagar",
+      "state": "Rajasthan",
+      "lat": 29.2,
+      "lon": 73.55
+    },
+    "GANGOTRI": {
+      "name": "Gangotri",
+      "state": "Uttaranchal",
+      "lat": 30.99,
+      "lon": 78.93
+    },
+    "GANJAM": {
+      "name": "Ganjam",
+      "state": "Orissa",
+      "lat": 19.63,
+      "lon": 84.65
+    },
+    "GARHWA": {
+      "name": "Garhwa",
+      "state": "Jharkhand",
+      "lat": 24.05,
+      "lon": 83.7
+    },
+    "GARIYABAND": {
+      "name": "Gariyaband",
+      "state": "Chhattisgarh",
+      "lat": 20.4,
+      "lon": 82.29
+    },
+    "GAUCHAR": {
+      "name": "Gauchar",
+      "state": "Uttaranchal",
+      "lat": 30.28,
+      "lon": 79.15
+    },
+    "GAYA": {
+      "name": "Gaya",
+      "state": "Bihar",
+      "lat": 24.67,
+      "lon": 84.85
+    },
+    "GDA": {
+      "name": "Gda",
+      "state": "Uttar Pradesh",
+      "lat": 27.13,
+      "lon": 81.97
+    },
+    "GDG": {
+      "name": "Gdg",
+      "state": "Karnataka",
+      "lat": 15.42,
+      "lon": 75.63
+    },
+    "GDN": {
+      "name": "Gdn",
+      "state": "Gujarat",
+      "lat": 23.21,
+      "lon": 72.63
+    },
+    "GGN": {
+      "name": "Ggn",
+      "state": "Rajasthan",
+      "lat": 29.92,
+      "lon": 73.92
+    },
+    "GHAT": {
+      "name": "Ghat",
+      "state": "Uttaranchal",
+      "lat": 30.61,
+      "lon": 79.56
+    },
+    "GHAZIABAD": {
+      "name": "Ghaziabad",
+      "state": "Delhi",
+      "lat": 28.7,
+      "lon": 77.2
+    },
+    "GHAZIPUR": {
+      "name": "Ghazipur",
+      "state": "Uttar Pradesh",
+      "lat": 25.6,
+      "lon": 83.51
+    },
+    "GHT": {
+      "name": "Ght",
+      "state": "Assam",
+      "lat": 26.1,
+      "lon": 91.58
+    },
+    "GILGIT": {
+      "name": "Gilgit",
+      "state": null,
+      "lat": 36.45,
+      "lon": 74.75
+    },
+    "GILGIT-WAZARAD": {
+      "name": "Gilgit-Wazarad",
+      "state": null,
+      "lat": 35.05,
+      "lon": 74.85
+    },
+    "GIR-SOMNATH": {
+      "name": "Gir-Somnath",
+      "state": "Daman and Diu",
+      "lat": 20.94,
+      "lon": 70.8
+    },
+    "GIRIDIH": {
+      "name": "Giridih",
+      "state": "Jharkhand",
+      "lat": 24.33,
+      "lon": 86.12
+    },
+    "GLB": {
+      "name": "Glb",
+      "state": "Karnataka",
+      "lat": 17.35,
+      "lon": 76.85
+    },
+    "GLM": {
+      "name": "Glm",
+      "state": "Jammu and Kashmir",
+      "lat": 34.05,
+      "lon": 74.4
+    },
+    "GLP": {
+      "name": "Glp",
+      "state": "Assam",
+      "lat": 26.18,
+      "lon": 90.63
+    },
+    "GLT": {
+      "name": "Glt",
+      "state": "Assam",
+      "lat": 26.52,
+      "lon": 93.98
+    },
+    "GNA": {
+      "name": "Gna",
+      "state": "Madhya Pradesh",
+      "lat": 24.65,
+      "lon": 77.32
+    },
+    "GND": {
+      "name": "Gnd",
+      "state": "Maharashtra",
+      "lat": 21.47,
+      "lon": 80.2
+    },
+    "GOA": {
+      "name": "Goa",
+      "state": "Goa",
+      "lat": 15.38,
+      "lon": 73.82
+    },
+    "GOALPARA": {
+      "name": "Goalpara",
+      "state": "Assam",
+      "lat": 26.06,
+      "lon": 90.61
+    },
+    "GODDA": {
+      "name": "Godda",
+      "state": "Jharkhand",
+      "lat": 24.86,
+      "lon": 87.29
+    },
+    "GOLAGHAT": {
+      "name": "Golaghat",
+      "state": "Assam",
+      "lat": 26.66,
+      "lon": 93.74
+    },
+    "GOMATI": {
+      "name": "Gomati",
+      "state": "Tripura",
+      "lat": 23.51,
+      "lon": 91.62
+    },
+    "GONDA": {
+      "name": "Gonda",
+      "state": "Uttar Pradesh",
+      "lat": 27.11,
+      "lon": 82.07
+    },
+    "GONDIA": {
+      "name": "Gondia",
+      "state": "Maharashtra",
+      "lat": 21.34,
+      "lon": 80.24
+    },
+    "GOPALGANJ": {
+      "name": "Gopalganj",
+      "state": "Bihar",
+      "lat": 26.42,
+      "lon": 84.41
+    },
+    "GORAKHPUR": {
+      "name": "Gorakhpur",
+      "state": "Uttar Pradesh",
+      "lat": 26.68,
+      "lon": 83.5
+    },
+    "GPL": {
+      "name": "Gpl",
+      "state": "Orissa",
+      "lat": 19.27,
+      "lon": 84.88
+    },
+    "GPR": {
+      "name": "Gpr",
+      "state": "Assam",
+      "lat": 26.83,
+      "lon": 93.58
+    },
+    "GRG": {
+      "name": "Grg",
+      "state": "Haryana",
+      "lat": 28.42,
+      "lon": 77.0
+    },
+    "GRK": {
+      "name": "Grk",
+      "state": "Uttar Pradesh",
+      "lat": 26.75,
+      "lon": 83.37
+    },
+    "GTK": {
+      "name": "Gtk",
+      "state": "Sikkim",
+      "lat": 27.33,
+      "lon": 88.62
+    },
+    "GULBARGA": {
+      "name": "Gulbarga",
+      "state": "Karnataka",
+      "lat": 17.24,
+      "lon": 76.88
+    },
+    "GUMLA": {
+      "name": "Gumla",
+      "state": "Jharkhand",
+      "lat": 23.16,
+      "lon": 84.53
+    },
+    "GUNA": {
+      "name": "Guna",
+      "state": "Madhya Pradesh",
+      "lat": 24.5,
+      "lon": 77.27
+    },
+    "GUND": {
+      "name": "Gund",
+      "state": "Jammu and Kashmir",
+      "lat": 34.11,
+      "lon": 75.05
+    },
+    "GUNTUR": {
+      "name": "Guntur",
+      "state": "Andhra Pradesh",
+      "lat": 16.28,
+      "lon": 80.06
+    },
+    "GURDASPUR": {
+      "name": "Gurdaspur",
+      "state": "Punjab",
+      "lat": 31.88,
+      "lon": 75.32
+    },
+    "GURGAON": {
+      "name": "Gurgaon",
+      "state": "Haryana",
+      "lat": 28.37,
+      "lon": 76.95
+    },
+    "GURUVAYUR": {
+      "name": "Guruvayur",
+      "state": "Kerala",
+      "lat": 10.59,
+      "lon": 76.04
+    },
+    "GWALIOR": {
+      "name": "Gwalior",
+      "state": "Madhya Pradesh",
+      "lat": 25.95,
+      "lon": 78.29
+    },
+    "GWL": {
+      "name": "Gwl",
+      "state": "Madhya Pradesh",
+      "lat": 26.23,
+      "lon": 78.25
+    },
+    "GYA": {
+      "name": "Gya",
+      "state": "Bihar",
+      "lat": 24.75,
+      "lon": 84.95
+    },
+    "GZB": {
+      "name": "Gzb",
+      "state": "Uttar Pradesh",
+      "lat": 28.69,
+      "lon": 77.41
+    },
+    "GZP": {
+      "name": "Gzp",
+      "state": "Uttar Pradesh",
+      "lat": 25.4,
+      "lon": 83.55
+    },
+    "HAILAKANDI": {
+      "name": "Hailakandi",
+      "state": "Assam",
+      "lat": 24.45,
+      "lon": 92.83
+    },
+    "HAMIRPUR": {
+      "name": "Hamirpur",
+      "state": "Himachal Pradesh",
+      "lat": 31.66,
+      "lon": 76.51
+    },
+    "HANUMANGARH": {
+      "name": "Hanumangarh",
+      "state": "Rajasthan",
+      "lat": 29.07,
+      "lon": 74.67
+    },
+    "HARDA": {
+      "name": "Harda",
+      "state": "Madhya Pradesh",
+      "lat": 22.24,
+      "lon": 77.14
+    },
+    "HARDOI": {
+      "name": "Hardoi",
+      "state": "Uttar Pradesh",
+      "lat": 27.23,
+      "lon": 80.26
+    },
+    "HARIDWAR": {
+      "name": "Haridwar",
+      "state": "Uttaranchal",
+      "lat": 29.9,
+      "lon": 78.02
+    },
+    "HARSIL": {
+      "name": "Harsil",
+      "state": "Uttaranchal",
+      "lat": 31.03,
+      "lon": 78.73
+    },
+    "HASSAN": {
+      "name": "Hassan",
+      "state": "Karnataka",
+      "lat": 13.03,
+      "lon": 76.1
+    },
+    "HATHRAS": {
+      "name": "Hathras",
+      "state": "Uttar Pradesh",
+      "lat": 27.45,
+      "lon": 78.15
+    },
+    "HAVERI": {
+      "name": "Haveri",
+      "state": "Karnataka",
+      "lat": 14.72,
+      "lon": 75.42
+    },
+    "HAZARIBAGH": {
+      "name": "Hazaribagh",
+      "state": "Jharkhand",
+      "lat": 24.01,
+      "lon": 85.47
+    },
+    "HFL": {
+      "name": "Hfl",
+      "state": "Assam",
+      "lat": 25.17,
+      "lon": 93.02
+    },
+    "HINGOLE": {
+      "name": "Hingole",
+      "state": "Maharashtra",
+      "lat": 19.55,
+      "lon": 77.2
+    },
+    "HISAR": {
+      "name": "Hisar",
+      "state": "Haryana",
+      "lat": 29.15,
+      "lon": 75.72
+    },
+    "HISSAR": {
+      "name": "Hissar",
+      "state": "Haryana",
+      "lat": 29.24,
+      "lon": 75.79
+    },
+    "HMP": {
+      "name": "Hmp",
+      "state": "Uttar Pradesh",
+      "lat": 25.95,
+      "lon": 80.15
+    },
+    "HNK": {
+      "name": "Hnk",
+      "state": "Andhra Pradesh",
+      "lat": 18.02,
+      "lon": 79.57
+    },
+    "HNV": {
+      "name": "Hnv",
+      "state": "Karnataka",
+      "lat": 14.28,
+      "lon": 74.45
+    },
+    "HOJAI": {
+      "name": "Hojai",
+      "state": "Assam",
+      "lat": 25.96,
+      "lon": 92.97
+    },
+    "HOSHANGABAD": {
+      "name": "Hoshangabad",
+      "state": "Madhya Pradesh",
+      "lat": 22.6,
+      "lon": 77.96
+    },
+    "HOSHIARPUR": {
+      "name": "Hoshiarpur",
+      "state": "Punjab",
+      "lat": 31.6,
+      "lon": 75.85
+    },
+    "HRD": {
+      "name": "Hrd",
+      "state": "Uttar Pradesh",
+      "lat": 27.38,
+      "lon": 80.17
+    },
+    "HRN": {
+      "name": "Hrn",
+      "state": "Maharashtra",
+      "lat": 17.82,
+      "lon": 73.1
+    },
+    "HSB": {
+      "name": "Hsb",
+      "state": "Madhya Pradesh",
+      "lat": 22.77,
+      "lon": 77.77
+    },
+    "HSN": {
+      "name": "Hsn",
+      "state": "Karnataka",
+      "lat": 13.0,
+      "lon": 76.15
+    },
+    "HSR": {
+      "name": "Hsr",
+      "state": "Haryana",
+      "lat": 29.17,
+      "lon": 75.73
+    },
+    "HTB": {
+      "name": "Htb",
+      "state": "Andaman and Nicobar",
+      "lat": 10.58,
+      "lon": 92.55
+    },
+    "HUBBLI": {
+      "name": "Hubbli",
+      "state": "Karnataka",
+      "lat": 15.36,
+      "lon": 75.12
+    },
+    "HYD": {
+      "name": "Hyd",
+      "state": "Andhra Pradesh",
+      "lat": 17.45,
+      "lon": 78.47
+    },
+    "HYDERABAD": {
+      "name": "Hyderabad",
+      "state": "Andhra Pradesh",
+      "lat": 17.4,
+      "lon": 78.47
+    },
+    "HZB": {
+      "name": "Hzb",
+      "state": "Jharkhand",
+      "lat": 23.98,
+      "lon": 85.37
+    },
+    "Hingoli": {
+      "name": "Hingoli",
+      "state": "Maharashtra",
+      "lat": 19.7174,
+      "lon": 77.1494
+    },
+    "IDR": {
+      "name": "Idr",
+      "state": "Gujarat",
+      "lat": 23.83,
+      "lon": 73.03
+    },
+    "IDUKKI": {
+      "name": "Idukki",
+      "state": "Kerala",
+      "lat": 9.82,
+      "lon": 77.02
+    },
+    "IIPHG": {
+      "name": "Iiphg",
+      "state": "Gujarat",
+      "lat": 23.2436,
+      "lon": 72.6899
+    },
+    "IMP": {
+      "name": "Imp",
+      "state": "Manipur",
+      "lat": 24.67,
+      "lon": 93.9
+    },
+    "IMPHAL": {
+      "name": "Imphal",
+      "state": "Manipur",
+      "lat": 24.81,
+      "lon": 94.02
+    },
+    "IND": {
+      "name": "Ind",
+      "state": "Madhya Pradesh",
+      "lat": 22.72,
+      "lon": 75.8
+    },
+    "INDORE": {
+      "name": "Indore",
+      "state": "Madhya Pradesh",
+      "lat": 22.75,
+      "lon": 75.83
+    },
+    "ISRO-Bopal": {
+      "name": "ISRO-Bopal",
+      "state": "Gujarat",
+      "lat": 23.0411,
+      "lon": 72.4567
+    },
+    "ISRO-SAC": {
+      "name": "Isro-Sac",
+      "state": "Gujarat",
+      "lat": 23.0234,
+      "lon": 72.5152
+    },
+    "JABALPUR": {
+      "name": "Jabalpur",
+      "state": "Madhya Pradesh",
+      "lat": 23.22,
+      "lon": 79.96
+    },
+    "JAGATSINGPUR": {
+      "name": "Jagatsingpur",
+      "state": "Orissa",
+      "lat": 20.29,
+      "lon": 86.4
+    },
+    "JAGTIYAL": {
+      "name": "Jagtiyal",
+      "state": "Andhra Pradesh",
+      "lat": 18.82,
+      "lon": 78.91
+    },
+    "JAHANABAD": {
+      "name": "Jahanabad",
+      "state": "Bihar",
+      "lat": 25.15,
+      "lon": 85.04
+    },
+    "JAINTIA": {
+      "name": "Jaintia",
+      "state": "Meghalaya",
+      "lat": 25.6,
+      "lon": 92.32
+    },
+    "JAIPUR": {
+      "name": "Jaipur",
+      "state": "Rajasthan",
+      "lat": 27.15,
+      "lon": 75.6
+    },
+    "JAISLAMER": {
+      "name": "Jaislamer",
+      "state": "Rajasthan",
+      "lat": 27.03,
+      "lon": 70.91
+    },
+    "JAJPUR": {
+      "name": "Jajpur",
+      "state": "Orissa",
+      "lat": 20.8,
+      "lon": 86.25
+    },
+    "JALANDHAR": {
+      "name": "Jalandhar",
+      "state": "Punjab",
+      "lat": 31.15,
+      "lon": 75.51
+    },
+    "JALAUN": {
+      "name": "Jalaun",
+      "state": "Uttar Pradesh",
+      "lat": 26.1,
+      "lon": 79.44
+    },
+    "JALGAON": {
+      "name": "Jalgaon",
+      "state": "Maharashtra",
+      "lat": 20.84,
+      "lon": 75.58
+    },
+    "JALNA": {
+      "name": "Jalna",
+      "state": "Maharashtra",
+      "lat": 19.97,
+      "lon": 76.06
+    },
+    "JALORE": {
+      "name": "Jalore",
+      "state": "Rajasthan",
+      "lat": 25.01,
+      "lon": 72.15
+    },
+    "JALPAIGURI": {
+      "name": "Jalpaiguri",
+      "state": "West Bengal",
+      "lat": 26.75,
+      "lon": 88.85
+    },
+    "JAMMU": {
+      "name": "Jammu",
+      "state": "Jammu and Kashmir",
+      "lat": 32.85,
+      "lon": 74.7
+    },
+    "JAMNAGAR": {
+      "name": "Jamnagar",
+      "state": "Gujarat",
+      "lat": 22.33,
+      "lon": 70.1
+    },
+    "JAMTARA": {
+      "name": "Jamtara",
+      "state": "Jharkhand",
+      "lat": 23.99,
+      "lon": 86.89
+    },
+    "JAMUI": {
+      "name": "Jamui",
+      "state": "Bihar",
+      "lat": 24.76,
+      "lon": 86.23
+    },
+    "JANAKPUR": {
+      "name": "Janakpur",
+      "state": null,
+      "lat": 26.72,
+      "lon": 85.94
+    },
+    "JANGOAN": {
+      "name": "Jangoan",
+      "state": "Andhra Pradesh",
+      "lat": 17.73,
+      "lon": 79.21
+    },
+    "JANJGIR": {
+      "name": "Janjgir",
+      "state": "Chhattisgarh",
+      "lat": 21.97,
+      "lon": 82.82
+    },
+    "JASHPUR": {
+      "name": "Jashpur",
+      "state": "Chhattisgarh",
+      "lat": 22.77,
+      "lon": 83.9
+    },
+    "JAUNPUR": {
+      "name": "Jaunpur",
+      "state": "Uttar Pradesh",
+      "lat": 25.8,
+      "lon": 82.6
+    },
+    "JAYASHANKAR": {
+      "name": "Jayashankar",
+      "state": "Andhra Pradesh",
+      "lat": 18.44,
+      "lon": 80.18
+    },
+    "JBP": {
+      "name": "Jbp",
+      "state": "Madhya Pradesh",
+      "lat": 23.2,
+      "lon": 79.95
+    },
+    "JDP": {
+      "name": "Jdp",
+      "state": "Rajasthan",
+      "lat": 26.3,
+      "lon": 73.02
+    },
+    "JGD": {
+      "name": "Jgd",
+      "state": "Chhattisgarh",
+      "lat": 19.08,
+      "lon": 82.03
+    },
+    "JHABUA": {
+      "name": "Jhabua",
+      "state": "Madhya Pradesh",
+      "lat": 22.81,
+      "lon": 74.59
+    },
+    "JHAJJAR": {
+      "name": "Jhajjar",
+      "state": "Haryana",
+      "lat": 28.61,
+      "lon": 76.62
+    },
+    "JHALAWAR": {
+      "name": "Jhalawar",
+      "state": "Rajasthan",
+      "lat": 24.4,
+      "lon": 76.28
+    },
+    "JHANSI": {
+      "name": "Jhansi",
+      "state": "Uttar Pradesh",
+      "lat": 25.63,
+      "lon": 79.16
+    },
+    "JHARSUGUDA": {
+      "name": "Jharsuguda",
+      "state": "Orissa",
+      "lat": 21.75,
+      "lon": 84.0
+    },
+    "JHS": {
+      "name": "Jhs",
+      "state": "Uttar Pradesh",
+      "lat": 25.45,
+      "lon": 78.58
+    },
+    "JHT": {
+      "name": "Jht",
+      "state": "Uttaranchal",
+      "lat": 30.55,
+      "lon": 79.57
+    },
+    "JHUNJHUNU": {
+      "name": "Jhunjhunu",
+      "state": "Rajasthan",
+      "lat": 28.08,
+      "lon": 75.57
+    },
+    "JIND": {
+      "name": "Jind",
+      "state": "Haryana",
+      "lat": 29.45,
+      "lon": 76.35
+    },
+    "JIRIBHAM": {
+      "name": "Jiribham",
+      "state": "Manipur",
+      "lat": 24.71,
+      "lon": 93.1
+    },
+    "JLD": {
+      "name": "Jld",
+      "state": "Punjab",
+      "lat": 31.47,
+      "lon": 75.58
+    },
+    "JLG": {
+      "name": "Jlg",
+      "state": "Maharashtra",
+      "lat": 21.05,
+      "lon": 75.57
+    },
+    "JLR": {
+      "name": "Jlr",
+      "state": "Rajasthan",
+      "lat": 25.35,
+      "lon": 72.62
+    },
+    "JLW": {
+      "name": "Jlw",
+      "state": "Rajasthan",
+      "lat": 24.53,
+      "lon": 76.17
+    },
+    "JMI": {
+      "name": "Jmi",
+      "state": "Bihar",
+      "lat": 24.93,
+      "lon": 86.3
+    },
+    "JMR": {
+      "name": "Jmr",
+      "state": "Gujarat",
+      "lat": 22.45,
+      "lon": 70.08
+    },
+    "JMU": {
+      "name": "Jmu",
+      "state": "Jammu and Kashmir",
+      "lat": 32.67,
+      "lon": 74.83
+    },
+    "JNP": {
+      "name": "Jnp",
+      "state": "Uttar Pradesh",
+      "lat": 25.75,
+      "lon": 82.68
+    },
+    "JODHPUR": {
+      "name": "Jodhpur",
+      "state": "Rajasthan",
+      "lat": 26.74,
+      "lon": 72.83
+    },
+    "JOGULAMBHA": {
+      "name": "Jogulambha",
+      "state": "Andhra Pradesh",
+      "lat": 16.05,
+      "lon": 77.79
+    },
+    "JOMSOM": {
+      "name": "Jomsom",
+      "state": null,
+      "lat": 28.77,
+      "lon": 83.77
+    },
+    "JORHAT": {
+      "name": "Jorhat",
+      "state": "Assam",
+      "lat": 26.76,
+      "lon": 94.21
+    },
+    "JOSHIMATH": {
+      "name": "Joshimath",
+      "state": "Uttaranchal",
+      "lat": 30.41,
+      "lon": 79.3
+    },
+    "JPG": {
+      "name": "Jpg",
+      "state": "West Bengal",
+      "lat": 26.53,
+      "lon": 88.72
+    },
+    "JPN": {
+      "name": "Jpn",
+      "state": "Chhattisgarh",
+      "lat": 22.88,
+      "lon": 84.13
+    },
+    "JPR": {
+      "name": "Jpr",
+      "state": "Rajasthan",
+      "lat": 26.82,
+      "lon": 75.8
+    },
+    "JRG": {
+      "name": "Jrg",
+      "state": "Orissa",
+      "lat": 21.92,
+      "lon": 84.08
+    },
+    "JSD": {
+      "name": "Jsd",
+      "state": "Jharkhand",
+      "lat": 22.82,
+      "lon": 86.18
+    },
+    "JSM": {
+      "name": "Jsm",
+      "state": "Rajasthan",
+      "lat": 26.9,
+      "lon": 70.92
+    },
+    "JUNAGADH": {
+      "name": "Junagadh",
+      "state": "Gujarat",
+      "lat": 21.4,
+      "lon": 70.48
+    },
+    "JUR": {
+      "name": "Jur",
+      "state": "Maharashtra",
+      "lat": 18.2,
+      "lon": 75.2
+    },
+    "JYOTIBA": {
+      "name": "Jyotiba",
+      "state": "Uttar Pradesh",
+      "lat": 28.84,
+      "lon": 78.35
+    },
+    "Jalna": {
+      "name": "Jalna",
+      "state": "Maharashtra",
+      "lat": 19.8347,
+      "lon": 75.8816
+    },
+    "KABIR": {
+      "name": "Kabir",
+      "state": "Uttar Pradesh",
+      "lat": 26.96,
+      "lon": 83.14
+    },
+    "KABIRDHAM": {
+      "name": "Kabirdham",
+      "state": "Chhattisgarh",
+      "lat": 22.11,
+      "lon": 81.19
+    },
+    "KADMAT": {
+      "name": "Kadmat",
+      "state": null,
+      "lat": 11.22,
+      "lon": 72.77
+    },
+    "KAKCHING": {
+      "name": "Kakching",
+      "state": "Manipur",
+      "lat": 24.38,
+      "lon": 93.99
+    },
+    "KALAHANDI": {
+      "name": "Kalahandi",
+      "state": "Orissa",
+      "lat": 19.82,
+      "lon": 83.16
+    },
+    "KALPENI": {
+      "name": "Kalpeni",
+      "state": null,
+      "lat": 10.06,
+      "lon": 73.64
+    },
+    "KAMAREDDY": {
+      "name": "Kamareddy",
+      "state": "Andhra Pradesh",
+      "lat": 18.32,
+      "lon": 78.04
+    },
+    "KAMJONG": {
+      "name": "Kamjong",
+      "state": "Manipur",
+      "lat": 24.7,
+      "lon": 94.42
+    },
+    "KAMRUP": {
+      "name": "Kamrup",
+      "state": "Assam",
+      "lat": 26.12,
+      "lon": 91.34
+    },
+    "KAMRUP-METRO": {
+      "name": "Kamrup-Metro",
+      "state": "Assam",
+      "lat": 26.1,
+      "lon": 91.95
+    },
+    "KAN": {
+      "name": "Kan",
+      "state": "Madhya Pradesh",
+      "lat": 22.67,
+      "lon": 76.37
+    },
+    "KANCHIPURAM": {
+      "name": "Kanchipuram",
+      "state": "Tamil Nadu",
+      "lat": 12.68,
+      "lon": 79.98
+    },
+    "KANGPOKRI": {
+      "name": "Kangpokri",
+      "state": "Manipur",
+      "lat": 25.1,
+      "lon": 94.06
+    },
+    "KANGRA": {
+      "name": "Kangra",
+      "state": "Himachal Pradesh",
+      "lat": 32.08,
+      "lon": 76.33
+    },
+    "KANKER": {
+      "name": "Kanker",
+      "state": "Chhattisgarh",
+      "lat": 20.12,
+      "lon": 81.11
+    },
+    "KANNAUJ": {
+      "name": "Kannauj",
+      "state": "Uttar Pradesh",
+      "lat": 27.0,
+      "lon": 79.67
+    },
+    "KANNUR": {
+      "name": "Kannur",
+      "state": "Kerala",
+      "lat": 11.99,
+      "lon": 75.56
+    },
+    "KANPUR-CITY": {
+      "name": "Kanpur-City",
+      "state": "Uttar Pradesh",
+      "lat": 26.25,
+      "lon": 80.46
+    },
+    "KANPUR-DEHAT": {
+      "name": "Kanpur-Dehat",
+      "state": "Uttar Pradesh",
+      "lat": 26.4,
+      "lon": 79.98
+    },
+    "KANSHIRAM": {
+      "name": "Kanshiram",
+      "state": "Uttar Pradesh",
+      "lat": 27.8,
+      "lon": 78.84
+    },
+    "KANYAKUMARI": {
+      "name": "Kanyakumari",
+      "state": "Tamil Nadu",
+      "lat": 8.33,
+      "lon": 77.4
+    },
+    "KAPURTHALA": {
+      "name": "Kapurthala",
+      "state": "Punjab",
+      "lat": 31.35,
+      "lon": 75.33
+    },
+    "KARAIKAL": {
+      "name": "Karaikal",
+      "state": null,
+      "lat": 10.91,
+      "lon": 79.89
+    },
+    "KARAULI": {
+      "name": "Karauli",
+      "state": "Rajasthan",
+      "lat": 26.31,
+      "lon": 76.99
+    },
+    "KARBI-ANGLONG": {
+      "name": "Karbi-Anglong",
+      "state": "Assam",
+      "lat": 26.25,
+      "lon": 93.35
+    },
+    "KARGIL": {
+      "name": "Kargil",
+      "state": "Jammu and Kashmir",
+      "lat": 33.88,
+      "lon": 76.44
+    },
+    "KARIMGANJ": {
+      "name": "Karimganj",
+      "state": "Assam",
+      "lat": 24.58,
+      "lon": 92.4
+    },
+    "KARIMNAGAR": {
+      "name": "Karimnagar",
+      "state": "Andhra Pradesh",
+      "lat": 18.4,
+      "lon": 79.26
+    },
+    "KARITHAL": {
+      "name": "Karithal",
+      "state": "Haryana",
+      "lat": 29.85,
+      "lon": 76.35
+    },
+    "KARNAL": {
+      "name": "Karnal",
+      "state": "Haryana",
+      "lat": 29.69,
+      "lon": 76.83
+    },
+    "KARUR": {
+      "name": "Karur",
+      "state": "Tamil Nadu",
+      "lat": 10.9,
+      "lon": 78.0
+    },
+    "KASARAGOD": {
+      "name": "Kasaragod",
+      "state": "Kerala",
+      "lat": 12.43,
+      "lon": 75.15
+    },
+    "KATHMANDU": {
+      "name": "Kathmandu",
+      "state": null,
+      "lat": 27.72,
+      "lon": 85.33
+    },
+    "KATHUA": {
+      "name": "Kathua",
+      "state": "Jammu and Kashmir",
+      "lat": 32.56,
+      "lon": 75.67
+    },
+    "KATIHAR": {
+      "name": "Katihar",
+      "state": "Bihar",
+      "lat": 25.54,
+      "lon": 87.65
+    },
+    "KATNI": {
+      "name": "Katni",
+      "state": "Madhya Pradesh",
+      "lat": 23.72,
+      "lon": 80.39
+    },
+    "KAUSHAMBHI": {
+      "name": "Kaushambhi",
+      "state": "Uttar Pradesh",
+      "lat": 25.53,
+      "lon": 81.69
+    },
+    "KAVARATTI": {
+      "name": "Kavaratti",
+      "state": null,
+      "lat": 10.559,
+      "lon": 72.636
+    },
+    "KDA": {
+      "name": "Kda",
+      "state": "Gujarat",
+      "lat": 23.11,
+      "lon": 70.1
+    },
+    "KDK": {
+      "name": "Kdk",
+      "state": "Tamil Nadu",
+      "lat": 10.23,
+      "lon": 77.47
+    },
+    "KEDARNATH": {
+      "name": "Kedarnath",
+      "state": "Uttaranchal",
+      "lat": 30.73,
+      "lon": 79.06
+    },
+    "KENDRAPARA": {
+      "name": "Kendrapara",
+      "state": "Orissa",
+      "lat": 20.55,
+      "lon": 86.68
+    },
+    "KENDUJHARGARH": {
+      "name": "Kendujhargarh",
+      "state": "Orissa",
+      "lat": 21.58,
+      "lon": 85.79
+    },
+    "KGF": {
+      "name": "Kgf",
+      "state": "Karnataka",
+      "lat": 12.95,
+      "lon": 78.3
+    },
+    "KGN": {
+      "name": "Kgn",
+      "state": "Madhya Pradesh",
+      "lat": 21.82,
+      "lon": 75.62
+    },
+    "KHAGARIA": {
+      "name": "Khagaria",
+      "state": "Bihar",
+      "lat": 25.49,
+      "lon": 86.57
+    },
+    "KHAMMAM": {
+      "name": "Khammam",
+      "state": "Andhra Pradesh",
+      "lat": 17.17,
+      "lon": 80.37
+    },
+    "KHANDWA": {
+      "name": "Khandwa",
+      "state": "Madhya Pradesh",
+      "lat": 21.98,
+      "lon": 76.62
+    },
+    "KHARGAON": {
+      "name": "Khargaon",
+      "state": "Madhya Pradesh",
+      "lat": 21.96,
+      "lon": 75.72
+    },
+    "KHD": {
+      "name": "Khd",
+      "state": "Gujarat",
+      "lat": 21.32,
+      "lon": 70.32
+    },
+    "KHEDA": {
+      "name": "Kheda",
+      "state": "Gujarat",
+      "lat": 22.9,
+      "lon": 73.04
+    },
+    "KHJ": {
+      "name": "Khj",
+      "state": "Madhya Pradesh",
+      "lat": 24.83,
+      "lon": 79.91
+    },
+    "KHM": {
+      "name": "Khm",
+      "state": "Nagaland",
+      "lat": 25.63,
+      "lon": 94.17
+    },
+    "KHN": {
+      "name": "Khn",
+      "state": "Maharashtra",
+      "lat": 18.77,
+      "lon": 73.37
+    },
+    "KHORDHA": {
+      "name": "Khordha",
+      "state": "Orissa",
+      "lat": 20.26,
+      "lon": 85.71
+    },
+    "KHOWAI": {
+      "name": "Khowai",
+      "state": "Tripura",
+      "lat": 23.95,
+      "lon": 91.64
+    },
+    "KHUNTI": {
+      "name": "Khunti",
+      "state": "Jharkhand",
+      "lat": 22.92,
+      "lon": 85.28
+    },
+    "KILTAN": {
+      "name": "Kiltan",
+      "state": null,
+      "lat": 11.48,
+      "lon": 73.0
+    },
+    "KINNAUR": {
+      "name": "Kinnaur",
+      "state": "Himachal Pradesh",
+      "lat": 31.6,
+      "lon": 78.38
+    },
+    "KIPHIRE": {
+      "name": "Kiphire",
+      "state": "Nagaland",
+      "lat": 25.82,
+      "lon": 94.82
+    },
+    "KISHANGANJ": {
+      "name": "Kishanganj",
+      "state": "Bihar",
+      "lat": 26.24,
+      "lon": 87.96
+    },
+    "KISHANGARH": {
+      "name": "Kishangarh",
+      "state": "Rajasthan",
+      "lat": 26.58,
+      "lon": 74.81
+    },
+    "KISTWAR": {
+      "name": "Kistwar",
+      "state": "Jammu and Kashmir",
+      "lat": 33.4,
+      "lon": 76.14
+    },
+    "KKC": {
+      "name": "Kkc",
+      "state": "Tamil Nadu",
+      "lat": 11.73,
+      "lon": 78.97
+    },
+    "KKD": {
+      "name": "Kkd",
+      "state": "Tamil Nadu",
+      "lat": 10.07,
+      "lon": 78.8
+    },
+    "KLA": {
+      "name": "Kla",
+      "state": "Gujarat",
+      "lat": 23.0,
+      "lon": 70.22
+    },
+    "KLG": {
+      "name": "Klg",
+      "state": "Himachal Pradesh",
+      "lat": 32.58,
+      "lon": 77.07
+    },
+    "KLN": {
+      "name": "Kln",
+      "state": "Andhra Pradesh",
+      "lat": 18.33,
+      "lon": 84.13
+    },
+    "KLP": {
+      "name": "Klp",
+      "state": "Maharashtra",
+      "lat": 16.7,
+      "lon": 74.23
+    },
+    "KMM": {
+      "name": "Kmm",
+      "state": "Andhra Pradesh",
+      "lat": 17.25,
+      "lon": 80.15
+    },
+    "KMP": {
+      "name": "Kmp",
+      "state": "West Bengal",
+      "lat": 27.07,
+      "lon": 88.47
+    },
+    "KND": {
+      "name": "Knd",
+      "state": "Andhra Pradesh",
+      "lat": 16.95,
+      "lon": 82.23
+    },
+    "KNJ": {
+      "name": "Knj",
+      "state": "Orissa",
+      "lat": 21.62,
+      "lon": 85.52
+    },
+    "KNK": {
+      "name": "Knk",
+      "state": "Chhattisgarh",
+      "lat": 20.27,
+      "lon": 81.48
+    },
+    "KNL": {
+      "name": "Knl",
+      "state": "Haryana",
+      "lat": 29.7,
+      "lon": 77.03
+    },
+    "KNP": {
+      "name": "Knp",
+      "state": "Uttar Pradesh",
+      "lat": 26.4,
+      "lon": 80.4
+    },
+    "KOCH-BEHAR": {
+      "name": "Koch-Behar",
+      "state": "West Bengal",
+      "lat": 26.34,
+      "lon": 89.46
+    },
+    "KODAGU": {
+      "name": "Kodagu",
+      "state": "Karnataka",
+      "lat": 12.38,
+      "lon": 75.78
+    },
+    "KODERMA": {
+      "name": "Koderma",
+      "state": "Jharkhand",
+      "lat": 24.46,
+      "lon": 85.5
+    },
+    "KOHIMA": {
+      "name": "Kohima",
+      "state": "Nagaland",
+      "lat": 25.77,
+      "lon": 94.14
+    },
+    "KOKRAJHAR": {
+      "name": "Kokrajhar",
+      "state": "Assam",
+      "lat": 26.51,
+      "lon": 90.13
+    },
+    "KOLAR": {
+      "name": "Kolar",
+      "state": "Karnataka",
+      "lat": 13.15,
+      "lon": 78.21
+    },
+    "KOLASIB": {
+      "name": "Kolasib",
+      "state": "Mizoram",
+      "lat": 24.24,
+      "lon": 92.71
+    },
+    "KOLHAPUR": {
+      "name": "Kolhapur",
+      "state": "Maharashtra",
+      "lat": 16.46,
+      "lon": 74.19
+    },
+    "KOLLAM": {
+      "name": "Kollam",
+      "state": "Kerala",
+      "lat": 8.97,
+      "lon": 76.88
+    },
+    "KON": {
+      "name": "Kon",
+      "state": null,
+      "lat": 7.22,
+      "lon": 93.73
+    },
+    "KONDAGAON": {
+      "name": "Kondagaon",
+      "state": "Chhattisgarh",
+      "lat": 19.97,
+      "lon": 81.68
+    },
+    "KOPPAL": {
+      "name": "Koppal",
+      "state": "Karnataka",
+      "lat": 15.58,
+      "lon": 76.29
+    },
+    "KOR": {
+      "name": "Kor",
+      "state": "Orissa",
+      "lat": 18.82,
+      "lon": 82.72
+    },
+    "KORAPUT": {
+      "name": "Koraput",
+      "state": "Orissa",
+      "lat": 18.88,
+      "lon": 82.75
+    },
+    "KORBA": {
+      "name": "Korba",
+      "state": "Chhattisgarh",
+      "lat": 22.52,
+      "lon": 82.63
+    },
+    "KORIYA-BAIKUNTHP": {
+      "name": "Koriya-Baikunthp",
+      "state": "Chhattisgarh",
+      "lat": 23.63,
+      "lon": 82.17
+    },
+    "KOTA": {
+      "name": "Kota",
+      "state": "Rajasthan",
+      "lat": 25.0,
+      "lon": 76.1
+    },
+    "KOTTAYAM": {
+      "name": "Kottayam",
+      "state": "Kerala",
+      "lat": 9.63,
+      "lon": 76.68
+    },
+    "KOV": {
+      "name": "Kov",
+      "state": null,
+      "lat": 8.4,
+      "lon": 76.97
+    },
+    "KOVALAM": {
+      "name": "Kovalam",
+      "state": "Tamil Nadu",
+      "lat": 12.78,
+      "lon": 80.25
+    },
+    "KOZHIKODE": {
+      "name": "Kozhikode",
+      "state": "Kerala",
+      "lat": 11.46,
+      "lon": 75.84
+    },
+    "KPR": {
+      "name": "Kpr",
+      "state": "Kerala",
+      "lat": 11.13,
+      "lon": 75.95
+    },
+    "KPT": {
+      "name": "Kpt",
+      "state": "Punjab",
+      "lat": 31.33,
+      "lon": 75.33
+    },
+    "KRA-DAADI": {
+      "name": "Kra-Daadi",
+      "state": "Arunachal Pradesh",
+      "lat": 28.21,
+      "lon": 93.43
+    },
+    "KRG": {
+      "name": "Krg",
+      "state": "West Bengal",
+      "lat": 23.4,
+      "lon": 88.52
+    },
+    "KRI": {
+      "name": "Kri",
+      "state": "Uttar Pradesh",
+      "lat": 27.9,
+      "lon": 80.8
+    },
+    "KRISHNA": {
+      "name": "Krishna",
+      "state": "Andhra Pradesh",
+      "lat": 16.5,
+      "lon": 80.95
+    },
+    "KRISHNAGIRI": {
+      "name": "Krishnagiri",
+      "state": "Tamil Nadu",
+      "lat": 12.65,
+      "lon": 78.0
+    },
+    "KRL": {
+      "name": "Krl",
+      "state": "Puducherry",
+      "lat": 10.92,
+      "lon": 79.83
+    },
+    "KRN": {
+      "name": "Krn",
+      "state": "Andhra Pradesh",
+      "lat": 15.8,
+      "lon": 78.07
+    },
+    "KSH": {
+      "name": "Ksh",
+      "state": "Tripura",
+      "lat": 24.32,
+      "lon": 92.0
+    },
+    "KTA": {
+      "name": "Kta",
+      "state": "Rajasthan",
+      "lat": 25.15,
+      "lon": 75.85
+    },
+    "KTG": {
+      "name": "Ktg",
+      "state": "Andhra Pradesh",
+      "lat": 17.55,
+      "lon": 80.63
+    },
+    "KTH": {
+      "name": "Kth",
+      "state": "Jammu and Kashmir",
+      "lat": 32.33,
+      "lon": 75.5
+    },
+    "KTM": {
+      "name": "Ktm",
+      "state": "Kerala",
+      "lat": 9.58,
+      "lon": 76.52
+    },
+    "KUD": {
+      "name": "Kud",
+      "state": "Tamil Nadu",
+      "lat": 10.4,
+      "lon": 78.67
+    },
+    "KULGAM": {
+      "name": "Kulgam",
+      "state": "Jammu and Kashmir",
+      "lat": 33.55,
+      "lon": 74.84
+    },
+    "KULU": {
+      "name": "Kulu",
+      "state": "Himachal Pradesh",
+      "lat": 31.88,
+      "lon": 77.4
+    },
+    "KUMURAM-BHEEM": {
+      "name": "Kumuram-Bheem",
+      "state": "Andhra Pradesh",
+      "lat": 19.34,
+      "lon": 79.39
+    },
+    "KUPWARA": {
+      "name": "Kupwara",
+      "state": "Jammu and Kashmir",
+      "lat": 34.45,
+      "lon": 74.76
+    },
+    "KURNOOL": {
+      "name": "Kurnool",
+      "state": "Andhra Pradesh",
+      "lat": 15.53,
+      "lon": 77.95
+    },
+    "KURUKSHETRA": {
+      "name": "Kurukshetra",
+      "state": "Haryana",
+      "lat": 30.06,
+      "lon": 76.77
+    },
+    "KURUNG-KUMEY": {
+      "name": "Kurung-Kumey",
+      "state": "Arunachal Pradesh",
+      "lat": 27.97,
+      "lon": 93.25
+    },
+    "KUSHINAGAR": {
+      "name": "Kushinagar",
+      "state": "Uttar Pradesh",
+      "lat": 26.92,
+      "lon": 83.97
+    },
+    "KUTCH": {
+      "name": "Kutch",
+      "state": "Gujarat",
+      "lat": 23.71,
+      "lon": 69.96
+    },
+    "KVL": {
+      "name": "Kvl",
+      "state": "Andhra Pradesh",
+      "lat": 14.9,
+      "lon": 79.98
+    },
+    "KWD": {
+      "name": "Kwd",
+      "state": "Madhya Pradesh",
+      "lat": 21.83,
+      "lon": 76.37
+    },
+    "KWR": {
+      "name": "Kwr",
+      "state": null,
+      "lat": 14.78,
+      "lon": 74.13
+    },
+    "KYK": {
+      "name": "Kyk",
+      "state": null,
+      "lat": 8.08,
+      "lon": 77.5
+    },
+    "KZK": {
+      "name": "Kzk",
+      "state": "Kerala",
+      "lat": 11.25,
+      "lon": 75.78
+    },
+    "LADAKH": {
+      "name": "Ladakh",
+      "state": "Jammu and Kashmir",
+      "lat": 34.17,
+      "lon": 78.35
+    },
+    "LAHAUL-SPITI": {
+      "name": "Lahaul-Spiti",
+      "state": "Himachal Pradesh",
+      "lat": 32.5,
+      "lon": 77.52
+    },
+    "LAKHIMPUR": {
+      "name": "Lakhimpur",
+      "state": "Uttar Pradesh",
+      "lat": 28.15,
+      "lon": 80.65
+    },
+    "LAKSHADWEEP": {
+      "name": "Lakshadweep",
+      "state": null,
+      "lat": 10.54,
+      "lon": 72.62
+    },
+    "LALITPUR": {
+      "name": "Lalitpur",
+      "state": "Uttar Pradesh",
+      "lat": 24.7,
+      "lon": 78.58
+    },
+    "LATEHAR": {
+      "name": "Latehar",
+      "state": "Jharkhand",
+      "lat": 23.68,
+      "lon": 84.47
+    },
+    "LATUR": {
+      "name": "Latur",
+      "state": "Maharashtra",
+      "lat": 18.35,
+      "lon": 76.75
+    },
+    "LAWNGTLAI": {
+      "name": "Lawngtlai",
+      "state": "Mizoram",
+      "lat": 22.37,
+      "lon": 92.74
+    },
+    "LDN": {
+      "name": "Ldn",
+      "state": "Punjab",
+      "lat": 30.87,
+      "lon": 75.93
+    },
+    "LEH-LADAKH": {
+      "name": "Leh-Ladakh",
+      "state": "Jammu and Kashmir",
+      "lat": 34.15,
+      "lon": 77.57
+    },
+    "LGI": {
+      "name": "Lgi",
+      "state": null,
+      "lat": 12.42,
+      "lon": 92.93
+    },
+    "LKN": {
+      "name": "Lkn",
+      "state": "Uttar Pradesh",
+      "lat": 26.87,
+      "lon": 80.93
+    },
+    "LKR": {
+      "name": "Lkr",
+      "state": "Assam",
+      "lat": 27.23,
+      "lon": 94.12
+    },
+    "LMD": {
+      "name": "Lmd",
+      "state": "Assam",
+      "lat": 25.75,
+      "lon": 93.18
+    },
+    "LOHARDAGA": {
+      "name": "Lohardaga",
+      "state": "Jharkhand",
+      "lat": 23.48,
+      "lon": 84.68
+    },
+    "LOHIT": {
+      "name": "Lohit",
+      "state": "Arunachal Pradesh",
+      "lat": 27.96,
+      "lon": 96.23
+    },
+    "LONGDING": {
+      "name": "Longding",
+      "state": "Arunachal Pradesh",
+      "lat": 26.78,
+      "lon": 95.35
+    },
+    "LONGLENG": {
+      "name": "Longleng",
+      "state": "Nagaland",
+      "lat": 26.58,
+      "lon": 94.79
+    },
+    "LOWER-DIBANG-VALLEY": {
+      "name": "Lower-Dibang-Valley",
+      "state": "Arunachal Pradesh",
+      "lat": 28.4,
+      "lon": 95.88
+    },
+    "LOWER-SUBANSIRI": {
+      "name": "Lower-Subansiri",
+      "state": "Arunachal Pradesh",
+      "lat": 27.55,
+      "lon": 93.94
+    },
+    "LUCKEESARAI": {
+      "name": "Luckeesarai",
+      "state": "Bihar",
+      "lat": 25.15,
+      "lon": 86.15
+    },
+    "LUCKNOW": {
+      "name": "Lucknow",
+      "state": "Uttar Pradesh",
+      "lat": 26.83,
+      "lon": 80.89
+    },
+    "LUDHIANA": {
+      "name": "Ludhiana",
+      "state": "Punjab",
+      "lat": 30.79,
+      "lon": 75.87
+    },
+    "LUDHIYANA": {
+      "name": "Ludhiyana",
+      "state": "Punjab",
+      "lat": 30.85,
+      "lon": 75.95
+    },
+    "LUNGLEI": {
+      "name": "Lunglei",
+      "state": "Mizoram",
+      "lat": 22.95,
+      "lon": 92.76
+    },
+    "MAB": {
+      "name": "Mab",
+      "state": "Rajasthan",
+      "lat": 24.6,
+      "lon": 72.72
+    },
+    "MADHEPURA": {
+      "name": "Madhepura",
+      "state": "Bihar",
+      "lat": 25.78,
+      "lon": 86.87
+    },
+    "MADHUBANI": {
+      "name": "Madhubani",
+      "state": "Bihar",
+      "lat": 26.35,
+      "lon": 86.24
+    },
+    "MADURAI": {
+      "name": "Madurai",
+      "state": "Tamil Nadu",
+      "lat": 9.9,
+      "lon": 77.95
+    },
+    "MAHABALIPURAM": {
+      "name": "Mahabalipuram",
+      "state": "Tamil Nadu",
+      "lat": 12.62,
+      "lon": 80.19
+    },
+    "MAHABUBABAD": {
+      "name": "Mahabubabad",
+      "state": "Andhra Pradesh",
+      "lat": 17.72,
+      "lon": 79.92
+    },
+    "MAHARAJGANJ": {
+      "name": "Maharajganj",
+      "state": "Uttar Pradesh",
+      "lat": 27.18,
+      "lon": 83.53
+    },
+    "MAHASAMUND": {
+      "name": "Mahasamund",
+      "state": "Chhattisgarh",
+      "lat": 21.18,
+      "lon": 82.34
+    },
+    "MAHBUBNAGAR": {
+      "name": "Mahbubnagar",
+      "state": "Andhra Pradesh",
+      "lat": 16.7,
+      "lon": 77.81
+    },
+    "MAHE": {
+      "name": "Mahe",
+      "state": "Kerala",
+      "lat": 11.73,
+      "lon": 75.53
+    },
+    "MAHENDRAGARH": {
+      "name": "Mahendragarh",
+      "state": "Haryana",
+      "lat": 28.13,
+      "lon": 76.14
+    },
+    "MAHISAGAR": {
+      "name": "Mahisagar",
+      "state": "Gujarat",
+      "lat": 23.19,
+      "lon": 73.63
+    },
+    "MAHOBA": {
+      "name": "Mahoba",
+      "state": "Uttar Pradesh",
+      "lat": 25.33,
+      "lon": 79.71
+    },
+    "MAINPURI": {
+      "name": "Mainpuri",
+      "state": "Uttar Pradesh",
+      "lat": 27.1,
+      "lon": 79.0
+    },
+    "MAJULI": {
+      "name": "Majuli",
+      "state": "Assam",
+      "lat": 26.98,
+      "lon": 94.21
+    },
+    "MALAPPURAM": {
+      "name": "Malappuram",
+      "state": "Kerala",
+      "lat": 11.11,
+      "lon": 76.19
+    },
+    "MALDAH": {
+      "name": "Maldah",
+      "state": "West Bengal",
+      "lat": 25.1,
+      "lon": 88.2
+    },
+    "MALKANGIRI": {
+      "name": "Malkangiri",
+      "state": "Orissa",
+      "lat": 18.2,
+      "lon": 81.92
+    },
+    "MAMIT": {
+      "name": "Mamit",
+      "state": "Mizoram",
+      "lat": 23.76,
+      "lon": 92.47
+    },
+    "MANCHERIAL": {
+      "name": "Mancherial",
+      "state": "Andhra Pradesh",
+      "lat": 18.98,
+      "lon": 79.42
+    },
+    "MANDI": {
+      "name": "Mandi",
+      "state": "Himachal Pradesh",
+      "lat": 31.65,
+      "lon": 77.01
+    },
+    "MANDLA": {
+      "name": "Mandla",
+      "state": "Madhya Pradesh",
+      "lat": 22.69,
+      "lon": 80.57
+    },
+    "MANDSAUR": {
+      "name": "Mandsaur",
+      "state": "Madhya Pradesh",
+      "lat": 24.16,
+      "lon": 75.4
+    },
+    "MANDYA": {
+      "name": "Mandya",
+      "state": "Karnataka",
+      "lat": 12.64,
+      "lon": 76.83
+    },
+    "MANSA": {
+      "name": "Mansa",
+      "state": "Punjab",
+      "lat": 29.88,
+      "lon": 75.47
+    },
+    "MARIGAON": {
+      "name": "Marigaon",
+      "state": "Assam",
+      "lat": 26.29,
+      "lon": 92.26
+    },
+    "MAT": {
+      "name": "Mat",
+      "state": "Maharashtra",
+      "lat": 18.98,
+      "lon": 73.28
+    },
+    "MATHAVARAM": {
+      "name": "Mathavaram",
+      "state": "Tamil Nadu",
+      "lat": 13.14,
+      "lon": 80.22
+    },
+    "MATHURA": {
+      "name": "Mathura",
+      "state": "Uttar Pradesh",
+      "lat": 27.59,
+      "lon": 77.61
+    },
+    "MAUNATH": {
+      "name": "Maunath",
+      "state": "Uttar Pradesh",
+      "lat": 26.1,
+      "lon": 83.55
+    },
+    "MAYURBHANJ": {
+      "name": "Mayurbhanj",
+      "state": "Orissa",
+      "lat": 21.92,
+      "lon": 86.42
+    },
+    "MBN": {
+      "name": "Mbn",
+      "state": "Andhra Pradesh",
+      "lat": 16.75,
+      "lon": 78.0
+    },
+    "MDI": {
+      "name": "Mdi",
+      "state": "Himachal Pradesh",
+      "lat": 31.72,
+      "lon": 76.97
+    },
+    "MDK": {
+      "name": "Mdk",
+      "state": "Andhra Pradesh",
+      "lat": 18.05,
+      "lon": 78.27
+    },
+    "MDP": {
+      "name": "Mdp",
+      "state": "West Bengal",
+      "lat": 22.42,
+      "lon": 87.32
+    },
+    "MDR": {
+      "name": "Mdr",
+      "state": "Tamil Nadu",
+      "lat": 9.92,
+      "lon": 78.12
+    },
+    "MDS": {
+      "name": "Mds",
+      "state": "Tamil Nadu",
+      "lat": 12.98,
+      "lon": 80.17
+    },
+    "MDV": {
+      "name": "Mdv",
+      "state": null,
+      "lat": 22.82,
+      "lon": 69.27
+    },
+    "MDY": {
+      "name": "Mdy",
+      "state": "Karnataka",
+      "lat": 12.5,
+      "lon": 76.83
+    },
+    "MEDAK": {
+      "name": "Medak",
+      "state": "Andhra Pradesh",
+      "lat": 17.97,
+      "lon": 78.19
+    },
+    "MEDCHAL": {
+      "name": "Medchal",
+      "state": "Andhra Pradesh",
+      "lat": 17.53,
+      "lon": 78.56
+    },
+    "MEERUT": {
+      "name": "Meerut",
+      "state": "Uttar Pradesh",
+      "lat": 28.95,
+      "lon": 77.79
+    },
+    "MEHSANA": {
+      "name": "Mehsana",
+      "state": "Gujarat",
+      "lat": 23.57,
+      "lon": 72.4
+    },
+    "MEWAT": {
+      "name": "Mewat",
+      "state": "Haryana",
+      "lat": 27.99,
+      "lon": 77.1
+    },
+    "MHV": {
+      "name": "Mhv",
+      "state": "Gujarat",
+      "lat": 21.08,
+      "lon": 71.78
+    },
+    "MINJUR": {
+      "name": "Minjur",
+      "state": "Tamil Nadu",
+      "lat": 13.26,
+      "lon": 80.25
+    },
+    "MIRZAPUR": {
+      "name": "Mirzapur",
+      "state": "Uttar Pradesh",
+      "lat": 24.94,
+      "lon": 82.63
+    },
+    "MJB": {
+      "name": "Mjb",
+      "state": "Assam",
+      "lat": 26.79,
+      "lon": 92.29
+    },
+    "MJK": {
+      "name": "Mjk",
+      "state": "Madhya Pradesh",
+      "lat": 22.0,
+      "lon": 80.7
+    },
+    "MKS": {
+      "name": "Mks",
+      "state": "Uttaranchal",
+      "lat": 29.47,
+      "lon": 79.65
+    },
+    "MLD": {
+      "name": "Mld",
+      "state": "West Bengal",
+      "lat": 25.03,
+      "lon": 88.13
+    },
+    "MLG": {
+      "name": "Mlg",
+      "state": "Maharashtra",
+      "lat": 20.55,
+      "lon": 74.53
+    },
+    "MLI": {
+      "name": "Mli",
+      "state": "Himachal Pradesh",
+      "lat": 32.27,
+      "lon": 77.17
+    },
+    "MMG": {
+      "name": "Mmg",
+      "state": null,
+      "lat": 15.39,
+      "lon": 73.81
+    },
+    "MNC": {
+      "name": "Mnc",
+      "state": null,
+      "lat": 8.3,
+      "lon": 73.04
+    },
+    "MND": {
+      "name": "Mnd",
+      "state": "Madhya Pradesh",
+      "lat": 22.58,
+      "lon": 80.37
+    },
+    "MNG": {
+      "name": "Mng",
+      "state": "Karnataka",
+      "lat": 12.92,
+      "lon": 74.88
+    },
+    "MOGA": {
+      "name": "Moga",
+      "state": "Punjab",
+      "lat": 30.8,
+      "lon": 75.16
+    },
+    "MOHALI": {
+      "name": "Mohali",
+      "state": "Punjab",
+      "lat": 30.75,
+      "lon": 76.65
+    },
+    "MOKAKCHUNG": {
+      "name": "Mokakchung",
+      "state": "Nagaland",
+      "lat": 26.48,
+      "lon": 94.53
+    },
+    "MON": {
+      "name": "Mon",
+      "state": "Nagaland",
+      "lat": 26.74,
+      "lon": 95.01
+    },
+    "MORADABAD": {
+      "name": "Moradabad",
+      "state": "Uttar Pradesh",
+      "lat": 28.98,
+      "lon": 78.8
+    },
+    "MORBI": {
+      "name": "Morbi",
+      "state": "Gujarat",
+      "lat": 22.76,
+      "lon": 70.84
+    },
+    "MORENA": {
+      "name": "Morena",
+      "state": "Madhya Pradesh",
+      "lat": 26.39,
+      "lon": 77.83
+    },
+    "MPR": {
+      "name": "Mpr",
+      "state": "Uttar Pradesh",
+      "lat": 27.23,
+      "lon": 79.05
+    },
+    "MPT": {
+      "name": "Mpt",
+      "state": "Andhra Pradesh",
+      "lat": 16.2,
+      "lon": 81.15
+    },
+    "MRD": {
+      "name": "Mrd",
+      "state": "Uttar Pradesh",
+      "lat": 28.83,
+      "lon": 78.75
+    },
+    "MRI": {
+      "name": "Mri",
+      "state": "Karnataka",
+      "lat": 12.42,
+      "lon": 75.73
+    },
+    "MRT": {
+      "name": "Mrt",
+      "state": "Uttar Pradesh",
+      "lat": 29.02,
+      "lon": 77.63
+    },
+    "MSR": {
+      "name": "Msr",
+      "state": "Uttaranchal",
+      "lat": 30.45,
+      "lon": 78.08
+    },
+    "MTH": {
+      "name": "Mth",
+      "state": "Bihar",
+      "lat": 26.67,
+      "lon": 84.92
+    },
+    "MTR": {
+      "name": "Mtr",
+      "state": "Uttar Pradesh",
+      "lat": 27.5,
+      "lon": 77.68
+    },
+    "MUKTINATH": {
+      "name": "Muktinath",
+      "state": null,
+      "lat": 28.8,
+      "lon": 83.85
+    },
+    "MUKTSAR": {
+      "name": "Muktsar",
+      "state": "Punjab",
+      "lat": 30.28,
+      "lon": 74.54
+    },
+    "MUMBAI": {
+      "name": "Mumbai",
+      "state": "Maharashtra",
+      "lat": 18.95,
+      "lon": 72.83
+    },
+    "MUN": {
+      "name": "Mun",
+      "state": "Uttaranchal",
+      "lat": 30.12,
+      "lon": 80.25
+    },
+    "MUNGELI": {
+      "name": "Mungeli",
+      "state": "Chhattisgarh",
+      "lat": 22.15,
+      "lon": 81.73
+    },
+    "MUNGER": {
+      "name": "Munger",
+      "state": "Bihar",
+      "lat": 25.23,
+      "lon": 86.52
+    },
+    "MURSHIDABAD": {
+      "name": "Murshidabad",
+      "state": "West Bengal",
+      "lat": 24.29,
+      "lon": 88.28
+    },
+    "MUSSOORIE": {
+      "name": "Mussoorie",
+      "state": "Uttaranchal",
+      "lat": 30.47,
+      "lon": 78.05
+    },
+    "MUZAFFARABAD": {
+      "name": "Muzaffarabad",
+      "state": "Jammu and Kashmir",
+      "lat": 34.55,
+      "lon": 74.15
+    },
+    "MUZAFFARNAGAR": {
+      "name": "Muzaffarnagar",
+      "state": "Uttar Pradesh",
+      "lat": 29.34,
+      "lon": 77.42
+    },
+    "MUZAFFARPUR": {
+      "name": "Muzaffarpur",
+      "state": "Bihar",
+      "lat": 26.15,
+      "lon": 85.32
+    },
+    "MWR": {
+      "name": "Mwr",
+      "state": "Maharashtra",
+      "lat": 17.93,
+      "lon": 73.67
+    },
+    "MYB": {
+      "name": "Myb",
+      "state": null,
+      "lat": 12.92,
+      "lon": 92.92
+    },
+    "MYS": {
+      "name": "Mys",
+      "state": "Karnataka",
+      "lat": 12.3,
+      "lon": 76.7
+    },
+    "MYSORE": {
+      "name": "Mysore",
+      "state": "Karnataka",
+      "lat": 12.2,
+      "lon": 76.52
+    },
+    "MZF": {
+      "name": "Mzf",
+      "state": "Bihar",
+      "lat": 26.12,
+      "lon": 85.4
+    },
+    "Masaurhi_bihar": {
+      "name": "Masaurhi_bihar",
+      "state": "Bihar",
+      "lat": 25.558,
+      "lon": 84.9077
+    },
+    "N-EAST-DELHI": {
+      "name": "N-East-Delhi",
+      "state": "Delhi",
+      "lat": 28.71,
+      "lon": 77.29
+    },
+    "N-WEST-DELHI": {
+      "name": "N-West-Delhi",
+      "state": "Delhi",
+      "lat": 28.7,
+      "lon": 77.07
+    },
+    "NABARANGPUR": {
+      "name": "Nabarangpur",
+      "state": "Orissa",
+      "lat": 19.61,
+      "lon": 82.42
+    },
+    "NAGAON": {
+      "name": "Nagaon",
+      "state": "Assam",
+      "lat": 26.4,
+      "lon": 92.77
+    },
+    "NAGAPATTINAM": {
+      "name": "Nagapattinam",
+      "state": "Tamil Nadu",
+      "lat": 11.1,
+      "lon": 79.77
+    },
+    "NAGARKURNOOL": {
+      "name": "Nagarkurnool",
+      "state": "Andhra Pradesh",
+      "lat": 16.42,
+      "lon": 78.67
+    },
+    "NAGAUR": {
+      "name": "Nagaur",
+      "state": "Rajasthan",
+      "lat": 27.06,
+      "lon": 74.24
+    },
+    "NAGPUR": {
+      "name": "Nagpur",
+      "state": "Maharashtra",
+      "lat": 21.15,
+      "lon": 78.96
+    },
+    "NAINBAGH": {
+      "name": "Nainbagh",
+      "state": "Uttaranchal",
+      "lat": 30.57,
+      "lon": 78.01
+    },
+    "NAINITAL": {
+      "name": "Nainital",
+      "state": "Uttaranchal",
+      "lat": 29.3,
+      "lon": 79.41
+    },
+    "NALANDA": {
+      "name": "Nalanda",
+      "state": "Bihar",
+      "lat": 25.22,
+      "lon": 85.55
+    },
+    "NALBARI": {
+      "name": "Nalbari",
+      "state": "Assam",
+      "lat": 26.36,
+      "lon": 91.4
+    },
+    "NALGONDA": {
+      "name": "Nalgonda",
+      "state": "Andhra Pradesh",
+      "lat": 16.86,
+      "lon": 79.16
+    },
+    "NAMAKKAL": {
+      "name": "Namakkal",
+      "state": "Tamil Nadu",
+      "lat": 11.3,
+      "lon": 78.1
+    },
+    "NAMSAI": {
+      "name": "Namsai",
+      "state": "Arunachal Pradesh",
+      "lat": 27.67,
+      "lon": 95.95
+    },
+    "NANDED": {
+      "name": "Nanded",
+      "state": "Maharashtra",
+      "lat": 19.1,
+      "lon": 77.65
+    },
+    "NANDURBAR": {
+      "name": "Nandurbar",
+      "state": "Maharashtra",
+      "lat": 21.65,
+      "lon": 74.25
+    },
+    "NAR": {
+      "name": "Nar",
+      "state": "Madhya Pradesh",
+      "lat": 22.95,
+      "lon": 79.18
+    },
+    "NARAYANPUR": {
+      "name": "Narayanpur",
+      "state": "Chhattisgarh",
+      "lat": 19.56,
+      "lon": 81.09
+    },
+    "NARMADA": {
+      "name": "Narmada",
+      "state": "Gujarat",
+      "lat": 21.84,
+      "lon": 73.65
+    },
+    "NARSINGPUR": {
+      "name": "Narsingpur",
+      "state": "Madhya Pradesh",
+      "lat": 22.94,
+      "lon": 79.04
+    },
+    "NAS": {
+      "name": "Nas",
+      "state": "Maharashtra",
+      "lat": 20.0,
+      "lon": 73.78
+    },
+    "NASIK": {
+      "name": "Nasik",
+      "state": "Maharashtra",
+      "lat": 20.23,
+      "lon": 74.1
+    },
+    "NAVSARI": {
+      "name": "Navsari",
+      "state": "Gujarat",
+      "lat": 20.8,
+      "lon": 73.1
+    },
+    "NAWADA": {
+      "name": "Nawada",
+      "state": "Bihar",
+      "lat": 24.82,
+      "lon": 85.66
+    },
+    "NAWANSHAHR": {
+      "name": "Nawanshahr",
+      "state": "Punjab",
+      "lat": 31.08,
+      "lon": 76.15
+    },
+    "NAYAGARH": {
+      "name": "Nayagarh",
+      "state": "Orissa",
+      "lat": 20.34,
+      "lon": 84.97
+    },
+    "NCW": {
+      "name": "Ncw",
+      "state": "Andaman and Nicobar",
+      "lat": 7.98,
+      "lon": 93.53
+    },
+    "NDB": {
+      "name": "Ndb",
+      "state": "Maharashtra",
+      "lat": 21.33,
+      "lon": 74.25
+    },
+    "NDG": {
+      "name": "Ndg",
+      "state": "Andhra Pradesh",
+      "lat": 16.78,
+      "lon": 80.28
+    },
+    "NDL": {
+      "name": "Ndl",
+      "state": "Andhra Pradesh",
+      "lat": 15.47,
+      "lon": 78.48
+    },
+    "NDV": {
+      "name": "Ndv",
+      "state": "Andhra Pradesh",
+      "lat": 16.9,
+      "lon": 81.66
+    },
+    "NEEMUCH": {
+      "name": "Neemuch",
+      "state": "Madhya Pradesh",
+      "lat": 24.55,
+      "lon": 75.16
+    },
+    "NELLORE": {
+      "name": "Nellore",
+      "state": "Andhra Pradesh",
+      "lat": 14.3,
+      "lon": 79.8
+    },
+    "NEW-DELHI": {
+      "name": "New-Delhi",
+      "state": "Delhi",
+      "lat": 28.56,
+      "lon": 77.15
+    },
+    "NGB": {
+      "name": "Ngb",
+      "state": "Tamil Nadu",
+      "lat": 13.07,
+      "lon": 80.25
+    },
+    "NGP": {
+      "name": "Ngp",
+      "state": "Maharashtra",
+      "lat": 21.15,
+      "lon": 79.12
+    },
+    "NGR": {
+      "name": "Ngr",
+      "state": "Rajasthan",
+      "lat": 27.17,
+      "lon": 73.67
+    },
+    "NICOBAR": {
+      "name": "Nicobar",
+      "state": null,
+      "lat": 8.01,
+      "lon": 93.33
+    },
+    "NILGIRIS": {
+      "name": "Nilgiris",
+      "state": "Tamil Nadu",
+      "lat": 11.45,
+      "lon": 76.62
+    },
+    "NIRMAL": {
+      "name": "Nirmal",
+      "state": "Andhra Pradesh",
+      "lat": 19.09,
+      "lon": 78.35
+    },
+    "NIZAMABAD": {
+      "name": "Nizamabad",
+      "state": "Andhra Pradesh",
+      "lat": 18.73,
+      "lon": 78.18
+    },
+    "NJB": {
+      "name": "Njb",
+      "state": "Uttar Pradesh",
+      "lat": 29.62,
+      "lon": 78.38
+    },
+    "NLA": {
+      "name": "Nla",
+      "state": "Gujarat",
+      "lat": 23.25,
+      "lon": 68.85
+    },
+    "NLAKHIMPUR": {
+      "name": "Nlakhimpur",
+      "state": "Assam",
+      "lat": 27.17,
+      "lon": 94.14
+    },
+    "NLG": {
+      "name": "Nlg",
+      "state": "Andhra Pradesh",
+      "lat": 17.0,
+      "lon": 79.25
+    },
+    "NLM": {
+      "name": "Nlm",
+      "state": "Kerala",
+      "lat": 11.28,
+      "lon": 76.23
+    },
+    "NLR": {
+      "name": "Nlr",
+      "state": "Andhra Pradesh",
+      "lat": 14.45,
+      "lon": 79.98
+    },
+    "NMC": {
+      "name": "Nmc",
+      "state": "Madhya Pradesh",
+      "lat": 24.47,
+      "lon": 74.9
+    },
+    "NND": {
+      "name": "Nnd",
+      "state": "Maharashtra",
+      "lat": 19.08,
+      "lon": 77.33
+    },
+    "NOIDA": {
+      "name": "Noida",
+      "state": "Uttar Pradesh",
+      "lat": 28.5,
+      "lon": 77.46
+    },
+    "NONEY": {
+      "name": "Noney",
+      "state": "Manipur",
+      "lat": 24.68,
+      "lon": 93.42
+    },
+    "NORTH-DELHI": {
+      "name": "North-Delhi",
+      "state": "Delhi",
+      "lat": 28.78,
+      "lon": 77.1
+    },
+    "NORTH-DINAJPUR": {
+      "name": "North-Dinajpur",
+      "state": null,
+      "lat": 25.87,
+      "lon": 88.17
+    },
+    "NORTH-DISTRICT": {
+      "name": "North-District",
+      "state": "Sikkim",
+      "lat": 27.75,
+      "lon": 88.51
+    },
+    "NORTH-GARO": {
+      "name": "North-Garo",
+      "state": "Meghalaya",
+      "lat": 25.88,
+      "lon": 90.68
+    },
+    "NORTH-GOA": {
+      "name": "North-Goa",
+      "state": "Goa",
+      "lat": 15.53,
+      "lon": 73.98
+    },
+    "NORTH-MIDDLE": {
+      "name": "North-Middle",
+      "state": null,
+      "lat": 12.87,
+      "lon": 93.46
+    },
+    "NORTH-TRIPURA": {
+      "name": "North-Tripura",
+      "state": "Tripura",
+      "lat": 23.96,
+      "lon": 92.22
+    },
+    "NPT": {
+      "name": "Npt",
+      "state": "Tamil Nadu",
+      "lat": 10.77,
+      "lon": 79.85
+    },
+    "NRN": {
+      "name": "Nrn",
+      "state": "Haryana",
+      "lat": 28.0,
+      "lon": 76.08
+    },
+    "NSK": {
+      "name": "Nsk",
+      "state": "Maharashtra",
+      "lat": 20.13,
+      "lon": 73.92
+    },
+    "NSP": {
+      "name": "Nsp",
+      "state": "Andhra Pradesh",
+      "lat": 16.43,
+      "lon": 81.7
+    },
+    "NTL": {
+      "name": "Ntl",
+      "state": "Uttaranchal",
+      "lat": 29.4,
+      "lon": 79.47
+    },
+    "NTW": {
+      "name": "Ntw",
+      "state": "Uttar Pradesh",
+      "lat": 27.43,
+      "lon": 83.42
+    },
+    "NUAPARHE": {
+      "name": "Nuaparhe",
+      "state": "Orissa",
+      "lat": 20.54,
+      "lon": 82.6
+    },
+    "NWG": {
+      "name": "Nwg",
+      "state": "Madhya Pradesh",
+      "lat": 25.07,
+      "lon": 79.45
+    },
+    "NZB": {
+      "name": "Nzb",
+      "state": "Andhra Pradesh",
+      "lat": 18.67,
+      "lon": 78.1
+    },
+    "OKH": {
+      "name": "Okh",
+      "state": null,
+      "lat": 22.48,
+      "lon": 69.12
+    },
+    "ONG": {
+      "name": "Ong",
+      "state": "Andhra Pradesh",
+      "lat": 15.5,
+      "lon": 80.08
+    },
+    "ORI": {
+      "name": "Ori",
+      "state": "Uttar Pradesh",
+      "lat": 25.98,
+      "lon": 79.5
+    },
+    "ORISSA": {
+      "name": "Orissa",
+      "state": "Orissa",
+      "lat": 20.5,
+      "lon": 86.7
+    },
+    "OSMANABAD": {
+      "name": "Osmanabad",
+      "state": "Maharashtra",
+      "lat": 18.5,
+      "lon": 75.8
+    },
+    "Osmanabad": {
+      "name": "Osmanabad",
+      "state": "Maharashtra",
+      "lat": 18.207,
+      "lon": 76.1784
+    },
+    "PAKAUR": {
+      "name": "Pakaur",
+      "state": "Jharkhand",
+      "lat": 24.53,
+      "lon": 87.65
+    },
+    "PALAKKAD": {
+      "name": "Palakkad",
+      "state": "Kerala",
+      "lat": 10.85,
+      "lon": 76.57
+    },
+    "PALAM": {
+      "name": "Palam",
+      "state": "Delhi",
+      "lat": 28.55,
+      "lon": 77.1
+    },
+    "PALAMAU": {
+      "name": "Palamau",
+      "state": "Jharkhand",
+      "lat": 24.22,
+      "lon": 84.2
+    },
+    "PALGHAR": {
+      "name": "Palghar",
+      "state": "Maharashtra",
+      "lat": 19.76,
+      "lon": 73.07
+    },
+    "PALI": {
+      "name": "Pali",
+      "state": "Rajasthan",
+      "lat": 25.61,
+      "lon": 73.59
+    },
+    "PALLIKARANAI": {
+      "name": "Pallikaranai",
+      "state": "Tamil Nadu",
+      "lat": 12.92,
+      "lon": 80.2
+    },
+    "PALWAL": {
+      "name": "Palwal",
+      "state": "Haryana",
+      "lat": 28.06,
+      "lon": 77.31
+    },
+    "PANCHKULA": {
+      "name": "Panchkula",
+      "state": "Haryana",
+      "lat": 30.65,
+      "lon": 77.05
+    },
+    "PANCHMAHAL": {
+      "name": "Panchmahal",
+      "state": "Gujarat",
+      "lat": 22.87,
+      "lon": 73.68
+    },
+    "PANCHSHEEL": {
+      "name": "Panchsheel",
+      "state": "Uttar Pradesh",
+      "lat": 28.77,
+      "lon": 77.78
+    },
+    "PANIPAT": {
+      "name": "Panipat",
+      "state": "Haryana",
+      "lat": 29.33,
+      "lon": 76.9
+    },
+    "PANNA": {
+      "name": "Panna",
+      "state": "Madhya Pradesh",
+      "lat": 24.47,
+      "lon": 80.21
+    },
+    "PANTNAGAR": {
+      "name": "Pantnagar",
+      "state": "Uttaranchal",
+      "lat": 29.03,
+      "lon": 79.46
+    },
+    "PAPUMPARA": {
+      "name": "Papumpara",
+      "state": "Arunachal Pradesh",
+      "lat": 27.2,
+      "lon": 93.61
+    },
+    "PARBHANI": {
+      "name": "Parbhani",
+      "state": "Maharashtra",
+      "lat": 19.31,
+      "lon": 76.67
+    },
+    "PARO": {
+      "name": "Paro",
+      "state": null,
+      "lat": 27.41,
+      "lon": 89.41
+    },
+    "PASHCHIM-CHAMPARAN": {
+      "name": "Pashchim-Champaran",
+      "state": "Bihar",
+      "lat": 27.05,
+      "lon": 84.29
+    },
+    "PATAN": {
+      "name": "Patan",
+      "state": "Gujarat",
+      "lat": 23.77,
+      "lon": 71.76
+    },
+    "PATHANKOT": {
+      "name": "Pathankot",
+      "state": "Punjab",
+      "lat": 32.25,
+      "lon": 75.52
+    },
+    "PATIALA": {
+      "name": "Patiala",
+      "state": "Punjab",
+      "lat": 30.34,
+      "lon": 76.37
+    },
+    "PATNA": {
+      "name": "Patna",
+      "state": "Bihar",
+      "lat": 25.47,
+      "lon": 85.38
+    },
+    "PATTANAMTHITTA": {
+      "name": "Pattanamthitta",
+      "state": "Kerala",
+      "lat": 9.28,
+      "lon": 76.98
+    },
+    "PAURI": {
+      "name": "Pauri",
+      "state": "Uttaranchal",
+      "lat": 29.75,
+      "lon": 78.75
+    },
+    "PBD": {
+      "name": "Pbd",
+      "state": "Gujarat",
+      "lat": 21.65,
+      "lon": 69.67
+    },
+    "PBL": {
+      "name": "Pbl",
+      "state": null,
+      "lat": 11.67,
+      "lon": 92.72
+    },
+    "PBN": {
+      "name": "Pbn",
+      "state": "Tamil Nadu",
+      "lat": 9.27,
+      "lon": 79.3
+    },
+    "PBT": {
+      "name": "Pbt",
+      "state": "Uttar Pradesh",
+      "lat": 28.63,
+      "lon": 79.8
+    },
+    "PCH": {
+      "name": "Pch",
+      "state": "Jammu and Kashmir",
+      "lat": 34.18,
+      "lon": 75.51
+    },
+    "PCM": {
+      "name": "Pcm",
+      "state": "Madhya Pradesh",
+      "lat": 22.47,
+      "lon": 78.43
+    },
+    "PDC": {
+      "name": "Pdc",
+      "state": "Puducherry",
+      "lat": 11.92,
+      "lon": 79.83
+    },
+    "PDS": {
+      "name": "Pds",
+      "state": "Maharashtra",
+      "lat": 19.75,
+      "lon": 78.03
+    },
+    "PEDDAPALLI": {
+      "name": "Peddapalli",
+      "state": "Andhra Pradesh",
+      "lat": 18.62,
+      "lon": 79.47
+    },
+    "PERAMBALUR": {
+      "name": "Perambalur",
+      "state": "Tamil Nadu",
+      "lat": 11.28,
+      "lon": 78.9
+    },
+    "PEREN": {
+      "name": "Peren",
+      "state": "Nagaland",
+      "lat": 25.45,
+      "lon": 93.64
+    },
+    "PERUNGALATHUR": {
+      "name": "Perungalathur",
+      "state": "Tamil Nadu",
+      "lat": 12.9,
+      "lon": 80.08
+    },
+    "PHEK": {
+      "name": "Phek",
+      "state": "Nagaland",
+      "lat": 25.7,
+      "lon": 94.38
+    },
+    "PHERZAWL": {
+      "name": "Pherzawl",
+      "state": "Manipur",
+      "lat": 24.37,
+      "lon": 93.11
+    },
+    "PHL": {
+      "name": "Phl",
+      "state": "Jammu and Kashmir",
+      "lat": 34.02,
+      "lon": 75.02
+    },
+    "PHULBANI": {
+      "name": "Phulbani",
+      "state": "Orissa",
+      "lat": 20.15,
+      "lon": 84.05
+    },
+    "PIL": {
+      "name": "Pil",
+      "state": "Rajasthan",
+      "lat": 28.33,
+      "lon": 75.58
+    },
+    "PILLIBHIT": {
+      "name": "Pillibhit",
+      "state": "Uttar Pradesh",
+      "lat": 28.51,
+      "lon": 80.02
+    },
+    "PITHORAGARH": {
+      "name": "Pithoragarh",
+      "state": "Uttaranchal",
+      "lat": 30.12,
+      "lon": 80.43
+    },
+    "PJM": {
+      "name": "Pjm",
+      "state": "Goa",
+      "lat": 15.48,
+      "lon": 73.82
+    },
+    "PKD": {
+      "name": "Pkd",
+      "state": "Kerala",
+      "lat": 10.77,
+      "lon": 76.65
+    },
+    "PLD": {
+      "name": "Pld",
+      "state": "Rajasthan",
+      "lat": 27.13,
+      "lon": 72.37
+    },
+    "PLM": {
+      "name": "Plm",
+      "state": "Delhi",
+      "lat": 28.57,
+      "lon": 77.1
+    },
+    "PLN": {
+      "name": "Pln",
+      "state": "Orissa",
+      "lat": 20.48,
+      "lon": 84.27
+    },
+    "PMY": {
+      "name": "Pmy",
+      "state": "Tamil Nadu",
+      "lat": 10.95,
+      "lon": 78.08
+    },
+    "PNA": {
+      "name": "Pna",
+      "state": "Madhya Pradesh",
+      "lat": 24.72,
+      "lon": 80.17
+    },
+    "PNB": {
+      "name": "Pnb",
+      "state": "Karnataka",
+      "lat": 12.95,
+      "lon": 74.83
+    },
+    "PND": {
+      "name": "Pnd",
+      "state": "Chhattisgarh",
+      "lat": 22.77,
+      "lon": 81.9
+    },
+    "PNE": {
+      "name": "Pne",
+      "state": "Maharashtra",
+      "lat": 18.53,
+      "lon": 73.85
+    },
+    "PNG": {
+      "name": "Png",
+      "state": "West Bengal",
+      "lat": 23.47,
+      "lon": 87.43
+    },
+    "PNL": {
+      "name": "Pnl",
+      "state": "Kerala",
+      "lat": 9.0,
+      "lon": 76.92
+    },
+    "PNR": {
+      "name": "Pnr",
+      "state": "Uttaranchal",
+      "lat": 29.03,
+      "lon": 79.47
+    },
+    "POKHRA": {
+      "name": "Pokhra",
+      "state": null,
+      "lat": 28.23,
+      "lon": 83.99
+    },
+    "POONAMALLE": {
+      "name": "Poonamalle",
+      "state": "Tamil Nadu",
+      "lat": 13.04,
+      "lon": 80.09
+    },
+    "POONCH": {
+      "name": "Poonch",
+      "state": "Jammu and Kashmir",
+      "lat": 33.69,
+      "lon": 74.22
+    },
+    "PORBANDAR": {
+      "name": "Porbandar",
+      "state": "Gujarat",
+      "lat": 21.75,
+      "lon": 69.76
+    },
+    "PORUR": {
+      "name": "Porur",
+      "state": "Tamil Nadu",
+      "lat": 13.03,
+      "lon": 80.15
+    },
+    "PRAKASAM": {
+      "name": "Prakasam",
+      "state": "Andhra Pradesh",
+      "lat": 15.64,
+      "lon": 79.61
+    },
+    "PRATAPGARH": {
+      "name": "Pratapgarh",
+      "state": "Rajasthan",
+      "lat": 24.02,
+      "lon": 74.65
+    },
+    "PRAYAGRAJ": {
+      "name": "Prayagraj",
+      "state": "Uttar Pradesh",
+      "lat": 25.28,
+      "lon": 81.93
+    },
+    "PRB": {
+      "name": "Prb",
+      "state": "Maharashtra",
+      "lat": 19.27,
+      "lon": 76.77
+    },
+    "PRD": {
+      "name": "Prd",
+      "state": "Orissa",
+      "lat": 20.3,
+      "lon": 86.68
+    },
+    "PRI": {
+      "name": "Pri",
+      "state": "Orissa",
+      "lat": 19.8,
+      "lon": 85.82
+    },
+    "PRL": {
+      "name": "Prl",
+      "state": "West Bengal",
+      "lat": 23.33,
+      "lon": 86.42
+    },
+    "PRN": {
+      "name": "Prn",
+      "state": "Bihar",
+      "lat": 25.27,
+      "lon": 87.47
+    },
+    "PSD": {
+      "name": "Psd",
+      "state": "Maharashtra",
+      "lat": 19.92,
+      "lon": 77.58
+    },
+    "PSG": {
+      "name": "Psg",
+      "state": "Arunachal Pradesh",
+      "lat": 28.1,
+      "lon": 95.38
+    },
+    "PTG": {
+      "name": "Ptg",
+      "state": "Uttar Pradesh",
+      "lat": 25.9,
+      "lon": 81.95
+    },
+    "PTL": {
+      "name": "Ptl",
+      "state": "Punjab",
+      "lat": 30.33,
+      "lon": 76.47
+    },
+    "PTN": {
+      "name": "Ptn",
+      "state": "Bihar",
+      "lat": 25.6,
+      "lon": 85.1
+    },
+    "PUDUCHCHERI": {
+      "name": "Puduchcheri",
+      "state": "Puducherry",
+      "lat": 11.91,
+      "lon": 79.74
+    },
+    "PUDUKOTTAI": {
+      "name": "Pudukottai",
+      "state": "Tamil Nadu",
+      "lat": 10.29,
+      "lon": 78.85
+    },
+    "PULWAMA": {
+      "name": "Pulwama",
+      "state": "Jammu and Kashmir",
+      "lat": 33.93,
+      "lon": 75.18
+    },
+    "PUNE": {
+      "name": "Pune",
+      "state": "Maharashtra",
+      "lat": 18.64,
+      "lon": 74.24
+    },
+    "PUR": {
+      "name": "Pur",
+      "state": "Uttaranchal",
+      "lat": 30.15,
+      "lon": 78.78
+    },
+    "PURBI-CHAMPARAN": {
+      "name": "Purbi-Champaran",
+      "state": "Bihar",
+      "lat": 26.64,
+      "lon": 84.9
+    },
+    "PURI": {
+      "name": "Puri",
+      "state": "Orissa",
+      "lat": 19.95,
+      "lon": 85.76
+    },
+    "PURNIA": {
+      "name": "Purnia",
+      "state": "Bihar",
+      "lat": 25.78,
+      "lon": 87.43
+    },
+    "Palghar": {
+      "name": "Palghar",
+      "state": "Maharashtra",
+      "lat": 19.6967,
+      "lon": 72.7699
+    },
+    "Panvel": {
+      "name": "Panvel",
+      "state": "Maharashtra",
+      "lat": 18.9894,
+      "lon": 73.1175
+    },
+    "Pirana": {
+      "name": "Pirana",
+      "state": "Gujarat",
+      "lat": 22.9771,
+      "lon": 72.553
+    },
+    "Punpun_bihar": {
+      "name": "Punpun_bihar",
+      "state": "Bihar",
+      "lat": 25.093,
+      "lon": 85.1147
+    },
+    "QZD": {
+      "name": "Qzd",
+      "state": "Jammu and Kashmir",
+      "lat": 33.59,
+      "lon": 75.16
+    },
+    "RAEBARELI": {
+      "name": "Raebareli",
+      "state": "Uttar Pradesh",
+      "lat": 26.2,
+      "lon": 81.15
+    },
+    "RAICHUR": {
+      "name": "Raichur",
+      "state": "Karnataka",
+      "lat": 16.06,
+      "lon": 76.92
+    },
+    "RAIGARH": {
+      "name": "Raigarh",
+      "state": "Chhattisgarh",
+      "lat": 22.07,
+      "lon": 83.37
+    },
+    "RAIGARH-MH": {
+      "name": "Raigarh-Mh",
+      "state": "Maharashtra",
+      "lat": 18.49,
+      "lon": 73.25
+    },
+    "RAIPUR": {
+      "name": "Raipur",
+      "state": "Chhattisgarh",
+      "lat": 21.3,
+      "lon": 81.86
+    },
+    "RAISEN": {
+      "name": "Raisen",
+      "state": "Madhya Pradesh",
+      "lat": 23.27,
+      "lon": 78.09
+    },
+    "RAJANNA-SIRCILLA": {
+      "name": "Rajanna-Sircilla",
+      "state": "Andhra Pradesh",
+      "lat": 18.45,
+      "lon": 78.77
+    },
+    "RAJGARH": {
+      "name": "Rajgarh",
+      "state": "Madhya Pradesh",
+      "lat": 23.77,
+      "lon": 76.81
+    },
+    "RAJKOT": {
+      "name": "Rajkot",
+      "state": "Gujarat",
+      "lat": 22.35,
+      "lon": 70.77
+    },
+    "RAJNANDGAON": {
+      "name": "Rajnandgaon",
+      "state": "Chhattisgarh",
+      "lat": 21.07,
+      "lon": 80.81
+    },
+    "RAJOURI": {
+      "name": "Rajouri",
+      "state": "Jammu and Kashmir",
+      "lat": 33.32,
+      "lon": 74.4
+    },
+    "RAJSAMAND": {
+      "name": "Rajsamand",
+      "state": "Rajasthan",
+      "lat": 25.08,
+      "lon": 73.94
+    },
+    "RAMANATHAPURAM": {
+      "name": "Ramanathapuram",
+      "state": "Tamil Nadu",
+      "lat": 9.34,
+      "lon": 78.65
+    },
+    "RAMBAN": {
+      "name": "Ramban",
+      "state": "Jammu and Kashmir",
+      "lat": 33.24,
+      "lon": 75.21
+    },
+    "RAMGARH": {
+      "name": "Ramgarh",
+      "state": "Jharkhand",
+      "lat": 23.68,
+      "lon": 85.54
+    },
+    "RAMNAGAR": {
+      "name": "Ramnagar",
+      "state": "Karnataka",
+      "lat": 12.72,
+      "lon": 77.35
+    },
+    "RAMPUR": {
+      "name": "Rampur",
+      "state": "Uttar Pradesh",
+      "lat": 28.87,
+      "lon": 79.22
+    },
+    "RANCHI": {
+      "name": "Ranchi",
+      "state": "Jharkhand",
+      "lat": 23.3,
+      "lon": 85.39
+    },
+    "RANGAREDDY": {
+      "name": "Rangareddy",
+      "state": "Andhra Pradesh",
+      "lat": 17.13,
+      "lon": 78.38
+    },
+    "RATLAM": {
+      "name": "Ratlam",
+      "state": "Madhya Pradesh",
+      "lat": 23.51,
+      "lon": 75.1
+    },
+    "RATNAGIRI": {
+      "name": "Ratnagiri",
+      "state": "Maharashtra",
+      "lat": 17.28,
+      "lon": 73.45
+    },
+    "RAYAGADA": {
+      "name": "Rayagada",
+      "state": "Orissa",
+      "lat": 19.34,
+      "lon": 83.46
+    },
+    "RCH": {
+      "name": "Rch",
+      "state": "Karnataka",
+      "lat": 16.2,
+      "lon": 77.35
+    },
+    "RCT": {
+      "name": "Rct",
+      "state": "Andhra Pradesh",
+      "lat": 16.55,
+      "lon": 79.55
+    },
+    "RDP": {
+      "name": "Rdp",
+      "state": "Gujarat",
+      "lat": 23.83,
+      "lon": 71.6
+    },
+    "REDFORT": {
+      "name": "Redfort",
+      "state": "Delhi",
+      "lat": 28.65,
+      "lon": 77.24
+    },
+    "REWA": {
+      "name": "Rewa",
+      "state": "Madhya Pradesh",
+      "lat": 24.76,
+      "lon": 81.68
+    },
+    "REWARI": {
+      "name": "Rewari",
+      "state": "Haryana",
+      "lat": 28.22,
+      "lon": 76.57
+    },
+    "RGH": {
+      "name": "Rgh",
+      "state": "Chhattisgarh",
+      "lat": 21.88,
+      "lon": 83.38
+    },
+    "RI-BHOI": {
+      "name": "Ri-Bhoi",
+      "state": "Meghalaya",
+      "lat": 25.88,
+      "lon": 91.82
+    },
+    "RIASI": {
+      "name": "Riasi",
+      "state": "Jammu and Kashmir",
+      "lat": 33.19,
+      "lon": 74.8
+    },
+    "RISHIKESH": {
+      "name": "Rishikesh",
+      "state": "Uttaranchal",
+      "lat": 30.19,
+      "lon": 78.17
+    },
+    "RJH": {
+      "name": "Rjh",
+      "state": "Madhya Pradesh",
+      "lat": 24.0,
+      "lon": 76.72
+    },
+    "RJK": {
+      "name": "Rjk",
+      "state": "Gujarat",
+      "lat": 22.3,
+      "lon": 70.78
+    },
+    "RMD": {
+      "name": "Rmd",
+      "state": "Andhra Pradesh",
+      "lat": 18.77,
+      "lon": 79.43
+    },
+    "RMP": {
+      "name": "Rmp",
+      "state": "Uttar Pradesh",
+      "lat": 28.75,
+      "lon": 79.0
+    },
+    "RNC": {
+      "name": "Rnc",
+      "state": "Jharkhand",
+      "lat": 23.32,
+      "lon": 85.32
+    },
+    "RNG": {
+      "name": "Rng",
+      "state": "Assam",
+      "lat": 26.43,
+      "lon": 91.62
+    },
+    "ROHINI": {
+      "name": "Rohini",
+      "state": "Delhi",
+      "lat": 28.75,
+      "lon": 77.06
+    },
+    "ROHTAK": {
+      "name": "Rohtak",
+      "state": "Haryana",
+      "lat": 28.89,
+      "lon": 76.56
+    },
+    "ROHTAS": {
+      "name": "Rohtas",
+      "state": "Bihar",
+      "lat": 24.94,
+      "lon": 83.99
+    },
+    "RPR": {
+      "name": "Rpr",
+      "state": "Chhattisgarh",
+      "lat": 21.23,
+      "lon": 81.65
+    },
+    "RRK": {
+      "name": "Rrk",
+      "state": "Uttaranchal",
+      "lat": 29.85,
+      "lon": 77.88
+    },
+    "RRL": {
+      "name": "Rrl",
+      "state": "Orissa",
+      "lat": 22.22,
+      "lon": 84.88
+    },
+    "RSN": {
+      "name": "Rsn",
+      "state": "Madhya Pradesh",
+      "lat": 23.32,
+      "lon": 77.83
+    },
+    "RTK": {
+      "name": "Rtk",
+      "state": "Haryana",
+      "lat": 28.83,
+      "lon": 76.58
+    },
+    "RTL": {
+      "name": "Rtl",
+      "state": "Madhya Pradesh",
+      "lat": 23.32,
+      "lon": 75.05
+    },
+    "RTN": {
+      "name": "Rtn",
+      "state": "Maharashtra",
+      "lat": 16.98,
+      "lon": 73.33
+    },
+    "RUDRAPRAYAG": {
+      "name": "Rudraprayag",
+      "state": "Uttaranchal",
+      "lat": 30.61,
+      "lon": 79.09
+    },
+    "RUP": {
+      "name": "Rup",
+      "state": "Assam",
+      "lat": 26.15,
+      "lon": 89.92
+    },
+    "RUPNAGAR": {
+      "name": "Rupnagar",
+      "state": "Punjab",
+      "lat": 30.93,
+      "lon": 76.51
+    },
+    "RWA": {
+      "name": "Rwa",
+      "state": "Madhya Pradesh",
+      "lat": 24.53,
+      "lon": 81.3
+    },
+    "RXL": {
+      "name": "Rxl",
+      "state": "Bihar",
+      "lat": 26.98,
+      "lon": 84.85
+    },
+    "Rabale": {
+      "name": "Rabale",
+      "state": "Maharashtra",
+      "lat": 19.1463,
+      "lon": 73.0081
+    },
+    "Raikhad": {
+      "name": "Raikhad",
+      "state": "Gujarat",
+      "lat": 23.0205,
+      "lon": 72.5793
+    },
+    "Rakhiyal": {
+      "name": "Rakhiyal",
+      "state": "Gujarat",
+      "lat": 23.0168,
+      "lon": 72.6258
+    },
+    "S-EAST-DELHI": {
+      "name": "S-East-Delhi",
+      "state": "Delhi",
+      "lat": 28.55,
+      "lon": 77.28
+    },
+    "S-WEST-DELHI": {
+      "name": "S-West-Delhi",
+      "state": "Delhi",
+      "lat": 28.58,
+      "lon": 76.97
+    },
+    "SAB": {
+      "name": "Sab",
+      "state": "Bihar",
+      "lat": 25.23,
+      "lon": 87.07
+    },
+    "SABARKANTHA": {
+      "name": "Sabarkantha",
+      "state": "Gujarat",
+      "lat": 23.77,
+      "lon": 73.2
+    },
+    "SAFDARJUNG": {
+      "name": "Safdarjung",
+      "state": "Delhi",
+      "lat": 28.58,
+      "lon": 77.21
+    },
+    "SAG": {
+      "name": "Sag",
+      "state": "West Bengal",
+      "lat": 21.72,
+      "lon": 88.1
+    },
+    "SAGAR": {
+      "name": "Sagar",
+      "state": "Madhya Pradesh",
+      "lat": 23.81,
+      "lon": 78.71
+    },
+    "SAHAB": {
+      "name": "Sahab",
+      "state": "Uttaranchal",
+      "lat": 30.69,
+      "lon": 79.62
+    },
+    "SAHARANPUR": {
+      "name": "Saharanpur",
+      "state": "Uttar Pradesh",
+      "lat": 29.95,
+      "lon": 77.5
+    },
+    "SAHARSA": {
+      "name": "Saharsa",
+      "state": "Bihar",
+      "lat": 25.84,
+      "lon": 86.6
+    },
+    "SAHEBGANJ": {
+      "name": "Sahebganj",
+      "state": "Jharkhand",
+      "lat": 25.03,
+      "lon": 87.71
+    },
+    "SAIHA": {
+      "name": "Saiha",
+      "state": "Mizoram",
+      "lat": 22.25,
+      "lon": 92.95
+    },
+    "SALEM": {
+      "name": "Salem",
+      "state": "Tamil Nadu",
+      "lat": 11.7,
+      "lon": 78.1
+    },
+    "SAMASTIPUR": {
+      "name": "Samastipur",
+      "state": "Bihar",
+      "lat": 25.77,
+      "lon": 85.97
+    },
+    "SAMBA": {
+      "name": "Samba",
+      "state": "Jammu and Kashmir",
+      "lat": 32.58,
+      "lon": 75.1
+    },
+    "SAMBALPUR": {
+      "name": "Sambalpur",
+      "state": "Orissa",
+      "lat": 21.5,
+      "lon": 84.2
+    },
+    "SAMBHAL": {
+      "name": "Sambhal",
+      "state": "Uttar Pradesh",
+      "lat": 28.55,
+      "lon": 78.54
+    },
+    "SAN": {
+      "name": "San",
+      "state": "Punjab",
+      "lat": 30.17,
+      "lon": 75.83
+    },
+    "SANGAREDDY": {
+      "name": "Sangareddy",
+      "state": "Andhra Pradesh",
+      "lat": 17.73,
+      "lon": 77.94
+    },
+    "SANGLI": {
+      "name": "Sangli",
+      "state": "Maharashtra",
+      "lat": 17.17,
+      "lon": 74.68
+    },
+    "SANGRUR": {
+      "name": "Sangrur",
+      "state": "Punjab",
+      "lat": 30.21,
+      "lon": 75.88
+    },
+    "SANTRAVI": {
+      "name": "Santravi",
+      "state": "Uttar Pradesh",
+      "lat": 25.36,
+      "lon": 82.63
+    },
+    "SARAIKELA": {
+      "name": "Saraikela",
+      "state": "Jharkhand",
+      "lat": 22.81,
+      "lon": 85.88
+    },
+    "SARAN": {
+      "name": "Saran",
+      "state": "Bihar",
+      "lat": 25.92,
+      "lon": 84.81
+    },
+    "SATARA": {
+      "name": "Satara",
+      "state": "Maharashtra",
+      "lat": 17.64,
+      "lon": 74.22
+    },
+    "SATNA": {
+      "name": "Satna",
+      "state": "Madhya Pradesh",
+      "lat": 24.58,
+      "lon": 80.88
+    },
+    "SAWAI-MADHOPUR": {
+      "name": "Sawai-Madhopur",
+      "state": "Rajasthan",
+      "lat": 26.1,
+      "lon": 76.65
+    },
+    "SBR": {
+      "name": "Sbr",
+      "state": "Assam",
+      "lat": 26.98,
+      "lon": 94.63
+    },
+    "SCZ": {
+      "name": "Scz",
+      "state": "Maharashtra",
+      "lat": 19.12,
+      "lon": 72.85
+    },
+    "SDH": {
+      "name": "Sdh",
+      "state": null,
+      "lat": 20.85,
+      "lon": 88.25
+    },
+    "SDI": {
+      "name": "Sdi",
+      "state": "Madhya Pradesh",
+      "lat": 24.42,
+      "lon": 81.87
+    },
+    "SDN": {
+      "name": "Sdn",
+      "state": "Gujarat",
+      "lat": 22.73,
+      "lon": 71.6
+    },
+    "SEHORE": {
+      "name": "Sehore",
+      "state": "Madhya Pradesh",
+      "lat": 23.02,
+      "lon": 77.04
+    },
+    "SENAPATI": {
+      "name": "Senapati",
+      "state": "Manipur",
+      "lat": 25.3,
+      "lon": 94.08
+    },
+    "SEONI": {
+      "name": "Seoni",
+      "state": "Madhya Pradesh",
+      "lat": 22.27,
+      "lon": 79.74
+    },
+    "SEPAHIJALA": {
+      "name": "Sepahijala",
+      "state": "Tripura",
+      "lat": 23.53,
+      "lon": 91.3
+    },
+    "SERCHHIP": {
+      "name": "Serchhip",
+      "state": "Mizoram",
+      "lat": 23.26,
+      "lon": 92.94
+    },
+    "SFD": {
+      "name": "Sfd",
+      "state": "Delhi",
+      "lat": 28.58,
+      "lon": 77.23
+    },
+    "SGR": {
+      "name": "Sgr",
+      "state": "Madhya Pradesh",
+      "lat": 23.85,
+      "lon": 78.75
+    },
+    "SHAHDARA": {
+      "name": "Shahdara",
+      "state": "Delhi",
+      "lat": 28.66,
+      "lon": 77.3
+    },
+    "SHAHDOL": {
+      "name": "Shahdol",
+      "state": "Madhya Pradesh",
+      "lat": 23.65,
+      "lon": 81.49
+    },
+    "SHAHJAHANPUR": {
+      "name": "Shahjahanpur",
+      "state": "Uttar Pradesh",
+      "lat": 27.97,
+      "lon": 79.85
+    },
+    "SHAJAPUR": {
+      "name": "Shajapur",
+      "state": "Madhya Pradesh",
+      "lat": 23.35,
+      "lon": 76.67
+    },
+    "SHAMLI": {
+      "name": "Shamli",
+      "state": "Uttar Pradesh",
+      "lat": 29.46,
+      "lon": 77.29
+    },
+    "SHEIKHPURA": {
+      "name": "Sheikhpura",
+      "state": "Bihar",
+      "lat": 25.12,
+      "lon": 85.79
+    },
+    "SHEOPUR": {
+      "name": "Sheopur",
+      "state": "Madhya Pradesh",
+      "lat": 25.74,
+      "lon": 77.07
+    },
+    "SHG": {
+      "name": "Shg",
+      "state": null,
+      "lat": 35.01,
+      "lon": 75.51
+    },
+    "SHIMLA": {
+      "name": "Shimla",
+      "state": "Himachal Pradesh",
+      "lat": 31.24,
+      "lon": 77.65
+    },
+    "SHIMOGA": {
+      "name": "Shimoga",
+      "state": "Karnataka",
+      "lat": 14.06,
+      "lon": 75.25
+    },
+    "SHIVHAR": {
+      "name": "Shivhar",
+      "state": "Bihar",
+      "lat": 26.49,
+      "lon": 85.29
+    },
+    "SHIVPURI": {
+      "name": "Shivpuri",
+      "state": "Madhya Pradesh",
+      "lat": 25.38,
+      "lon": 77.74
+    },
+    "SHJ": {
+      "name": "Shj",
+      "state": "Uttar Pradesh",
+      "lat": 27.88,
+      "lon": 79.9
+    },
+    "SHL": {
+      "name": "Shl",
+      "state": "Meghalaya",
+      "lat": 25.57,
+      "lon": 91.88
+    },
+    "SHOLAPUR": {
+      "name": "Sholapur",
+      "state": "Maharashtra",
+      "lat": 17.83,
+      "lon": 75.52
+    },
+    "SHOLINGANALLUR": {
+      "name": "Sholinganallur",
+      "state": "Tamil Nadu",
+      "lat": 12.91,
+      "lon": 80.24
+    },
+    "SHOPIAN": {
+      "name": "Shopian",
+      "state": "Jammu and Kashmir",
+      "lat": 33.72,
+      "lon": 74.79
+    },
+    "SHP": {
+      "name": "Shp",
+      "state": "Madhya Pradesh",
+      "lat": 25.67,
+      "lon": 76.68
+    },
+    "SHR": {
+      "name": "Shr",
+      "state": "Andhra Pradesh",
+      "lat": 13.72,
+      "lon": 80.2
+    },
+    "SHRAVASTI": {
+      "name": "Shravasti",
+      "state": "Uttar Pradesh",
+      "lat": 27.61,
+      "lon": 81.92
+    },
+    "SIANG": {
+      "name": "Siang",
+      "state": "Arunachal Pradesh",
+      "lat": 28.48,
+      "lon": 94.78
+    },
+    "SIBSAGAR": {
+      "name": "Sibsagar",
+      "state": "Assam",
+      "lat": 26.95,
+      "lon": 94.74
+    },
+    "SIDDHI": {
+      "name": "Siddhi",
+      "state": "Madhya Pradesh",
+      "lat": 24.32,
+      "lon": 81.75
+    },
+    "SIDDIPET": {
+      "name": "Siddipet",
+      "state": "Andhra Pradesh",
+      "lat": 18.01,
+      "lon": 78.9
+    },
+    "SIDHARTH-NGR": {
+      "name": "Sidharth-Ngr",
+      "state": "Uttar Pradesh",
+      "lat": 27.26,
+      "lon": 82.87
+    },
+    "SIKAR": {
+      "name": "Sikar",
+      "state": "Rajasthan",
+      "lat": 27.66,
+      "lon": 75.1
+    },
+    "SILVASSA": {
+      "name": "Silvassa",
+      "state": "Dadra and Nagar Haveli",
+      "lat": 20.27,
+      "lon": 73.0
+    },
+    "SIMDEGA": {
+      "name": "Simdega",
+      "state": "Jharkhand",
+      "lat": 22.59,
+      "lon": 84.54
+    },
+    "SINDHUDURG": {
+      "name": "Sindhudurg",
+      "state": "Maharashtra",
+      "lat": 16.14,
+      "lon": 73.76
+    },
+    "SINGROLI": {
+      "name": "Singroli",
+      "state": "Madhya Pradesh",
+      "lat": 24.24,
+      "lon": 82.35
+    },
+    "SIRMUR": {
+      "name": "Sirmur",
+      "state": "Himachal Pradesh",
+      "lat": 30.7,
+      "lon": 77.43
+    },
+    "SIROHI": {
+      "name": "Sirohi",
+      "state": "Rajasthan",
+      "lat": 24.81,
+      "lon": 72.71
+    },
+    "SIRSA": {
+      "name": "Sirsa",
+      "state": "Haryana",
+      "lat": 29.6,
+      "lon": 74.89
+    },
+    "SITAMARHI": {
+      "name": "Sitamarhi",
+      "state": "Bihar",
+      "lat": 26.57,
+      "lon": 85.54
+    },
+    "SITAPUR": {
+      "name": "Sitapur",
+      "state": "Uttar Pradesh",
+      "lat": 27.51,
+      "lon": 80.86
+    },
+    "SIVAGANGA": {
+      "name": "Sivaganga",
+      "state": "Tamil Nadu",
+      "lat": 9.88,
+      "lon": 78.63
+    },
+    "SIWAN": {
+      "name": "Siwan",
+      "state": "Bihar",
+      "lat": 26.13,
+      "lon": 84.4
+    },
+    "SJP": {
+      "name": "Sjp",
+      "state": "Madhya Pradesh",
+      "lat": 23.43,
+      "lon": 76.32
+    },
+    "SKR": {
+      "name": "Skr",
+      "state": "Rajasthan",
+      "lat": 27.62,
+      "lon": 75.13
+    },
+    "SKT": {
+      "name": "Skt",
+      "state": "West Bengal",
+      "lat": 23.65,
+      "lon": 87.7
+    },
+    "SLC": {
+      "name": "Slc",
+      "state": "Assam",
+      "lat": 24.75,
+      "lon": 92.8
+    },
+    "SLG": {
+      "name": "Slg",
+      "state": "West Bengal",
+      "lat": 26.67,
+      "lon": 88.37
+    },
+    "SLM": {
+      "name": "Slm",
+      "state": "Tamil Nadu",
+      "lat": 11.65,
+      "lon": 78.17
+    },
+    "SLP": {
+      "name": "Slp",
+      "state": "Maharashtra",
+      "lat": 17.67,
+      "lon": 75.9
+    },
+    "SMB": {
+      "name": "Smb",
+      "state": "Orissa",
+      "lat": 21.47,
+      "lon": 83.97
+    },
+    "SMG": {
+      "name": "Smg",
+      "state": "Karnataka",
+      "lat": 13.93,
+      "lon": 75.63
+    },
+    "SML": {
+      "name": "Sml",
+      "state": "Himachal Pradesh",
+      "lat": 31.1,
+      "lon": 77.17
+    },
+    "SMP": {
+      "name": "Smp",
+      "state": "Rajasthan",
+      "lat": 25.98,
+      "lon": 76.37
+    },
+    "SNG": {
+      "name": "Sng",
+      "state": "Maharashtra",
+      "lat": 16.85,
+      "lon": 74.6
+    },
+    "SNI": {
+      "name": "Sni",
+      "state": "Madhya Pradesh",
+      "lat": 22.08,
+      "lon": 79.55
+    },
+    "SNM": {
+      "name": "Snm",
+      "state": "Jammu and Kashmir",
+      "lat": 34.32,
+      "lon": 75.32
+    },
+    "SOLAN": {
+      "name": "Solan",
+      "state": "Himachal Pradesh",
+      "lat": 31.06,
+      "lon": 76.93
+    },
+    "SON": {
+      "name": "Son",
+      "state": "Maharashtra",
+      "lat": 21.1,
+      "lon": 79.05
+    },
+    "SONAPUR": {
+      "name": "Sonapur",
+      "state": "Orissa",
+      "lat": 20.95,
+      "lon": 83.89
+    },
+    "SONBHADRA": {
+      "name": "Sonbhadra",
+      "state": "Uttar Pradesh",
+      "lat": 24.39,
+      "lon": 83.04
+    },
+    "SONEPRAYAG": {
+      "name": "Soneprayag",
+      "state": "Uttaranchal",
+      "lat": 30.63,
+      "lon": 78.99
+    },
+    "SONIPAT": {
+      "name": "Sonipat",
+      "state": "Haryana",
+      "lat": 29.05,
+      "lon": 76.86
+    },
+    "SONITPUR": {
+      "name": "Sonitpur",
+      "state": "Assam",
+      "lat": 26.77,
+      "lon": 92.7
+    },
+    "SOUTH": {
+      "name": "South",
+      "state": "Sikkim",
+      "lat": 27.31,
+      "lon": 88.4
+    },
+    "SOUTH-DELHI": {
+      "name": "South-Delhi",
+      "state": "Delhi",
+      "lat": 28.47,
+      "lon": 77.18
+    },
+    "SOUTH-GARO": {
+      "name": "South-Garo",
+      "state": "Meghalaya",
+      "lat": 25.24,
+      "lon": 90.68
+    },
+    "SOUTH-GOA": {
+      "name": "South-Goa",
+      "state": "Goa",
+      "lat": 15.12,
+      "lon": 74.06
+    },
+    "SOUTH-TRIPURA": {
+      "name": "South-Tripura",
+      "state": "Tripura",
+      "lat": 23.25,
+      "lon": 91.6
+    },
+    "SRC": {
+      "name": "Src",
+      "state": "Maharashtra",
+      "lat": 18.85,
+      "lon": 79.97
+    },
+    "SRI-KAKULAM": {
+      "name": "Sri-Kakulam",
+      "state": "Andhra Pradesh",
+      "lat": 18.62,
+      "lon": 84.09
+    },
+    "SRINAGAR": {
+      "name": "Srinagar",
+      "state": "Jammu and Kashmir",
+      "lat": 34.17,
+      "lon": 75.05
+    },
+    "SRINAGAR-UK": {
+      "name": "Srinagar-Uk",
+      "state": "Uttaranchal",
+      "lat": 30.22,
+      "lon": 78.81
+    },
+    "SRL": {
+      "name": "Srl",
+      "state": "Karnataka",
+      "lat": 14.07,
+      "lon": 74.53
+    },
+    "SRN": {
+      "name": "Srn",
+      "state": "Jammu and Kashmir",
+      "lat": 34.08,
+      "lon": 74.83
+    },
+    "SRT": {
+      "name": "Srt",
+      "state": "Gujarat",
+      "lat": 21.2,
+      "lon": 72.83
+    },
+    "SS-MANKACHAR": {
+      "name": "Ss-Mankachar",
+      "state": null,
+      "lat": 25.78,
+      "lon": 89.61
+    },
+    "STA": {
+      "name": "Sta",
+      "state": "Maharashtra",
+      "lat": 17.52,
+      "lon": 74.05
+    },
+    "STN": {
+      "name": "Stn",
+      "state": "Madhya Pradesh",
+      "lat": 24.57,
+      "lon": 80.83
+    },
+    "STP": {
+      "name": "Stp",
+      "state": "Uttar Pradesh",
+      "lat": 26.25,
+      "lon": 82.0
+    },
+    "SUKMA": {
+      "name": "Sukma",
+      "state": "Chhattisgarh",
+      "lat": 18.2,
+      "lon": 81.34
+    },
+    "SULTANUR": {
+      "name": "Sultanur",
+      "state": "Uttar Pradesh",
+      "lat": 26.25,
+      "lon": 82.22
+    },
+    "SUN": {
+      "name": "Sun",
+      "state": "Orissa",
+      "lat": 22.02,
+      "lon": 84.0
+    },
+    "SUNDERGARH": {
+      "name": "Sundergarh",
+      "state": "Orissa",
+      "lat": 22.25,
+      "lon": 84.46
+    },
+    "SUP": {
+      "name": "Sup",
+      "state": "Bihar",
+      "lat": 26.13,
+      "lon": 86.58
+    },
+    "SUPAUL": {
+      "name": "Supaul",
+      "state": "Bihar",
+      "lat": 26.28,
+      "lon": 86.76
+    },
+    "SURAJPUR": {
+      "name": "Surajpur",
+      "state": "Chhattisgarh",
+      "lat": 23.38,
+      "lon": 82.98
+    },
+    "SURAT": {
+      "name": "Surat",
+      "state": "Gujarat",
+      "lat": 21.3,
+      "lon": 73.04
+    },
+    "SURENDRANAGAR": {
+      "name": "Surendranagar",
+      "state": "Gujarat",
+      "lat": 22.6,
+      "lon": 71.57
+    },
+    "SURGUJA": {
+      "name": "Surguja",
+      "state": "Chhattisgarh",
+      "lat": 23.07,
+      "lon": 83.29
+    },
+    "SURYAPET": {
+      "name": "Suryapet",
+      "state": "Andhra Pradesh",
+      "lat": 17.08,
+      "lon": 79.72
+    },
+    "SVP": {
+      "name": "Svp",
+      "state": "Madhya Pradesh",
+      "lat": 25.33,
+      "lon": 77.65
+    },
+    "SWEST-GARO": {
+      "name": "Swest-Garo",
+      "state": null,
+      "lat": 25.5,
+      "lon": 89.7
+    },
+    "SWEST-KHASI": {
+      "name": "Swest-Khasi",
+      "state": "Meghalaya",
+      "lat": 25.31,
+      "lon": 91.21
+    },
+    "S_P_Stadium": {
+      "name": "S_P_Stadium",
+      "state": "Gujarat",
+      "lat": 23.043,
+      "lon": 72.563
+    },
+    "TAMENGLONG": {
+      "name": "Tamenglong",
+      "state": "Manipur",
+      "lat": 25.1,
+      "lon": 93.56
+    },
+    "TAN": {
+      "name": "Tan",
+      "state": "Assam",
+      "lat": 26.65,
+      "lon": 91.92
+    },
+    "TAPI": {
+      "name": "Tapi",
+      "state": "Gujarat",
+      "lat": 21.29,
+      "lon": 73.6
+    },
+    "TAPOVAN": {
+      "name": "Tapovan",
+      "state": "Uttaranchal",
+      "lat": 30.49,
+      "lon": 79.63
+    },
+    "TARAN": {
+      "name": "Taran",
+      "state": "Punjab",
+      "lat": 31.33,
+      "lon": 74.9
+    },
+    "TAWANG": {
+      "name": "Tawang",
+      "state": "Arunachal Pradesh",
+      "lat": 27.66,
+      "lon": 92.01
+    },
+    "TEHRI-GARHWAL": {
+      "name": "Tehri-Garhwal",
+      "state": "Uttaranchal",
+      "lat": 30.37,
+      "lon": 78.49
+    },
+    "TEN": {
+      "name": "Ten",
+      "state": "Tamil Nadu",
+      "lat": 8.95,
+      "lon": 77.31
+    },
+    "TENGNOUPAL": {
+      "name": "Tengnoupal",
+      "state": "Manipur",
+      "lat": 24.48,
+      "lon": 94.23
+    },
+    "TEZ": {
+      "name": "Tez",
+      "state": "Assam",
+      "lat": 26.72,
+      "lon": 92.8
+    },
+    "THAMBARAM": {
+      "name": "Thambaram",
+      "state": "Tamil Nadu",
+      "lat": 12.92,
+      "lon": 80.12
+    },
+    "THANE": {
+      "name": "Thane",
+      "state": "Maharashtra",
+      "lat": 19.35,
+      "lon": 73.32
+    },
+    "THANJAVUR": {
+      "name": "Thanjavur",
+      "state": "Tamil Nadu",
+      "lat": 10.79,
+      "lon": 79.1
+    },
+    "THENI": {
+      "name": "Theni",
+      "state": "Tamil Nadu",
+      "lat": 9.87,
+      "lon": 77.45
+    },
+    "THIMPHU": {
+      "name": "Thimphu",
+      "state": null,
+      "lat": 27.47,
+      "lon": 89.75
+    },
+    "THIRUVETRIVUR": {
+      "name": "Thiruvetrivur",
+      "state": "Tamil Nadu",
+      "lat": 13.15,
+      "lon": 80.29
+    },
+    "THOUBAL": {
+      "name": "Thoubal",
+      "state": "Manipur",
+      "lat": 24.65,
+      "lon": 94.02
+    },
+    "THR": {
+      "name": "Thr",
+      "state": "Uttaranchal",
+      "lat": 30.4,
+      "lon": 78.48
+    },
+    "THRISSUR": {
+      "name": "Thrissur",
+      "state": "Kerala",
+      "lat": 10.48,
+      "lon": 76.35
+    },
+    "TIKAMGARH": {
+      "name": "Tikamgarh",
+      "state": "Madhya Pradesh",
+      "lat": 25.0,
+      "lon": 78.89
+    },
+    "TINSUKIA": {
+      "name": "Tinsukia",
+      "state": "Assam",
+      "lat": 27.59,
+      "lon": 95.62
+    },
+    "TIR": {
+      "name": "Tir",
+      "state": "Tamil Nadu",
+      "lat": 8.73,
+      "lon": 77.75
+    },
+    "TIRAP": {
+      "name": "Tirap",
+      "state": "Arunachal Pradesh",
+      "lat": 26.95,
+      "lon": 95.54
+    },
+    "TIRUNELVELI": {
+      "name": "Tirunelveli",
+      "state": "Tamil Nadu",
+      "lat": 8.85,
+      "lon": 77.57
+    },
+    "TIRUPPUR": {
+      "name": "Tiruppur",
+      "state": "Tamil Nadu",
+      "lat": 10.79,
+      "lon": 77.5
+    },
+    "TIRUVALLUR": {
+      "name": "Tiruvallur",
+      "state": "Tamil Nadu",
+      "lat": 13.26,
+      "lon": 80.07
+    },
+    "TIRUVANDRUM": {
+      "name": "Tiruvandrum",
+      "state": "Kerala",
+      "lat": 8.57,
+      "lon": 76.97
+    },
+    "TIRUVANNAMALAI": {
+      "name": "Tiruvannamalai",
+      "state": "Tamil Nadu",
+      "lat": 12.55,
+      "lon": 79.15
+    },
+    "TIRUVARUR": {
+      "name": "Tiruvarur",
+      "state": "Tamil Nadu",
+      "lat": 10.65,
+      "lon": 79.52
+    },
+    "TKG": {
+      "name": "Tkg",
+      "state": "Madhya Pradesh",
+      "lat": 24.77,
+      "lon": 78.83
+    },
+    "TMK": {
+      "name": "Tmk",
+      "state": "Karnataka",
+      "lat": 13.33,
+      "lon": 77.08
+    },
+    "TND": {
+      "name": "Tnd",
+      "state": null,
+      "lat": 9.73,
+      "lon": 79.03
+    },
+    "TNG": {
+      "name": "Tng",
+      "state": "Nagaland",
+      "lat": 26.27,
+      "lon": 94.82
+    },
+    "TNI": {
+      "name": "Tni",
+      "state": "Andhra Pradesh",
+      "lat": 17.35,
+      "lon": 82.55
+    },
+    "TNJ": {
+      "name": "Tnj",
+      "state": "Tamil Nadu",
+      "lat": 10.78,
+      "lon": 79.13
+    },
+    "TNK": {
+      "name": "Tnk",
+      "state": "Rajasthan",
+      "lat": 26.17,
+      "lon": 75.75
+    },
+    "TONK": {
+      "name": "Tonk",
+      "state": "Rajasthan",
+      "lat": 26.12,
+      "lon": 75.72
+    },
+    "TPI": {
+      "name": "Tpi",
+      "state": "Andhra Pradesh",
+      "lat": 13.67,
+      "lon": 79.58
+    },
+    "TRA": {
+      "name": "Tra",
+      "state": "Meghalaya",
+      "lat": 25.52,
+      "lon": 90.23
+    },
+    "TRIBAL-TERRITY": {
+      "name": "Tribal-Territy",
+      "state": null,
+      "lat": 35.85,
+      "lon": 73.7
+    },
+    "TRICHY": {
+      "name": "Trichy",
+      "state": "Tamil Nadu",
+      "lat": 10.94,
+      "lon": 78.69
+    },
+    "TRP": {
+      "name": "Trp",
+      "state": "Tamil Nadu",
+      "lat": 10.77,
+      "lon": 78.72
+    },
+    "TRR": {
+      "name": "Trr",
+      "state": "Tamil Nadu",
+      "lat": 12.48,
+      "lon": 78.57
+    },
+    "TRT": {
+      "name": "Trt",
+      "state": "Tamil Nadu",
+      "lat": 13.15,
+      "lon": 79.53
+    },
+    "TRV": {
+      "name": "Trv",
+      "state": "Kerala",
+      "lat": 8.48,
+      "lon": 76.95
+    },
+    "TTC": {
+      "name": "Ttc",
+      "state": null,
+      "lat": 8.75,
+      "lon": 78.18
+    },
+    "TTG": {
+      "name": "Ttg",
+      "state": "Orissa",
+      "lat": 20.29,
+      "lon": 83.14
+    },
+    "TUENSANG": {
+      "name": "Tuensang",
+      "state": "Nagaland",
+      "lat": 26.17,
+      "lon": 94.87
+    },
+    "TUMKUR": {
+      "name": "Tumkur",
+      "state": "Karnataka",
+      "lat": 13.55,
+      "lon": 76.93
+    },
+    "TUTICORIN": {
+      "name": "Tuticorin",
+      "state": "Tamil Nadu",
+      "lat": 8.9,
+      "lon": 78.0
+    },
+    "TZP": {
+      "name": "Tzp",
+      "state": "Assam",
+      "lat": 26.62,
+      "lon": 92.78
+    },
+    "Thane": {
+      "name": "Thane",
+      "state": "Maharashtra",
+      "lat": 19.2183,
+      "lon": 72.9781
+    },
+    "UDA": {
+      "name": "Uda",
+      "state": "Rajasthan",
+      "lat": 24.62,
+      "lon": 73.88
+    },
+    "UDAIPUR": {
+      "name": "Udaipur",
+      "state": "Rajasthan",
+      "lat": 24.47,
+      "lon": 73.73
+    },
+    "UDALGURI": {
+      "name": "Udalguri",
+      "state": "Assam",
+      "lat": 26.7,
+      "lon": 92.06
+    },
+    "UDHAMPUR": {
+      "name": "Udhampur",
+      "state": "Jammu and Kashmir",
+      "lat": 32.9,
+      "lon": 75.38
+    },
+    "UDHAMSINGH-NGR": {
+      "name": "Udhamsingh-Ngr",
+      "state": "Uttaranchal",
+      "lat": 28.95,
+      "lon": 79.75
+    },
+    "UDM": {
+      "name": "Udm",
+      "state": "Jammu and Kashmir",
+      "lat": 32.91,
+      "lon": 75.17
+    },
+    "UDP": {
+      "name": "Udp",
+      "state": "Rajasthan",
+      "lat": 24.58,
+      "lon": 73.7
+    },
+    "UDUPI": {
+      "name": "Udupi",
+      "state": "Karnataka",
+      "lat": 13.48,
+      "lon": 74.89
+    },
+    "UJJAIN": {
+      "name": "Ujjain",
+      "state": "Madhya Pradesh",
+      "lat": 23.3,
+      "lon": 75.69
+    },
+    "UJN": {
+      "name": "Ujn",
+      "state": "Madhya Pradesh",
+      "lat": 23.18,
+      "lon": 75.78
+    },
+    "UKHIMATH": {
+      "name": "Ukhimath",
+      "state": "Uttaranchal",
+      "lat": 30.51,
+      "lon": 79.09
+    },
+    "UKHRUL": {
+      "name": "Ukhrul",
+      "state": "Manipur",
+      "lat": 25.08,
+      "lon": 94.43
+    },
+    "ULB": {
+      "name": "Ulb",
+      "state": "West Bengal",
+      "lat": 22.47,
+      "lon": 88.1
+    },
+    "UMARIA": {
+      "name": "Umaria",
+      "state": "Madhya Pradesh",
+      "lat": 23.64,
+      "lon": 80.94
+    },
+    "UMR": {
+      "name": "Umr",
+      "state": "Madhya Pradesh",
+      "lat": 23.53,
+      "lon": 80.88
+    },
+    "UNA": {
+      "name": "Una",
+      "state": "Himachal Pradesh",
+      "lat": 31.58,
+      "lon": 76.21
+    },
+    "UNAKOTI": {
+      "name": "Unakoti",
+      "state": "Tripura",
+      "lat": 24.18,
+      "lon": 92.06
+    },
+    "UNNAO": {
+      "name": "Unnao",
+      "state": "Uttar Pradesh",
+      "lat": 26.57,
+      "lon": 80.55
+    },
+    "UPPER-DIBANG-VALLEY": {
+      "name": "Upper-Dibang-Valley",
+      "state": "Arunachal Pradesh",
+      "lat": 28.85,
+      "lon": 95.93
+    },
+    "UPPER-SIANG": {
+      "name": "Upper-Siang",
+      "state": "Arunachal Pradesh",
+      "lat": 28.95,
+      "lon": 94.8
+    },
+    "UPPER-SUBANSIRI": {
+      "name": "Upper-Subansiri",
+      "state": "Arunachal Pradesh",
+      "lat": 28.38,
+      "lon": 93.8
+    },
+    "USI": {
+      "name": "Usi",
+      "state": "Uttar Pradesh",
+      "lat": 26.75,
+      "lon": 80.88
+    },
+    "UTK": {
+      "name": "Utk",
+      "state": "Uttaranchal",
+      "lat": 30.73,
+      "lon": 78.45
+    },
+    "UTM": {
+      "name": "Utm",
+      "state": "Tamil Nadu",
+      "lat": 11.4,
+      "lon": 76.73
+    },
+    "UTTARKANNAD": {
+      "name": "Uttarkannad",
+      "state": "Karnataka",
+      "lat": 14.73,
+      "lon": 74.58
+    },
+    "UTTARKASHI": {
+      "name": "Uttarkashi",
+      "state": "Uttaranchal",
+      "lat": 30.97,
+      "lon": 78.58
+    },
+    "Udgir": {
+      "name": "Udgir",
+      "state": "Maharashtra",
+      "lat": 18.3943,
+      "lon": 77.1126
+    },
+    "VAISHALI": {
+      "name": "Vaishali",
+      "state": "Bihar",
+      "lat": 25.75,
+      "lon": 85.35
+    },
+    "VALSAD": {
+      "name": "Valsad",
+      "state": "Gujarat",
+      "lat": 20.43,
+      "lon": 73.11
+    },
+    "VARANASI": {
+      "name": "Varanasi",
+      "state": "Uttar Pradesh",
+      "lat": 25.45,
+      "lon": 83.09
+    },
+    "VDN": {
+      "name": "Vdn",
+      "state": "Tamil Nadu",
+      "lat": 10.37,
+      "lon": 79.85
+    },
+    "VDS": {
+      "name": "Vds",
+      "state": "Madhya Pradesh",
+      "lat": 23.53,
+      "lon": 77.82
+    },
+    "VELLORE": {
+      "name": "Vellore",
+      "state": "Tamil Nadu",
+      "lat": 12.91,
+      "lon": 79.0
+    },
+    "VIDISHA": {
+      "name": "Vidisha",
+      "state": "Madhya Pradesh",
+      "lat": 23.85,
+      "lon": 77.78
+    },
+    "VIKARABAD": {
+      "name": "Vikarabad",
+      "state": "Andhra Pradesh",
+      "lat": 17.27,
+      "lon": 77.71
+    },
+    "VILLUPURAM": {
+      "name": "Villupuram",
+      "state": "Tamil Nadu",
+      "lat": 11.79,
+      "lon": 79.12
+    },
+    "VIRUDHUNAGAR": {
+      "name": "Virudhunagar",
+      "state": "Tamil Nadu",
+      "lat": 9.43,
+      "lon": 77.91
+    },
+    "VISAKHAPATNAM": {
+      "name": "Visakhapatnam",
+      "state": "Andhra Pradesh",
+      "lat": 17.8,
+      "lon": 82.66
+    },
+    "VIZIANAGARAM": {
+      "name": "Vizianagaram",
+      "state": "Andhra Pradesh",
+      "lat": 18.09,
+      "lon": 83.55
+    },
+    "VJW": {
+      "name": "Vjw",
+      "state": "Andhra Pradesh",
+      "lat": 16.5,
+      "lon": 80.64
+    },
+    "VLR": {
+      "name": "Vlr",
+      "state": "Tamil Nadu",
+      "lat": 12.92,
+      "lon": 79.15
+    },
+    "VNG": {
+      "name": "Vng",
+      "state": "Maharashtra",
+      "lat": 15.87,
+      "lon": 73.63
+    },
+    "VNS": {
+      "name": "Vns",
+      "state": "Uttar Pradesh",
+      "lat": 25.45,
+      "lon": 82.87
+    },
+    "VRS": {
+      "name": "Vrs",
+      "state": "Uttar Pradesh",
+      "lat": 25.3,
+      "lon": 83.02
+    },
+    "VSK": {
+      "name": "Vsk",
+      "state": "Andhra Pradesh",
+      "lat": 17.72,
+      "lon": 83.23
+    },
+    "VVL": {
+      "name": "Vvl",
+      "state": "Gujarat",
+      "lat": 20.9,
+      "lon": 70.37
+    },
+    "VVN": {
+      "name": "Vvn",
+      "state": "Gujarat",
+      "lat": 22.57,
+      "lon": 72.93
+    },
+    "W-KARBI-ANALOG": {
+      "name": "W-Karbi-Analog",
+      "state": "Assam",
+      "lat": 25.85,
+      "lon": 92.62
+    },
+    "WANAPARTHY": {
+      "name": "Wanaparthy",
+      "state": "Andhra Pradesh",
+      "lat": 16.36,
+      "lon": 77.99
+    },
+    "WARANGAL-RURAL": {
+      "name": "Warangal-Rural",
+      "state": "Andhra Pradesh",
+      "lat": 17.95,
+      "lon": 79.76
+    },
+    "WARANGAL-URBAN": {
+      "name": "Warangal-Urban",
+      "state": "Andhra Pradesh",
+      "lat": 18.03,
+      "lon": 79.45
+    },
+    "WARDHA": {
+      "name": "Wardha",
+      "state": "Maharashtra",
+      "lat": 20.83,
+      "lon": 78.64
+    },
+    "WASHIM": {
+      "name": "Washim",
+      "state": "Maharashtra",
+      "lat": 20.11,
+      "lon": 77.15
+    },
+    "WAYANAD": {
+      "name": "Wayanad",
+      "state": "Kerala",
+      "lat": 11.72,
+      "lon": 76.11
+    },
+    "WEST": {
+      "name": "West",
+      "state": "Sikkim",
+      "lat": 27.37,
+      "lon": 88.19
+    },
+    "WEST-DELHI": {
+      "name": "West-Delhi",
+      "state": "Delhi",
+      "lat": 28.64,
+      "lon": 77.07
+    },
+    "WEST-GARO": {
+      "name": "West-Garo",
+      "state": "Meghalaya",
+      "lat": 25.78,
+      "lon": 90.33
+    },
+    "WEST-GODAVARI": {
+      "name": "West-Godavari",
+      "state": "Andhra Pradesh",
+      "lat": 16.89,
+      "lon": 81.52
+    },
+    "WEST-KAMENG": {
+      "name": "West-Kameng",
+      "state": "Arunachal Pradesh",
+      "lat": 27.33,
+      "lon": 92.46
+    },
+    "WEST-KHASI": {
+      "name": "West-Khasi",
+      "state": "Meghalaya",
+      "lat": 25.65,
+      "lon": 91.3
+    },
+    "WEST-SIANG": {
+      "name": "West-Siang",
+      "state": "Arunachal Pradesh",
+      "lat": 28.6,
+      "lon": 94.35
+    },
+    "WEST-SINGBHUM": {
+      "name": "West-Singbhum",
+      "state": "Jharkhand",
+      "lat": 22.42,
+      "lon": 85.52
+    },
+    "WEST-TRIPURA": {
+      "name": "West-Tripura",
+      "state": "Tripura",
+      "lat": 23.8,
+      "lon": 91.37
+    },
+    "WOKHA": {
+      "name": "Wokha",
+      "state": "Nagaland",
+      "lat": 26.24,
+      "lon": 94.17
+    },
+    "WRD": {
+      "name": "Wrd",
+      "state": "Maharashtra",
+      "lat": 20.67,
+      "lon": 78.58
+    },
+    "YADADRI": {
+      "name": "Yadadri",
+      "state": "Andhra Pradesh",
+      "lat": 17.42,
+      "lon": 79.07
+    },
+    "YADGIRI": {
+      "name": "Yadgiri",
+      "state": "Karnataka",
+      "lat": 16.57,
+      "lon": 76.89
+    },
+    "YAMUNA-NGR": {
+      "name": "Yamuna-Ngr",
+      "state": "Haryana",
+      "lat": 30.22,
+      "lon": 77.34
+    },
+    "YAMUNOTRI": {
+      "name": "Yamunotri",
+      "state": "Uttaranchal",
+      "lat": 30.99,
+      "lon": 78.46
+    },
+    "YANAM": {
+      "name": "Yanam",
+      "state": "Tamil Nadu",
+      "lat": 11.76,
+      "lon": 79.71
+    },
+    "YEOTMAL": {
+      "name": "Yeotmal",
+      "state": "Maharashtra",
+      "lat": 20.07,
+      "lon": 78.22
+    },
+    "YOT": {
+      "name": "Yot",
+      "state": "Maharashtra",
+      "lat": 20.4,
+      "lon": 78.15
+    },
+    "ZIR": {
+      "name": "Zir",
+      "state": "Arunachal Pradesh",
+      "lat": 27.54,
+      "lon": 93.81
+    },
+    "ZUNHEBOTO": {
+      "name": "Zunheboto",
+      "state": "Nagaland",
+      "lat": 26.03,
+      "lon": 94.53
+    }
+  }
+}

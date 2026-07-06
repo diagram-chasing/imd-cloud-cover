@@ -9,6 +9,12 @@ jobs:
   scrape:
     runs-on: ubuntu-latest
 
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,14 +25,20 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          pip install -r scraper/requirements.txt
+        run: pip install -r scraper/requirements.txt
 
-      - name: Run scraper
-        env:
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+      - name: Scrape meteograms
         working-directory: scraper
-        run: python main.py
+        run: python main.py --out /tmp/run-results.json
+
+      - name: Aggregate derived views
+        working-directory: scraper
+        run: python aggregate.py --results /tmp/run-results.json
+
+      - name: Upload run report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-report
+          path: /tmp/run-results.json
+          if-no-files-found: ignore

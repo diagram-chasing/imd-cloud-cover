@@ -1,49 +1,60 @@
-# IMD Meteogram Scraper
+# IMD Meteogram Pipeline
 
-Python scraper that downloads and processes weather meteograms from India Meteorological Department.
+Downloads IMD GFS meteograms, pixel-extracts the cloud-cover panel, and builds
+the static JSON views the frontend consumes. Runs daily via GitHub Actions.
 
 ## Setup
 
 ```bash
 pip install -r requirements.txt
-cp .env.example .env  # Add your R2 credentials
+cp .env.example .env   # add R2 credentials (production only)
 ```
 
-## Environment Variables
+## Environment
 
 ```
-R2_ACCOUNT_ID=your-account-id
-R2_ACCESS_KEY_ID=your-access-key
-R2_SECRET_ACCESS_KEY=your-secret-key
-R2_BUCKET_NAME=your-bucket-name
+R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME
+LOCAL_MODE=1        # write to ./weather_data instead of R2 (dev)
+LOCAL_DIR           # override local output dir (default weather_data)
 ```
 
-## Run
+## Daily run
 
 ```bash
-python main.py
+python main.py --out /tmp/run-results.json     # scrape + extract + upload
+python aggregate.py --results /tmp/run-results.json   # build derived views
 ```
 
-## Output
+`main.py` downloads every station's meteogram, validates geometry, extracts the
+day-0 slice, and uploads `{date}/{CODE}-meteogram.{webp,json}`. It writes a
+run-results report and exits non-zero if the success rate falls below 80%.
 
-Uploads to R2 bucket:
-- `YYYY-MM-DD/{location}-meteogram.webp` - Weather chart images (~80-120KB)
-- `YYYY-MM-DD/{location}-meteogram.json` - Extracted cloud cover data
+`aggregate.py` reads the day-0 slices and writes the frontend views (see below).
 
-## Data Format
+## Tools
 
-Each JSON file contains 80 samples (10 days, 3-hour intervals):
-```json
-{
-  "start_date": "2026-02-15T00:00:00",
-  "samples": 80,
-  "data": [
-    {
-      "datetime": "2026-02-15T00:00:00",
-      "high": 45.23,
-      "middle": 23.45,
-      "low": 67.89
-    }
-  ]
-}
+```bash
+# Re-seed the station manifest from the IMD page (code, name, lat, lon; state via
+# point-in-polygon against static/data/india.json). --merge keeps curated fields.
+python tools/seed_stations.py --states ../static/data/india.json --merge
+
+# Backfill all histories/rollups/summary from every dated file already in the store
+python aggregate.py --rebuild
 ```
+
+## R2 layout
+
+```
+{date}/{CODE}-meteogram.{webp,json}   raw per-station forecast (immutable)
+meta/stations.json                    station manifest
+meta/dates.json                       { dates:[...], latest }
+latest/all-stations.json              today's 8-step day-0 slice per station
+latest/summary.json                   national means, cloudiest/clearest, streaks
+history/{CODE}.json                   per-day daily means (h,m,l,e), cap 400 days
+rollups/7d.json, rollups/30d.json     per-station daily-mean series over window
+reports/{date}.json                   run report (succeeded/failed/suspicious/unmapped)
+```
+
+"Observed" = the **day-0 slice** = first 8 samples (00:00..21:00 IST) of each
+10-day forecast. Effective cover `e` = mean over steps of max(high, middle, low).
+This is model forecast output, not observation.
