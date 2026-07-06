@@ -42,9 +42,11 @@ export function skyFor(timeIndex: number): SkyPalette {
 export const SKY_BANDS = 5;
 
 // Land fills per sky mode: [fill, dither] drawn in a 2x2 checker.
+// India stays green day and night (only the sky changes); night uses a slightly
+// deeper green so it settles against the navy sky without going blue.
 export const LAND: Record<SkyMode, { fill: string; dither: string }> = {
 	day: { fill: '#5B8C6E', dither: '#4A7A5C' },
-	night: { fill: '#16324A', dither: '#122A3E' }
+	night: { fill: '#3E6B54', dither: '#325843' }
 };
 
 export function landForStep(timeIndex: number): { fill: string; dither: string } {

@@ -15,7 +15,7 @@
 	import SeasonalLens from '$lib/components/SeasonalLens.svelte';
 	import StreakBoard from '$lib/components/StreakBoard.svelte';
 	import StationSearch from '$lib/components/StationSearch.svelte';
-	import StationPanel from '$lib/components/StationPanel.svelte';
+	import StationDetails from '$lib/components/StationDetails.svelte';
 
 	let core = $state<CoreData>();
 	let error = $state<string | null>(null);
@@ -54,7 +54,10 @@
 	let panelStation = $derived<Station | null>(
 		sky.selectedCode && core ? (core.manifest.stations[sky.selectedCode] ?? null) : null
 	);
-	function openStation(code: string) {
+	// Screen point the desktop popover anchors to (the click); null for search/streak.
+	let anchorPoint = $state<{ x: number; y: number } | null>(null);
+	function openStation(code: string, at?: { x: number; y: number }) {
+		anchorPoint = at ?? null;
 		sky.selectedCode = code;
 	}
 	function closePanel() {
@@ -172,17 +175,15 @@
 {/if}
 
 {#if panelStation && sky.selectedCode && core}
-	<button class="scrim" aria-label="Close station panel" onclick={closePanel}></button>
-	<aside class="slide-in">
-		<StationPanel
-			code={sky.selectedCode}
-			station={panelStation}
-			current={values[sky.selectedCode] ?? null}
-			rollup={core.rollup30}
-			date={core.summary.date}
-			onclose={closePanel}
-		/>
-	</aside>
+	<StationDetails
+		code={sky.selectedCode}
+		station={panelStation}
+		current={values[sky.selectedCode] ?? null}
+		rollup={core.rollup30}
+		date={core.summary.date}
+		at={anchorPoint}
+		onclose={closePanel}
+	/>
 {/if}
 
 <style>
@@ -334,58 +335,9 @@
 		white-space: nowrap;
 		border: 0;
 	}
-	.scrim {
-		position: fixed;
-		inset: 0;
-		z-index: 45;
-		background: rgba(11, 29, 58, 0.35);
-		border: 0;
-		cursor: pointer;
-	}
-	.slide-in {
-		position: fixed;
-		top: 0;
-		right: 0;
-		z-index: 46;
-		width: 380px;
-		max-width: 100vw;
-		height: 100svh;
-		background: var(--paper);
-		box-shadow: -2px 0 0 0 var(--ink);
-		animation: slide 150ms ease-out;
-	}
-	@keyframes slide {
-		from {
-			transform: translateX(100%);
-		}
-		to {
-			transform: translateX(0);
-		}
-	}
 	@media (max-width: 640px) {
 		.method-grid {
 			grid-template-columns: 1fr;
-		}
-		.slide-in {
-			top: auto;
-			bottom: 0;
-			width: 100vw;
-			height: 70svh;
-			box-shadow: 0 -2px 0 0 var(--ink);
-			animation: slideup 150ms ease-out;
-		}
-	}
-	@keyframes slideup {
-		from {
-			transform: translateY(100%);
-		}
-		to {
-			transform: translateY(0);
-		}
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.slide-in {
-			animation: none;
 		}
 	}
 </style>

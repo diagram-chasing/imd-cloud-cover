@@ -1,14 +1,16 @@
 <script lang="ts">
-	import { Application, Container, Sprite, Texture, Graphics, type Ticker } from 'pixi.js';
+	import { Application, Container, Sprite, Texture, Graphics, Text, type Ticker } from 'pixi.js';
 	import type { FeatureCollection } from 'geojson';
 	import type { StationsManifest } from '$lib/types';
-	import { CELL, SKY, SKY_BANDS, skyMode, coverTier, UI, type BandKey } from '$lib/theme';
-	import { lerpHex } from '$lib/map/color';
+	import { CELL, SKY, skyMode, coverTier, UI, type BandKey } from '$lib/theme';
 	import { buildGeo, type Geo } from '$lib/map/geo';
 	import { buildMarkAtlas, MARK_VARIANTS } from '$lib/map/sprites';
 	import { buildQuadtree, nearest, type StationPoint } from '$lib/map/hit';
 	import { fnv1a, jitter } from '$lib/map/hash';
 	import { sky } from '$lib/state/sky.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { PlusSignIcon, MinusSignIcon, Maximize01Icon } from '@hugeicons/core-free-icons';
 
 	interface Props {
 		india: FeatureCollection;
@@ -17,13 +19,13 @@
 		persistence?: Record<string, number>;
 		enableTooltip?: boolean;
 		onhover?: (info: { code: string; clientX: number; clientY: number } | null) => void;
-		onselect?: (code: string) => void;
+		onselect?: (code: string, at?: { x: number; y: number }) => void;
 	}
 	let { india, manifest, values, enableTooltip = true, onhover, onselect }: Props = $props();
 
 	const WORLD_W = 1024;
 	const PAD = 4;
-	const MARK_CELL = 3; // px per logical cell of a tower mark
+	const MARK_CELL = 4; // px per logical cell of a tower mark
 	// Two constraints keep towers readable (glyphs cap at 3 rows tall):
 	//   1. bands separate WITHIN a tower  → TOWER_GAP must clear a mark's height
 	//   2. towers separate FROM EACH OTHER → BIN must clear a whole tower's height
@@ -41,6 +43,10 @@
 	const BAND_KEYS: BandKey[] = ['low', 'middle', 'high'];
 	const VAL_KEY: Record<BandKey, 'h' | 'm' | 'l'> = { high: 'h', middle: 'm', low: 'l' };
 
+	// Pixel-boxed styling shared by the zoom/reset controls.
+	const ctlClass =
+		'size-8 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] text-[var(--ink)] shadow-none hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]';
+
 	interface Bin {
 		px: number;
 		py: number;
@@ -53,11 +59,14 @@
 	let vw = $state(1);
 	let vh = $state(1);
 
+	const STORY_TITLE = 'Reading The Clouds';
+
 	let app: Application | null = null;
 	let geo: Geo | null = null;
 	let camera: Container | null = null;
 	let groundSprite: Sprite | null = null;
 	let skyGfx: Graphics | null = null;
+	let titleText: Text | null = null;
 	let hoverGfx: Graphics | null = null;
 	let bins: Bin[] = [];
 	const pool: Record<BandKey, Sprite[]> = { low: [], middle: [], high: [] };
@@ -166,6 +175,23 @@
 		groundSprite.scale.set(CELL);
 		camera.addChild(groundSprite);
 
+		// Faint story title, anchored to the left of the world so it pans and
+		// zooms with the map. Sits above the ground but under the cloud marks.
+		titleText = new Text({
+			text: STORY_TITLE,
+			style: {
+				fontFamily: "'Silkscreen', monospace",
+				fontWeight: '700',
+				align: 'left',
+				fill: 0xffffff,
+				wordWrap: true,
+				wordWrapWidth: 2
+			}
+		});
+		titleText.anchor.set(1.2, 0.5);
+		titleText.eventMode = 'none';
+		camera.addChild(titleText);
+
 		cloudTex = { low: [], middle: [], high: [] };
 		for (const band of BAND_KEYS) {
 			for (let tier = 1; tier <= 4; tier++) {
@@ -208,6 +234,7 @@
 
 		fitCamera();
 		drawSky();
+		drawTitle();
 		updateClouds();
 		bindPointer();
 		app.ticker.add(tick);
@@ -221,6 +248,23 @@
 		if (!skyGfx) return;
 		const pal = SKY[skyMode(sky.timeIndex)];
 		skyGfx.clear();
+	}
+
+	// Faint story title stuck to the left of the world map. Coordinates are in
+	// world space (child of camera), so it pans and zooms with the map.
+	function drawTitle() {
+		if (!titleText || !geo) return;
+		const night = skyMode(sky.timeIndex) === 'night';
+		// Size relative to the world so it scales sensibly; wraps into a stacked
+		// column pinned near the left edge.
+		const size = geo.worldH * 0.06;
+		titleText.style.fontSize = size;
+		titleText.style.lineHeight = size * 1.05;
+		titleText.style.wordWrapWidth = geo.worldW * 0.3;
+		// Night: pale ice over navy. Day: deep ink over blue. Both barely there.
+		titleText.style.fill = night ? 0xcde6ff : 0x0b1d3a;
+		titleText.alpha = night ? 0.12 : 0.09;
+		titleText.position.set(geo.worldW * 0.02, geo.worldH / 2);
 	}
 
 	function updateGround() {
@@ -349,7 +393,7 @@
 				const p = quad ? nearest(quad, ox, oy, HIT_R) : null;
 				if (p) {
 					sky.selectedCode = p.code;
-					onselect?.(p.code);
+					onselect?.(p.code, { x: e.clientX, y: e.clientY });
 				}
 			}
 			dragging = false;
@@ -416,6 +460,7 @@
 			vw = Math.round(r.width);
 			vh = Math.round(r.height);
 			drawSky();
+			drawTitle();
 			if (!userMoved) fitCamera();
 		});
 		ro.observe(host);
@@ -441,6 +486,7 @@
 		if (app) {
 			updateGround();
 			drawSky();
+			drawTitle();
 			drawHover();
 		}
 	});
@@ -452,9 +498,15 @@
 
 <div class="pixel-map" bind:this={host}>
 	<div class="zoom-ctl">
-		<button aria-label="Zoom in" onclick={() => zoomButton(1)}>＋</button>
-		<button aria-label="Zoom out" onclick={() => zoomButton(-1)}>－</button>
-		<button aria-label="Reset view" onclick={resetView}>⤢</button>
+		<Button variant="outline" size="icon" class={ctlClass} aria-label="Zoom in" onclick={() => zoomButton(1)}>
+			<HugeiconsIcon icon={PlusSignIcon} strokeWidth={2.5} />
+		</Button>
+		<Button variant="outline" size="icon" class={ctlClass} aria-label="Zoom out" onclick={() => zoomButton(-1)}>
+			<HugeiconsIcon icon={MinusSignIcon} strokeWidth={2.5} />
+		</Button>
+		<Button variant="outline" size="icon" class={ctlClass} aria-label="Reset view" onclick={resetView}>
+			<HugeiconsIcon icon={Maximize01Icon} strokeWidth={2.5} />
+		</Button>
 	</div>
 </div>
 
@@ -477,19 +529,5 @@
 		flex-direction: column;
 		gap: 4px;
 		z-index: 2;
-	}
-	.zoom-ctl button {
-		width: 32px;
-		height: 32px;
-		background: var(--paper);
-		color: var(--ink);
-		box-shadow: 0 0 0 2px var(--ink);
-		font-family: var(--font-display);
-		font-size: 14px;
-		cursor: pointer;
-	}
-	.zoom-ctl button:focus-visible {
-		outline: 2px solid var(--focus);
-		outline-offset: 2px;
 	}
 </style>

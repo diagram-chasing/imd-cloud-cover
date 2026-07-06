@@ -1,53 +1,27 @@
 <script lang="ts">
 	import { sky } from '$lib/state/sky.svelte';
 	import type { ViewMode } from '$lib/types';
+	import { ToggleGroup, ToggleGroupItem } from '$lib/components/ui/toggle-group';
 
 	const TABS: { id: ViewMode; label: string }[] = [
 		{ id: 'today', label: 'TODAY' },
 		{ id: 'week', label: 'WEEK' },
 		{ id: 'month', label: 'MONTH' }
 	];
+
+	const itemClass =
+		'rounded-none border-0 border-r-2 border-[var(--ink)] bg-[var(--paper)] px-3 text-[11px] tracking-wider text-[var(--ink)] [font-family:var(--font-display)] last:border-r-0 ' +
+		'hover:bg-[var(--cloud-block)] hover:text-[var(--ink)] data-[state=on]:bg-[var(--ink)] data-[state=on]:text-[var(--paper)]';
 </script>
 
-<div class="tabs" role="tablist" aria-label="Time range">
+<ToggleGroup
+	type="single"
+	value={sky.view}
+	onValueChange={(v) => v && sky.setView(v as ViewMode)}
+	class="rounded-none border-2 border-[var(--ink)]"
+	aria-label="Time range"
+>
 	{#each TABS as tab (tab.id)}
-		<button
-			class="tab"
-			class:active={sky.view === tab.id}
-			role="tab"
-			aria-selected={sky.view === tab.id}
-			onclick={() => sky.setView(tab.id)}
-		>
-			{tab.label}
-		</button>
+		<ToggleGroupItem value={tab.id} class={itemClass}>{tab.label}</ToggleGroupItem>
 	{/each}
-</div>
-
-<style>
-	.tabs {
-		display: inline-flex;
-		gap: 0;
-		box-shadow: 0 0 0 2px var(--ink);
-	}
-	.tab {
-		font-family: var(--font-display);
-		font-size: 12px;
-		letter-spacing: 0.05em;
-		padding: 6px 12px;
-		background: var(--paper);
-		color: var(--ink);
-		cursor: pointer;
-		border-right: 2px solid var(--ink);
-	}
-	.tab:last-child {
-		border-right: 0;
-	}
-	.tab.active {
-		background: var(--ink);
-		color: var(--ink-on-dark);
-	}
-	.tab:focus-visible {
-		outline: 2px solid var(--focus);
-		outline-offset: 2px;
-	}
-</style>
+</ToggleGroup>
