@@ -14,6 +14,7 @@ import type { LandRaster } from './raster';
 import { buildAtlas, BAND_OFFSET, type SpriteAtlas } from './sprites';
 import type { StationPoint } from './hit';
 import type { Star } from './stars';
+import { fnv1a } from './hash';
 import { CLEAR_STARS } from '$lib/theme';
 
 export type BandValues = Record<string, { h: number; m: number; l: number }>;
@@ -39,6 +40,7 @@ export function drawBase(
 		stars?: Star[];
 		values?: BandValues;
 		points?: StationPoint[];
+		twinkleTick?: number;
 	}
 ) {
 	const { cols, rows, cell, frameW, frameH, timeIndex, raster } = opts;
@@ -58,7 +60,7 @@ export function drawBase(
 
 	// Stars (night steps only): drawn on the base layer, over the sky, under land.
 	if (stop.mode === 'night' && opts.stars && opts.stars.length) {
-		drawStars(ctx, opts.stars, opts.values, opts.points, cell);
+		drawStars(ctx, opts.stars, opts.values, opts.points, cell, opts.twinkleTick ?? 0);
 	}
 
 	// Land: 2x2 checker of fill/dither; coastline cells use the dither color.
@@ -79,11 +81,14 @@ function drawStars(
 	stars: Star[],
 	values: BandValues | undefined,
 	points: StationPoint[] | undefined,
-	cell: number
+	cell: number,
+	twinkleTick: number
 ) {
 	ctx.save();
-	for (const star of stars) {
-		if (star.hidden) continue;
+	for (let s = 0; s < stars.length; s++) {
+		const star = stars[s];
+		// Deterministic twinkle: hide ~8% of stars each tick (no per-frame state).
+		if (twinkleTick > 0 && ((fnv1a(`${s}:${twinkleTick}`) % 100) < 8)) continue;
 		// Star shows only where the nearest station is clear, or none is near.
 		if (values && points && !clearAt(star.x, star.y, values, points, cell)) continue;
 		ctx.globalAlpha = 0.9;

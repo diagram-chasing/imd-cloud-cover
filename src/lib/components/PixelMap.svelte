@@ -17,7 +17,6 @@
 		manifest: StationsManifest;
 		values: BandValues;
 		persistence?: Record<string, number>;
-		driftTick?: number;
 		enableTooltip?: boolean;
 		onhover?: (info: { code: string; clientX: number; clientY: number } | null) => void;
 		onselect?: (code: string) => void;
@@ -28,11 +27,36 @@
 		manifest,
 		values,
 		persistence,
-		driftTick = 0,
 		enableTooltip = true,
 		onhover,
 		onselect
 	}: Props = $props();
+
+	// Idle motion: high-band drift (today view) + star twinkle (night). Both are
+	// disabled under prefers-reduced-motion.
+	let driftTick = $state(0);
+	let twinkleTick = $state(0);
+	let reduced = $state(false);
+
+	$effect(() => {
+		const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+		reduced = mq.matches;
+		const on = () => (reduced = mq.matches);
+		mq.addEventListener('change', on);
+		return () => mq.removeEventListener('change', on);
+	});
+
+	$effect(() => {
+		if (reduced || sky.view !== 'today') return;
+		const id = setInterval(() => (driftTick += 1), 1200);
+		return () => clearInterval(id);
+	});
+
+	$effect(() => {
+		if (reduced || SKY_RAMP[sky.timeIndex].mode !== 'night') return;
+		const id = setInterval(() => (twinkleTick += 1), 800);
+		return () => clearInterval(id);
+	});
 
 	let container = $state<HTMLDivElement>();
 	let baseCanvas = $state<HTMLCanvasElement>();
@@ -92,7 +116,8 @@
 			raster,
 			stars,
 			values,
-			points
+			points,
+			twinkleTick
 		});
 	});
 

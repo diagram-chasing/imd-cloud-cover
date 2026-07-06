@@ -12,6 +12,7 @@
 	import ViewTabs from '$lib/components/ViewTabs.svelte';
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
 	import HeadlineStat from '$lib/components/HeadlineStat.svelte';
+	import SeasonalLens from '$lib/components/SeasonalLens.svelte';
 	import StreakBoard from '$lib/components/StreakBoard.svelte';
 	import StationSearch from '$lib/components/StationSearch.svelte';
 	import StationPanel from '$lib/components/StationPanel.svelte';
@@ -21,6 +22,15 @@
 
 	const today = new Date().toISOString().slice(0, 10);
 	let tip = $state<{ code: string; clientX: number; clientY: number } | null>(null);
+	let mapSection = $state<HTMLElement>();
+
+	// Afternoon-lens "WATCH IT": jump to today view and autoplay the scrub once.
+	function watchAfternoon() {
+		sky.setView('today');
+		mapSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		sky.timeIndex = 3;
+		sky.playing = true;
+	}
 
 	onMount(async () => {
 		try {
@@ -83,7 +93,7 @@
 		{#if core}{core.summary.station_count} stations; use the station search to explore.{/if}
 	</p>
 
-	<section class="map-block">
+	<section class="map-block" bind:this={mapSection}>
 		<div class="controls-top">
 			<ViewTabs />
 			{#if core}
@@ -113,6 +123,16 @@
 			<BandToggle />
 		</div>
 	</section>
+
+	{#if core}
+		<SeasonalLens
+			manifest={core.manifest}
+			latest={core.latest}
+			rollup7={core.rollup7}
+			date={core.summary.date}
+			onwatch={watchAfternoon}
+		/>
+	{/if}
 
 	{#if core}
 		<section class="streak-section">
