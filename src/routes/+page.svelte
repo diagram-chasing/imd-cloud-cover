@@ -1,240 +1,249 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import * as d3 from 'd3';
+	import type { Topology } from 'topojson-specification';
+	import type { FeatureCollection } from 'geojson';
+	import type { StationsManifest, AllStations, Summary, Station } from '$lib/types';
+	import { fetchStations, fetchLatest, fetchSummary } from '$lib/api/r2';
+	import { topoToIndia } from '$lib/map/projection';
+	import { sky } from '$lib/state/sky.svelte';
+	import type { BandValues } from '$lib/map/render';
 
-	interface CloudDataPoint {
-		datetime: string;
-		high: number;
-		middle: number;
-		low: number;
-	}
+	import PixelMap from '$lib/components/PixelMap.svelte';
+	import TimeScrubber from '$lib/components/TimeScrubber.svelte';
+	import BandToggle from '$lib/components/BandToggle.svelte';
+	import StationTooltip from '$lib/components/StationTooltip.svelte';
+	import HeadlineStat from '$lib/components/HeadlineStat.svelte';
 
-	interface CloudDataResponse {
-		start_date: string;
-		samples: number;
-		data: CloudDataPoint[];
-	}
-
-	interface ParsedDataPoint {
-		datetime: Date;
-		high: number;
-		middle: number;
-		low: number;
-	}
-
-	interface Bar {
-		x: number;
-		y: number;
-		width: number;
-		height: number;
-	}
-
-	interface Tick {
-		x: number;
-		label: string;
-	}
-
-	// @ts-expect-error - DOM element binding, not reactive state
-	let container: HTMLDivElement | undefined;
-	let data = $state<CloudDataPoint[] | null>(null);
-	let loading = $state(true);
+	let india = $state<FeatureCollection>();
+	let manifest = $state<StationsManifest>();
+	let latest = $state<AllStations>();
+	let summary = $state<Summary>();
 	let error = $state<string | null>(null);
 
-	const R2_PUBLIC_URL =
-		import.meta.env.VITE_R2_PUBLIC_URL || 'https://pub-b1c53e2bb8fe4ed5a7357663d3707db5.r2.dev';
-	const LOCATION = 'BNG';
-	const today = new Date().toISOString().split('T')[0];
+	const today = new Date().toISOString().slice(0, 10);
 
-	const margin = { top: 60, right: 0, bottom: 60, left: 10 };
-	let width = $state(0);
-	let height = $state(0);
-	let parsedData = $state<ParsedDataPoint[]>([]);
-	let bars = $state<Bar[]>([]);
-	let xTicks = $state<Tick[]>([]);
-	let dividerLines = $state<number[]>([]);
+	// Tooltip state.
+	let tip = $state<{ code: string; clientX: number; clientY: number } | null>(null);
 
-	async function fetchCloudData() {
+	onMount(async () => {
 		try {
-			const url = `${R2_PUBLIC_URL}/${today}/${LOCATION}-meteogram.json`;
-			const response = await fetch(url);
-
-			if (!response.ok) {
-				throw new Error(`Failed to fetch data: ${response.statusText}`);
-			}
-
-			const jsonData: CloudDataResponse = await response.json();
-			data = jsonData.data;
-			loading = false;
-		} catch (err) {
-			error = err instanceof Error ? err.message : 'Unknown error occurred';
-			loading = false;
-		}
-	}
-
-	function calculateChart() {
-		if (!data || !container) return;
-
-		width = container.clientWidth - margin.left - margin.right;
-		height = container.clientHeight - margin.top - margin.bottom;
-
-		// Parse dates
-		const parseTime = d3.timeParse('%Y-%m-%dT%H:%M:%S');
-		parsedData = data.map((d) => ({
-			datetime: typeof d.datetime === 'string' ? parseTime(d.datetime)! : new Date(d.datetime),
-			high: +d.high || 0,
-			middle: +d.middle || 0,
-			low: +d.low || 0
-		}));
-
-		const samples = parsedData.length;
-		const stepWidth = width / samples;
-
-		// Calculate divider lines at 33% and 66%
-		dividerLines = [33, 66].map((yPercent) => height - (yPercent / 100) * height);
-
-		// Calculate bars for all layers (reduced multipliers for cloud-like appearance)
-		const layers = [
-			{ key: 'high', baseY: 66, multiplier: 0.06 },
-			{ key: 'middle', baseY: 33, multiplier: 0.06 },
-			{ key: 'low', baseY: 0, multiplier: 0.06 }
-		];
-
-		const tempBars: Bar[] = [];
-		layers.forEach((layer) => {
-			parsedData.forEach((d, i) => {
-				const cloudValue = d[layer.key as keyof ParsedDataPoint] as number;
-				const val = cloudValue * layer.multiplier + layer.baseY;
-
-				const yBottom = height - (layer.baseY / 100) * height;
-				const yTop = height - (val / 100) * height;
-
-				const xStart = i * stepWidth;
-				const barWidth = stepWidth;
-
-				if (yTop < yBottom) {
-					tempBars.push({
-						x: xStart,
-						y: yTop,
-						width: barWidth,
-						height: yBottom - yTop
-					});
-				}
-			});
-		});
-		bars = tempBars;
-
-		// Calculate x-axis ticks
-		const xScale = d3
-			.scaleTime()
-			.domain([parsedData[0].datetime, parsedData[parsedData.length - 1].datetime])
-			.range([0, width]);
-
-		const timeFormat = d3.timeFormat('%d %b');
-		const tickValues = xScale.ticks(8);
-
-		xTicks = tickValues.map((tick) => ({
-			x: xScale(tick),
-			label: timeFormat(tick)
-		}));
-	}
-
-	$effect(() => {
-		if (data && container) {
-			calculateChart();
+			const [topo, m, l, s] = await Promise.all([
+				fetch('/data/india.json').then((r) => r.json() as Promise<Topology>),
+				fetchStations(),
+				fetchLatest(),
+				fetchSummary()
+			]);
+			india = topoToIndia(topo);
+			manifest = m;
+			latest = l;
+			summary = s;
+		} catch (e) {
+			error = e instanceof Error ? e.message : 'Failed to load data';
 		}
 	});
 
-	onMount(() => {
-		fetchCloudData();
-
-		const handleResize = () => {
-			if (data && container) {
-				calculateChart();
-			}
-		};
-
-		window.addEventListener('resize', handleResize);
-		return () => window.removeEventListener('resize', handleResize);
+	// Per-station cover at the current time step (TODAY view).
+	let values = $derived.by<BandValues>(() => {
+		const out: BandValues = {};
+		if (!latest) return out;
+		const ti = sky.timeIndex;
+		for (const [code, b] of Object.entries(latest.stations)) {
+			out[code] = { h: b.h[ti] ?? 0, m: b.m[ti] ?? 0, l: b.l[ti] ?? 0 };
+		}
+		return out;
 	});
+
+	let tipStation = $derived<Station | null>(
+		tip && manifest ? (manifest.stations[tip.code] ?? null) : null
+	);
+	let tipValues = $derived(tip ? (values[tip.code] ?? null) : null);
+
+	function onselect() {
+		// Station panel arrives in Phase 3; for now selection lives in sky state.
+	}
 </script>
 
-<div class="fixed inset-0 bg-gradient-to-b from-[#399DE1] to-[#5FC2F1] overflow-hidden">
-	<div class="w-full h-full p-5 box-border" bind:this={container}>
-		{#if error}
-			<div class="flex items-center justify-center h-full">
-				<p class="text-white/60 text-sm">{error}</p>
-			</div>
-		{:else if width > 0 && height > 0}
-			<svg
-				width={width + margin.left + margin.right}
-				height={height + margin.top + margin.bottom}
-			>
-				<g transform="translate({margin.left},{margin.top})">
-					<!-- Divider lines -->
-					{#each dividerLines as yPos}
-						<line
-							x1={0}
-							x2={width}
-							y1={yPos}
-							y2={yPos}
-							stroke="rgba(255, 255, 255, 0.1)"
-							stroke-width={1}
-						/>
-					{/each}
+<svelte:head>
+	<title>Aaj Ka Aasmaan — India's Sky, Daily</title>
+	<meta
+		name="description"
+		content="A daily pixel map of cloud cover over India, read from IMD meteograms."
+	/>
+</svelte:head>
 
-					<!-- Cloud bars -->
-					{#each bars as bar}
-						<rect
-							x={bar.x}
-							y={bar.y}
-							width={bar.width}
-							height={bar.height}
-							fill="#ffffff"
-							class="transition-opacity duration-300"
-							style="opacity: {loading ? 0 : 1}"
-						/>
-					{/each}
+<main>
+	<header class="masthead">
+		<span>AAJ KA AASMAAN · INDIA'S SKY, DAILY</span>
+		<span class="mast-right">{summary?.date ?? today} · UPDATES DAILY 11:00 IST</span>
+	</header>
 
-					<!-- X-axis ticks -->
-					<g transform="translate(0,{height})">
-						{#each xTicks as tick}
-							<g transform="translate({tick.x},0)">
-								<line y2={6} stroke="#ffffff" />
-								<text
-									y={20}
-									text-anchor="middle"
-									fill="#ffffff"
-									font-size="12px"
-									font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-								>
-									{tick.label}
-								</text>
-							</g>
-						{/each}
-						<line x1={0} x2={width} stroke="#ffffff" />
-					</g>
+	{#if error}
+		<p class="error">Couldn’t load today’s sky: {error}</p>
+	{/if}
 
-					<!-- Title -->
-					<text
-						x={width / 2}
-						y={-25}
-						text-anchor="middle"
-						fill="#ffffff"
-						font-size="24px"
-						font-weight="300"
-						font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-					>
-						Cloud Coverage - {LOCATION}
-					</text>
-				</g>
-			</svg>
+	{#if summary}
+		<section class="hero-copy">
+			<HeadlineStat {summary} {today} />
+		</section>
+	{/if}
+
+	<section class="map-block">
+		<div class="controls-top">
+			<span class="view-label">TODAY</span>
+		</div>
+
+		{#if india && manifest}
+			<PixelMap {india} {manifest} {values} onhover={(info) => (tip = info)} {onselect} />
+		{:else if !error}
+			<div class="loading">Reading the skies…</div>
 		{/if}
-	</div>
-</div>
+
+		<div class="controls-under">
+			<TimeScrubber />
+			<BandToggle />
+		</div>
+	</section>
+
+	<!-- Method note -->
+	<section class="method">
+		<h2>HOW WE READ THE SKY</h2>
+		<div class="method-grid">
+			<figure>
+				<img
+					src="/method-meteogram.webp"
+					alt="A sample IMD meteogram with the cloud panel highlighted"
+				/>
+				<figcaption>The cloud-cover panel of one station's meteogram.</figcaption>
+			</figure>
+			<div class="method-text">
+				<p>
+					A <strong>meteogram</strong> is a strip chart the India Meteorological Department
+					publishes for each station — a 10-day forecast of cloud, rain, wind and temperature.
+				</p>
+				<p>
+					Every day we download all {manifest?.count ?? '1,200+'} station meteograms and read the
+					pixels of just the cloud-cover panel: three bands for high, middle and low cloud.
+				</p>
+				<p>
+					What you see is the model's <strong>day-0 forecast</strong> — eight 3-hourly steps from
+					midnight — not a satellite observation.
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<footer>
+		<span>Data: IMD GFS meteograms · Not an official forecast.</span>
+	</footer>
+</main>
+
+{#if tip && tipStation}
+	<StationTooltip station={tipStation} values={tipValues} clientX={tip.clientX} clientY={tip.clientY} />
+{/if}
 
 <style>
-	:global(body) {
+	main {
+		max-width: 1080px;
+		margin: 0 auto;
+		padding: 20px 20px 60px;
+	}
+	.masthead {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+		flex-wrap: wrap;
+		font-family: var(--font-display);
+		font-size: 11px;
+		letter-spacing: 0.05em;
+		padding-bottom: 20px;
+		border-bottom: 2px solid var(--ink);
+	}
+	.mast-right {
+		opacity: 0.7;
+	}
+	.hero-copy {
+		margin: 32px 0 24px;
+	}
+	.map-block {
+		margin: 24px 0 48px;
+	}
+	.controls-top {
+		margin-bottom: 12px;
+	}
+	.view-label {
+		font-family: var(--font-display);
+		font-size: 14px;
+		background: var(--ink);
+		color: var(--ink-on-dark);
+		padding: 4px 8px;
+		letter-spacing: 0.05em;
+	}
+	.controls-under {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 20px;
+		align-items: flex-end;
+		margin-top: 16px;
+	}
+	.loading {
+		aspect-ratio: 900 / 954;
+		display: grid;
+		place-items: center;
+		background: #eef4fb;
+		box-shadow: 0 0 0 2px var(--ink);
+		font-family: var(--font-display);
+		font-size: 12px;
+	}
+	.method {
+		margin-top: 48px;
+		border-top: 2px solid var(--ink);
+		padding-top: 24px;
+	}
+	.method h2 {
+		font-family: var(--font-display);
+		font-size: 20px;
+		letter-spacing: 0.05em;
+	}
+	.method-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 320px) 1fr;
+		gap: 24px;
+		align-items: start;
+	}
+	figure {
 		margin: 0;
-		padding: 0;
+	}
+	.method figure img {
+		width: 100%;
+		box-shadow: 0 0 0 2px var(--ink);
+		image-rendering: auto;
+	}
+	figcaption {
+		font-size: 12px;
+		opacity: 0.7;
+		margin-top: 6px;
+	}
+	.method-text p {
+		font-size: 15px;
+		margin: 0 0 12px;
+	}
+	.error {
+		font-family: var(--font-display);
+		font-size: 12px;
+		color: #b23a2a;
+	}
+	footer {
+		margin-top: 48px;
+		padding-top: 20px;
+		border-top: 2px solid var(--ink);
+		font-family: var(--font-display);
+		font-size: 10px;
+		letter-spacing: 0.05em;
+		opacity: 0.7;
+	}
+	@media (max-width: 640px) {
+		.method-grid {
+			grid-template-columns: 1fr;
+		}
 	}
 </style>
