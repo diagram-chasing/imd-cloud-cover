@@ -1,5 +1,6 @@
 // Shared UI state for the sky map (Svelte 5 runes).
 import type { ViewMode } from '$lib/types';
+import type { BandKey } from '$lib/theme';
 
 /** Nearest 3-hour step (0-7) to the current time in IST. */
 export function defaultTimeIndex(): number {
@@ -11,7 +12,7 @@ export function defaultTimeIndex(): number {
 
 class SkyState {
 	timeIndex = $state(defaultTimeIndex());
-	bands = $state({ high: true, middle: true, low: true });
+	focusBand = $state<BandKey | null>(null); // isolated band; null = all bands
 	view = $state<ViewMode>('today');
 	windowDayIndex = $state(0); // index into the current rollup window
 	persistence = $state(false);
@@ -19,8 +20,8 @@ class SkyState {
 	hoverCode = $state<string | null>(null);
 	playing = $state(false);
 
-	toggleBand(band: 'high' | 'middle' | 'low') {
-		this.bands = { ...this.bands, [band]: !this.bands[band] };
+	toggleFocus(band: BandKey) {
+		this.focusBand = this.focusBand === band ? null : band;
 	}
 
 	setView(v: ViewMode) {

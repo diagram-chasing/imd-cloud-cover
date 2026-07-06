@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { sky } from '$lib/state/sky.svelte';
-	import { SKY_RAMP, NIGHT_STEPS } from '$lib/theme';
+	import { NIGHT_STEPS } from '$lib/theme';
 
 	const LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 

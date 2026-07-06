@@ -22,12 +22,12 @@
 
 	const today = new Date().toISOString().slice(0, 10);
 	let tip = $state<{ code: string; clientX: number; clientY: number } | null>(null);
-	let mapSection = $state<HTMLElement>();
+	let stage = $state<HTMLElement>();
 
 	// Afternoon-lens "WATCH IT": jump to today view and autoplay the scrub once.
 	function watchAfternoon() {
 		sky.setView('today');
-		mapSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		stage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		sky.timeIndex = 3;
 		sky.playing = true;
 	}
@@ -51,7 +51,6 @@
 	);
 	let tipValues = $derived(tip ? (values[tip.code] ?? null) : null);
 
-	// Station panel.
 	let panelStation = $derived<Station | null>(
 		sky.selectedCode && core ? (core.manifest.stations[sky.selectedCode] ?? null) : null
 	);
@@ -71,60 +70,58 @@
 	/>
 </svelte:head>
 
-<main>
-	<header class="masthead">
-		<span>AAJ KA AASMAAN · INDIA'S SKY, DAILY</span>
-		<span class="mast-right">{core?.summary.date ?? today} · UPDATES DAILY 11:00 IST</span>
-	</header>
-
-	{#if error}
-		<p class="error">Couldn’t load today’s sky: {error}</p>
-	{/if}
-
+<!-- Full-screen map stage -->
+<section class="stage" bind:this={stage}>
 	{#if core}
-		<section class="hero-copy">
-			<HeadlineStat summary={core.summary} {today} />
-		</section>
+		<PixelMap
+			india={core.india}
+			manifest={core.manifest}
+			{values}
+			{persistence}
+			onhover={(info) => (tip = info)}
+			onselect={openStation}
+		/>
+	{:else if !error}
+		<div class="loading">Reading the skies…</div>
 	{/if}
 
-	<!-- Accessible mirror of the map -->
-	<p class="sr-only">
-		Interactive pixel map of cloud cover over India.
-		{#if core}{core.summary.station_count} stations; use the station search to explore.{/if}
-	</p>
-
-	<section class="map-block" bind:this={mapSection}>
-		<div class="controls-top">
-			<ViewTabs />
-			{#if core}
-				<StationSearch manifest={core.manifest} onselect={openStation} />
-			{/if}
+	<!-- top overlay -->
+	<div class="bar top">
+		<span class="brand">AAJ KA AASMAAN</span>
+		<div class="bar-mid"><ViewTabs /></div>
+		<div class="bar-right">
+			{#if core}<StationSearch manifest={core.manifest} onselect={openStation} />{/if}
 		</div>
+	</div>
 
-		{#if core}
-			<PixelMap
-				india={core.india}
-				manifest={core.manifest}
-				{values}
-				{persistence}
-				onhover={(info) => (tip = info)}
-				onselect={openStation}
-			/>
-		{:else if !error}
-			<div class="loading">Reading the skies…</div>
-		{/if}
-
-		<div class="controls-under">
+	<!-- bottom overlay -->
+	<div class="bar bottom">
+		<div class="scrub">
 			{#if sky.view === 'today'}
 				<TimeScrubber />
 			{:else if activeRollup}
 				<WindowScrubber dates={activeRollup.dates} />
 			{/if}
-			<BandToggle />
 		</div>
-	</section>
+		<BandToggle />
+	</div>
 
+	{#if error}<p class="error">Couldn’t load today’s sky: {error}</p>{/if}
+
+	<p class="sr-only">
+		Interactive pixel map of cloud cover over India.
+		{#if core}{core.summary.station_count} stations; use the station search to explore.{/if}
+	</p>
+</section>
+
+<!-- Short scroll below the map -->
+<div class="content">
 	{#if core}
+		<section class="headline-row">
+			<HeadlineStat summary={core.summary} {today} />
+			<span class="asof">{core.summary.date} · updates daily 11:00 IST</span>
+		</section>
+
 		<SeasonalLens
 			manifest={core.manifest}
 			latest={core.latest}
@@ -132,16 +129,13 @@
 			date={core.summary.date}
 			onwatch={watchAfternoon}
 		/>
-	{/if}
 
-	{#if core}
 		<section class="streak-section">
 			<h2>THE RECORD BOOKS</h2>
 			<StreakBoard summary={core.summary} onselect={openStation} />
 		</section>
 	{/if}
 
-	<!-- Method note -->
 	<section class="method">
 		<h2>HOW WE READ THE SKY</h2>
 		<div class="method-grid">
@@ -154,12 +148,13 @@
 			</figure>
 			<div class="method-text">
 				<p>
-					A <strong>meteogram</strong> is a strip chart the India Meteorological Department
-					publishes for each station — a 10-day forecast of cloud, rain, wind and temperature.
+					A <strong>meteogram</strong> is a strip chart the India Meteorological Department publishes
+					for each station — a 10-day forecast of cloud, rain, wind and temperature.
 				</p>
 				<p>
-					Every day we download all {core?.manifest.count ?? '1,200+'} station meteograms and read the
-					pixels of just the cloud-cover panel: three bands for high, middle and low cloud.
+					Every day we read the pixels of just the cloud-cover panel — three bands for high, middle
+					and low cloud — for all {core?.manifest.count ?? '1,200+'} stations, and stack them in
+					place as three printed layers, like the meteogram's own strip.
 				</p>
 				<p>
 					What you see is the model's <strong>day-0 forecast</strong> — eight 3-hourly steps from
@@ -169,16 +164,13 @@
 		</div>
 	</section>
 
-	<footer>
-		<span>Data: IMD GFS meteograms · Not an official forecast.</span>
-	</footer>
-</main>
+	<footer><span>Data: IMD GFS meteograms · Not an official forecast.</span></footer>
+</div>
 
 {#if tip && tipStation}
 	<StationTooltip station={tipStation} values={tipValues} clientX={tip.clientX} clientY={tip.clientY} />
 {/if}
 
-<!-- Station drill-down slide-in -->
 {#if panelStation && sky.selectedCode && core}
 	<button class="scrim" aria-label="Close station panel" onclick={closePanel}></button>
 	<aside class="slide-in">
@@ -194,54 +186,95 @@
 {/if}
 
 <style>
-	main {
-		max-width: 1080px;
-		margin: 0 auto;
-		padding: 20px 20px 60px;
-	}
-	.masthead {
-		display: flex;
-		justify-content: space-between;
-		gap: 12px;
-		flex-wrap: wrap;
-		font-family: var(--font-display);
-		font-size: 11px;
-		letter-spacing: 0.05em;
-		padding-bottom: 20px;
-		border-bottom: 2px solid var(--ink);
-	}
-	.mast-right {
-		opacity: 0.7;
-	}
-	.hero-copy {
-		margin: 32px 0 24px;
-	}
-	.map-block {
-		margin: 24px 0 48px;
-	}
-	.controls-top {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 16px;
-		flex-wrap: wrap;
-		margin-bottom: 12px;
-	}
-	.controls-under {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 20px;
-		align-items: flex-end;
-		margin-top: 16px;
+	.stage {
+		position: relative;
+		width: 100%;
+		height: 100svh;
+		overflow: hidden;
+		background: #0b1d3a;
 	}
 	.loading {
-		aspect-ratio: 900 / 954;
+		width: 100%;
+		height: 100%;
 		display: grid;
 		place-items: center;
-		background: #eef4fb;
-		box-shadow: 0 0 0 2px var(--ink);
+		color: #fff;
 		font-family: var(--font-display);
 		font-size: 12px;
+	}
+
+	.bar {
+		position: absolute;
+		left: 0;
+		right: 0;
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		padding: 14px 16px;
+		pointer-events: none;
+		z-index: 10;
+	}
+	.bar :global(*) {
+		pointer-events: auto;
+	}
+	.bar.top {
+		top: 0;
+		background: linear-gradient(rgba(11, 29, 58, 0.45), transparent);
+	}
+	.bar.bottom {
+		bottom: 0;
+		flex-wrap: wrap;
+		gap: 12px 20px;
+		background: linear-gradient(transparent, rgba(11, 29, 58, 0.45));
+	}
+	.brand {
+		font-family: var(--font-display);
+		font-size: 13px;
+		letter-spacing: 0.05em;
+		color: #fff;
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+	}
+	.bar-mid {
+		flex: 0 0 auto;
+	}
+	.bar-right {
+		margin-left: auto;
+	}
+	/* make overlaid controls legible on the sky */
+	.bar-right :global(label) {
+		color: #fff;
+	}
+
+	.error {
+		position: absolute;
+		top: 60px;
+		left: 16px;
+		font-family: var(--font-display);
+		font-size: 12px;
+		color: #ffd7cf;
+		z-index: 11;
+	}
+
+	.content {
+		max-width: 1080px;
+		margin: 0 auto;
+		padding: 40px 20px 60px;
+	}
+	.headline-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: flex-start;
+		gap: 24px;
+		flex-wrap: wrap;
+		padding-bottom: 24px;
+		border-bottom: 2px solid var(--ink);
+	}
+	.asof {
+		font-family: var(--font-display);
+		font-size: 10px;
+		letter-spacing: 0.05em;
+		opacity: 0.7;
+		white-space: nowrap;
 	}
 	.streak-section {
 		margin: 48px 0;
@@ -271,7 +304,6 @@
 	.method figure img {
 		width: 100%;
 		box-shadow: 0 0 0 2px var(--ink);
-		image-rendering: auto;
 	}
 	figcaption {
 		font-size: 12px;
@@ -281,11 +313,6 @@
 	.method-text p {
 		font-size: 15px;
 		margin: 0 0 12px;
-	}
-	.error {
-		font-family: var(--font-display);
-		font-size: 12px;
-		color: #b23a2a;
 	}
 	footer {
 		margin-top: 48px;
@@ -322,7 +349,7 @@
 		z-index: 46;
 		width: 380px;
 		max-width: 100vw;
-		height: 100vh;
+		height: 100svh;
 		background: var(--paper);
 		box-shadow: -2px 0 0 0 var(--ink);
 		animation: slide 150ms ease-out;
@@ -343,7 +370,7 @@
 			top: auto;
 			bottom: 0;
 			width: 100vw;
-			height: 70vh;
+			height: 70svh;
 			box-shadow: 0 -2px 0 0 var(--ink);
 			animation: slideup 150ms ease-out;
 		}

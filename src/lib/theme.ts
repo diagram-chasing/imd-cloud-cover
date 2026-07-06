@@ -13,51 +13,51 @@ export function cellForWidth(viewportWidth: number): number {
 	return 8;
 }
 
-export type SkyMode = 'night' | 'dawn' | 'day' | 'dusk';
+export type SkyMode = 'day' | 'night';
 
-export interface SkyStop {
-	ist: string;
-	top: string;
-	bottom: string;
-	mode: SkyMode;
+// Two sky palettes only (day + night). The steps 0-7 are the data axis (00:00..
+// 21:00 IST); each maps to day or night. Sun-up (06:00-18:00) is day.
+export const NIGHT_STEPS = new Set([0, 1, 7]);
+
+export function skyMode(timeIndex: number): SkyMode {
+	return NIGHT_STEPS.has(timeIndex) ? 'night' : 'day';
 }
 
-/** Sky ramp keyed by timeIndex 0-7 (00:00..21:00 IST). Rendered as 4 flat bands. */
-export const SKY_RAMP: SkyStop[] = [
-	{ ist: '00:00', top: '#0B1D3A', bottom: '#142B52', mode: 'night' },
-	{ ist: '03:00', top: '#081831', bottom: '#12264A', mode: 'night' },
-	{ ist: '06:00', top: '#2E5E9E', bottom: '#F2A65A', mode: 'dawn' },
-	{ ist: '09:00', top: '#3D8FD4', bottom: '#6FC4EF', mode: 'day' },
-	{ ist: '12:00', top: '#399DE1', bottom: '#5FC2F1', mode: 'day' },
-	{ ist: '15:00', top: '#3B95D9', bottom: '#63BEEC', mode: 'day' },
-	{ ist: '18:00', top: '#4A5D9E', bottom: '#F08A5D', mode: 'dusk' },
-	{ ist: '21:00', top: '#0E2144', bottom: '#1A335C', mode: 'night' }
-];
+export interface SkyPalette {
+	top: string;
+	bottom: string;
+}
 
-export const NIGHT_STEPS = new Set([0, 1, 7]);
-export const HORIZON_STEPS = new Set([2, 6]); // dawn / dusk peach band
-export const HORIZON_FRACTION = 0.12; // bottom 12% of frame
+// Day = the meteogram's own blue; night = deep navy for stars.
+export const SKY: Record<SkyMode, SkyPalette> = {
+	day: { top: '#2E7CC4', bottom: '#6FC4EF' },
+	night: { top: '#081831', bottom: '#16335C' }
+};
 
-/** Quantize the two-stop gradient into N flat bands (banding is the aesthetic). */
-export const SKY_BANDS = 4;
+export function skyFor(timeIndex: number): SkyPalette {
+	return SKY[skyMode(timeIndex)];
+}
+
+/** Quantize the sky gradient into N flat bands (banding is the aesthetic). */
+export const SKY_BANDS = 5;
 
 // Land fills per sky mode: [fill, dither] drawn in a 2x2 checker.
 export const LAND: Record<SkyMode, { fill: string; dither: string }> = {
 	day: { fill: '#5B8C6E', dither: '#4A7A5C' },
-	dawn: { fill: '#3E6B57', dither: '#335C4A' },
-	dusk: { fill: '#3E6B57', dither: '#335C4A' },
 	night: { fill: '#16324A', dither: '#122A3E' }
 };
 
 export function landForStep(timeIndex: number): { fill: string; dither: string } {
-	return LAND[SKY_RAMP[timeIndex].mode];
+	return LAND[skyMode(timeIndex)];
 }
 
-// Cloud colors per band.
+// Cloud colors per band. Tints deepen with altitude so the three layers
+// separate when stacked flat: low = solid white, middle = blue-gray,
+// high = translucent ice blue.
 export const CLOUD = {
 	low: { fill: '#FFFFFF', shadow: '#D8E8F4', alpha: 1 },
-	middle: { fill: '#EAF4FF', alpha: 0.92 },
-	high: { fill: '#FFFFFF', alpha: 0.65 }
+	middle: { fill: '#D9E8F6', alpha: 0.95 },
+	high: { fill: '#CDE6FF', alpha: 0.55 }
 } as const;
 
 export type BandKey = 'high' | 'middle' | 'low';

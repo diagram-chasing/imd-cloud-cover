@@ -18,6 +18,9 @@ export interface DatesIndex {
 	latest: string;
 }
 
+/** One {h, m, l} cover value (0-100) per station code for the current view. */
+export type BandValues = Record<string, { h: number; m: number; l: number }>;
+
 /** latest/all-stations.json — today's 8-step day-0 slice per station. */
 export interface AllStations {
 	date: string;

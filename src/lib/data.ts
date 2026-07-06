@@ -1,6 +1,5 @@
 // Derive the per-station cover map + persistence columns from the current view.
-import type { AllStations, Rollup, ViewMode } from '$lib/types';
-import type { BandValues } from '$lib/map/render';
+import type { AllStations, BandValues, Rollup, ViewMode } from '$lib/types';
 import { CLOUDY_DAY } from '$lib/theme';
 
 export function rollupForView(

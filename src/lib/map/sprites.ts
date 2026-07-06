@@ -119,6 +119,3 @@ export function buildAtlas(cell: number): SpriteAtlas {
 		get: (band, tier) => cache.get(`${band}:${tier}`)!
 	};
 }
-
-// Band vertical offsets (in cells) for parallax depth (A4).
-export const BAND_OFFSET: Record<BandKey, number> = { high: -2, middle: 0, low: 1 };
