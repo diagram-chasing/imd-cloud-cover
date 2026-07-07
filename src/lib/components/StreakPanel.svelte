@@ -1,6 +1,9 @@
 <script lang="ts">
 	import type { Summary } from '$lib/types';
 	import StreakBoard from '$lib/components/StreakBoard.svelte';
+	import { ScrollArea } from '$lib/components/ui/scroll-area';
+	import { sky } from '$lib/state/sky.svelte';
+	import { skyMode } from '$lib/theme';
 
 	interface Props {
 		summary: Summary;
@@ -20,22 +23,35 @@
 	let hasRoom = $derived(gutter >= MIN_GUTTER);
 	let expanded = $derived(open && hasRoom && zoomRatio <= 1.2);
 	let width = $derived(Math.max(200, Math.min(300, gutter - 32)));
+
+	// The inset follows the sky like the city labels do: ink on a pale smoke by
+	// day, pale on navy smoke at night.
+	let night = $derived(skyMode(sky.timeIndex) === 'night');
+
+	// Pixel scrollbar: a square current-colour thumb on a hairline track.
+	const scrollbarClass =
+		'w-2 p-0 border-l-0 [&_[data-slot=scroll-area-thumb]]:rounded-none [&_[data-slot=scroll-area-thumb]]:bg-current [&_[data-slot=scroll-area-thumb]]:opacity-60';
 </script>
 
 <!-- Nautical-chart inset table in the sea gutter right of the landmass,
      mirroring the title cartouche on the left. -->
 {#if hasRoom}
 	{#if expanded}
-		<aside class="panel" style="width:{width}px" aria-label="Station streaks">
+		<aside class="panel" class:night style="width:{width}px" aria-label="Station streaks">
 			<header>
 				<h2>STATION STREAKS</h2>
-				<button class="fold" aria-expanded="true" aria-label="Collapse streaks" onclick={() => (open = false)}
-					>−</button
+				<button
+					class="fold"
+					aria-expanded="true"
+					aria-label="Collapse streaks"
+					onclick={() => (open = false)}>−</button
 				>
 			</header>
 			<p class="caption">CONSECUTIVE CLEAR / OVERCAST DAYS</p>
 			<div class="body">
-				<StreakBoard {summary} {onselect} stacked limit={5} />
+				<ScrollArea class="h-full" scrollbarYClasses={scrollbarClass}>
+					<StreakBoard {summary} {onselect} stacked limit={5} />
+				</ScrollArea>
 			</div>
 		</aside>
 	{:else}
@@ -44,20 +60,30 @@
 {/if}
 
 <style>
+	/* Same voice as the title cartouche: a hairline box on the sky, lightly
+	   smoked so the list reads over the sea texture. Flips with the sky. */
 	.panel {
+		--sp-fg: #0b1d3a;
+		--sp-smoke: rgba(247, 250, 246, 0.85);
+		--sp-line: rgba(11, 29, 58, 0.85);
+		--ink: var(--sp-fg); /* flips StreakBoard's text with the sky */
 		position: absolute;
 		top: 50%;
 		right: 16px;
 		transform: translateY(-50%);
 		z-index: 10;
-		background: var(--paper);
-		color: var(--ink);
-		border: 2px solid var(--ink);
-		box-shadow: 4px 4px 0 0 var(--ink);
+		background: var(--sp-smoke);
+		color: var(--sp-fg);
+		border: 1px solid var(--sp-line);
 		padding: 10px 12px 12px;
 		max-height: min(70%, 560px);
 		display: flex;
 		flex-direction: column;
+	}
+	.panel.night {
+		--sp-fg: #eaf4ff;
+		--sp-smoke: rgba(8, 24, 49, 0.7);
+		--sp-line: rgba(255, 255, 255, 0.8);
 	}
 	header {
 		display: flex;
@@ -72,30 +98,33 @@
 		letter-spacing: 0.08em;
 	}
 	.fold {
-		width: 24px;
-		height: 24px;
+		width: 22px;
+		height: 22px;
 		flex: 0 0 auto;
-		border: 2px solid var(--ink);
-		background: var(--paper);
-		color: var(--ink);
+		border: 1px solid var(--sp-line);
+		background: transparent;
+		color: var(--sp-fg);
 		font-family: var(--font-display);
-		font-size: 14px;
+		font-size: 13px;
 		line-height: 1;
 		cursor: pointer;
 	}
 	.fold:hover {
-		background: var(--cloud-block);
+		background: rgba(127, 155, 183, 0.2);
 	}
 	.caption {
 		margin: 2px 0 8px;
 		font-family: var(--font-display);
 		font-size: 9px;
 		letter-spacing: 0.06em;
-		opacity: 0.6;
+		opacity: 0.65;
 	}
 	.body {
-		overflow-y: auto;
+		flex: 1;
 		min-height: 0;
+	}
+	.body :global(li button:hover) {
+		background: rgba(127, 155, 183, 0.18);
 	}
 
 	/* Collapsed affordance: a vertical tab riding the map frame's right edge. */

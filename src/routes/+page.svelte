@@ -20,26 +20,23 @@
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Drawer, DrawerContent } from '$lib/components/ui/drawer';
-	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { PlusSignIcon, MinusSignIcon, Maximize01Icon } from '@hugeicons/core-free-icons';
+	import { ScrollArea } from '$lib/components/ui/scroll-area';
 
 	let core = $state<CoreData>();
 	let error = $state<string | null>(null);
 
 	let tip = $state<HoverInfo | null>(null);
 
-	// Map instance API (zoom buttons live in the page's control rail) and the
-	// camera-derived layout info the streak inset uses to claim gutter space.
+	// Map instance API (the FIT link calls it) and the camera-derived layout info
+	// the streak inset + FIT link use: gutter width and zoom-vs-fit ratio.
 	let map = $state<{ zoomIn: () => void; zoomOut: () => void; zoomReset: () => void }>();
 	let layout = $state({ gutter: 0, zoomRatio: 1 });
+	// Scroll/pinch does the zooming; chrome appears only when there's a way back.
+	let zoomed = $derived(layout.zoomRatio > 1.05);
 
-	// Mobile chip trays.
+	// Mobile streaks drawer.
 	let streaksOpen = $state(false);
 
-	// Pixel-boxed zoom/fit buttons: h-11 standalone matches the 44px rail height
-	// of the bordered toggle groups. Corner chips (mobile top strip) stay 32px.
-	const ctlClass =
-		'size-11 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] text-[var(--ink)] shadow-none hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]';
 	const chipClass =
 		'h-8 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] px-2.5 text-[10px] tracking-wider text-[var(--ink)] uppercase shadow-none [font-family:var(--font-display)] hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]';
 
@@ -77,10 +74,11 @@
 		sky.selectedCode = null;
 	}
 
+	let night = $derived(skyMode(sky.timeIndex) === 'night');
+
 	// Follow the map's sky: at night the whole page (paper mat + content below) goes
 	// dark to match the navy canvas, by overriding the paper/ink tokens on the root.
 	$effect(() => {
-		const night = skyMode(sky.timeIndex) === 'night';
 		document.documentElement.classList.toggle('night', night);
 		return () => document.documentElement.classList.remove('night');
 	});
@@ -148,65 +146,40 @@
 			</div>
 		</div>
 
-		<!-- Mobile: pinch zooms, so the only navigation button is "fit". -->
-		<div class="mobile-fit">
-			<Button
-				variant="outline"
-				size="icon"
-				class="size-8 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] text-[var(--ink)] shadow-none hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]"
-				aria-label="Reset view"
-				onclick={() => map?.zoomReset()}
-			>
-				<HugeiconsIcon icon={Maximize01Icon} strokeWidth={2.5} />
-			</Button>
-		</div>
+		<!-- Phones: the WHERE lane is hidden, so the fit link floats above the dock. -->
+		{#if zoomed}
+			<button class="fit mobile-fit" onclick={() => map?.zoomReset()}>↺ FIT MAP</button>
+		{/if}
 
-		<!-- Bottom rail: WHAT · WHEN · WHERE, one control height throughout. -->
+		<!-- Bottom rail: WHAT (legend) · WHEN (timeline) · WHERE (find + fit).
+		     Quiet chrome: the legend and switchers are typography on the sky;
+		     the search trigger is the only boxed control. -->
 		<div class="bar bottom">
 			<div class="lane legend">
 				<BandToggle />
 				{#if sky.view !== 'today'}<PersistToggle />{/if}
 			</div>
 			<div class="lane dock">
-				<!-- Phones: compact layers + collapsed view picker ride above the scrubber. -->
+				<!-- Phones: the legend compresses to one glyph row above the timeline. -->
 				<div class="mobile-row">
-					<BandToggle compact />
-					<ViewTabs compact />
+					<BandToggle horizontal />
 					{#if sky.view !== 'today'}<PersistToggle />{/if}
 				</div>
 				<TimeDock dates={activeRollup?.dates ?? null} />
 			</div>
 			<div class="lane where">
-				{#if core}
-					<StationSearch manifest={core.manifest} onselect={openStation} side="top" align="end" />
+				{#if zoomed}
+					<button class="fit" onclick={() => map?.zoomReset()}>↺ FIT MAP</button>
 				{/if}
-				<Button
-					variant="outline"
-					size="icon"
-					class={ctlClass}
-					aria-label="Zoom out"
-					onclick={() => map?.zoomOut()}
-				>
-					<HugeiconsIcon icon={MinusSignIcon} strokeWidth={2.5} />
-				</Button>
-				<Button
-					variant="outline"
-					size="icon"
-					class={ctlClass}
-					aria-label="Zoom in"
-					onclick={() => map?.zoomIn()}
-				>
-					<HugeiconsIcon icon={PlusSignIcon} strokeWidth={2.5} />
-				</Button>
-				<Button
-					variant="outline"
-					size="icon"
-					class={ctlClass}
-					aria-label="Reset view"
-					onclick={() => map?.zoomReset()}
-				>
-					<HugeiconsIcon icon={Maximize01Icon} strokeWidth={2.5} />
-				</Button>
+				{#if core}
+					<StationSearch
+						manifest={core.manifest}
+						onselect={openStation}
+						compact
+						side="top"
+						align="end"
+					/>
+				{/if}
 			</div>
 		</div>
 
@@ -223,18 +196,26 @@
 {#if core}
 	<Drawer bind:open={streaksOpen} shouldScaleBackground={false}>
 		<DrawerContent
-			class="max-h-[85vh] gap-0 border-0 bg-[var(--paper)] p-4 pt-2 text-[var(--ink)] before:border-2 before:border-[var(--ink)] before:bg-[var(--paper)]"
+			class="max-h-[85vh] gap-0 border-0 p-4 pt-2 before:rounded-none before:border {night
+				? 'text-[#eaf4ff] before:border-[rgba(255,255,255,0.8)] before:bg-[rgba(8,24,49,0.97)]'
+				: 'text-[var(--ink)] before:border-[rgba(11,29,58,0.85)] before:bg-[rgba(247,250,246,0.97)]'}"
 		>
-			<div class="sheet-scroll">
+			<!-- --ink flips the board's text with the sky, like the gutter inset. -->
+			<div class="sheet-scroll" style={night ? '--ink: #eaf4ff' : ''}>
 				<h2 class="drawer-title">STATION STREAKS</h2>
 				<p class="drawer-caption">CONSECUTIVE CLEAR / OVERCAST DAYS</p>
-				<StreakBoard
-					summary={core.summary}
-					onselect={(code) => {
-						streaksOpen = false;
-						openStation(code);
-					}}
-				/>
+				<ScrollArea
+					class="max-h-[calc(85vh-90px)]"
+					scrollbarYClasses="w-2 p-0 border-l-0 [&_[data-slot=scroll-area-thumb]]:rounded-none [&_[data-slot=scroll-area-thumb]]:bg-current [&_[data-slot=scroll-area-thumb]]:opacity-60"
+				>
+					<StreakBoard
+						summary={core.summary}
+						onselect={(code) => {
+							streaksOpen = false;
+							openStation(code);
+						}}
+					/>
+				</ScrollArea>
 			</div>
 		</DrawerContent>
 	</Drawer>
@@ -354,6 +335,26 @@
 		background: #0b1d3a; /* navy sky behind the canvas while it loads */
 		min-height: max(90svh, 440px); /* mobile: never let the map get cramped */
 	}
+	/* Edge scrim: an eased deep-sky wash under the control rail so the white
+	   chrome keeps a contrast floor whatever the map draws beneath it. Tinted
+	   with the scene's own navy it reads as sea depth, not as a UI panel. */
+	.map-frame::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 170px;
+		pointer-events: none;
+		z-index: 9; /* just under the control bars (z-index 10) */
+		background: linear-gradient(
+			to top,
+			rgba(8, 24, 49, 0.6),
+			rgba(8, 24, 49, 0.42) 35%,
+			rgba(8, 24, 49, 0.18) 65%,
+			transparent
+		);
+	}
 	@media (min-width: 768px) {
 		.stage {
 			height: 100svh;
@@ -394,28 +395,47 @@
 	}
 	.lane.legend {
 		justify-self: start;
-		align-items: center;
-		gap: 8px;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 6px;
 	}
 	.lane.dock {
 		justify-self: center;
 		flex-direction: column;
-		align-items: center;
+		align-items: flex-start;
 		gap: 8px;
 	}
 	.lane.where {
 		justify-self: end;
 		align-items: center;
-		gap: 4px;
+		gap: 12px;
 	}
-	/* Phones only: compact layers + collapsed view picker above the scrubber. */
+	/* Quiet "way back": appears only while the view is actually zoomed. */
+	.fit {
+		padding: 2px 4px;
+		font-family: var(--font-display);
+		font-size: 11px;
+		letter-spacing: 0.08em;
+		color: #fff;
+		opacity: 0.8;
+		cursor: pointer;
+		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
+	}
+	.fit:hover {
+		opacity: 1;
+	}
+	.fit:focus-visible {
+		outline: 2px solid var(--focus);
+		outline-offset: 2px;
+	}
+	/* Phones only: the legend compresses to one glyph row above the timeline. */
 	.mobile-row {
 		display: none;
 		align-items: center;
-		gap: 8px;
+		gap: 12px;
 	}
 
-	/* Mobile chrome: chips in the sky strip, fit button in the sea corner.
+	/* Mobile chrome: chips in the sky strip, fit link in the sea corner.
 	   Hidden on desktop where the bottom rail carries everything. */
 	.mobile-top {
 		position: absolute;
@@ -432,13 +452,12 @@
 	.mobile-fit {
 		position: absolute;
 		right: 12px;
-		bottom: 130px; /* clear the two-row mobile dock */
+		bottom: 110px; /* clear the mobile dock */
 		display: none;
 		z-index: 10;
 	}
-	.sheet-scroll {
-		overflow-y: auto;
-		max-height: calc(85vh - 40px);
+	.sheet-scroll :global(li button:hover) {
+		background: rgba(127, 155, 183, 0.18);
 	}
 	.drawer-title {
 		margin: 4px 0 2px;

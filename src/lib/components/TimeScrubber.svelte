@@ -1,12 +1,9 @@
 <script lang="ts">
 	import { sky } from '$lib/state/sky.svelte';
 	import { NIGHT_STEPS } from '$lib/theme';
-	import { Button } from '$lib/components/ui/button';
-	import { ToggleGroup, ToggleGroupItem } from '$lib/components/ui/toggle-group';
-	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { PlayIcon, PauseIcon } from '@hugeicons/core-free-icons';
 
 	const LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
+	const STEPS = LABELS.length;
 
 	let reduced = $state(false);
 	$effect(() => {
@@ -21,83 +18,180 @@
 	$effect(() => {
 		if (!sky.playing || reduced) return;
 		const id = setInterval(() => {
-			sky.timeIndex = (sky.timeIndex + 1) % 8;
+			sky.timeIndex = (sky.timeIndex + 1) % STEPS;
 		}, 900);
 		return () => clearInterval(id);
 	});
 
-	function select(v: string) {
-		if (!v) return;
-		sky.timeIndex = +v;
+	// One timeline: click or drag anywhere on the track to scrub. The handle is
+	// a pixel sun (day steps) / moon square (night steps) riding the rail.
+	let track = $state<HTMLDivElement>();
+	let dragging = false;
+
+	function stepFromX(clientX: number): number {
+		if (!track) return sky.timeIndex;
+		const r = track.getBoundingClientRect();
+		const f = (clientX - r.left) / r.width;
+		return Math.max(0, Math.min(STEPS - 1, Math.round(f * (STEPS - 1))));
+	}
+	function scrubTo(clientX: number) {
+		sky.timeIndex = stepFromX(clientX);
 		sky.playing = false;
 	}
+	function onpointerdown(e: PointerEvent) {
+		dragging = true;
+		scrubTo(e.clientX);
+		try {
+			(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+		} catch {
+			// capture is best-effort (keeps the drag through fast pointer moves)
+		}
+	}
+	function onpointermove(e: PointerEvent) {
+		if (dragging) scrubTo(e.clientX);
+	}
+	function onpointerup() {
+		dragging = false;
+	}
+	function onkeydown(e: KeyboardEvent) {
+		if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+			sky.timeIndex = Math.max(0, sky.timeIndex - 1);
+			sky.playing = false;
+			e.preventDefault();
+		} else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+			sky.timeIndex = Math.min(STEPS - 1, sky.timeIndex + 1);
+			sky.playing = false;
+			e.preventDefault();
+		}
+	}
 
-	// Pixel-boxed play control — shares the visual language of the zoom buttons.
-	// h-11 standalone == h-10 grouped item + the group's 2px border: one rail height.
-	const playClass =
-		'size-11 rounded-none border-2 border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)] shadow-none hover:bg-[var(--ink)] hover:text-[var(--sun-gold)]';
-	// Each 3-hour step. Vertical stack: day/night dot above, hour label below.
-	const stepClass =
-		'flex h-10 w-8 flex-col items-center justify-end gap-1 rounded-none border-0 border-r-2 border-[var(--ink)] bg-[var(--paper)] px-0 pb-1.5 text-[11px] tracking-wider text-[var(--ink)] [font-family:var(--font-display)] last:border-r-0 ' +
-		'hover:bg-[var(--cloud-block)] hover:text-[var(--ink)] data-[state=on]:bg-[var(--ink)] data-[state=on]:text-[var(--paper)]';
+	// Handle centre as a % of track width.
+	let handleX = $derived((sky.timeIndex / (STEPS - 1)) * 100);
+	let night = $derived(NIGHT_STEPS.has(sky.timeIndex));
 </script>
 
-<div class="scrubber" role="group" aria-label="Time of day">
-	<Button
-		variant="outline"
-		size="icon"
-		class={playClass}
+<div class="scrubber">
+	<div
+		class="timeline"
+		bind:this={track}
+		role="slider"
+		tabindex="0"
+		aria-label="Time of day (IST)"
+		aria-valuemin={0}
+		aria-valuemax={STEPS - 1}
+		aria-valuenow={sky.timeIndex}
+		aria-valuetext="{LABELS[sky.timeIndex]}:00 IST"
+		{onpointerdown}
+		{onpointermove}
+		{onpointerup}
+		{onkeydown}
+	>
+		<div class="rail"></div>
+		{#each LABELS as label, i (label)}
+			<span class="tick" style="left:{(i / (STEPS - 1)) * 100}%"></span>
+			<span class="tlabel" class:on={i === sky.timeIndex} style="left:{(i / (STEPS - 1)) * 100}%"
+				>{label}</span
+			>
+		{/each}
+		<span class="handle" class:moon={night} style="left:{handleX}%"></span>
+	</div>
+	<button
+		class="play"
 		aria-label={sky.playing ? 'Pause' : 'Play through the day'}
 		aria-pressed={sky.playing}
 		disabled={reduced}
 		onclick={() => (sky.playing = !sky.playing)}
 	>
-		<HugeiconsIcon icon={sky.playing ? PauseIcon : PlayIcon} strokeWidth={2.5} />
-	</Button>
-
-	<ToggleGroup
-		type="single"
-		value={String(sky.timeIndex)}
-		onValueChange={select}
-		class="rounded-none border-2 border-[var(--ink)]"
-		aria-label="Time step (IST)"
-	>
-		{#each LABELS as label, i (label)}
-			<ToggleGroupItem value={String(i)} class={stepClass} aria-label="{label}:00 IST">
-				<span
-					class="dot"
-					class:moon={NIGHT_STEPS.has(i)}
-					class:on={i === sky.timeIndex}
-					aria-hidden="true"
-				></span>
-				<span>{label}</span>
-			</ToggleGroupItem>
-		{/each}
-	</ToggleGroup>
+		{sky.playing ? '❚❚' : '▶'}
+	</button>
 </div>
 
 <style>
 	.scrubber {
 		display: flex;
-		align-items: stretch;
-		gap: 8px;
+		align-items: center;
+		gap: 10px;
 		font-family: var(--font-display);
 	}
-	/* Day/night marker: sun-gold square for daytime steps, ice square for night.
-	   Kept dim across the axis so the whole day reads at a glance; the focused
-	   step brightens to full. */
-	.dot {
-		display: block;
-		width: 8px;
+	.timeline {
+		position: relative;
+		width: min(300px, 62vw);
+		height: 34px;
+		cursor: pointer;
+		touch-action: none;
+	}
+	.timeline:focus-visible {
+		outline: 2px solid var(--focus);
+		outline-offset: 4px;
+	}
+	.rail {
+		position: absolute;
+		top: 8px;
+		left: 0;
+		right: 0;
+		height: 2px;
+		background: #fff;
+		box-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
+	}
+	.tick {
+		position: absolute;
+		top: 5px;
+		width: 2px;
 		height: 8px;
-		background: var(--sun-gold);
-		opacity: 0.4;
+		margin-left: -1px;
+		background: #fff;
+		box-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
+		opacity: 0.8;
 	}
-	.dot.moon {
-		background: #cfe0f2;
-		box-shadow: 2px -2px 0 0 var(--paper);
+	.tlabel {
+		position: absolute;
+		top: 18px;
+		transform: translateX(-50%);
+		font-size: 10px;
+		letter-spacing: 0.04em;
+		color: #fff;
+		opacity: 0.6;
+		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
 	}
-	.dot.on {
+	.tlabel.on {
 		opacity: 1;
+	}
+	/* Pixel sun riding the rail; flips to an ice moon on night steps. */
+	.handle {
+		position: absolute;
+		top: 4px;
+		width: 10px;
+		height: 10px;
+		margin-left: -5px;
+		background: var(--sun-gold);
+		box-shadow:
+			0 0 0 2px var(--ink),
+			2px 2px 0 2px rgba(11, 29, 58, 0.5);
+	}
+	.handle.moon {
+		background: #cfe0f2;
+	}
+	.play {
+		align-self: flex-start;
+		margin-top: 1px;
+		padding: 0 2px;
+		color: #fff;
+		font-size: 12px;
+		line-height: 16px;
+		letter-spacing: -0.1em;
+		cursor: pointer;
+		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
+		opacity: 0.85;
+	}
+	.play:hover {
+		opacity: 1;
+	}
+	.play:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+	}
+	.play:focus-visible {
+		outline: 2px solid var(--focus);
+		outline-offset: 2px;
 	}
 </style>

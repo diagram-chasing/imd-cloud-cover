@@ -11,33 +11,22 @@
 	let { dates = null }: Props = $props();
 </script>
 
-<!-- One consolidated "when am I looking at" control on a single rail-height row:
-     the range tabs beside the matching scrubber. On phones the tabs hide — the
-     page shows a collapsed view chip beside the layers row instead. -->
+<!-- One consolidated "when am I looking at" control: the text range switcher
+     rides above the matching scrubber like a chart annotation. -->
 <div class="dock">
-	<div class="tabs"><ViewTabs /></div>
-	<div class="scrub">
-		{#if sky.view === 'today'}
-			<TimeScrubber />
-		{:else if dates}
-			<WindowScrubber {dates} />
-		{/if}
-	</div>
+	<ViewTabs />
+	{#if sky.view === 'today'}
+		<TimeScrubber />
+	{:else if dates}
+		<WindowScrubber {dates} />
+	{/if}
 </div>
 
 <style>
 	.dock {
 		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-	.scrub {
-		display: flex;
-		justify-content: center;
-	}
-	@media (max-width: 767px) {
-		.tabs {
-			display: none;
-		}
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 6px;
 	}
 </style>
