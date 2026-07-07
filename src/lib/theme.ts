@@ -45,12 +45,37 @@ export const SKY_BANDS = 5;
 // India stays green day and night (only the sky changes); night uses a slightly
 // deeper green so it settles against the navy sky without going blue.
 export const LAND: Record<SkyMode, { fill: string; dither: string }> = {
-	day: { fill: '#5B8C6E', dither: '#4A7A5C' },
-	night: { fill: '#3E6B54', dither: '#325843' }
+	day: { fill: '#5B8C6E', dither: '#568768' },
+	night: { fill: '#3E6B54', dither: '#3A664F' }
 };
 
 export function landForStep(timeIndex: number): { fill: string; dither: string } {
 	return LAND[skyMode(timeIndex)];
+}
+
+// Built-up (urban) patches sit on top of the land raster in the same 2x2 checker.
+// A lighter, more yellow-green than the countryside reads as developed land while
+// staying in the green family (not concrete/brown); night deepens to settle under
+// the navy.
+export const URBAN: Record<SkyMode, { fill: string; dither: string }> = {
+	day: { fill: '#7D9660', dither: '#728A57' },
+	night: { fill: '#496142', dither: '#405639' }
+};
+
+export function urbanForStep(timeIndex: number): { fill: string; dither: string } {
+	return URBAN[skyMode(timeIndex)];
+}
+
+// Major rivers: a muted, desaturated blue drawn one sub-cell wide over the land.
+// Pulled toward the green land so it reads as a subtle waterway, not a bright
+// stroke; night deepens to sit under the navy sky.
+export const RIVER: Record<SkyMode, string> = {
+	day: '#8DB0C7',
+	night: '#52708A'
+};
+
+export function riverForStep(timeIndex: number): string {
+	return RIVER[skyMode(timeIndex)];
 }
 
 // Cloud colors per band. Tints deepen with altitude so the three layers
@@ -78,13 +103,20 @@ export const UI = {
 	persistence: 'rgba(11, 29, 58, 0.55)'
 } as const;
 
-/** Cover % -> sprite tier (1-4). Cover < 1 -> 0 (no sprite). */
+// Below this a station reads as clear — kills the sub-scale wisps that made
+// clear and lightly-clouded land look identical when all bands are on.
+export const COVER_FLOOR = 20;
+// Perceptual shaping of the visible range [FLOOR..100]. >1 reserves the top
+// tiers for genuinely heavy cover, so marks stay small/faint until cover is
+// real, then jump — dense regions visibly pop, sparse ones recede.
+const COVER_GAMMA = 1.3;
+
+/** Cover % -> sprite tier (1-4). Cover < COVER_FLOOR -> 0 (no sprite). */
 export function coverTier(cover: number): 0 | 1 | 2 | 3 | 4 {
-	if (cover < 1) return 0;
-	if (cover <= 25) return 1;
-	if (cover <= 50) return 2;
-	if (cover <= 75) return 3;
-	return 4;
+	if (cover < COVER_FLOOR) return 0;
+	const t = (cover - COVER_FLOOR) / (100 - COVER_FLOOR); // 0..1 in visible range
+	const tier = Math.ceil(Math.pow(t, COVER_GAMMA) * 4);
+	return Math.min(4, Math.max(1, tier)) as 1 | 2 | 3 | 4;
 }
 
 // Effective-cover thresholds shared with the pipeline.

@@ -11,12 +11,14 @@ export interface ProjectionResult {
 	frameH: number;
 }
 
-/** Merge all state features into one GeoJSON FeatureCollection. */
-export function topoToIndia(topo: Topology): FeatureCollection {
+/** Expand a topojson's first object into a GeoJSON FeatureCollection. */
+export function topoToFeatures(topo: Topology): FeatureCollection {
 	const objName = Object.keys(topo.objects)[0];
-	const fc = feature(topo, topo.objects[objName] as GeometryCollection) as FeatureCollection;
-	return fc;
+	return feature(topo, topo.objects[objName] as GeometryCollection) as FeatureCollection;
 }
+
+/** Merge all state features into one GeoJSON FeatureCollection. */
+export const topoToIndia = topoToFeatures;
 
 /**
  * Build a conic-conformal projection fit to [margin, frame - margin].

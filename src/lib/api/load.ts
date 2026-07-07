@@ -3,10 +3,16 @@ import type { Topology } from 'topojson-specification';
 import type { FeatureCollection } from 'geojson';
 import type { StationsManifest, AllStations, Summary, Rollup } from '$lib/types';
 import { fetchStations, fetchLatest, fetchSummary, fetchRollup } from './r2';
-import { topoToIndia } from '$lib/map/projection';
+import { topoToIndia, topoToFeatures } from '$lib/map/projection';
 
 export interface CoreData {
 	india: FeatureCollection;
+	/** Built-up (urban) polygons, clipped to India — rendered into the ground. */
+	urban: FeatureCollection;
+	/** Major river centerlines, clipped to India — rendered into the ground. */
+	rivers: FeatureCollection;
+	/** A limited set of major cities, as labelled points. */
+	places: FeatureCollection;
 	manifest: StationsManifest;
 	latest: AllStations;
 	summary: Summary;
@@ -15,13 +21,27 @@ export interface CoreData {
 }
 
 export async function loadCore(): Promise<CoreData> {
-	const [topo, manifest, latest, summary, rollup7, rollup30] = await Promise.all([
-		fetch('/data/india.json').then((r) => r.json() as Promise<Topology>),
-		fetchStations(),
-		fetchLatest(),
-		fetchSummary(),
-		fetchRollup('7d'),
-		fetchRollup('30d')
-	]);
-	return { india: topoToIndia(topo), manifest, latest, summary, rollup7, rollup30 };
+	const [topo, urbanTopo, riversTopo, places, manifest, latest, summary, rollup7, rollup30] =
+		await Promise.all([
+			fetch('/data/india.json').then((r) => r.json() as Promise<Topology>),
+			fetch('/data/india-urban.json').then((r) => r.json() as Promise<Topology>),
+			fetch('/data/india-rivers.json').then((r) => r.json() as Promise<Topology>),
+			fetch('/data/india-places.json').then((r) => r.json() as Promise<FeatureCollection>),
+			fetchStations(),
+			fetchLatest(),
+			fetchSummary(),
+			fetchRollup('7d'),
+			fetchRollup('30d')
+		]);
+	return {
+		india: topoToIndia(topo),
+		urban: topoToFeatures(urbanTopo),
+		rivers: topoToFeatures(riversTopo),
+		places,
+		manifest,
+		latest,
+		summary,
+		rollup7,
+		rollup30
+	};
 }

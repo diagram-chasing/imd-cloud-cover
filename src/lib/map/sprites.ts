@@ -160,7 +160,7 @@ const MARK_ALPHA: Record<BandKey, number> = { high: 0.8, middle: 0.95, low: 1 };
 // out, so we also fade low-cover marks and drive high-cover ones to full
 // opacity. This is the dominant cue: dense regions visibly glow, sparse ones
 // recede, and spatial patterns read at any zoom. Indexed by tier-1 (tiers 1-4).
-const TIER_ALPHA = [0.5, 0.62, 0.82, 1];
+const TIER_ALPHA = [0.42, 0.6, 0.82, 1];
 
 /** A bumpy-topped, flat-bottomed height profile → the body of a puff cloud. */
 function puffProfile(rand: () => number, w: number, maxH: number, rough: number): number[] {

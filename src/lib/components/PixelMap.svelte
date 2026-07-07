@@ -14,6 +14,9 @@
 
 	interface Props {
 		india: FeatureCollection;
+		urban?: FeatureCollection;
+		rivers?: FeatureCollection;
+		places?: FeatureCollection;
 		manifest: StationsManifest;
 		values: Record<string, { h: number; m: number; l: number }>;
 		persistence?: Record<string, number>;
@@ -21,11 +24,21 @@
 		onhover?: (info: { code: string; clientX: number; clientY: number } | null) => void;
 		onselect?: (code: string, at?: { x: number; y: number }) => void;
 	}
-	let { india, manifest, values, enableTooltip = true, onhover, onselect }: Props = $props();
+	let {
+		india,
+		urban,
+		rivers,
+		places,
+		manifest,
+		values,
+		enableTooltip = true,
+		onhover,
+		onselect
+	}: Props = $props();
 
 	const WORLD_W = 1024;
 	const PAD = 4;
-	const MARK_CELL = 4; // px per logical cell of a tower mark
+	const MARK_CELL = 3; // px per logical cell of a tower mark
 	// Two constraints keep towers readable (glyphs cap at 3 rows tall):
 	//   1. bands separate WITHIN a tower  → TOWER_GAP must clear a mark's height
 	//   2. towers separate FROM EACH OTHER → BIN must clear a whole tower's height
@@ -34,6 +47,7 @@
 	const BIN = TOWER_GAP * 2 + MARK_CELL * 3; // aggregation grid spacing (px)
 	const HIT_R = BIN * 0.7; // hover/select radius; >= BIN/sqrt(2) so bins have no dead zones
 	const GHOST_ALPHA = 0.1; // non-focused bands while one band is isolated
+	const LABEL_ZOOM = 4.5; // show city labels only past this multiple of the fit zoom (max zoom is 7x)
 	// Vertical offset of each band's mark from the bin centre, in px.
 	const BAND_OFFSET: Record<BandKey, number> = {
 		high: -TOWER_GAP,
@@ -69,6 +83,11 @@
 	let titleText: Text | null = null;
 	let hoverGfx: Graphics | null = null;
 	let selGfx: Graphics | null = null;
+	let placesLayer: Container | null = null;
+	let placeMarkers: Container[] = [];
+	let placeLabels: Text[] = [];
+	let placeDots: Graphics[] = [];
+	let placePlates: Graphics[] = [];
 	let bins: Bin[] = [];
 	const pool: Record<BandKey, Sprite[]> = { low: [], middle: [], high: [] };
 	let layers: Record<BandKey, Container> | null = null;
@@ -102,6 +121,25 @@
 		if (!camera) return;
 		camera.scale.set(zoom);
 		camera.position.set(-panX * zoom, -panY * zoom);
+		updatePlacesScale();
+		updateLabelVis();
+	}
+
+	// City markers live under the camera so they pan/zoom in place, but each is
+	// counter-scaled by 1/zoom so its label stays a constant SCREEN size (they
+	// spread apart on zoom-in rather than ballooning) — standard map-label behaviour.
+	function updatePlacesScale() {
+		if (!placeMarkers.length) return;
+		const s = 1 / zoom;
+		for (const m of placeMarkers) m.scale.set(s);
+	}
+
+	// City markers (dot + label + plate) are noise at map-fit scale, so hide the
+	// whole places layer until the view is zoomed well in. The threshold is a
+	// multiple of the fit zoom, so it holds across viewport sizes.
+	function updateLabelVis() {
+		if (!placesLayer) return;
+		placesLayer.visible = zoom >= containZoom() * LABEL_ZOOM;
 	}
 
 	function mkTex(canvas: HTMLCanvasElement | OffscreenCanvas): Texture {
@@ -147,8 +185,11 @@
 
 	async function init() {
 		if (!host) return;
+		// Canvas text is baked once, so the label font must be ready before Pixi
+		// draws it — otherwise it renders in the fallback and never refreshes.
+		await document.fonts.load("10px 'Geist Pixel'").catch(() => {});
 		const atlas = buildMarkAtlas(MARK_CELL);
-		geo = buildGeo(india, manifest, WORLD_W, CELL);
+		geo = buildGeo(india, manifest, WORLD_W, CELL, urban, places, rivers);
 		bins = buildBins();
 
 		app = new Application();
@@ -173,7 +214,7 @@
 		app.stage.addChild(camera);
 
 		groundSprite = new Sprite(mkTex(geo.renderGround(sky.timeIndex)));
-		groundSprite.scale.set(CELL);
+		groundSprite.scale.set(geo.groundScale);
 		camera.addChild(groundSprite);
 
 		// Faint story title, anchored to the left of the world so it pans and
@@ -181,8 +222,8 @@
 		titleText = new Text({
 			text: STORY_TITLE,
 			style: {
-				fontFamily: "'Silkscreen', monospace",
-				fontWeight: '700',
+				fontFamily: "'Geist Pixel', monospace",
+				fontWeight: '400',
 				align: 'left',
 				fill: 0xffffff,
 				wordWrap: true,
@@ -192,6 +233,8 @@
 		titleText.anchor.set(1.2, 0.5);
 		titleText.eventMode = 'none';
 		camera.addChild(titleText);
+
+		buildPlaces();
 
 		cloudTex = { low: [], middle: [], high: [] };
 		for (const band of BAND_KEYS) {
@@ -250,10 +293,13 @@
 		});
 	}
 
+	// Screen-space backdrop: one solid sky colour. Sits behind the camera, so the
+	// transparent sea of the land sprite reveals it — blue by day, navy at night.
 	function drawSky() {
 		if (!skyGfx) return;
 		const pal = SKY[skyMode(sky.timeIndex)];
 		skyGfx.clear();
+		skyGfx.rect(0, 0, vw, vh).fill({ color: pal.top });
 	}
 
 	// Faint story title stuck to the left of the world map. Coordinates are in
@@ -271,6 +317,96 @@
 		titleText.style.fill = night ? 0xcde6ff : 0x0b1d3a;
 		titleText.alpha = night ? 0.12 : 0.09;
 		titleText.position.set(geo.worldW * 0.02, geo.worldH / 2);
+	}
+
+	// Font size tier by population — a light hierarchy so the metros read first.
+	function placeSize(pop: number): number {
+		if (pop >= 8_000_000) return 11;
+		if (pop >= 3_000_000) return 10;
+		return 9;
+	}
+
+	// Reference layer: a limited set of major cities, each a dot + a Geist Pixel
+	// label sitting on a knockout plate so it stays legible over the busy land and
+	// clouds. Each city is its own container, pinned at the projected point and
+	// counter-scaled per frame (see updatePlacesScale) so labels hold a constant
+	// screen size instead of ballooning with zoom.
+	function buildPlaces() {
+		if (!geo || !camera) return;
+		placesLayer = new Container();
+		placesLayer.eventMode = 'none';
+		camera.addChild(placesLayer);
+		placeMarkers = [];
+		placeLabels = [];
+		placeDots = [];
+		placePlates = [];
+		const GAP = 5; // px between the dot and the label plate
+
+		for (const p of geo.places) {
+			const m = new Container();
+			m.eventMode = 'none';
+			m.position.set(p.px, p.py);
+
+			const dot = new Graphics();
+			dot.rect(-1.5, -1.5, 3, 3).fill({ color: 0xffffff });
+			m.addChild(dot);
+			placeDots.push(dot);
+
+			const label = new Text({
+				text: p.name.toUpperCase(),
+				style: {
+					fontFamily: "'Geist Pixel', monospace",
+					fontWeight: '400',
+					fontSize: placeSize(p.pop),
+					fill: 0xffffff,
+					letterSpacing: 0.5
+				},
+				resolution: 4
+			});
+			label.anchor.set(0, 0.5);
+			label.position.set(GAP, 0);
+
+			// Plate drawn from the measured label bounds, added before the label so
+			// the text sits on top. Recoloured per sky mode in stylePlaces.
+			const padX = 2.5;
+			const padY = 1.5;
+			const plate = new Graphics();
+			plate
+				.rect(GAP - padX, -label.height / 2 - padY, label.width + padX * 2, label.height + padY * 2)
+				.fill({ color: 0xffffff });
+			m.addChild(plate);
+			placePlates.push(plate);
+
+			m.addChild(label);
+			placeLabels.push(label);
+
+			placesLayer.addChild(m);
+			placeMarkers.push(m);
+		}
+		updatePlacesScale();
+		stylePlaces();
+	}
+
+	// Recolour city markers for the current sky mode: dark ink glyph on a pale
+	// plate by day, flipped to pale ink on a dark plate at night. The plate is
+	// what actually makes the labels readable over land + clouds.
+	function stylePlaces() {
+		const night = skyMode(sky.timeIndex) === 'night';
+		const ink = night ? 0xeaf4ff : 0x0a1a28;
+		const plate = night ? 0x0a1a2e : 0xf7faf6;
+		const plateAlpha = night ? 0.66 : 0.82;
+		for (const d of placeDots) {
+			d.tint = ink;
+			d.alpha = 1;
+		}
+		for (const pl of placePlates) {
+			pl.tint = plate;
+			pl.alpha = plateAlpha;
+		}
+		for (const t of placeLabels) {
+			t.style.fill = ink;
+			t.alpha = 1;
+		}
 	}
 
 	function updateGround() {
@@ -400,10 +536,13 @@
 				last = { x: e.clientX, y: e.clientY };
 				clampPan();
 				applyCamera();
-				sky.hoverCode = null;
-				onhover?.(null);
 				// Panning detaches the card from its cell — dismiss it.
 				if (moved && sky.selectedCode) sky.selectedCode = null;
+				// Persist the tooltip through the drag: keep whatever was hovered and
+				// let it follow the cursor. The world-space hover box tracks the pan
+				// on its own (it lives in camera space).
+				if (enableTooltip && sky.hoverCode)
+					onhover?.({ code: sky.hoverCode, clientX: e.clientX, clientY: e.clientY });
 				return;
 			}
 			const { ox, oy } = clientToWorld(e.clientX, e.clientY);
@@ -521,6 +660,7 @@
 			updateGround();
 			drawSky();
 			drawTitle();
+			stylePlaces();
 			drawHover();
 		}
 	});

@@ -6,10 +6,8 @@
 	import { computeValues, computePersistence, rollupForView } from '$lib/data';
 
 	import PixelMap from '$lib/components/PixelMap.svelte';
-	import TimeScrubber from '$lib/components/TimeScrubber.svelte';
-	import WindowScrubber from '$lib/components/WindowScrubber.svelte';
+	import TimeDock from '$lib/components/TimeDock.svelte';
 	import BandToggle from '$lib/components/BandToggle.svelte';
-	import ViewTabs from '$lib/components/ViewTabs.svelte';
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
 	import HeadlineStat from '$lib/components/HeadlineStat.svelte';
 	import SeasonalLens from '$lib/components/SeasonalLens.svelte';
@@ -78,6 +76,9 @@
 	{#if core}
 		<PixelMap
 			india={core.india}
+			urban={core.urban}
+			rivers={core.rivers}
+			places={core.places}
 			manifest={core.manifest}
 			{values}
 			{persistence}
@@ -88,24 +89,18 @@
 		<div class="loading">Reading the skies…</div>
 	{/if}
 
-	<!-- top overlay -->
+	<!-- top overlay: place search only -->
 	<div class="bar top">
-		<div class="bar-mid"><ViewTabs /></div>
 		<div class="bar-right">
 			{#if core}<StationSearch manifest={core.manifest} onselect={openStation} />{/if}
 		</div>
 	</div>
 
-	<!-- bottom overlay -->
+	<!-- bottom overlay: legend · time dock · (zoom lives in the canvas corner) -->
 	<div class="bar bottom">
-		<div class="scrub">
-			{#if sky.view === 'today'}
-				<TimeScrubber />
-			{:else if activeRollup}
-				<WindowScrubber dates={activeRollup.dates} />
-			{/if}
-		</div>
-		<BandToggle />
+		<div class="lane legend"><BandToggle /></div>
+		<div class="lane dock"><TimeDock dates={activeRollup?.dates ?? null} /></div>
+		<div class="lane" aria-hidden="true"></div>
 	</div>
 
 	{#if error}<p class="error">Couldn’t load today’s sky: {error}</p>{/if}
@@ -201,16 +196,30 @@
 		top: 0;
 		background: linear-gradient(rgba(11, 29, 58, 0.45), transparent);
 	}
+	/* Three lanes: band legend (left), the time dock (centre), and an empty
+	   right lane the canvas zoom controls float over. Grid keeps the dock
+	   optically centred regardless of the legend's width. */
 	.bar.bottom {
 		bottom: 0;
-		flex-wrap: wrap;
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: end;
 		gap: 12px 20px;
-		background: linear-gradient(transparent, rgba(11, 29, 58, 0.45));
+		/* leave room so the dock never slides under the corner zoom buttons */
+		padding-right: 60px;
+		background: linear-gradient(transparent, rgba(11, 29, 58, 0.55));
+	}
+	.lane {
+		display: flex;
+		min-width: 0;
+	}
+	.lane.legend {
+		justify-self: start;
+	}
+	.lane.dock {
+		justify-self: center;
 	}
 
-	.bar-mid {
-		flex: 0 0 auto;
-	}
 	.bar-right {
 		margin-left: auto;
 	}
@@ -288,6 +297,24 @@
 		clip: rect(0, 0, 0, 0);
 		white-space: nowrap;
 		border: 0;
+	}
+	@media (max-width: 900px) {
+		/* Stack the bottom controls: dock first, legend below, no corner overlap. */
+		.bar.bottom {
+			grid-template-columns: 1fr;
+			justify-items: center;
+			padding-right: 16px;
+			padding-bottom: 56px;
+		}
+		.lane.dock {
+			order: -1;
+		}
+		.lane.legend {
+			justify-self: center;
+		}
+		.lane[aria-hidden='true'] {
+			display: none;
+		}
 	}
 	@media (max-width: 640px) {
 		.method-grid {
