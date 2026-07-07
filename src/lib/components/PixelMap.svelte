@@ -41,11 +41,24 @@
 	const MARK_CELL = 3; // px per logical cell of a tower mark
 	// Two constraints keep towers readable (glyphs cap at 3 rows tall):
 	//   1. bands separate WITHIN a tower  → TOWER_GAP must clear a mark's height
-	//   2. towers separate FROM EACH OTHER → BIN must clear a whole tower's height
-	// Break either (e.g. TOWER_GAP > BIN) and the three bands overlap into blocks.
+	//   2. towers separate FROM EACH OTHER → the bin must clear a whole tower's height
+	// Break either (e.g. TOWER_GAP > bin) and the three bands overlap into blocks.
 	const TOWER_GAP = MARK_CELL * 3.5; // centre-to-centre px between adjacent bands
-	const BIN = TOWER_GAP * 2 + MARK_CELL * 3; // aggregation grid spacing (px)
-	const HIT_R = BIN * 0.7; // hover/select radius; >= BIN/sqrt(2) so bins have no dead zones
+	// A tower is TOWER_GAP*2 + MARK_CELL*3 = 30px tall. BIN0 is the aggregation grid at
+	// fit-zoom, set a touch tighter than a full tower so the overview already packs more
+	// stations; the per-level marks are scaled by bin/BIN0 so towerHeight tracks the bin
+	// at every level and whole towers still never overlap (see LODS + applyLod).
+	const BIN0 = 24; // base aggregation grid spacing (px)
+	// Level-of-detail ladder: zooming in subdivides the bin grid toward one bin per
+	// station, so every station eventually becomes its own tower. `enter` is the zoom
+	// multiple of the fit zoom at which the level activates; `bin: null` = per-station.
+	const LODS: { bin: number | null; enter: number }[] = [
+		{ bin: BIN0, enter: 0 }, // 0: overview
+		{ bin: 16, enter: 1.7 }, // 1
+		{ bin: 11, enter: 2.9 }, // 2
+		{ bin: null, enter: 4.6 } // 3: per-station (reveals near LABEL_ZOOM = 4.5)
+	];
+	const LOD_DOWN_FACTOR = 0.9; // deadband so a level boundary doesn't thrash on jitter
 	const GHOST_ALPHA = 0.1; // non-focused bands while one band is isolated
 	const LABEL_ZOOM = 4.5; // show city labels only past this multiple of the fit zoom (max zoom is 7x)
 	// Vertical offset of each band's mark from the bin centre, in px.
@@ -78,6 +91,14 @@
 		code: string;
 		variant: number; // stable per-station shape pick, so the field isn't uniform
 	}
+	// One precomputed level of detail. `scale` shrinks the marks + band offsets so
+	// towerHeight tracks `bin`; `points` is the hit index for the level.
+	interface Lod {
+		bin: number; // resolved bin size (per-station level uses its glyph footprint)
+		scale: number; // sprite/offset scale = bin / BIN0
+		bins: Bin[];
+		points: StationPoint[];
+	}
 
 	let host = $state<HTMLDivElement>();
 	let vw = $state(1);
@@ -98,7 +119,10 @@
 	let placeLabels: Text[] = [];
 	let placeDots: Graphics[] = [];
 	let placePlates: Graphics[] = [];
-	let bins: Bin[] = [];
+	let bins: Bin[] = []; // alias of lods[lodIndex].bins — the currently active level
+	let lods: Lod[] = [];
+	let lodIndex = -1; // -1 forces the first applyLod() to run
+	let maxBins = 0; // finest-level bin count (== station count); sizes the shared pool
 	let planeLayer: Container | null = null;
 	interface Plane {
 		c: Container;
@@ -146,6 +170,9 @@
 		if (!camera) return;
 		camera.scale.set(zoom);
 		camera.position.set(-panX * zoom, -panY * zoom);
+		// Swap the LOD level when the zoom crosses a threshold. Pans keep the same zoom,
+		// so lodForZoom returns the current index and applyLod early-returns — cheap.
+		if (lods.length) applyLod(lodForZoom());
 		updatePlacesScale();
 		updateLabelVis();
 	}
@@ -173,16 +200,38 @@
 		return t;
 	}
 
-	function buildBins(): Bin[] {
+	// Aggregate stations onto a `binSize` grid (using raw, unsnapped projected coords so
+	// the LOD grid — not the legacy CELL snap — drives aggregation). `binSize === null`
+	// gives one bin per station: the finest level where every station is its own tower.
+	function buildBins(binSize: number | null): Bin[] {
 		const g = geo!;
+		if (binSize === null) {
+			// Per-station: nudge each off its raw point (plus a tiny extra spread so
+			// coincident stations don't stack exactly), keyed off the code so it's stable.
+			return g.stations
+				.map((st, i) => ({
+					px: st.rpx + jitter(st.code, 'jx', 3) + jitter(st.code, 'sx', 2),
+					py: st.rpy + jitter(st.code, 'jy', 2) + jitter(st.code, 'sy', 2),
+					members: [i],
+					code: st.code,
+					variant: fnv1a(st.code) % MARK_VARIANTS
+				}))
+				.sort((a, b) => a.py - b.py);
+		}
 		const map = new Map<string, Bin>();
 		g.stations.forEach((st, i) => {
-			const bx = Math.floor(st.px / BIN);
-			const by = Math.floor(st.py / BIN);
+			const bx = Math.floor(st.rpx / binSize);
+			const by = Math.floor(st.rpy / binSize);
 			const key = `${bx},${by}`;
 			let b = map.get(key);
 			if (!b) {
-				b = { px: (bx + 0.5) * BIN, py: (by + 0.5) * BIN, members: [], code: st.code, variant: 0 };
+				b = {
+					px: (bx + 0.5) * binSize,
+					py: (by + 0.5) * binSize,
+					members: [],
+					code: st.code,
+					variant: 0
+				};
 				map.set(key, b);
 			}
 			b.members.push(i);
@@ -192,7 +241,7 @@
 			let best = Infinity;
 			for (const i of b.members) {
 				const st = g.stations[i];
-				const d = (st.px - b.px) ** 2 + (st.py - b.py) ** 2;
+				const d = (st.rpx - b.px) ** 2 + (st.rpy - b.py) ** 2;
 				if (d < best) {
 					best = d;
 					b.code = st.code;
@@ -208,6 +257,66 @@
 		return [...map.values()].sort((a, b) => a.py - b.py);
 	}
 
+	// Precompute every LOD level once. Each level's marks scale by bin/BIN0, so a whole
+	// tower always fits its bin. The per-station level has no grid, so we give it a
+	// nominal bin (its scaled tower footprint) for hit-testing + box geometry.
+	function buildLods() {
+		lods = LODS.map(({ bin }) => {
+			const resolved = bin ?? 9; // per-station nominal footprint (BIN0 * 0.375)
+			const built = buildBins(bin);
+			return {
+				bin: resolved,
+				scale: resolved / BIN0,
+				bins: built,
+				points: built.map((b) => ({ code: b.code, cellX: 0, cellY: 0, x: b.px, y: b.py }))
+			};
+		});
+		maxBins = Math.max(...lods.map((l) => l.bins.length));
+	}
+
+	// Hover/select radius for the active level: >= bin/sqrt(2) so bins have no dead zones.
+	function hitR(): number {
+		return (lodIndex < 0 ? BIN0 : lods[lodIndex].bin) * 0.7;
+	}
+
+	// Active level for the current zoom, with hysteresis: only step DOWN a level once
+	// the zoom drops below LOD_DOWN_FACTOR of that boundary, so a boundary doesn't thrash.
+	function lodForZoom(): number {
+		const r = zoom / containZoom();
+		let L = 0;
+		for (let i = 1; i < LODS.length; i++) if (r >= LODS[i].enter) L = i;
+		if (L < lodIndex && r > LODS[lodIndex].enter * LOD_DOWN_FACTOR) L = lodIndex;
+		return L;
+	}
+
+	// Switch the visible level: re-point `bins`, reposition/rescale the shared sprite
+	// pool, and rebuild the hit index. Only runs on threshold crossings (applyCamera
+	// early-returns via the index check on every pan). The pool was built in north-sort
+	// index order and each level's bins are north-sorted, so bins[k] -> pool[band][k]
+	// keeps southern towers overdrawing northern ones without any child reordering.
+	function applyLod(i: number) {
+		if (i === lodIndex || !layers) return;
+		lodIndex = i;
+		const lod = lods[i];
+		bins = lod.bins;
+		const sc = lod.scale;
+		for (const band of BAND_KEYS) {
+			const off = BAND_OFFSET[band] * sc;
+			const arr = pool[band];
+			for (let k = 0; k < bins.length; k++) {
+				const sp = arr[k];
+				sp.x = bins[k].px;
+				sp.y = bins[k].py + off;
+				sp.scale.set(sc);
+			}
+			for (let k = bins.length; k < arr.length; k++) arr[k].visible = false;
+		}
+		quad = buildQuadtree(lod.points);
+		updateClouds();
+		drawSelected();
+		drawHover();
+	}
+
 	async function init() {
 		if (!host) return;
 		// Canvas text is baked once, so the label font must be ready before Pixi
@@ -215,7 +324,7 @@
 		await document.fonts.load("10px 'Geist Pixel'").catch(() => {});
 		const atlas = buildMarkAtlas(MARK_CELL);
 		geo = buildGeo(india, manifest, WORLD_W, CELL, urban, places, rivers);
-		bins = buildBins();
+		buildLods();
 
 		app = new Application();
 		await app.init({
@@ -271,16 +380,17 @@
 			}
 		}
 
+		// One shared pool of maxBins sprites per band, added in index order and all
+		// hidden. applyLod re-points/rescales bins[k] -> pool[band][k] on each level
+		// change; the finest level uses every sprite, coarser levels hide the surplus.
 		const layerMap = {} as Record<BandKey, Container>;
 		for (const band of BAND_KEYS) {
 			const layer = new Container();
 			camera.addChild(layer);
 			layerMap[band] = layer;
-			pool[band] = bins.map((b) => {
-				const s = new Sprite(cloudTex[band][1][b.variant]);
+			pool[band] = Array.from({ length: maxBins }, () => {
+				const s = new Sprite(cloudTex[band][1][0]);
 				s.anchor.set(0.5, 0.5);
-				s.x = b.px;
-				s.y = b.py + BAND_OFFSET[band];
 				s.visible = false;
 				layer.addChild(s);
 				return s;
@@ -291,15 +401,6 @@
 
 		buildPlanes();
 		styleAmbient();
-
-		const points: StationPoint[] = bins.map((b) => ({
-			code: b.code,
-			cellX: 0,
-			cellY: 0,
-			x: b.px,
-			y: b.py
-		}));
-		quad = buildQuadtree(points);
 
 		// Selected highlight sits under the hover box so hovering the selected
 		// cell still reads. Both live in camera space so they track pan/zoom.
@@ -615,6 +716,21 @@
 			alphaTarget[band] = sky.focusBand === null || sky.focusBand === band ? 1 : GHOST_ALPHA;
 	}
 
+	// Tower-framing box geometry for the active level — the marks (and their spacing)
+	// shrink by the level scale, so the box must too. Returns null if no active level.
+	function towerBox(b: Bin): { x: number; y: number; w: number; h: number } | null {
+		if (lodIndex < 0) return null;
+		const lod = lods[lodIndex];
+		const sc = lod.scale;
+		const halfW = lod.bin * 0.6;
+		return {
+			x: b.px - halfW,
+			y: b.py - (TOWER_GAP + 4) * sc,
+			w: halfW * 2,
+			h: (TOWER_GAP * 2 + 24) * sc
+		};
+	}
+
 	function drawHover() {
 		if (!hoverGfx || !geo) return;
 		hoverGfx.clear();
@@ -622,13 +738,12 @@
 		if (!code) return;
 		const b = bins.find((x) => x.code === code);
 		if (!b) return;
+		const box = towerBox(b);
+		if (!box) return;
 		const night = skyMode(sky.timeIndex) === 'night';
 		// Frame the whole tower: from above the high mark to below the low mark.
-		const halfW = 18;
-		const top = b.py - TOWER_GAP - 12;
-		const height = TOWER_GAP * 2 + 24;
 		hoverGfx
-			.rect(b.px - halfW, top, halfW * 2, height)
+			.rect(box.x, box.y, box.w, box.h)
 			.stroke({ width: 2, color: night ? UI.focus : 0xffffff, alignment: 0.5 });
 	}
 
@@ -641,11 +756,10 @@
 		if (!code) return;
 		const b = bins.find((x) => x.code === code);
 		if (!b) return;
-		const halfW = 18;
-		const top = b.py - TOWER_GAP - 12;
-		const height = TOWER_GAP * 2 + 24;
+		const box = towerBox(b);
+		if (!box) return;
 		selGfx
-			.rect(b.px - halfW, top, halfW * 2, height)
+			.rect(box.x, box.y, box.w, box.h)
 			.fill({ color: UI.focus, alpha: 0.12 })
 			.stroke({ width: 2, color: UI.focus, alignment: 0.5 });
 	}
@@ -668,8 +782,9 @@
 			lastDrift = now;
 			driftTick = (driftTick + 1) % 4;
 			// Subtle wisp: nudge the whole high layer a couple px so cirrus feels
-			// alive without detaching the small marks from their towers.
-			if (layers) layers.high.x = driftTick * 2;
+			// alive without detaching the small marks from their towers. Scaled by the
+			// active level so the nudge shrinks with the marks.
+			if (layers) layers.high.x = driftTick * 2 * (lodIndex < 0 ? 1 : lods[lodIndex].scale);
 		}
 		// Slow planes: advance along a gently-curving heading; re-seed from a fresh
 		// edge once fully off the map so trails keep criss-crossing.
@@ -723,7 +838,7 @@
 				return;
 			}
 			const { ox, oy } = clientToWorld(e.clientX, e.clientY);
-			const p = quad ? nearest(quad, ox, oy, HIT_R) : null;
+			const p = quad ? nearest(quad, ox, oy, hitR()) : null;
 			sky.hoverCode = p ? p.code : null;
 			drawHover();
 			if (enableTooltip)
@@ -732,7 +847,7 @@
 		c.addEventListener('pointerup', (e) => {
 			if (dragging && !moved) {
 				const { ox, oy } = clientToWorld(e.clientX, e.clientY);
-				const p = quad ? nearest(quad, ox, oy, HIT_R) : null;
+				const p = quad ? nearest(quad, ox, oy, hitR()) : null;
 				if (p) {
 					sky.selectedCode = p.code;
 					// Anchor the card to the cell's screen centre (not the raw cursor)

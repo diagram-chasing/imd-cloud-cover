@@ -9,8 +9,10 @@ import type { StationsManifest } from '$lib/types';
 
 export interface GeoStation {
 	code: string;
-	px: number; // projected world px (unsquashed)
+	px: number; // projected world px (unsquashed), snapped to the CELL grid
 	py: number;
+	rpx: number; // raw projected world px (unsnapped) — LOD binning uses these so
+	rpy: number; // aggregation is driven by the bin grid, not the legacy CELL snap
 }
 
 export interface GeoPlace {
@@ -169,7 +171,9 @@ export function buildGeo(
 		let cy = Math.floor(p[1] / cell) + jitter(code, 'y', 1);
 		cx = Math.max(0, Math.min(cols - 1, cx));
 		cy = Math.max(0, Math.min(rows - 1, cy));
-		stations.push({ code, px: cx * cell + cell / 2, py: cy * cell + cell / 2 });
+		const rpx = Math.max(0, Math.min(worldW, p[0]));
+		const rpy = Math.max(0, Math.min(worldH, p[1]));
+		stations.push({ code, px: cx * cell + cell / 2, py: cy * cell + cell / 2, rpx, rpy });
 	}
 
 	// Project the limited city set into world px. Coordinates are [lon, lat].
