@@ -47,15 +47,6 @@
 		aria-valuetext={current ? label(current) : ''}
 		oninput={(e) => (sky.windowDayIndex = +e.currentTarget.value)}
 	/>
-
-	<button
-		class="persist"
-		class:active={sky.persistence}
-		aria-pressed={sky.persistence}
-		onclick={() => (sky.persistence = !sky.persistence)}
-	>
-		PERSISTENCE
-	</button>
 </div>
 
 <style>
@@ -72,9 +63,10 @@
 		gap: 8px;
 	}
 	.nav {
-		width: 24px;
-		height: 24px;
-		box-shadow: 0 0 0 2px var(--ink);
+		width: 32px;
+		height: 44px; /* one rail height */
+		border: 2px solid var(--ink);
+		background: var(--paper);
 		color: var(--ink);
 		cursor: pointer;
 		font-size: 10px;
@@ -94,21 +86,6 @@
 		min-width: 160px;
 		accent-color: var(--accent);
 	}
-	.persist {
-		font-family: var(--font-display);
-		font-size: 10px;
-		letter-spacing: 0.05em;
-		padding: 4px 8px;
-		box-shadow: 0 0 0 2px var(--ink);
-		color: var(--ink);
-		background: var(--paper);
-		cursor: pointer;
-	}
-	.persist.active {
-		background: var(--ink);
-		color: var(--ink-on-dark);
-	}
-	.persist:focus-visible,
 	.nav:focus-visible {
 		outline: 2px solid var(--focus);
 		outline-offset: 2px;

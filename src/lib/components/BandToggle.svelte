@@ -4,6 +4,12 @@
 	import type { BandKey } from '$lib/theme';
 	import { ToggleGroup, ToggleGroupItem } from '$lib/components/ui/toggle-group';
 
+	interface Props {
+		/** Swatch-only chips (no text labels) so the legend fits a phone row. */
+		compact?: boolean;
+	}
+	let { compact = false }: Props = $props();
+
 	const CHIPS: { band: BandKey; label: string }[] = [
 		{ band: 'high', label: 'HIGH·CIRRUS' },
 		{ band: 'middle', label: 'MID·ALTO' },
@@ -39,9 +45,9 @@
 >
 	<ToggleGroupItem value="all" class={itemClass}>ALL</ToggleGroupItem>
 	{#each CHIPS as chip (chip.band)}
-		<ToggleGroupItem value={chip.band} class={itemClass}>
+		<ToggleGroupItem value={chip.band} class={itemClass} aria-label={chip.label}>
 			<canvas class="swatch" width="44" height="18" use:preview={chip.band} aria-hidden="true"></canvas>
-			<span>{chip.label}</span>
+			{#if !compact}<span>{chip.label}</span>{/if}
 		</ToggleGroupItem>
 	{/each}
 </ToggleGroup>

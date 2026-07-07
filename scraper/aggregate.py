@@ -53,7 +53,11 @@ def clampint(v):
 
 
 def day0_bands(raw):
-    """Return (h, m, l) each a list of 8 ints, or None if the raw JSON is unusable."""
+    """Return (h, m, l, p) each a list of 8 ints, or None if the raw JSON is unusable.
+
+    `p` is relative precip intensity (0-100). Raw JSONs predating the rain field
+    default to 0 via clampint, keeping old dates backward-compatible.
+    """
     data = raw.get("data")
     if not data or len(data) < DAY0_SAMPLES:
         return None
@@ -61,17 +65,19 @@ def day0_bands(raw):
     h = [clampint(d.get("high")) for d in sl]
     m = [clampint(d.get("middle")) for d in sl]
     l = [clampint(d.get("low")) for d in sl]
-    return h, m, l
+    p = [clampint(d.get("rain")) for d in sl]
+    return h, m, l, p
 
 
-def daily_means(h, m, l):
-    """Per-band daily means plus effective mean (mean of per-step max)."""
+def daily_means(h, m, l, p):
+    """Per-band daily means, precip mean, plus effective cloud mean (mean of per-step max)."""
     n = len(h)
     hm = round(sum(h) / n)
     mm = round(sum(m) / n)
     lm = round(sum(l) / n)
+    pm = round(sum(p) / n)
     em = round(sum(max(h[i], m[i], l[i]) for i in range(n)) / n)
-    return {"h": hm, "m": mm, "l": lm, "e": em}
+    return {"h": hm, "m": mm, "l": lm, "p": pm, "e": em}
 
 
 # --------------------------------------------------------------------------
@@ -114,8 +120,8 @@ def build_latest(store, date, manifest_codes, slices):
     for code, bands in slices.items():
         if code not in manifest_codes:
             continue
-        h, m, l = bands
-        stations[code] = {"h": h, "m": m, "l": l}
+        h, m, l, p = bands
+        stations[code] = {"h": h, "m": m, "l": l, "p": p}
     doc = {
         "date": date,
         "generated_at": None,  # stamped by caller (Date unavailable in some contexts)
@@ -134,8 +140,8 @@ def update_histories(store, date, slices, manifest_codes):
     for code, bands in slices.items():
         if code not in manifest_codes:
             continue
-        h, m, l = bands
-        dm = daily_means(h, m, l)
+        h, m, l, p = bands
+        dm = daily_means(h, m, l, p)
         today_means[code] = dm
 
         key = f"history/{code}.json"
@@ -156,26 +162,26 @@ def build_rollups(store, dates_window, manifest_codes):
     dates_window is ascending list of dates. Missing days are null-filled.
     """
     stations = {}
-    national = {"h": [], "m": [], "l": [], "e": []}
+    national = {"h": [], "m": [], "l": [], "p": [], "e": []}
     # Gather per-station series
     for code in manifest_codes:
         hist = store.get_json(f"history/{code}.json")
         if not hist:
             continue
         days = hist.get("days", {})
-        series = {"h": [], "m": [], "l": [], "e": []}
+        series = {"h": [], "m": [], "l": [], "p": [], "e": []}
         present = False
         for d in dates_window:
             dm = days.get(d)
-            for band in ("h", "m", "l", "e"):
-                series[band].append(dm[band] if dm else None)
+            for band in ("h", "m", "l", "p", "e"):
+                series[band].append(dm.get(band) if dm else None)
             if dm:
                 present = True
         if present:
             stations[code] = series
     # National per-day means (ignoring nulls)
     for i, _d in enumerate(dates_window):
-        for band in ("h", "m", "l", "e"):
+        for band in ("h", "m", "l", "p", "e"):
             vals = [s[band][i] for s in stations.values() if s[band][i] is not None]
             national[band].append(round(sum(vals) / len(vals)) if vals else None)
     return {"window": len(dates_window), "dates": dates_window, "stations": stations, "national": national}
@@ -226,24 +232,29 @@ def build_summary(store, date, manifest, today_means, streaks, failed_count):
             "h": round(sum(today_means[c]["h"] for c in codes) / len(codes)),
             "m": round(sum(today_means[c]["m"] for c in codes) / len(codes)),
             "l": round(sum(today_means[c]["l"] for c in codes) / len(codes)),
+            "rain": round(sum(today_means[c].get("p", 0) for c in codes) / len(codes)),
             "total": round(sum(today_means[c]["e"] for c in codes) / len(codes)),
         }
         cloudiest_code = max(codes, key=lambda c: today_means[c]["e"])
         clearest_code = min(codes, key=lambda c: today_means[c]["e"])
+        wettest_code = max(codes, key=lambda c: today_means[c].get("p", 0))
         names = manifest["stations"]
         cloudiest = {"code": cloudiest_code, "name": names.get(cloudiest_code, {}).get("name", cloudiest_code),
                      "value": today_means[cloudiest_code]["e"]}
         clearest = {"code": clearest_code, "name": names.get(clearest_code, {}).get("name", clearest_code),
                     "value": today_means[clearest_code]["e"]}
+        wettest = {"code": wettest_code, "name": names.get(wettest_code, {}).get("name", wettest_code),
+                   "value": today_means[wettest_code].get("p", 0)}
     else:
-        nat = {"h": 0, "m": 0, "l": 0, "total": 0}
-        cloudiest = clearest = None
+        nat = {"h": 0, "m": 0, "l": 0, "rain": 0, "total": 0}
+        cloudiest = clearest = wettest = None
 
     return {
         "date": date,
         "national_mean": nat,
         "cloudiest": cloudiest,
         "clearest": clearest,
+        "wettest": wettest,
         "streaks": streaks,
         "station_count": len(codes),
         "failed_count": failed_count,
@@ -343,9 +354,9 @@ def rebuild(store, generated_at):
             bands = read_slice(store, date, code)
             if bands is None:
                 continue
-            h, m, l = bands
+            h, m, l, p = bands
             fresh_hist.setdefault(code, {"code": code, "kind": "day0-forecast", "days": {}})
-            fresh_hist[code]["days"][date] = daily_means(h, m, l)
+            fresh_hist[code]["days"][date] = daily_means(h, m, l, p)
 
     for code, hist in fresh_hist.items():
         if len(hist["days"]) > HISTORY_CAP:

@@ -1,29 +1,44 @@
+<script lang="ts" module>
+	export interface HoverInfo {
+		code: string;
+		clientX: number;
+		clientY: number;
+		/** Stations aggregated under the hovered mark (1 when it's a single station). */
+		members: number;
+		/** Bin-mean values when members > 1 — what the mark actually encodes. */
+		agg?: { h: number; m: number; l: number; p: number };
+	}
+</script>
+
 <script lang="ts">
 	import { Application, Container, Sprite, Texture, Graphics, Text, type Ticker } from 'pixi.js';
 	import type { FeatureCollection } from 'geojson';
 	import type { StationsManifest } from '$lib/types';
-	import { CELL, SKY, skyMode, coverTier, UI, type BandKey } from '$lib/theme';
-	import { buildGeo, type Geo } from '$lib/map/geo';
-	import { buildMarkAtlas, MARK_VARIANTS } from '$lib/map/sprites';
+	import { CELL, SKY, skyMode, coverTier, rainTier, UI, type BandKey } from '$lib/theme';
+	import { buildGeo, loadGroundTiles, type Geo } from '$lib/map/geo';
+	import grassTileA from '$lib/assets/images/medievalTile_57.png';
+	import grassTileB from '$lib/assets/images/medievalTile_58.png';
+	import { buildMarkAtlas, buildRainAtlas, MARK_VARIANTS } from '$lib/map/sprites';
 	import { buildQuadtree, nearest, type StationPoint } from '$lib/map/hit';
 	import { fnv1a, jitter, mulberry32 } from '$lib/map/hash';
 	import { sky } from '$lib/state/sky.svelte';
-	import { Button } from '$lib/components/ui/button';
-	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { PlusSignIcon, MinusSignIcon, Maximize01Icon } from '@hugeicons/core-free-icons';
 
 	interface Props {
 		india: FeatureCollection;
 		urban?: FeatureCollection;
 		places?: FeatureCollection;
 		manifest: StationsManifest;
-		values: Record<string, { h: number; m: number; l: number }>;
+		values: Record<string, { h: number; m: number; l: number; p: number }>;
 		persistence?: Record<string, number>;
 		enableTooltip?: boolean;
 		/** Data date (YYYY-MM-DD) shown in the in-world title cartouche. */
 		date?: string;
-		onhover?: (info: { code: string; clientX: number; clientY: number } | null) => void;
+		onhover?: (info: HoverInfo | null) => void;
 		onselect?: (code: string, at?: { x: number; y: number }) => void;
+		/** Fired whenever the camera or viewport changes: the free sea-gutter width
+		 *  beside the landmass (screen px, at fit zoom) and the zoom multiple of fit.
+		 *  Lets overlay chrome (e.g. the streak inset) yield when space runs out. */
+		onlayout?: (info: { gutter: number; zoomRatio: number }) => void;
 	}
 	let {
 		india,
@@ -34,7 +49,8 @@
 		date,
 		enableTooltip = true,
 		onhover,
-		onselect
+		onselect,
+		onlayout
 	}: Props = $props();
 
 	const WORLD_W = 1024;
@@ -70,6 +86,8 @@
 	};
 	const BAND_KEYS: BandKey[] = ['low', 'middle', 'high'];
 	const VAL_KEY: Record<BandKey, 'h' | 'm' | 'l'> = { high: 'h', middle: 'm', low: 'l' };
+	// Rain hangs just beneath the low cloud (which sits at +TOWER_GAP).
+	const RAIN_DROP = TOWER_GAP + MARK_CELL * 1.5;
 
 	// Ambient decoration: a handful of slow planes with fading contrails wander the
 	// sky at varied headings, gently curving so their trails criss-cross. Purely for
@@ -98,10 +116,6 @@
 		['DEL', 'CMB'], ['DEL', 'MAA'], ['DEL', 'MLE'], ['DEL', 'SIN'], ['DEL', 'KUL'],
 		['KTM', 'MLE'], ['BOM', 'CCU'], ['BOM', 'DAC'], ['CCU', 'MLE']
 	];
-
-	// Pixel-boxed styling shared by the zoom/reset controls.
-	const ctlClass =
-		'size-8 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] text-[var(--ink)] shadow-none hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]';
 
 	interface Bin {
 		px: number;
@@ -164,6 +178,7 @@
 	let placeDots: Graphics[] = [];
 	let placePlates: Graphics[] = [];
 	let bins: Bin[] = []; // alias of lods[lodIndex].bins — the currently active level
+	let binByCode = new Map<string, Bin>(); // hover lookup for the active level
 	let lods: Lod[] = [];
 	let lodIndex = -1; // -1 forces the first applyLod() to run
 	let maxBins = 0; // finest-level bin count (== station count); sizes the shared pool
@@ -191,6 +206,9 @@
 	const alphaTarget: Record<BandKey, number> = { low: 1, middle: 1, high: 1 };
 	// cloudTex[band][tier][variant]
 	let cloudTex: Record<BandKey, Texture[][]> = { low: [], middle: [], high: [] };
+	// Rain streaks: one shared pool below the low band. rainTex[tier][variant].
+	let rainPool: Sprite[] = [];
+	let rainTex: Texture[][] = [];
 	let quad: ReturnType<typeof buildQuadtree> | null = null;
 
 	let zoom = 1;
@@ -224,6 +242,16 @@
 		updatePlacesScale();
 		updateLabelVis();
 		updateTitleFade();
+		emitLayout();
+	}
+
+	function emitLayout() {
+		if (!geo) return;
+		const b = worldBBox();
+		onlayout?.({
+			gutter: (vw - (b.maxX - b.minX) * containZoom()) / 2,
+			zoomRatio: zoom / containZoom()
+		});
 	}
 
 	// City markers live under the camera so they pan/zoom in place, but each is
@@ -317,7 +345,14 @@
 				bin: resolved,
 				scale: resolved / BIN0,
 				bins: built,
-				points: built.map((b) => ({ code: b.code, cellX: 0, cellY: 0, x: b.px, y: b.py }))
+				points: built.map((b) => ({
+					code: b.code,
+					cellX: 0,
+					cellY: 0,
+					x: b.px,
+					y: b.py,
+					members: b.members.length
+				}))
 			};
 		});
 		maxBins = Math.max(...lods.map((l) => l.bins.length));
@@ -348,6 +383,7 @@
 		lodIndex = i;
 		const lod = lods[i];
 		bins = lod.bins;
+		binByCode = new Map(bins.map((b) => [b.code, b]));
 		const sc = lod.scale;
 		for (const band of BAND_KEYS) {
 			const off = BAND_OFFSET[band] * sc;
@@ -360,8 +396,17 @@
 			}
 			for (let k = bins.length; k < arr.length; k++) arr[k].visible = false;
 		}
+		const rainOff = RAIN_DROP * sc;
+		for (let k = 0; k < bins.length; k++) {
+			const sp = rainPool[k];
+			sp.x = bins[k].px;
+			sp.y = bins[k].py + rainOff;
+			sp.scale.set(sc);
+		}
+		for (let k = bins.length; k < rainPool.length; k++) rainPool[k].visible = false;
 		quad = buildQuadtree(lod.points);
 		updateClouds();
+		updateRain();
 		drawSelected();
 		drawHover();
 	}
@@ -372,7 +417,10 @@
 		// draws it — otherwise it renders in the fallback and never refreshes.
 		await document.fonts.load("10px 'Ships Whistle'").catch(() => {});
 		const atlas = buildMarkAtlas(MARK_CELL);
-		geo = buildGeo(india, manifest, WORLD_W, CELL, urban, places);
+		const rainAtlas = buildRainAtlas(MARK_CELL);
+		// Grass tiles give the landmass texture; failures fall back to flat fills.
+		const grassTiles = await loadGroundTiles([grassTileA, grassTileB]).catch(() => []);
+		geo = buildGeo(india, manifest, WORLD_W, CELL, urban, places, grassTiles);
 		buildLods();
 
 		app = new Application();
@@ -424,6 +472,25 @@
 				}
 			}
 		}
+		rainTex = [];
+		for (let tier = 1; tier <= 3; tier++) {
+			rainTex[tier] = [];
+			for (let v = 0; v < MARK_VARIANTS; v++) {
+				rainTex[tier][v] = mkTex(rainAtlas.get(tier as 1 | 2 | 3, v).canvas);
+			}
+		}
+
+		// Rain layer goes in first so its streaks sit UNDER the cloud puffs that
+		// spawn them (the pool anchors at top-centre so the curtain hangs downward).
+		const rainLayer = new Container();
+		camera.addChild(rainLayer);
+		rainPool = Array.from({ length: maxBins }, () => {
+			const s = new Sprite(rainTex[1][0]);
+			s.anchor.set(0.5, 0);
+			s.visible = false;
+			rainLayer.addChild(s);
+			return s;
+		});
 
 		// One shared pool of maxBins sprites per band, added in index order and all
 		// hidden. applyLod re-points/rescales bins[k] -> pool[band][k] on each level
@@ -540,20 +607,24 @@
 
 		// Left sky gutter at fit zoom: world-space width to the left of the map
 		// bbox. Scale the cartouche to a fraction of it and centre it there,
-		// vertically centred on the map. Too narrow a viewport → hide.
+		// vertically centred on the map. Narrow (portrait) viewports have no side
+		// gutter — fall back to the empty sky in the frame's top-right corner
+		// (over the Karakoram, right of the Himalayan curve).
 		const b = worldBBox();
 		const gutter = (vw / containZoom() - (b.maxX - b.minX)) / 2;
-		titleShown = gutter >= 90;
-		if (!titleShown) {
-			titleGroup.visible = false;
-			return;
+		titleShown = true;
+		if (gutter >= 90) {
+			const s = Math.min((gutter * 0.80) / contentW, (geo.worldH * 0.5) / groupH);
+			titleGroup.scale.set(s);
+			titleGroup.position.set(
+				b.minX - (gutter + contentW * s) / 2,
+				geo.worldH / 2 - (groupH * s) / 2
+			);
+		} else {
+			const s = Math.min((geo.worldW * 0.38) / contentW, (geo.worldH * 0.18) / groupH);
+			titleGroup.scale.set(s);
+			titleGroup.position.set(b.maxX - contentW * s - 14, b.minY + 14);
 		}
-		const s = Math.min((gutter * 0.80) / contentW, (geo.worldH * 0.5) / groupH);
-		titleGroup.scale.set(s);
-		titleGroup.position.set(
-			b.minX - (gutter + contentW * s) / 2,
-			geo.worldH / 2 - (groupH * s) / 2
-		);
 		updateTitleMeta();
 		updateTitleFade();
 	}
@@ -862,7 +933,7 @@
 		old.destroy(true);
 	}
 
-	function binCover(b: Bin, key: 'h' | 'm' | 'l'): number {
+	function binCover(b: Bin, key: 'h' | 'm' | 'l' | 'p'): number {
 		let s = 0;
 		let n = 0;
 		for (const i of b.members) {
@@ -873,6 +944,28 @@
 			}
 		}
 		return n ? s / n : 0;
+	}
+
+	// Tooltip payload for a hovered mark. Aggregated bins report the bin MEAN —
+	// the numbers the mark actually encodes — not the representative station's.
+	function hoverInfo(code: string, clientX: number, clientY: number): HoverInfo {
+		const b = binByCode.get(code);
+		const members = b?.members.length ?? 1;
+		return {
+			code,
+			clientX,
+			clientY,
+			members,
+			agg:
+				b && members > 1
+					? {
+							h: Math.round(binCover(b, 'h')),
+							m: Math.round(binCover(b, 'm')),
+							l: Math.round(binCover(b, 'l')),
+							p: Math.round(binCover(b, 'p'))
+						}
+					: undefined
+		};
 	}
 
 	let driftTick = 0;
@@ -891,6 +984,22 @@
 				sp.visible = true;
 				sp.texture = cloudTex[band][tier][bins[i].variant];
 			}
+		}
+	}
+
+	// Rain streaks, always on (independent of band isolation): show a curtain under
+	// any bin whose forecast precip clears RAIN_FLOOR, tiered by intensity.
+	function updateRain() {
+		if (!geo || !layers) return;
+		for (let i = 0; i < bins.length; i++) {
+			const sp = rainPool[i];
+			const tier = rainTier(binCover(bins[i], 'p'));
+			if (tier === 0) {
+				sp.visible = false;
+				continue;
+			}
+			sp.visible = true;
+			sp.texture = rainTex[tier][bins[i].variant];
 		}
 	}
 
@@ -1012,15 +1121,14 @@
 				// let it follow the cursor. The world-space hover box tracks the pan
 				// on its own (it lives in camera space).
 				if (enableTooltip && sky.hoverCode)
-					onhover?.({ code: sky.hoverCode, clientX: e.clientX, clientY: e.clientY });
+					onhover?.(hoverInfo(sky.hoverCode, e.clientX, e.clientY));
 				return;
 			}
 			const { ox, oy } = clientToWorld(e.clientX, e.clientY);
 			const p = quad ? nearest(quad, ox, oy, hitR()) : null;
 			sky.hoverCode = p ? p.code : null;
 			drawHover();
-			if (enableTooltip)
-				onhover?.(p ? { code: p.code, clientX: e.clientX, clientY: e.clientY } : null);
+			if (enableTooltip) onhover?.(p ? hoverInfo(p.code, e.clientX, e.clientY) : null);
 		});
 		c.addEventListener('pointerup', (e) => {
 			if (dragging && !moved) {
@@ -1087,7 +1195,14 @@
 		const rect = app?.canvas.getBoundingClientRect();
 		zoomAt((rect?.left ?? 0) + vw / 2, (rect?.top ?? 0) + vh / 2, dir > 0 ? 1.3 : 1 / 1.3);
 	}
-	function resetView() {
+	// Instance API so the page can host the zoom buttons in its own control rail.
+	export function zoomIn() {
+		zoomButton(1);
+	}
+	export function zoomOut() {
+		zoomButton(-1);
+	}
+	export function zoomReset() {
 		userMoved = false;
 		fitCamera();
 	}
@@ -1105,6 +1220,7 @@
 			drawSky();
 			drawTitle();
 			if (!userMoved) fitCamera();
+			else emitLayout(); // fit changed under a user-held camera — gutters moved
 		});
 		ro.observe(host);
 		init();
@@ -1118,7 +1234,10 @@
 
 	$effect(() => {
 		void values;
-		if (app) updateClouds();
+		if (app) {
+			updateClouds();
+			updateRain();
+		}
 	});
 	$effect(() => {
 		void sky.focusBand;
@@ -1153,37 +1272,7 @@
 	});
 </script>
 
-<div class="pixel-map" bind:this={host}>
-	<div class="zoom-ctl">
-		<Button
-			variant="outline"
-			size="icon"
-			class={ctlClass}
-			aria-label="Zoom in"
-			onclick={() => zoomButton(1)}
-		>
-			<HugeiconsIcon icon={PlusSignIcon} strokeWidth={2.5} />
-		</Button>
-		<Button
-			variant="outline"
-			size="icon"
-			class={ctlClass}
-			aria-label="Zoom out"
-			onclick={() => zoomButton(-1)}
-		>
-			<HugeiconsIcon icon={MinusSignIcon} strokeWidth={2.5} />
-		</Button>
-		<Button
-			variant="outline"
-			size="icon"
-			class={ctlClass}
-			aria-label="Reset view"
-			onclick={resetView}
-		>
-			<HugeiconsIcon icon={Maximize01Icon} strokeWidth={2.5} />
-		</Button>
-	</div>
-</div>
+<div class="pixel-map" bind:this={host}></div>
 
 <style>
 	.pixel-map {
@@ -1195,14 +1284,5 @@
 	}
 	.pixel-map :global(canvas) {
 		display: block;
-	}
-	.zoom-ctl {
-		position: absolute;
-		right: 12px;
-		bottom: 12px;
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		z-index: 2;
 	}
 </style>

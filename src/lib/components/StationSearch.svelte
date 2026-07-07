@@ -15,8 +15,13 @@
 	interface Props {
 		manifest: StationsManifest;
 		onselect?: (code: string) => void;
+		/** Icon-only square trigger (mobile top corner). */
+		compact?: boolean;
+		/** Which side of the trigger the palette opens on. */
+		side?: 'top' | 'bottom';
+		align?: 'start' | 'end';
 	}
-	let { manifest, onselect }: Props = $props();
+	let { manifest, onselect, compact = false, side = 'bottom', align = 'end' }: Props = $props();
 
 	let open = $state(false);
 	let query = $state('');
@@ -59,16 +64,21 @@
 			<Button
 				{...props}
 				variant="outline"
-				size="sm"
-				class="rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] text-[10px] tracking-wider text-[var(--ink)] uppercase shadow-none [font-family:var(--font-display)] hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]"
+				size={compact ? 'icon' : 'sm'}
+				aria-label="Find a station"
+				class="{compact
+					? 'size-8'
+					: 'h-11 px-3'} rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] text-[10px] tracking-wider text-[var(--ink)] uppercase shadow-none [font-family:var(--font-display)] hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]"
 			>
 				<HugeiconsIcon icon={SearchIcon} strokeWidth={2} />
-				<span>Find a station</span>
+				{#if !compact}<span>Find a station</span>{/if}
 			</Button>
 		{/snippet}
 	</PopoverTrigger>
 	<PopoverContent
-		align="end"
+		{side}
+		{align}
+		collisionPadding={12}
 		sideOffset={6}
 		class="w-[300px] rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] p-0 text-[var(--ink)] shadow-[3px_3px_0_0_var(--ink)] ring-0
 			[&_[data-slot=command-input-wrapper]]:p-0

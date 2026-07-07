@@ -6,32 +6,42 @@
 	import { skyMode } from '$lib/theme';
 	import { computeValues, computePersistence, rollupForView } from '$lib/data';
 
-	import PixelMap from '$lib/components/PixelMap.svelte';
+	import PixelMap, { type HoverInfo } from '$lib/components/PixelMap.svelte';
 	import TimeDock from '$lib/components/TimeDock.svelte';
+	import ViewTabs from '$lib/components/ViewTabs.svelte';
 	import BandToggle from '$lib/components/BandToggle.svelte';
+	import PersistToggle from '$lib/components/PersistToggle.svelte';
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
-	import HeadlineStat from '$lib/components/HeadlineStat.svelte';
-	import SeasonalLens from '$lib/components/SeasonalLens.svelte';
 	import StreakBoard from '$lib/components/StreakBoard.svelte';
+	import StreakPanel from '$lib/components/StreakPanel.svelte';
 	import StationSearch from '$lib/components/StationSearch.svelte';
 	import StationDetails from '$lib/components/StationDetails.svelte';
 	import SupportCTA from '$lib/components/SupportCTA.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
+	import { Button } from '$lib/components/ui/button';
+	import { Drawer, DrawerContent } from '$lib/components/ui/drawer';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { PlusSignIcon, MinusSignIcon, Maximize01Icon } from '@hugeicons/core-free-icons';
 
 	let core = $state<CoreData>();
 	let error = $state<string | null>(null);
 
-	const today = new Date().toISOString().slice(0, 10);
-	let tip = $state<{ code: string; clientX: number; clientY: number } | null>(null);
-	let stage = $state<HTMLElement>();
+	let tip = $state<HoverInfo | null>(null);
 
-	// Afternoon-lens "WATCH IT": jump to today view and autoplay the scrub once.
-	function watchAfternoon() {
-		sky.setView('today');
-		stage?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-		sky.timeIndex = 3;
-		sky.playing = true;
-	}
+	// Map instance API (zoom buttons live in the page's control rail) and the
+	// camera-derived layout info the streak inset uses to claim gutter space.
+	let map = $state<{ zoomIn: () => void; zoomOut: () => void; zoomReset: () => void }>();
+	let layout = $state({ gutter: 0, zoomRatio: 1 });
+
+	// Mobile chip trays.
+	let streaksOpen = $state(false);
+
+	// Pixel-boxed zoom/fit buttons: h-11 standalone matches the 44px rail height
+	// of the bordered toggle groups. Corner chips (mobile top strip) stay 32px.
+	const ctlClass =
+		'size-11 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] text-[var(--ink)] shadow-none hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]';
+	const chipClass =
+		'h-8 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] px-2.5 text-[10px] tracking-wider text-[var(--ink)] uppercase shadow-none [font-family:var(--font-display)] hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]';
 
 	onMount(async () => {
 		try {
@@ -50,7 +60,9 @@
 	let tipStation = $derived<Station | null>(
 		tip && core ? (core.manifest.stations[tip.code] ?? null) : null
 	);
-	let tipValues = $derived(tip ? (values[tip.code] ?? null) : null);
+	// Aggregated marks carry their bin mean — show that, not the representative
+	// station's own values, so the tooltip matches what the mark encodes.
+	let tipValues = $derived(tip ? (tip.agg ?? values[tip.code] ?? null) : null);
 
 	let panelStation = $derived<Station | null>(
 		sky.selectedCode && core ? (core.manifest.stations[sky.selectedCode] ?? null) : null
@@ -82,14 +94,16 @@
 	/>
 </svelte:head>
 
-<!-- Framed map: a full-width bordered panel on a thin paper mat. Controls are
-     overlaid on the map itself (top: search · bottom: legend + dock · zoom in the
-     canvas corner). Bounded height so the page scrolls past it to the content. -->
-<section class="stage" bind:this={stage}>
+<!-- Framed map: a full-width bordered panel on a thin paper mat. All controls sit
+     on one bottom rail — WHAT (layers) · WHEN (time) · WHERE (find + zoom) — with
+     the streak inset in the right sea gutter, mirroring the cartouche on the left.
+     Bounded height so the page scrolls past it to the content. -->
+<section class="stage">
 	<div class="map-frame">
 		<h1 class="sr-only">Reading the Clouds</h1>
 		{#if core}
 			<PixelMap
+				bind:this={map}
 				india={core.india}
 				urban={core.urban}
 				places={core.places}
@@ -99,23 +113,101 @@
 				date={core.summary.date}
 				onhover={(info) => (tip = info)}
 				onselect={openStation}
+				onlayout={(info) => (layout = info)}
 			/>
 		{:else if !error}
 			<div class="loading">Reading the skies…</div>
 		{/if}
 
-		<!-- top overlay: place search -->
-		<div class="bar top">
-			<div class="bar-right">
-				{#if core}<StationSearch manifest={core.manifest} onselect={openStation} />{/if}
+		<!-- Streak leaderboard: collapsed tab / inset table in the right sea gutter. -->
+		{#if core}
+			<StreakPanel
+				summary={core.summary}
+				onselect={openStation}
+				gutter={layout.gutter}
+				zoomRatio={layout.zoomRatio}
+			/>
+		{/if}
+
+		<!-- Mobile chrome: corner chips in the sky strip left of the landmass
+		     (the cartouche parks itself top-right on narrow viewports). -->
+		<div class="mobile-top">
+			<div class="chips">
+				{#if core}
+					<Button variant="outline" class={chipClass} onclick={() => (streaksOpen = true)}
+						>Streaks</Button
+					>
+					<StationSearch
+						manifest={core.manifest}
+						onselect={openStation}
+						compact
+						side="bottom"
+						align="start"
+					/>
+				{/if}
 			</div>
 		</div>
 
-		<!-- bottom overlay: legend · time dock · (zoom lives in the canvas corner) -->
+		<!-- Mobile: pinch zooms, so the only navigation button is "fit". -->
+		<div class="mobile-fit">
+			<Button
+				variant="outline"
+				size="icon"
+				class="size-8 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] text-[var(--ink)] shadow-none hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]"
+				aria-label="Reset view"
+				onclick={() => map?.zoomReset()}
+			>
+				<HugeiconsIcon icon={Maximize01Icon} strokeWidth={2.5} />
+			</Button>
+		</div>
+
+		<!-- Bottom rail: WHAT · WHEN · WHERE, one control height throughout. -->
 		<div class="bar bottom">
-			<div class="lane legend"><BandToggle /></div>
-			<div class="lane dock"><TimeDock dates={activeRollup?.dates ?? null} /></div>
-			<div class="lane" aria-hidden="true"></div>
+			<div class="lane legend">
+				<BandToggle />
+				{#if sky.view !== 'today'}<PersistToggle />{/if}
+			</div>
+			<div class="lane dock">
+				<!-- Phones: compact layers + collapsed view picker ride above the scrubber. -->
+				<div class="mobile-row">
+					<BandToggle compact />
+					<ViewTabs compact />
+					{#if sky.view !== 'today'}<PersistToggle />{/if}
+				</div>
+				<TimeDock dates={activeRollup?.dates ?? null} />
+			</div>
+			<div class="lane where">
+				{#if core}
+					<StationSearch manifest={core.manifest} onselect={openStation} side="top" align="end" />
+				{/if}
+				<Button
+					variant="outline"
+					size="icon"
+					class={ctlClass}
+					aria-label="Zoom out"
+					onclick={() => map?.zoomOut()}
+				>
+					<HugeiconsIcon icon={MinusSignIcon} strokeWidth={2.5} />
+				</Button>
+				<Button
+					variant="outline"
+					size="icon"
+					class={ctlClass}
+					aria-label="Zoom in"
+					onclick={() => map?.zoomIn()}
+				>
+					<HugeiconsIcon icon={PlusSignIcon} strokeWidth={2.5} />
+				</Button>
+				<Button
+					variant="outline"
+					size="icon"
+					class={ctlClass}
+					aria-label="Reset view"
+					onclick={() => map?.zoomReset()}
+				>
+					<HugeiconsIcon icon={Maximize01Icon} strokeWidth={2.5} />
+				</Button>
+			</div>
 		</div>
 
 		{#if error}<p class="error">Couldn’t load today’s sky: {error}</p>{/if}
@@ -127,14 +219,29 @@
 	</div>
 </section>
 
-<!-- Short scroll below the map -->
-<div class="content">
-	{#if core}
-		<section class="streak-section">
-			<StreakBoard summary={core.summary} onselect={openStation} />
-		</section>
-	{/if}
+<!-- Mobile streaks: the chip opens the same drawer idiom as the station card. -->
+{#if core}
+	<Drawer bind:open={streaksOpen} shouldScaleBackground={false}>
+		<DrawerContent
+			class="max-h-[85vh] gap-0 border-0 bg-[var(--paper)] p-4 pt-2 text-[var(--ink)] before:border-2 before:border-[var(--ink)] before:bg-[var(--paper)]"
+		>
+			<div class="sheet-scroll">
+				<h2 class="drawer-title">STATION STREAKS</h2>
+				<p class="drawer-caption">CONSECUTIVE CLEAR / OVERCAST DAYS</p>
+				<StreakBoard
+					summary={core.summary}
+					onselect={(code) => {
+						streaksOpen = false;
+						openStation(code);
+					}}
+				/>
+			</div>
+		</DrawerContent>
+	</Drawer>
+{/if}
 
+<!-- Short scroll below the map: purely explanation. -->
+<div class="content">
 	<section class="method">
 		<h2>HOW TO READ THE CLOUDS</h2>
 		<div class="method-grid">
@@ -159,22 +266,39 @@
 		<p>
 			Every morning the India Meteorological Department publishes a GFS <em>meteogram</em> for each
 			of its ~1,200 observation stations. A daily
-			<a class="m-link" href="https://github.com/diagram-chasing" target="_blank" rel="noopener noreferrer">GitHub Action</a>
-			(11:00 IST) downloads every station's meteogram, pixel-extracts the cloud-cover panel, and
-			keeps the day-0 slice — the first eight three-hourly steps. Those readings, split into high
-			cirrus, mid alto and low cumulus bands, are aggregated into the static JSON views this site
-			loads.
+			<a
+				class="m-link"
+				href="https://github.com/diagram-chasing"
+				target="_blank"
+				rel="noopener noreferrer">GitHub Action</a
+			>
+			(11:00 IST) downloads every station's meteogram, pixel-extracts the cloud-cover panel, and keeps
+			the day-0 slice — the first eight three-hourly steps. Those readings, split into high cirrus, mid
+			alto and low cumulus bands, are aggregated into the static JSON views this site loads.
 		</p>
 		<p>
 			The site is built with
-			<a class="m-link" href="https://svelte.dev/docs/kit/introduction" target="_blank" rel="noopener noreferrer">SvelteKit</a>
+			<a
+				class="m-link"
+				href="https://svelte.dev/docs/kit/introduction"
+				target="_blank"
+				rel="noopener noreferrer">SvelteKit</a
+			>
 			and Svelte 5 runes. The map is projected with
-			<a class="m-link" href="https://d3js.org/d3-geo" target="_blank" rel="noopener noreferrer">D3</a>
+			<a class="m-link" href="https://d3js.org/d3-geo" target="_blank" rel="noopener noreferrer"
+				>D3</a
+			>
 			and rendered as an interactive pixel field with
-			<a class="m-link" href="https://pixijs.com" target="_blank" rel="noopener noreferrer">PixiJS</a>:
-			each station becomes a three-mark cloud tower, and the grid subdivides toward individual
+			<a class="m-link" href="https://pixijs.com" target="_blank" rel="noopener noreferrer"
+				>PixiJS</a
+			>: each station becomes a three-mark cloud tower, and the grid subdivides toward individual
 			stations as you zoom in. The full pipeline and source are open on
-			<a class="m-link" href="https://github.com/diagram-chasing" target="_blank" rel="noopener noreferrer">GitHub</a>.
+			<a
+				class="m-link"
+				href="https://github.com/diagram-chasing"
+				target="_blank"
+				rel="noopener noreferrer">GitHub</a
+			>.
 		</p>
 		<h2>AI DECLARATION</h2>
 		<p>
@@ -196,6 +320,7 @@
 		values={tipValues}
 		clientX={tip.clientX}
 		clientY={tip.clientY}
+		members={tip.members}
 	/>
 {/if}
 
@@ -227,7 +352,7 @@
 		overflow: hidden;
 		border: 0px solid var(--ink);
 		background: #0b1d3a; /* navy sky behind the canvas while it loads */
-		min-height: max(60svh, 440px); /* mobile: never let the map get cramped */
+		min-height: max(90svh, 440px); /* mobile: never let the map get cramped */
 	}
 	@media (min-width: 768px) {
 		.stage {
@@ -254,20 +379,14 @@
 	.bar :global(*) {
 		pointer-events: auto;
 	}
-	.bar.top {
-		top: 0;
-		/* background: linear-gradient(rgba(11, 29, 58, 0.45), transparent); */
-	}
-	/* Three lanes: band legend (left), time dock (centre), and an empty right lane the
-	   canvas zoom controls float over. Grid keeps the dock optically centred. */
+	/* One rail, three lanes: WHAT (band legend, left) · WHEN (time dock, centre) ·
+	   WHERE (search + zoom, right). Grid keeps the dock optically centred. */
 	.bar.bottom {
 		bottom: 0;
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
 		align-items: end;
 		gap: 12px 20px;
-		padding-right: 60px; /* clear the corner zoom buttons */
-		/* background: linear-gradient(transparent, rgba(11, 29, 58, 0.55)); */
 	}
 	.lane {
 		display: flex;
@@ -275,16 +394,64 @@
 	}
 	.lane.legend {
 		justify-self: start;
+		align-items: center;
+		gap: 8px;
 	}
 	.lane.dock {
 		justify-self: center;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
 	}
-	.bar-right {
-		margin-left: auto;
+	.lane.where {
+		justify-self: end;
+		align-items: center;
+		gap: 4px;
 	}
-	/* keep the overlaid search legible on the sky */
-	.bar-right :global(label) {
-		color: #fff;
+	/* Phones only: compact layers + collapsed view picker above the scrubber. */
+	.mobile-row {
+		display: none;
+		align-items: center;
+		gap: 8px;
+	}
+
+	/* Mobile chrome: chips in the sky strip, fit button in the sea corner.
+	   Hidden on desktop where the bottom rail carries everything. */
+	.mobile-top {
+		position: absolute;
+		top: 0;
+		left: 0;
+		display: none;
+		padding: 10px 12px;
+		z-index: 10;
+	}
+	.chips {
+		display: flex;
+		gap: 6px;
+	}
+	.mobile-fit {
+		position: absolute;
+		right: 12px;
+		bottom: 130px; /* clear the two-row mobile dock */
+		display: none;
+		z-index: 10;
+	}
+	.sheet-scroll {
+		overflow-y: auto;
+		max-height: calc(85vh - 40px);
+	}
+	.drawer-title {
+		margin: 4px 0 2px;
+		font-family: var(--font-display);
+		font-size: 14px;
+		letter-spacing: 0.08em;
+	}
+	.drawer-caption {
+		margin: 0 0 12px;
+		font-family: var(--font-display);
+		font-size: 9px;
+		letter-spacing: 0.06em;
+		opacity: 0.6;
 	}
 
 	.loading {
@@ -312,10 +479,6 @@
 		padding: 40px 20px 60px;
 	}
 
-	.streak-section {
-		margin: 48px 0;
-	}
-	.streak-section h2,
 	.method h2,
 	.methodology h2 {
 		font-family: var(--font-display);
@@ -389,22 +552,38 @@
 		white-space: nowrap;
 		border: 0;
 	}
-	@media (max-width: 900px) {
-		/* Stack the bottom controls: dock first, legend below, no corner overlap. */
+	/* Tablets: keep all three lanes but stack them, dock first. */
+	@media (max-width: 1023px) and (min-width: 768px) {
 		.bar.bottom {
 			grid-template-columns: 1fr;
 			justify-items: center;
-			padding-right: 16px;
-			padding-bottom: 56px;
+			gap: 10px;
 		}
 		.lane.dock {
 			order: -1;
 		}
-		.lane.legend {
+		.lane.legend,
+		.lane.where {
 			justify-self: center;
 		}
-		.lane[aria-hidden='true'] {
+	}
+	/* Phones: the dock keeps time + compact layers + collapsed view picker;
+	   everything else moves to the corner chips / fit button. */
+	@media (max-width: 767px) {
+		.bar.bottom {
+			grid-template-columns: 1fr;
+			justify-items: center;
+		}
+		.lane.legend,
+		.lane.where {
 			display: none;
+		}
+		.mobile-row {
+			display: flex;
+		}
+		.mobile-top,
+		.mobile-fit {
+			display: flex;
 		}
 	}
 	@media (max-width: 640px) {

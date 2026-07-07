@@ -140,6 +140,80 @@ def extract_cloud_data(pil_image, start_date):
     return result
 
 
+def _precip_green_mask(bgr_crop):
+    """Boolean mask of the green Total/Rain bars within a BGR precip crop.
+
+    The bars are a saturated green; convective/snow/ice-pellet series use other
+    colours and the "10-Day Total" text is black, so a green-dominant test isolates
+    total precipitation cleanly.
+    """
+    b, g, r = bgr_crop[:, :, 0].astype(int), bgr_crop[:, :, 1].astype(int), bgr_crop[:, :, 2].astype(int)
+    return (g > r + 30) & (g > b + 30) & (g > 90)
+
+
+def extract_precip_data(pil_image, start_date):
+    """
+    Extract relative precipitation intensity from a meteogram's precip panel.
+
+    Mirrors extract_cloud_data: samples the same 80 columns so rain lines up with
+    cloud timestamps. Because the panel Y-axis auto-scales per station, each value
+    is the green bar height as a percentage of the panel height (0-100), i.e. a
+    per-station relative intensity, not absolute millimetres.
+
+    Returns a list of 80 floats (one per 3-hourly sample).
+    """
+    img_array = np.array(pil_image.convert('RGB'))
+    img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+
+    cropped = img_bgr[PRECIP_CROP_Y0:PRECIP_CROP_Y1, PRECIP_CROP_X0:PRECIP_CROP_X1]
+    panel_h, w = cropped.shape[:2]
+
+    # Same sampling grid as the cloud panel so rain[i] and cloud[i] share a timestamp.
+    samples = 80
+    x_indices = np.linspace(80, w - 5, samples).astype(int)
+
+    green = _precip_green_mask(cropped)
+    sampled = green[:, x_indices]
+
+    has_green = sampled.any(axis=0)
+    # Top-most green pixel per column = top of the Total/Rain bar.
+    first_green_idx = np.where(has_green, sampled.argmax(axis=0), panel_h)
+    percentage = (panel_h - first_green_idx) / panel_h * 100
+    percentage[~has_green] = 0.0
+
+    return percentage.tolist()
+
+
+def validate_precip_crop(pil_image):
+    """Ensure the precip panel geometry matches the fixed crop.
+
+    Milder than validate_crop: the panel background is white (not a coloured field),
+    so we only assert the image is tall enough to contain the panel.
+    """
+    if pil_image.width != EXPECTED_WIDTH:
+        raise ExtractionError("validate_precip_crop", f"width {pil_image.width} != {EXPECTED_WIDTH}")
+    if pil_image.height < PRECIP_CROP_Y1:
+        raise ExtractionError("validate_precip_crop", f"height {pil_image.height} < {PRECIP_CROP_Y1}")
+
+
+def validate_precip_values(precip):
+    """Range/degenerate checks on precip intensities. Returns list of warnings.
+
+    Unlike cloud cover, an all-zero series is NORMAL (most stations are dry), so it
+    is not flagged. An all-saturated series would indicate a bad crop and is flagged.
+    """
+    warnings = []
+    arr = np.asarray(precip)
+    if arr.size == 0:
+        warnings.append("precip: empty")
+        return warnings
+    if (arr < 0).any() or (arr > 100).any():
+        warnings.append("precip: out-of-range values")
+    if np.all(arr >= 99.9):
+        warnings.append("precip: all-full")
+    return warnings
+
+
 def extract_to_json_buffer(pil_image, start_date, validate=True):
     """
     Extract cloud data and return (buffer, warnings).
@@ -168,6 +242,21 @@ def extract_to_json_buffer(pil_image, start_date, validate=True):
             [d["low"] for d in data["data"]],
         ]
         warnings = validate_values(bands)
+
+    # Rain extraction degrades gracefully: a precip-only failure must not drop a
+    # station whose cloud data is fine (that would erode the run's success rate).
+    try:
+        if validate:
+            validate_precip_crop(pil_image)
+        precip = extract_precip_data(pil_image, start_date)
+        if validate:
+            warnings.extend(validate_precip_values(precip))
+    except Exception as e:  # noqa: BLE001 - never let rain sink a good cloud extract
+        precip = [0.0] * len(data["data"])
+        warnings.append(f"precip: extraction failed ({e})")
+
+    for i, d in enumerate(data["data"]):
+        d["rain"] = round(precip[i], 2) if i < len(precip) else 0.0
 
     json_str = json.dumps(data, indent=2)
     buffer = BytesIO()

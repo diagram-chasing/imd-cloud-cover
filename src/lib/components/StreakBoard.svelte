@@ -4,8 +4,16 @@
 	interface Props {
 		summary: Summary;
 		onselect?: (code: string) => void;
+		/** One column (SUN above CLOUD) — for the narrow in-map inset. */
+		stacked?: boolean;
+		/** Show only the top N entries per column. */
+		limit?: number;
 	}
-	let { summary, onselect }: Props = $props();
+	let { summary, onselect, stacked = false, limit }: Props = $props();
+
+	function top(entries: StreakEntry[]): StreakEntry[] {
+		return limit ? entries.slice(0, limit) : entries;
+	}
 
 	const CAP = 21;
 	function blocks(n: number): number {
@@ -39,9 +47,9 @@
 	</div>
 {/snippet}
 
-<section class="streaks">
-	{@render column('SUN STREAKS', summary.streaks.sun, 'sun')}
-	{@render column('CLOUD STREAKS', summary.streaks.cloud, 'cloud')}
+<section class="streaks" class:stacked>
+	{@render column('SUN STREAKS', top(summary.streaks.sun), 'sun')}
+	{@render column('CLOUD STREAKS', top(summary.streaks.cloud), 'cloud')}
 </section>
 
 <style>
@@ -49,6 +57,10 @@
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 24px;
+	}
+	.streaks.stacked {
+		grid-template-columns: 1fr;
+		gap: 16px;
 	}
 	h3 {
 		font-family: var(--font-display);

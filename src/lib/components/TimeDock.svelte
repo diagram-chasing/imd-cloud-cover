@@ -11,10 +11,11 @@
 	let { dates = null }: Props = $props();
 </script>
 
-<!-- One consolidated "when am I looking at" control: the time range sits above
-     the matching scrubber for that range, centred as the map's primary axis. -->
+<!-- One consolidated "when am I looking at" control on a single rail-height row:
+     the range tabs beside the matching scrubber. On phones the tabs hide — the
+     page shows a collapsed view chip beside the layers row instead. -->
 <div class="dock">
-	<ViewTabs />
+	<div class="tabs"><ViewTabs /></div>
 	<div class="scrub">
 		{#if sky.view === 'today'}
 			<TimeScrubber />
@@ -27,12 +28,16 @@
 <style>
 	.dock {
 		display: flex;
-		flex-direction: column;
 		align-items: center;
 		gap: 8px;
 	}
 	.scrub {
 		display: flex;
 		justify-content: center;
+	}
+	@media (max-width: 767px) {
+		.tabs {
+			display: none;
+		}
 	}
 </style>

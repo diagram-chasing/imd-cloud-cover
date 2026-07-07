@@ -33,11 +33,12 @@
 	}
 
 	// Pixel-boxed play control — shares the visual language of the zoom buttons.
+	// h-11 standalone == h-10 grouped item + the group's 2px border: one rail height.
 	const playClass =
-		'size-8 rounded-none border-2 border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)] shadow-none hover:bg-[var(--ink)] hover:text-[var(--sun-gold)]';
+		'size-11 rounded-none border-2 border-[var(--ink)] bg-[var(--ink)] text-[var(--paper)] shadow-none hover:bg-[var(--ink)] hover:text-[var(--sun-gold)]';
 	// Each 3-hour step. Vertical stack: day/night dot above, hour label below.
 	const stepClass =
-		'flex h-11 w-8 flex-col items-center justify-end gap-1 rounded-none border-0 border-r-2 border-[var(--ink)] bg-[var(--paper)] px-0 pb-1.5 text-[11px] tracking-wider text-[var(--ink)] [font-family:var(--font-display)] last:border-r-0 ' +
+		'flex h-10 w-8 flex-col items-center justify-end gap-1 rounded-none border-0 border-r-2 border-[var(--ink)] bg-[var(--paper)] px-0 pb-1.5 text-[11px] tracking-wider text-[var(--ink)] [font-family:var(--font-display)] last:border-r-0 ' +
 		'hover:bg-[var(--cloud-block)] hover:text-[var(--ink)] data-[state=on]:bg-[var(--ink)] data-[state=on]:text-[var(--paper)]';
 </script>
 

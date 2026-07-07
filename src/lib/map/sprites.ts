@@ -1,4 +1,4 @@
-import { CLOUD, type BandKey } from '$lib/theme';
+import { CLOUD, RAIN, type BandKey } from '$lib/theme';
 import { fnv1a, mulberry32 } from './hash';
 
 type Pattern = number[][];
@@ -256,6 +256,84 @@ function drawMark(pattern: Pattern, band: BandKey, tier: number, cell: number): 
 	ctx.globalAlpha = 1;
 
 	return { canvas: canvas as HTMLCanvasElement, wCells: cols, hCells: rows, shadowRows: 0 };
+}
+
+// --- Rain streaks ----------------------------------------------------------
+// A small curtain of falling streaks that hangs beneath the low cloud where the
+// forecast shows precip. Kept deliberately sparse and thin (1-cell-wide dashes)
+// so it reads as rain, not a solid block, and so it never fights the cumulus
+// above it. Three tiers (drizzle / rain / heavy) widen the curtain and add
+// streaks; a seeded PRNG mints variants so neighbouring stations don't rhyme.
+
+// Per rain tier: [width in cells, rows tall, streak density 0..1].
+const RAIN_SIZE: [number, number, number][] = [
+	[4, 3, 0.5], // 1 drizzle
+	[6, 4, 0.7], // 2 rain
+	[7, 5, 0.85] // 3 heavy
+];
+
+export interface RainAtlas {
+	cell: number;
+	get(tier: 1 | 2 | 3, variant?: number): Sprite;
+}
+
+/** Staggered vertical dashes → a curtain of falling rain. */
+function rainPattern(rand: () => number, tier: number): Pattern {
+	const [w, rows, density] = RAIN_SIZE[tier - 1];
+	const grid: number[][] = Array.from({ length: rows }, () => new Array(w).fill(0));
+	let drew = false;
+	for (let x = 0; x < w; x++) {
+		if (rand() >= density) continue;
+		const len = 1 + Math.floor(rand() * 2); // 1-2 cell dash
+		const start = Math.floor(rand() * (rows - len + 1)); // staggered vertical offset
+		for (let i = 0; i < len; i++) grid[start + i][x] = 1;
+		drew = true;
+	}
+	if (!drew) grid[0][Math.floor(w / 2)] = 1; // never fully empty
+	return grid;
+}
+
+function drawRainMark(pattern: Pattern, tier: number, cell: number): Sprite {
+	const rows = pattern.length;
+	const cols = Math.max(...pattern.map((r) => r.length));
+
+	const canvas =
+		typeof OffscreenCanvas !== 'undefined'
+			? new OffscreenCanvas(cols * cell, rows * cell)
+			: Object.assign(document.createElement('canvas'), {
+				width: cols * cell,
+				height: rows * cell
+			});
+	const ctx = (canvas as HTMLCanvasElement).getContext('2d')!;
+	ctx.imageSmoothingEnabled = false;
+
+	// Heavier tiers deepen the blue and firm up; drizzle stays translucent.
+	ctx.globalAlpha = [0.7, 0.85, 1][tier - 1];
+	ctx.fillStyle = tier >= 3 ? RAIN.deep : RAIN.fill;
+	for (let y = 0; y < rows; y++) {
+		const row = pattern[y];
+		for (let x = 0; x < cols; x++) {
+			if (row[x]) ctx.fillRect(x * cell, y * cell, cell, cell);
+		}
+	}
+	ctx.globalAlpha = 1;
+
+	return { canvas: canvas as HTMLCanvasElement, wCells: cols, hCells: rows, shadowRows: 0 };
+}
+
+/** Build the rain-streak atlas: 3 tiers x MARK_VARIANTS shapes. */
+export function buildRainAtlas(cell: number): RainAtlas {
+	const cache = new Map<string, Sprite>();
+	for (let tier = 1; tier <= 3; tier++) {
+		for (let v = 0; v < MARK_VARIANTS; v++) {
+			const rand = mulberry32(fnv1a(`rain:${tier}:${v}`));
+			cache.set(`${tier}:${v}`, drawRainMark(rainPattern(rand, tier), tier, cell));
+		}
+	}
+	return {
+		cell,
+		get: (tier, variant = 0) => cache.get(`${tier}:${variant % MARK_VARIANTS}`)!
+	};
 }
 
 /** Build the tower-mark atlas: 3 bands x 4 tiers x MARK_VARIANTS shapes. */

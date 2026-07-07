@@ -7,6 +7,8 @@ export interface StationPoint {
 	y: number;
 	cellX: number;
 	cellY: number;
+	/** Stations aggregated into this point's bin (1 at the per-station level). */
+	members?: number;
 }
 
 export function buildQuadtree(points: StationPoint[]): Quadtree<StationPoint> {

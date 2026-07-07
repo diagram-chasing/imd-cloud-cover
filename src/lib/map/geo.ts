@@ -48,13 +48,61 @@ function makeCanvas(w: number, h: number): HTMLCanvasElement {
 	return c;
 }
 
+// A decoded ground tile: raw RGBA plus the mean colour of its opaque pixels.
+// renderGround tints each tile by scaling its pixels so this mean lands exactly
+// on the theme's land/urban colour — the tile keeps the current flat palette but
+// gains texture, and still darkens at night because the target colour does.
+export interface GroundTile {
+	data: Uint8ClampedArray;
+	w: number;
+	h: number;
+	mean: [number, number, number];
+}
+
+function loadImage(url: string): Promise<HTMLImageElement> {
+	return new Promise((res, rej) => {
+		const im = new Image();
+		im.onload = () => res(im);
+		im.onerror = rej;
+		im.src = url;
+	});
+}
+
+// Decode a set of tile URLs into samplable RGBA + mean colour. Failures resolve
+// to an empty list so the map falls back to flat land fills (renderGround guards).
+export async function loadGroundTiles(urls: string[]): Promise<GroundTile[]> {
+	const imgs = await Promise.all(urls.map(loadImage));
+	return imgs.map((img) => {
+		const w = img.naturalWidth;
+		const h = img.naturalHeight;
+		const ctx = makeCanvas(w, h).getContext('2d', { willReadFrequently: true })!;
+		ctx.drawImage(img, 0, 0);
+		const data = ctx.getImageData(0, 0, w, h).data;
+		let r = 0;
+		let g = 0;
+		let b = 0;
+		let n = 0;
+		for (let i = 0; i < w * h; i++) {
+			if (data[i * 4 + 3] > 127) {
+				r += data[i * 4];
+				g += data[i * 4 + 1];
+				b += data[i * 4 + 2];
+				n++;
+			}
+		}
+		n = n || 1;
+		return { data, w, h, mean: [r / n, g / n, b / n] as [number, number, number] };
+	});
+}
+
 export function buildGeo(
 	india: FeatureCollection,
 	manifest: StationsManifest,
 	worldW: number,
 	cell: number,
 	urbanFC?: FeatureCollection,
-	placesFC?: FeatureCollection
+	placesFC?: FeatureCollection,
+	grassTiles?: GroundTile[]
 ): Geo {
 	const worldH = worldW * 1.06;
 	// The cloud/station grid works in whole `cell` units, but the ground (coast +
@@ -182,14 +230,35 @@ export function buildGeo(
 		const ldRGB = hexRGB(land0.dither);
 		const uRGB = hexRGB(urban0.fill);
 		const udRGB = hexRGB(urban0.dither);
+		const tiles = grassTiles && grassTiles.length ? grassTiles : null;
+		// Ground-raster px one tile spans before repeating. The raster is ~cols wide
+		// (world / groundScale), so a small value here tiles the grass many times
+		// across the landmass instead of stretching it over the whole map.
+		const TILE_PX = 10;
 		for (let y = 0; y < rows; y++) {
 			for (let x = 0; x < cols; x++) {
 				const idx = y * cols + x;
 				if (!land[idx]) continue;
-				const useD = coast.has(idx) || (x + y) & 1;
 				const built = urban[idx] === 1;
-				const base = built ? (useD ? udRGB : uRGB) : useD ? ldRGB : lRGB;
 				const o = idx * 4;
+				if (tiles) {
+					// Alternate between tiles per tile-block for gentle variation, then
+					// scale the sampled pixel so the tile's mean maps onto the theme
+					// land/urban fill — texture with the exact current palette + night fade.
+					const t = tiles[(Math.floor(x / TILE_PX) + Math.floor(y / TILE_PX)) % tiles.length];
+					// Map the TILE_PX-wide footprint back onto the tile's full resolution.
+					const sx = Math.floor(((x % TILE_PX) / TILE_PX) * t.w);
+					const sy = Math.floor(((y % TILE_PX) / TILE_PX) * t.h);
+					const si = (sy * t.w + sx) * 4;
+					const tint = built ? uRGB : lRGB;
+					img.data[o] = Math.min(255, (t.data[si] * tint[0]) / t.mean[0]);
+					img.data[o + 1] = Math.min(255, (t.data[si + 1] * tint[1]) / t.mean[1]);
+					img.data[o + 2] = Math.min(255, (t.data[si + 2] * tint[2]) / t.mean[2]);
+					img.data[o + 3] = 255;
+					continue;
+				}
+				const useD = coast.has(idx) || (x + y) & 1;
+				const base = built ? (useD ? udRGB : uRGB) : useD ? ldRGB : lRGB;
 				img.data[o] = base[0];
 				img.data[o + 1] = base[1];
 				img.data[o + 2] = base[2];

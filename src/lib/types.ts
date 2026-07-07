@@ -18,8 +18,9 @@ export interface DatesIndex {
 	latest: string;
 }
 
-/** One {h, m, l} cover value (0-100) per station code for the current view. */
-export type BandValues = Record<string, { h: number; m: number; l: number }>;
+/** One {h, m, l, p} value (0-100) per station code for the current view.
+ *  p = relative precip intensity (auto-scaled per station; not absolute mm). */
+export type BandValues = Record<string, { h: number; m: number; l: number; p: number }>;
 
 /** latest/all-stations.json — today's 8-step day-0 slice per station. */
 export interface AllStations {
@@ -33,6 +34,7 @@ export interface StationBands {
 	h: number[]; // length 8
 	m: number[];
 	l: number[];
+	p: number[]; // relative precip intensity 0-100
 }
 
 export interface NamedValue {
@@ -50,9 +52,10 @@ export interface StreakEntry {
 /** latest/summary.json */
 export interface Summary {
 	date: string;
-	national_mean: { h: number; m: number; l: number; total: number };
+	national_mean: { h: number; m: number; l: number; rain: number; total: number };
 	cloudiest: NamedValue | null;
 	clearest: NamedValue | null;
+	wettest: NamedValue | null;
 	streaks: { sun: StreakEntry[]; cloud: StreakEntry[] };
 	station_count: number;
 	failed_count: number;
@@ -63,6 +66,7 @@ export interface DailyMeans {
 	h: number;
 	m: number;
 	l: number;
+	p: number; // relative precip intensity 0-100
 	e: number; // effective = mean of per-step max
 }
 
@@ -76,8 +80,8 @@ export interface History {
 export interface Rollup {
 	window: number;
 	dates: string[];
-	stations: Record<string, { h: (number | null)[]; m: (number | null)[]; l: (number | null)[]; e: (number | null)[] }>;
-	national: { h: (number | null)[]; m: (number | null)[]; l: (number | null)[]; e: (number | null)[] };
+	stations: Record<string, { h: (number | null)[]; m: (number | null)[]; l: (number | null)[]; p: (number | null)[]; e: (number | null)[] }>;
+	national: { h: (number | null)[]; m: (number | null)[]; l: (number | null)[]; p: (number | null)[]; e: (number | null)[] };
 }
 
 /** Raw per-station forecast: {date}/{CODE}-meteogram.json */
@@ -86,6 +90,7 @@ export interface ForecastPoint {
 	high: number;
 	middle: number;
 	low: number;
+	rain: number; // relative precip intensity 0-100
 }
 
 export interface Forecast {

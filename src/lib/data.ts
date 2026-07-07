@@ -24,14 +24,14 @@ export function computeValues(
 	if (view === 'today') {
 		if (!latest) return out;
 		for (const [code, b] of Object.entries(latest.stations)) {
-			out[code] = { h: b.h[timeIndex] ?? 0, m: b.m[timeIndex] ?? 0, l: b.l[timeIndex] ?? 0 };
+			out[code] = { h: b.h[timeIndex] ?? 0, m: b.m[timeIndex] ?? 0, l: b.l[timeIndex] ?? 0, p: b.p?.[timeIndex] ?? 0 };
 		}
 		return out;
 	}
 	if (!rollup) return out;
 	const i = Math.min(windowDayIndex, rollup.dates.length - 1);
 	for (const [code, s] of Object.entries(rollup.stations)) {
-		out[code] = { h: s.h[i] ?? 0, m: s.m[i] ?? 0, l: s.l[i] ?? 0 };
+		out[code] = { h: s.h[i] ?? 0, m: s.m[i] ?? 0, l: s.l[i] ?? 0, p: s.p?.[i] ?? 0 };
 	}
 	return out;
 }
