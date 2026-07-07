@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Build the static map data served from /data for the pixel sky-map.
 # Sources live in src/lib/assets (Natural Earth shapefiles + a states GeoJSON).
+# The raw Natural Earth folders (ne_*) are NOT committed — download and unzip them
+# from https://www.naturalearthdata.com/downloads/ before running:
+#   - ne_10m_urban_areas
+#   - ne_50m_populated_places
+#   - ne_50m_rivers_lake_centerlines_scale_rank
 # Requires: mapshaper, ogr2ogr (GDAL). Run from repo root: bash scripts/build-map-data.sh
 set -euo pipefail
 

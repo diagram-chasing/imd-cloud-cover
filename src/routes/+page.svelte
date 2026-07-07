@@ -72,7 +72,7 @@
 </svelte:head>
 
 <!-- Full-screen map stage -->
-<section class="stage" bind:this={stage}>
+<section class="stage p-10 bg-white" bind:this={stage}>
 	{#if core}
 		<PixelMap
 			india={core.india}

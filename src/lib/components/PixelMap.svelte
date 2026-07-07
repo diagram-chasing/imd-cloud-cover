@@ -6,7 +6,7 @@
 	import { buildGeo, type Geo } from '$lib/map/geo';
 	import { buildMarkAtlas, MARK_VARIANTS } from '$lib/map/sprites';
 	import { buildQuadtree, nearest, type StationPoint } from '$lib/map/hit';
-	import { fnv1a, jitter } from '$lib/map/hash';
+	import { fnv1a, jitter, mulberry32 } from '$lib/map/hash';
 	import { sky } from '$lib/state/sky.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
@@ -57,6 +57,16 @@
 	const BAND_KEYS: BandKey[] = ['low', 'middle', 'high'];
 	const VAL_KEY: Record<BandKey, 'h' | 'm' | 'l'> = { high: 'h', middle: 'm', low: 'l' };
 
+	// Ambient decoration: a handful of slow planes with fading contrails wander the
+	// sky at varied headings, gently curving so their trails criss-cross. Purely for
+	// a calm vibe — no data, gated behind the same reduced-motion / today-view check
+	// as the cloud drift (see tick).
+	const PLANE_COUNT = 5;
+	const TRAIL_LEN = 44; // px length of a contrail strip (world space)
+	// px per ms so a full-world crossing lands around 60–90s (worldW ~ 1024).
+	const PLANE_SPEED_MIN = 1024 / 90000;
+	const PLANE_SPEED_MAX = 1024 / 60000;
+
 	// Pixel-boxed styling shared by the zoom/reset controls.
 	const ctlClass =
 		'size-8 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] text-[var(--ink)] shadow-none hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]';
@@ -89,6 +99,21 @@
 	let placeDots: Graphics[] = [];
 	let placePlates: Graphics[] = [];
 	let bins: Bin[] = [];
+	let planeLayer: Container | null = null;
+	interface Plane {
+		c: Container;
+		x: number;
+		y: number;
+		heading: number; // radians; travel direction (0 = +x)
+		speed: number; // px per ms
+		curvePhase: number;
+		curveSpeed: number; // curvePhase advance per ms
+		curveAmp: number; // turn rate amplitude (rad per ms)
+	}
+	let planes: Plane[] = [];
+	let planeRand: (() => number) | null = null;
+	let planeTex: Texture | null = null;
+	let trailTex: Texture | null = null;
 	const pool: Record<BandKey, Sprite[]> = { low: [], middle: [], high: [] };
 	let layers: Record<BandKey, Container> | null = null;
 	const alphaTarget: Record<BandKey, number> = { low: 1, middle: 1, high: 1 };
@@ -264,6 +289,9 @@
 		layers = layerMap;
 		retargetAlphas();
 
+		buildPlanes();
+		styleAmbient();
+
 		const points: StationPoint[] = bins.map((b) => ({
 			code: b.code,
 			cellX: 0,
@@ -409,6 +437,139 @@
 		}
 	}
 
+	// --- Ambient decoration (wandering planes with contrails) ------------------
+
+	function makeCanvas(w: number, h: number): HTMLCanvasElement {
+		const c = document.createElement('canvas');
+		c.width = w;
+		c.height = h;
+		return c;
+	}
+
+	// Small plane glyph pointing right (+x). The container is rotated to the plane's
+	// heading, so the glyph always faces its travel direction. Anchored at its nose
+	// so the contrail lines up behind it.
+	function buildPlaneTex(): Texture {
+		const px = 1;
+		const c = makeCanvas(6 * px, 3 * px);
+		const ctx = c.getContext('2d')!;
+		ctx.imageSmoothingEnabled = false;
+		ctx.fillStyle = '#ffffff';
+		// fuselage
+		ctx.fillRect(0, px, 6 * px, px);
+		// wings / tail nibs
+		ctx.fillRect(2 * px, 0, px, 3 * px);
+		ctx.fillRect(px, 2 * px, px, px);
+		return mkTex(c);
+	}
+
+	// Horizontal contrail strip whose alpha ramps 0 (tail) → full (head at the right
+	// edge). Baked once; the sprite is anchored (1, 0.5) at the plane nose.
+	function buildTrailTex(len: number): Texture {
+		const c = makeCanvas(len, 1);
+		const ctx = c.getContext('2d')!;
+		const grad = ctx.createLinearGradient(0, 0, len, 0);
+		grad.addColorStop(0, 'rgba(255,255,255,0)');
+		grad.addColorStop(1, 'rgba(255,255,255,0.5)');
+		ctx.fillStyle = grad;
+		ctx.fillRect(0, 0, len, 1);
+		return mkTex(c);
+	}
+
+	function buildPlanes() {
+		if (!geo || !camera) return;
+		planeTex = buildPlaneTex();
+		trailTex = buildTrailTex(TRAIL_LEN);
+		planeLayer = new Container();
+		planeLayer.eventMode = 'none';
+		// Above the cloud bands so planes ride high in the sky.
+		camera.addChild(planeLayer);
+		planes = [];
+		planeRand = mulberry32(fnv1a('planes'));
+		for (let i = 0; i < PLANE_COUNT; i++) {
+			const trail = new Sprite(trailTex);
+			trail.anchor.set(1, 0.5); // head at the plane, fades toward the tail
+			const body = new Sprite(planeTex);
+			body.anchor.set(1, 0.5);
+			const c = new Container();
+			c.eventMode = 'none';
+			c.addChild(trail);
+			c.addChild(body);
+			planeLayer.addChild(c);
+			const p: Plane = {
+				c,
+				x: 0,
+				y: 0,
+				heading: 0,
+				speed: 0,
+				curvePhase: 0,
+				curveSpeed: 0,
+				curveAmp: 0
+			};
+			// Reduced motion never advances the tick, so scatter across the map only
+			// when motion is allowed — otherwise park each off-edge, invisible.
+			resetPlane(p, !reduced);
+			planes.push(p);
+		}
+	}
+
+	// (Re)seed a plane. `initial` scatters it anywhere on the map at a random heading
+	// so the sky is already busy on load; otherwise it enters from a random edge
+	// aimed inward, so the fleet keeps criss-crossing.
+	function resetPlane(p: Plane, initial = false) {
+		if (!geo || !planeRand) return;
+		const r = planeRand;
+		const g = geo;
+		p.speed = PLANE_SPEED_MIN + r() * (PLANE_SPEED_MAX - PLANE_SPEED_MIN);
+		// Gentle wander: a slow-varying turn so contrails curve rather than run
+		// dead straight. Amplitude is tiny (a fraction of a degree per ms).
+		p.curvePhase = r() * Math.PI * 2;
+		p.curveSpeed = 0.0002 + r() * 0.0004;
+		p.curveAmp = (0.4 + r() * 0.9) * 0.00002 * Math.PI;
+		if (initial) {
+			p.x = r() * g.worldW;
+			p.y = r() * g.worldH;
+			p.heading = r() * Math.PI * 2; // any direction
+		} else {
+			const m = TRAIL_LEN * 1.5;
+			const edge = Math.floor(r() * 4);
+			// Enter from an edge, heading roughly across the map with a wide spread
+			// so paths fan out and intersect.
+			if (edge === 0) {
+				p.x = -m;
+				p.y = r() * g.worldH;
+				p.heading = 0;
+			} else if (edge === 1) {
+				p.x = g.worldW + m;
+				p.y = r() * g.worldH;
+				p.heading = Math.PI;
+			} else if (edge === 2) {
+				p.x = r() * g.worldW;
+				p.y = -m;
+				p.heading = Math.PI / 2;
+			} else {
+				p.x = r() * g.worldW;
+				p.y = g.worldH + m;
+				p.heading = -Math.PI / 2;
+			}
+			p.heading += (r() - 0.5) * (Math.PI * 0.55); // ±~50° spread
+		}
+		p.c.x = p.x;
+		p.c.y = p.y;
+		p.c.rotation = p.heading;
+	}
+
+	// Recolour contrails for day/night, mirroring stylePlaces.
+	function styleAmbient() {
+		const night = skyMode(sky.timeIndex) === 'night';
+		const trailTint = night ? 0xcfe4ff : 0xffffff;
+		for (const p of planes) {
+			const [trail, body] = p.c.children as Sprite[];
+			trail.tint = trailTint;
+			body.tint = trailTint;
+		}
+	}
+
 	function updateGround() {
 		if (!groundSprite || !geo) return;
 		const old = groundSprite.texture;
@@ -509,6 +670,22 @@
 			// Subtle wisp: nudge the whole high layer a couple px so cirrus feels
 			// alive without detaching the small marks from their towers.
 			if (layers) layers.high.x = driftTick * 2;
+		}
+		// Slow planes: advance along a gently-curving heading; re-seed from a fresh
+		// edge once fully off the map so trails keep criss-crossing.
+		if (geo) {
+			const m = TRAIL_LEN * 2;
+			for (const p of planes) {
+				p.curvePhase += p.curveSpeed * t.deltaMS;
+				p.heading += Math.sin(p.curvePhase) * p.curveAmp * t.deltaMS;
+				p.x += Math.cos(p.heading) * p.speed * t.deltaMS;
+				p.y += Math.sin(p.heading) * p.speed * t.deltaMS;
+				p.c.x = p.x;
+				p.c.y = p.y;
+				p.c.rotation = p.heading;
+				if (p.x < -m || p.x > geo.worldW + m || p.y < -m || p.y > geo.worldH + m)
+					resetPlane(p);
+			}
 		}
 	}
 
@@ -661,6 +838,7 @@
 			drawSky();
 			drawTitle();
 			stylePlaces();
+			styleAmbient();
 			drawHover();
 		}
 	});

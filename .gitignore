@@ -31,3 +31,8 @@ static/sample/20*/
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Raw Natural Earth sources for scripts/build-map-data.sh — not committed.
+# Re-download from https://www.naturalearthdata.com/downloads/ to rebuild
+# static/data/*.json; the generated JSON is what the app ships.
+src/lib/assets/ne_*
