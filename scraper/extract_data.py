@@ -10,6 +10,14 @@ CROP_Y0, CROP_Y1 = 866, 952
 CROP_X0, CROP_X1 = 70, 1090
 EXPECTED_WIDTH = 1100
 
+# Crop of the "3hr Precip (mm)" panel (green Total/Rain bars) that sits directly
+# below the cloud panel. Same X window as the cloud crop so the 80 sample columns
+# line up 1:1 with the cloud timestamps. Y0 is the plot-area top (axis max), Y1 the
+# 0-mm baseline. The panel's Y-axis auto-scales per station, so the extracted value
+# is a *relative* intensity (bar height as a fraction of the panel), not absolute mm.
+PRECIP_CROP_Y0, PRECIP_CROP_Y1 = 957, 1060
+PRECIP_CROP_X0, PRECIP_CROP_X1 = 70, 1090
+
 
 class ExtractionError(Exception):
     """Raised when an image fails validation before/after extraction."""

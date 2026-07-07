@@ -20,6 +20,8 @@
 		values: Record<string, { h: number; m: number; l: number }>;
 		persistence?: Record<string, number>;
 		enableTooltip?: boolean;
+		/** Data date (YYYY-MM-DD) shown in the in-world title cartouche. */
+		date?: string;
 		onhover?: (info: { code: string; clientX: number; clientY: number } | null) => void;
 		onselect?: (code: string, at?: { x: number; y: number }) => void;
 	}
@@ -29,6 +31,7 @@
 		places,
 		manifest,
 		values,
+		date,
 		enableTooltip = true,
 		onhover,
 		onselect
@@ -120,14 +123,39 @@
 	let vw = $state(1);
 	let vh = $state(1);
 
-	const STORY_TITLE = 'Reading The Clouds';
+	// In-world title cartouche copy (nautical-chart flavour: a small caps kicker,
+	// a boxed title, a one-line blurb, then the date/time the map is showing).
+	const STORY_KICKER = "WITH IMD'S METEOGRAMS";
+	const STORY_TITLE = 'READING THE CLOUDS';
+	const STORY_SUB = "A daily pixel map of India's cloud cover";
+	const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
+
+	function prettyDate(iso?: string): string {
+		if (!iso) return '';
+		const [y, m, d] = iso.split('-').map(Number);
+		if (!y || !m || !d) return iso;
+		return `${String(d).padStart(2, '0')} ${MONTHS[m - 1]} ${y}`;
+	}
 
 	let app: Application | null = null;
 	let geo: Geo | null = null;
 	let camera: Container | null = null;
 	let groundSprite: Sprite | null = null;
 	let skyGfx: Graphics | null = null;
+	// In-world title cartouche: a group so it pans/zooms with the map. Box +
+	// four text rows (kicker, title, subtitle, date/time), laid out in drawTitle.
+	let titleGroup: Container | null = null;
+	let titleBox: Graphics | null = null;
+	let titleKicker: Text | null = null;
 	let titleText: Text | null = null;
+	let titleSub: Text | null = null;
+	let titleMeta: Text | null = null;
+	// Cached from the layout pass so the date/time line can re-centre in place
+	// (no relayout → no shift) and the fade can react to zoom without a rebuild.
+	let titleCx = 0;
+	let titleMetaY = 0;
+	let titleShown = false;
 	let hoverGfx: Graphics | null = null;
 	let selGfx: Graphics | null = null;
 	let placesLayer: Container | null = null;
@@ -195,6 +223,7 @@
 		if (lods.length) applyLod(lodForZoom());
 		updatePlacesScale();
 		updateLabelVis();
+		updateTitleFade();
 	}
 
 	// City markers live under the camera so they pan/zoom in place, but each is
@@ -341,7 +370,7 @@
 		if (!host) return;
 		// Canvas text is baked once, so the label font must be ready before Pixi
 		// draws it — otherwise it renders in the fallback and never refreshes.
-		await document.fonts.load("10px 'Geist Pixel'").catch(() => {});
+		await document.fonts.load("10px 'Ships Whistle'").catch(() => {});
 		const atlas = buildMarkAtlas(MARK_CELL);
 		geo = buildGeo(india, manifest, WORLD_W, CELL, urban, places);
 		buildLods();
@@ -371,22 +400,18 @@
 		groundSprite.scale.set(geo.groundScale);
 		camera.addChild(groundSprite);
 
-		// Faint story title, anchored to the left of the world so it pans and
-		// zooms with the map. Sits above the ground but under the cloud marks.
-		titleText = new Text({
-			text: STORY_TITLE,
-			style: {
-				fontFamily: "'Geist Pixel', monospace",
-				fontWeight: '400',
-				align: 'left',
-				fill: 0xffffff,
-				wordWrap: true,
-				wordWrapWidth: 2
-			}
-		});
-		titleText.anchor.set(1.2, 0.5);
-		titleText.eventMode = 'none';
-		camera.addChild(titleText);
+		// In-world title cartouche, anchored in world space so it pans and zooms
+		// with the map. Sits above the ground but under the cloud marks.
+		const titleFont = { fontFamily: "'Ships Whistle', monospace", fill: 0xffffff, align: 'left' as const };
+		titleGroup = new Container();
+		titleGroup.eventMode = 'none';
+		titleBox = new Graphics();
+		titleKicker = new Text({ text: STORY_KICKER, style: { ...titleFont, fontWeight: '400' } });
+		titleText = new Text({ text: STORY_TITLE, style: { ...titleFont, fontWeight: '700' } });
+		titleSub = new Text({ text: STORY_SUB, style: { ...titleFont, fontWeight: '400' } });
+		titleMeta = new Text({ text: '', style: { ...titleFont, fontWeight: '700' } });
+		titleGroup.addChild(titleBox, titleKicker, titleText, titleSub, titleMeta);
+		camera.addChild(titleGroup);
 
 		buildPlaces();
 
@@ -451,21 +476,109 @@
 		skyGfx.rect(0, 0, vw, vh).fill({ color: pal.top });
 	}
 
-	// Faint story title stuck to the left of the world map. Coordinates are in
-	// world space (child of camera), so it pans and zooms with the map.
+	// In-world title cartouche: a boxed title with a small-caps kicker inside it,
+	// a one-line blurb, a separator, then the shown date/time — all centred.
+	// Parked in the empty sky to the LEFT of the landmass (never over the map) and
+	// scaled to that gutter, so it pans/zooms with the world. Light white and soft.
+	//
+	// Layout here is STABLE: it depends only on geometry/viewport, never on the
+	// date/time text (which updates via updateTitleMeta) — so scrubbing the clock
+	// causes no layout shift. Zoom/night fading lives in updateTitleFade.
 	function drawTitle() {
-		if (!titleText || !geo) return;
+		if (!titleGroup || !titleBox || !titleKicker || !titleText || !titleSub || !titleMeta || !geo)
+			return;
+		const unit = 30; // title cap height (world units, pre-scale)
+		const pad = unit * 0.55; // inner box padding
+		const gap = unit * 0.5; // vertical gap between rows
+
+		titleKicker.style.fontSize = unit * 0.34;
+		titleKicker.style.letterSpacing = 0;
+		titleText.style.fontSize = unit;
+		titleText.style.letterSpacing = unit * 0.02;
+		titleSub.style.fontSize = unit * 0.44;
+		titleMeta.style.fontSize = unit * 0.4;
+		titleMeta.style.letterSpacing = unit * 0.04;
+		for (const t of [titleKicker, titleText, titleSub, titleMeta]) t.style.fill = 0xffffff;
+
+		// The box wraps the one-line title (top) + a small-caps kicker below it,
+		// both centred inside it.
+		const boxInnerW = Math.max(titleKicker.width, titleText.width);
+		const boxW = boxInnerW + pad * 2;
+		const boxH = titleText.height + gap * 0.4 + titleKicker.height + pad * 2;
+
+		// Everything centres on the widest stable row (box or subtitle; the date
+		// line is excluded so its changing width can't nudge the layout).
+		const contentW = Math.max(boxW, titleSub.width);
+		const cx = contentW / 2;
+		titleCx = cx;
+
+		const boxX = cx - boxW / 2;
+		titleText.position.set(cx - titleText.width / 2, pad);
+		titleKicker.position.set(cx - titleKicker.width / 2, pad + titleText.height + gap * 0.4);
+
+		let y = boxH + gap * 0.9;
+		titleSub.position.set(cx - titleSub.width / 2, y);
+		y += titleSub.height + gap * 0.75;
+
+		// Centred separator rule between blurb and date.
+		const sepW = contentW * 0.42;
+		const sepY = y;
+		y += gap * 0.9;
+
+		titleMetaY = y;
+		const metaLineH = unit * 0.4 * 1.4; // reserved height (date line, single row)
+		const groupH = y + metaLineH;
+
+		titleBox.clear();
+		titleBox
+			.rect(boxX, 0, boxW, boxH)
+			.stroke({ width: Math.max(1, unit * 0.045), color: 0xffffff, alignment: 0 });
+		titleBox
+			.moveTo(cx - sepW / 2, sepY)
+			.lineTo(cx + sepW / 2, sepY)
+			.stroke({ width: Math.max(1, unit * 0.03), color: 0xffffff, alignment: 0.5 });
+
+		// Left sky gutter at fit zoom: world-space width to the left of the map
+		// bbox. Scale the cartouche to a fraction of it and centre it there,
+		// vertically centred on the map. Too narrow a viewport → hide.
+		const b = worldBBox();
+		const gutter = (vw / containZoom() - (b.maxX - b.minX)) / 2;
+		titleShown = gutter >= 90;
+		if (!titleShown) {
+			titleGroup.visible = false;
+			return;
+		}
+		const s = Math.min((gutter * 0.80) / contentW, (geo.worldH * 0.5) / groupH);
+		titleGroup.scale.set(s);
+		titleGroup.position.set(
+			b.minX - (gutter + contentW * s) / 2,
+			geo.worldH / 2 - (groupH * s) / 2
+		);
+		updateTitleMeta();
+		updateTitleFade();
+	}
+
+	// Re-centre the date/time line in place — no relayout, so scrubbing the clock
+	// (or switching views) never shifts the cartouche.
+	function updateTitleMeta() {
+		if (!titleMeta) return;
+		const time = sky.view === 'today' ? `As of ${HOUR_LABELS[sky.timeIndex]}:00 IST` : 'DAILY MEAN';
+		titleMeta.text = [prettyDate(date), time].filter(Boolean).join('  ·  ');
+		titleMeta.position.set(titleCx - titleMeta.width / 2, titleMetaY);
+	}
+
+	// Only present when extremely zoomed out; fades to nothing as you zoom in.
+	function updateTitleFade() {
+		if (!titleGroup) return;
+		if (!titleShown) {
+			titleGroup.visible = false;
+			return;
+		}
+		const zr = zoom / containZoom(); // 1 at fit, grows as you zoom in
+		const fade = Math.max(0, Math.min(1, (1.55 - zr) / (1.55 - 1.05)));
 		const night = skyMode(sky.timeIndex) === 'night';
-		// Size relative to the world so it scales sensibly; wraps into a stacked
-		// column pinned near the left edge.
-		const size = geo.worldH * 0.06;
-		titleText.style.fontSize = size;
-		titleText.style.lineHeight = size * 1.05;
-		titleText.style.wordWrapWidth = geo.worldW * 0.3;
-		// Night: pale ice over navy. Day: deep ink over blue. Both barely there.
-		titleText.style.fill = night ? 0xcde6ff : 0x0b1d3a;
-		titleText.alpha = night ? 0.12 : 0.09;
-		titleText.position.set(geo.worldW * 0.02, geo.worldH / 2);
+		titleGroup.alpha = (night ? 0.72 : 0.6) * fade;
+		titleGroup.visible = fade > 0.01;
 	}
 
 	// Font size tier by population — a light hierarchy so the metros read first.
@@ -475,7 +588,7 @@
 		return 9;
 	}
 
-	// Reference layer: a limited set of major cities, each a dot + a Geist Pixel
+	// Reference layer: a limited set of major cities, each a dot + a Ships Whistle
 	// label sitting on a knockout plate so it stays legible over the busy land and
 	// clouds. Each city is its own container, pinned at the projected point and
 	// counter-scaled per frame (see updatePlacesScale) so labels hold a constant
@@ -504,7 +617,7 @@
 			const label = new Text({
 				text: p.name.toUpperCase(),
 				style: {
-					fontFamily: "'Geist Pixel', monospace",
+					fontFamily: "'Ships Whistle', monospace",
 					fontWeight: '400',
 					fontSize: placeSize(p.pop),
 					fill: 0xffffff,
@@ -1016,11 +1129,19 @@
 		if (app) {
 			updateGround();
 			drawSky();
-			drawTitle();
+			updateTitleMeta();
+			updateTitleFade();
 			stylePlaces();
 			styleAmbient();
 			drawHover();
 		}
+	});
+	// Keep the title cartouche's date/time line in sync with the active view.
+	// A meta-only update — the surrounding layout stays put (no shift).
+	$effect(() => {
+		void sky.view;
+		void date;
+		if (app) updateTitleMeta();
 	});
 	$effect(() => {
 		void sky.hoverCode;

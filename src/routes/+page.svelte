@@ -3,6 +3,7 @@
 	import type { Station } from '$lib/types';
 	import { loadCore, type CoreData } from '$lib/api/load';
 	import { sky } from '$lib/state/sky.svelte';
+	import { skyMode } from '$lib/theme';
 	import { computeValues, computePersistence, rollupForView } from '$lib/data';
 
 	import PixelMap from '$lib/components/PixelMap.svelte';
@@ -63,6 +64,14 @@
 	function closePanel() {
 		sky.selectedCode = null;
 	}
+
+	// Follow the map's sky: at night the whole page (paper mat + content below) goes
+	// dark to match the navy canvas, by overriding the paper/ink tokens on the root.
+	$effect(() => {
+		const night = skyMode(sky.timeIndex) === 'night';
+		document.documentElement.classList.toggle('night', night);
+		return () => document.documentElement.classList.remove('night');
+	});
 </script>
 
 <svelte:head>
@@ -73,43 +82,49 @@
 	/>
 </svelte:head>
 
-<!-- Full-screen map stage -->
-<section class="stage p-10 bg-white" bind:this={stage}>
-	{#if core}
-		<PixelMap
-			india={core.india}
-			urban={core.urban}
-			places={core.places}
-			manifest={core.manifest}
-			{values}
-			{persistence}
-			onhover={(info) => (tip = info)}
-			onselect={openStation}
-		/>
-	{:else if !error}
-		<div class="loading">Reading the skies…</div>
-	{/if}
+<!-- Framed map: a full-width bordered panel on a thin paper mat. Controls are
+     overlaid on the map itself (top: search · bottom: legend + dock · zoom in the
+     canvas corner). Bounded height so the page scrolls past it to the content. -->
+<section class="stage" bind:this={stage}>
+	<div class="map-frame">
+		<h1 class="sr-only">Reading the Clouds</h1>
+		{#if core}
+			<PixelMap
+				india={core.india}
+				urban={core.urban}
+				places={core.places}
+				manifest={core.manifest}
+				{values}
+				{persistence}
+				date={core.summary.date}
+				onhover={(info) => (tip = info)}
+				onselect={openStation}
+			/>
+		{:else if !error}
+			<div class="loading">Reading the skies…</div>
+		{/if}
 
-	<!-- top overlay: place search only -->
-	<div class="bar top">
-		<div class="bar-right">
-			{#if core}<StationSearch manifest={core.manifest} onselect={openStation} />{/if}
+		<!-- top overlay: place search -->
+		<div class="bar top">
+			<div class="bar-right">
+				{#if core}<StationSearch manifest={core.manifest} onselect={openStation} />{/if}
+			</div>
 		</div>
+
+		<!-- bottom overlay: legend · time dock · (zoom lives in the canvas corner) -->
+		<div class="bar bottom">
+			<div class="lane legend"><BandToggle /></div>
+			<div class="lane dock"><TimeDock dates={activeRollup?.dates ?? null} /></div>
+			<div class="lane" aria-hidden="true"></div>
+		</div>
+
+		{#if error}<p class="error">Couldn’t load today’s sky: {error}</p>{/if}
+
+		<p class="sr-only">
+			Interactive pixel map of cloud cover over India.
+			{#if core}{core.summary.station_count} stations; use the station search to explore.{/if}
+		</p>
 	</div>
-
-	<!-- bottom overlay: legend · time dock · (zoom lives in the canvas corner) -->
-	<div class="bar bottom">
-		<div class="lane legend"><BandToggle /></div>
-		<div class="lane dock"><TimeDock dates={activeRollup?.dates ?? null} /></div>
-		<div class="lane" aria-hidden="true"></div>
-	</div>
-
-	{#if error}<p class="error">Couldn’t load today’s sky: {error}</p>{/if}
-
-	<p class="sr-only">
-		Interactive pixel map of cloud cover over India.
-		{#if core}{core.summary.station_count} stations; use the station search to explore.{/if}
-	</p>
 </section>
 
 <!-- Short scroll below the map -->
@@ -197,23 +212,34 @@
 {/if}
 
 <style>
+	/* Thin paper mat so the frame border reads; the map goes as wide as the mat allows.
+	   On desktop the mat fills the first screen (map height driven by it) so the page
+	   scrolls past to the content; on mobile the map keeps a tall min-height and the
+	   section grows in normal flow. */
 	.stage {
-		position: relative;
-		width: 100%;
-		height: 100svh;
-		overflow: hidden;
-		background: #0b1d3a;
+		box-sizing: border-box;
+		padding: clamp(8px, 1.4vw, 18px);
+		background: var(--paper);
+		transition: background-color 0.4s ease;
 	}
-	.loading {
-		width: 100%;
-		height: 100%;
-		display: grid;
-		place-items: center;
-		color: #fff;
-		font-family: var(--font-display);
-		font-size: 12px;
+	.map-frame {
+		position: relative;
+		overflow: hidden;
+		border: 0px solid var(--ink);
+		background: #0b1d3a; /* navy sky behind the canvas while it loads */
+		min-height: max(60svh, 440px); /* mobile: never let the map get cramped */
+	}
+	@media (min-width: 768px) {
+		.stage {
+			height: 100svh;
+		}
+		.map-frame {
+			height: 100%;
+			min-height: 0;
+		}
 	}
 
+	/* Overlaid control bars, pinned to the map's own edges inside the frame. */
 	.bar {
 		position: absolute;
 		left: 0;
@@ -230,20 +256,18 @@
 	}
 	.bar.top {
 		top: 0;
-		background: linear-gradient(rgba(11, 29, 58, 0.45), transparent);
+		/* background: linear-gradient(rgba(11, 29, 58, 0.45), transparent); */
 	}
-	/* Three lanes: band legend (left), the time dock (centre), and an empty
-	   right lane the canvas zoom controls float over. Grid keeps the dock
-	   optically centred regardless of the legend's width. */
+	/* Three lanes: band legend (left), time dock (centre), and an empty right lane the
+	   canvas zoom controls float over. Grid keeps the dock optically centred. */
 	.bar.bottom {
 		bottom: 0;
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
 		align-items: end;
 		gap: 12px 20px;
-		/* leave room so the dock never slides under the corner zoom buttons */
-		padding-right: 60px;
-		background: linear-gradient(transparent, rgba(11, 29, 58, 0.55));
+		padding-right: 60px; /* clear the corner zoom buttons */
+		/* background: linear-gradient(transparent, rgba(11, 29, 58, 0.55)); */
 	}
 	.lane {
 		display: flex;
@@ -255,15 +279,23 @@
 	.lane.dock {
 		justify-self: center;
 	}
-
 	.bar-right {
 		margin-left: auto;
 	}
-	/* make overlaid controls legible on the sky */
+	/* keep the overlaid search legible on the sky */
 	.bar-right :global(label) {
 		color: #fff;
 	}
 
+	.loading {
+		width: 100%;
+		height: 100%;
+		display: grid;
+		place-items: center;
+		color: #fff;
+		font-family: var(--font-display);
+		font-size: 12px;
+	}
 	.error {
 		position: absolute;
 		top: 60px;
