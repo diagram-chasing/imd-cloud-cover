@@ -365,7 +365,6 @@
 		}
 	}
 
-	/* Overlaid control bars, pinned to the map's own edges inside the frame. */
 	.bar {
 		position: absolute;
 		left: 0;

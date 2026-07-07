@@ -8,7 +8,8 @@ consumes:
   meta/dates.json         { dates: [...], latest: "YYYY-MM-DD" }
   latest/all-stations.json  today's 8-step day-0 slice per station
   latest/summary.json     national means, cloudiest/clearest, streaks
-  history/{CODE}.json     per-day daily means (h,m,l,e), capped at 400 days
+  history/{CODE}.json     per-day daily means (h,m,l,e) plus the 8-step
+                          effective series `t`, capped at 400 days
   rollups/7d.json,30d.json  per-station daily-mean series over the window
   reports/{date}.json     run report (succeeded/failed/suspicious/unmapped)
 
@@ -80,6 +81,17 @@ def daily_means(h, m, l, p):
     return {"h": hm, "m": mm, "l": lm, "p": pm, "e": em}
 
 
+def history_entry(h, m, l, p):
+    """A station-history day: daily means plus `t`, the 8-step effective series.
+
+    `t` is what the station page's time-of-day facts (cloudiest hour, etc.) are
+    computed from; the rollups/streaks only read the means and ignore it.
+    """
+    entry = daily_means(h, m, l, p)
+    entry["t"] = [max(h[i], m[i], l[i]) for i in range(len(h))]
+    return entry
+
+
 # --------------------------------------------------------------------------
 # Reading raw slices
 # --------------------------------------------------------------------------
@@ -147,7 +159,7 @@ def update_histories(store, date, slices, manifest_codes):
         key = f"history/{code}.json"
         hist = store.get_json(key) or {"code": code, "kind": "day0-forecast", "days": {}}
         hist.setdefault("days", {})
-        hist["days"][date] = dm
+        hist["days"][date] = history_entry(h, m, l, p)
         # Cap to most recent HISTORY_CAP dates.
         if len(hist["days"]) > HISTORY_CAP:
             keep = dict(sorted(hist["days"].items())[-HISTORY_CAP:])
@@ -356,7 +368,7 @@ def rebuild(store, generated_at):
                 continue
             h, m, l, p = bands
             fresh_hist.setdefault(code, {"code": code, "kind": "day0-forecast", "days": {}})
-            fresh_hist[code]["days"][date] = daily_means(h, m, l, p)
+            fresh_hist[code]["days"][date] = history_entry(h, m, l, p)
 
     for code, hist in fresh_hist.items():
         if len(hist["days"]) > HISTORY_CAP:

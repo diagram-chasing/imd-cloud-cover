@@ -30,10 +30,10 @@
 
 	function draw(canvas: HTMLCanvasElement, fc: Forecast | null) {
 		const dpr = window.devicePixelRatio || 1;
-		canvas.width = W * dpr;
+		// CSS owns the layout size (width 100%); setting inline width here would
+		// override it and freeze clientWidth at whatever it was on first draw.
+		canvas.width = Math.max(1, Math.round(W * dpr));
 		canvas.height = H * dpr;
-		canvas.style.width = `${W}px`;
-		canvas.style.height = `${H}px`;
 		const ctx = canvas.getContext('2d')!;
 		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 		ctx.imageSmoothingEnabled = false;
@@ -99,7 +99,7 @@
 	canvas {
 		display: block;
 		width: 100%;
-
+		height: 102px;
 		box-shadow: 0 0 0 2px var(--ink);
 		image-rendering: pixelated;
 	}

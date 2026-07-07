@@ -3,9 +3,7 @@
 		code: string;
 		clientX: number;
 		clientY: number;
-		/** Stations aggregated under the hovered mark (1 when it's a single station). */
 		members: number;
-		/** Bin-mean values when members > 1 — what the mark actually encodes. */
 		agg?: { h: number; m: number; l: number; p: number };
 	}
 </script>
@@ -31,13 +29,9 @@
 		values: Record<string, { h: number; m: number; l: number; p: number }>;
 		persistence?: Record<string, number>;
 		enableTooltip?: boolean;
-		/** Data date (YYYY-MM-DD) shown in the in-world title cartouche. */
 		date?: string;
 		onhover?: (info: HoverInfo | null) => void;
 		onselect?: (code: string, at?: { x: number; y: number }) => void;
-		/** Fired whenever the camera or viewport changes: the free sea-gutter width
-		 *  beside the landmass (screen px, at fit zoom) and the zoom multiple of fit.
-		 *  Lets overlay chrome (e.g. the streak inset) yield when space runs out. */
 		onlayout?: (info: { gutter: number; zoomRatio: number }) => void;
 	}
 	let {
@@ -55,30 +49,18 @@
 
 	const WORLD_W = 1024;
 	const PAD = 4;
-	const MARK_CELL = 3; // px per logical cell of a tower mark
-	// Two constraints keep towers readable (glyphs cap at 3 rows tall):
-	//   1. bands separate WITHIN a tower  → TOWER_GAP must clear a mark's height
-	//   2. towers separate FROM EACH OTHER → the bin must clear a whole tower's height
-	// Break either (e.g. TOWER_GAP > bin) and the three bands overlap into blocks.
-	const TOWER_GAP = MARK_CELL * 3.5; // centre-to-centre px between adjacent bands
-	// A tower is TOWER_GAP*2 + MARK_CELL*3 = 30px tall. BIN0 is the aggregation grid at
-	// fit-zoom, set a touch tighter than a full tower so the overview already packs more
-	// stations; the per-level marks are scaled by bin/BIN0 so towerHeight tracks the bin
-	// at every level and whole towers still never overlap (see LODS + applyLod).
-	const BIN0 = 24; // base aggregation grid spacing (px)
-	// Level-of-detail ladder: zooming in subdivides the bin grid toward one bin per
-	// station, so every station eventually becomes its own tower. `enter` is the zoom
-	// multiple of the fit zoom at which the level activates; `bin: null` = per-station.
+	const MARK_CELL = 3;
+	const TOWER_GAP = MARK_CELL * 3.5;
+	const BIN0 = 24;
 	const LODS: { bin: number | null; enter: number }[] = [
-		{ bin: BIN0, enter: 0 }, // 0: overview
-		{ bin: 16, enter: 1.7 }, // 1
-		{ bin: 11, enter: 2.9 }, // 2
-		{ bin: null, enter: 4.6 } // 3: per-station (reveals near LABEL_ZOOM = 4.5)
+		{ bin: BIN0, enter: 0 },
+		{ bin: 16, enter: 1.7 },
+		{ bin: 11, enter: 2.9 },
+		{ bin: null, enter: 4.6 }
 	];
-	const LOD_DOWN_FACTOR = 0.9; // deadband so a level boundary doesn't thrash on jitter
-	const GHOST_ALPHA = 0.1; // non-focused bands while one band is isolated
-	const LABEL_ZOOM = 4.5; // show city labels only past this multiple of the fit zoom (max zoom is 7x)
-	// Vertical offset of each band's mark from the bin centre, in px.
+	const LOD_DOWN_FACTOR = 0.9;
+	const GHOST_ALPHA = 0.1;
+	const LABEL_ZOOM = 4.5;
 	const BAND_OFFSET: Record<BandKey, number> = {
 		high: -TOWER_GAP,
 		middle: 0,
@@ -86,35 +68,49 @@
 	};
 	const BAND_KEYS: BandKey[] = ['low', 'middle', 'high'];
 	const VAL_KEY: Record<BandKey, 'h' | 'm' | 'l'> = { high: 'h', middle: 'm', low: 'l' };
-	// Rain hangs just beneath the low cloud (which sits at +TOWER_GAP).
 	const RAIN_DROP = TOWER_GAP + MARK_CELL * 1.5;
-
-	// Ambient decoration: a handful of slow planes with fading contrails wander the
-	// sky at varied headings, gently curving so their trails criss-cross. Purely for
-	// a calm vibe — no data, gated behind the same reduced-motion / today-view check
-	// as the cloud drift (see tick).
 	const PLANE_COUNT = 5;
-	const TRAIL_LEN = 44; // px length of a contrail strip (world space)
-	// px per ms so a full-world crossing lands around 60–90s (worldW ~ 1024).
+	const TRAIL_LEN = 44;
 	const PLANE_SPEED_MIN = 1024 / 90000;
 	const PLANE_SPEED_MAX = 1024 / 60000;
-	// Real airport hubs (lon, lat) acting as "gravity" points for flight corridors.
-	// Many sit off-map on purpose — planes enter/leave the frame heading to/from them.
 	const HUBS: Record<string, [number, number]> = {
-		DXB: [55.36, 25.25], DOH: [51.61, 25.27], KHI: [67.16, 24.91], // west
-		DEL: [77.1, 28.56], KTM: [85.36, 27.7], BOM: [72.87, 19.09], // north / central
-		CCU: [88.45, 22.65], DAC: [90.4, 23.84], MAA: [80.17, 12.99],
-		CMB: [79.88, 7.18], MLE: [73.53, 4.19], // south
-		SIN: [103.99, 1.36], KUL: [101.71, 2.75], BKK: [100.75, 13.69], RGN: [96.13, 16.9] // SE Asia
+		DXB: [55.36, 25.25],
+		DOH: [51.61, 25.27],
+		KHI: [67.16, 24.91], // west
+		DEL: [77.1, 28.56],
+		KTM: [85.36, 27.7],
+		BOM: [72.87, 19.09], // north / central
+		CCU: [88.45, 22.65],
+		DAC: [90.4, 23.84],
+		MAA: [80.17, 12.99],
+		CMB: [79.88, 7.18],
+		MLE: [73.53, 4.19], // south
+		SIN: [103.99, 1.36],
+		KUL: [101.71, 2.75],
+		BKK: [100.75, 13.69],
+		RGN: [96.13, 16.9] // SE Asia
 	};
-	// Corridors that visibly cross Indian airspace (either direction). A plane rides the
-	// infinite line through the two hubs, clipped to just off-screen at both ends.
 	const ROUTES: [string, string][] = [
-		['DXB', 'BKK'], ['DXB', 'SIN'], ['DXB', 'CCU'], ['DXB', 'KUL'], ['DXB', 'MAA'],
-		['DOH', 'SIN'], ['DOH', 'DAC'], ['DOH', 'BKK'],
-		['KHI', 'BKK'], ['KHI', 'CCU'], ['KHI', 'RGN'],
-		['DEL', 'CMB'], ['DEL', 'MAA'], ['DEL', 'MLE'], ['DEL', 'SIN'], ['DEL', 'KUL'],
-		['KTM', 'MLE'], ['BOM', 'CCU'], ['BOM', 'DAC'], ['CCU', 'MLE']
+		['DXB', 'BKK'],
+		['DXB', 'SIN'],
+		['DXB', 'CCU'],
+		['DXB', 'KUL'],
+		['DXB', 'MAA'],
+		['DOH', 'SIN'],
+		['DOH', 'DAC'],
+		['DOH', 'BKK'],
+		['KHI', 'BKK'],
+		['KHI', 'CCU'],
+		['KHI', 'RGN'],
+		['DEL', 'CMB'],
+		['DEL', 'MAA'],
+		['DEL', 'MLE'],
+		['DEL', 'SIN'],
+		['DEL', 'KUL'],
+		['KTM', 'MLE'],
+		['BOM', 'CCU'],
+		['BOM', 'DAC'],
+		['CCU', 'MLE']
 	];
 
 	interface Bin {
@@ -122,13 +118,11 @@
 		py: number;
 		members: number[];
 		code: string;
-		variant: number; // stable per-station shape pick, so the field isn't uniform
+		variant: number;
 	}
-	// One precomputed level of detail. `scale` shrinks the marks + band offsets so
-	// towerHeight tracks `bin`; `points` is the hit index for the level.
 	interface Lod {
-		bin: number; // resolved bin size (per-station level uses its glyph footprint)
-		scale: number; // sprite/offset scale = bin / BIN0
+		bin: number;
+		scale: number;
 		bins: Bin[];
 		points: StationPoint[];
 	}
@@ -137,12 +131,23 @@
 	let vw = $state(1);
 	let vh = $state(1);
 
-	// In-world title cartouche copy (nautical-chart flavour: a small caps kicker,
-	// a boxed title, a one-line blurb, then the date/time the map is showing).
 	const STORY_KICKER = "WITH IMD'S METEOGRAMS";
 	const STORY_TITLE = 'READING THE CLOUDS';
-	const STORY_SUB = "A daily pixel map of India's cloud cover";
-	const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+	const STORY_SUB = "A daily map of India's clouds";
+	const MONTHS = [
+		'JAN',
+		'FEB',
+		'MAR',
+		'APR',
+		'MAY',
+		'JUN',
+		'JUL',
+		'AUG',
+		'SEP',
+		'OCT',
+		'NOV',
+		'DEC'
+	];
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 
 	function prettyDate(iso?: string): string {
@@ -157,18 +162,18 @@
 	let camera: Container | null = null;
 	let groundSprite: Sprite | null = null;
 	let skyGfx: Graphics | null = null;
-	// In-world title cartouche: a group so it pans/zooms with the map. Box +
-	// four text rows (kicker, title, subtitle, date/time), laid out in drawTitle.
+
 	let titleGroup: Container | null = null;
 	let titleBox: Graphics | null = null;
 	let titleKicker: Text | null = null;
 	let titleText: Text | null = null;
 	let titleSub: Text | null = null;
 	let titleMeta: Text | null = null;
-	// Cached from the layout pass so the date/time line can re-centre in place
-	// (no relayout → no shift) and the fade can react to zoom without a rebuild.
+
 	let titleCx = 0;
 	let titleMetaY = 0;
+	let titleMetaAlignRight = false;
+	let titleMetaRight = 0;
 	let titleShown = false;
 	let hoverGfx: Graphics | null = null;
 	let selGfx: Graphics | null = null;
@@ -177,36 +182,34 @@
 	let placeLabels: Text[] = [];
 	let placeDots: Graphics[] = [];
 	let placePlates: Graphics[] = [];
-	let bins: Bin[] = []; // alias of lods[lodIndex].bins — the currently active level
-	let binByCode = new Map<string, Bin>(); // hover lookup for the active level
+	let bins: Bin[] = [];
+	let binByCode = new Map<string, Bin>();
 	let lods: Lod[] = [];
-	let lodIndex = -1; // -1 forces the first applyLod() to run
-	let maxBins = 0; // finest-level bin count (== station count); sizes the shared pool
+	let lodIndex = -1;
+	let maxBins = 0;
 	let planeLayer: Container | null = null;
 	interface Plane {
 		c: Container;
-		ox: number; // a point on the corridor line (world)
+		ox: number;
 		oy: number;
-		ux: number; // unit direction of travel
+		ux: number;
 		uy: number;
-		s: number; // current param along the line
-		sStart: number; // param where it entered, off-screen
-		sTarget: number; // param where it fully exits, off-screen
-		sDir: 1 | -1; // sign of travel
-		speed: number; // px per ms
-		heading: number; // atan2(uy, ux); constant per crossing → container.rotation
+		s: number;
+		sStart: number;
+		sTarget: number;
+		sDir: 1 | -1;
+		speed: number;
+		heading: number;
 	}
 	let planes: Plane[] = [];
 	let planeRand: (() => number) | null = null;
-	let hubXY: Record<string, [number, number]> = {}; // hubs projected to world px
+	let hubXY: Record<string, [number, number]> = {};
 	let planeTex: Texture | null = null;
 	let trailTex: Texture | null = null;
 	const pool: Record<BandKey, Sprite[]> = { low: [], middle: [], high: [] };
 	let layers: Record<BandKey, Container> | null = null;
 	const alphaTarget: Record<BandKey, number> = { low: 1, middle: 1, high: 1 };
-	// cloudTex[band][tier][variant]
 	let cloudTex: Record<BandKey, Texture[][]> = { low: [], middle: [], high: [] };
-	// Rain streaks: one shared pool below the low band. rainTex[tier][variant].
 	let rainPool: Sprite[] = [];
 	let rainTex: Texture[][] = [];
 	let quad: ReturnType<typeof buildQuadtree> | null = null;
@@ -224,20 +227,37 @@
 		const b = worldBBox();
 		return Math.min(vw / (b.maxX - b.minX), vh / (b.maxY - b.minY));
 	}
+	function narrowLayout() {
+		const b = worldBBox();
+		return (vw / containZoom() - (b.maxX - b.minX)) / 2 < 90;
+	}
+	function startZoomFactor() {
+		return narrowLayout() ? 1.7 : 1;
+	}
+	function startView() {
+		const b = worldBBox();
+		const z = containZoom() * startZoomFactor();
+		const w = vw / z;
+		const h = vh / z;
+		return {
+			x: (b.minX + b.maxX) / 2 - w / 2,
+			y: (b.minY + b.maxY) / 2 - h / 2,
+			w,
+			h
+		};
+	}
 	function fitCamera() {
 		if (!geo) return;
-		const b = worldBBox();
-		zoom = containZoom();
-		panX = b.minX - (vw / zoom - (b.maxX - b.minX)) / 2;
-		panY = b.minY - (vh / zoom - (b.maxY - b.minY)) / 2;
+		const v = startView();
+		zoom = containZoom() * startZoomFactor();
+		panX = v.x;
+		panY = v.y;
 		applyCamera();
 	}
 	function applyCamera() {
 		if (!camera) return;
 		camera.scale.set(zoom);
 		camera.position.set(-panX * zoom, -panY * zoom);
-		// Swap the LOD level when the zoom crosses a threshold. Pans keep the same zoom,
-		// so lodForZoom returns the current index and applyLod early-returns — cheap.
 		if (lods.length) applyLod(lodForZoom());
 		updatePlacesScale();
 		updateLabelVis();
@@ -254,18 +274,12 @@
 		});
 	}
 
-	// City markers live under the camera so they pan/zoom in place, but each is
-	// counter-scaled by 1/zoom so its label stays a constant SCREEN size (they
-	// spread apart on zoom-in rather than ballooning) — standard map-label behaviour.
 	function updatePlacesScale() {
 		if (!placeMarkers.length) return;
 		const s = 1 / zoom;
 		for (const m of placeMarkers) m.scale.set(s);
 	}
 
-	// City markers (dot + label + plate) are noise at map-fit scale, so hide the
-	// whole places layer until the view is zoomed well in. The threshold is a
-	// multiple of the fit zoom, so it holds across viewport sizes.
 	function updateLabelVis() {
 		if (!placesLayer) return;
 		placesLayer.visible = zoom >= containZoom() * LABEL_ZOOM;
@@ -277,14 +291,9 @@
 		return t;
 	}
 
-	// Aggregate stations onto a `binSize` grid (using raw, unsnapped projected coords so
-	// the LOD grid — not the legacy CELL snap — drives aggregation). `binSize === null`
-	// gives one bin per station: the finest level where every station is its own tower.
 	function buildBins(binSize: number | null): Bin[] {
 		const g = geo!;
 		if (binSize === null) {
-			// Per-station: nudge each off its raw point (plus a tiny extra spread so
-			// coincident stations don't stack exactly), keyed off the code so it's stable.
 			return g.stations
 				.map((st, i) => ({
 					px: st.rpx + jitter(st.code, 'jx', 3) + jitter(st.code, 'sx', 2),
@@ -313,7 +322,6 @@
 			}
 			b.members.push(i);
 		});
-		// representative station = nearest to bin centre
 		for (const b of map.values()) {
 			let best = Infinity;
 			for (const i of b.members) {
@@ -324,22 +332,16 @@
 					b.code = st.code;
 				}
 			}
-			// Break the grid: nudge each tower a few px and pick a stable shape
-			// variant, both keyed off the station so the render stays deterministic.
 			b.px += jitter(b.code, 'jx', 3);
 			b.py += jitter(b.code, 'jy', 2);
 			b.variant = fnv1a(b.code) % MARK_VARIANTS;
 		}
-		// north-first so nearer (south) marks overdraw
 		return [...map.values()].sort((a, b) => a.py - b.py);
 	}
 
-	// Precompute every LOD level once. Each level's marks scale by bin/BIN0, so a whole
-	// tower always fits its bin. The per-station level has no grid, so we give it a
-	// nominal bin (its scaled tower footprint) for hit-testing + box geometry.
 	function buildLods() {
 		lods = LODS.map(({ bin }) => {
-			const resolved = bin ?? 9; // per-station nominal footprint (BIN0 * 0.375)
+			const resolved = bin ?? 9;
 			const built = buildBins(bin);
 			return {
 				bin: resolved,
@@ -358,13 +360,10 @@
 		maxBins = Math.max(...lods.map((l) => l.bins.length));
 	}
 
-	// Hover/select radius for the active level: >= bin/sqrt(2) so bins have no dead zones.
 	function hitR(): number {
 		return (lodIndex < 0 ? BIN0 : lods[lodIndex].bin) * 0.7;
 	}
 
-	// Active level for the current zoom, with hysteresis: only step DOWN a level once
-	// the zoom drops below LOD_DOWN_FACTOR of that boundary, so a boundary doesn't thrash.
 	function lodForZoom(): number {
 		const r = zoom / containZoom();
 		let L = 0;
@@ -373,11 +372,6 @@
 		return L;
 	}
 
-	// Switch the visible level: re-point `bins`, reposition/rescale the shared sprite
-	// pool, and rebuild the hit index. Only runs on threshold crossings (applyCamera
-	// early-returns via the index check on every pan). The pool was built in north-sort
-	// index order and each level's bins are north-sorted, so bins[k] -> pool[band][k]
-	// keeps southern towers overdrawing northern ones without any child reordering.
 	function applyLod(i: number) {
 		if (i === lodIndex || !layers) return;
 		lodIndex = i;
@@ -413,12 +407,9 @@
 
 	async function init() {
 		if (!host) return;
-		// Canvas text is baked once, so the label font must be ready before Pixi
-		// draws it — otherwise it renders in the fallback and never refreshes.
 		await document.fonts.load("10px 'Ships Whistle'").catch(() => {});
 		const atlas = buildMarkAtlas(MARK_CELL);
 		const rainAtlas = buildRainAtlas(MARK_CELL);
-		// Grass tiles give the landmass texture; failures fall back to flat fills.
 		const grassTiles = await loadGroundTiles([grassTileA, grassTileB]).catch(() => []);
 		geo = buildGeo(india, manifest, WORLD_W, CELL, urban, places, grassTiles);
 		buildLods();
@@ -448,9 +439,11 @@
 		groundSprite.scale.set(geo.groundScale);
 		camera.addChild(groundSprite);
 
-		// In-world title cartouche, anchored in world space so it pans and zooms
-		// with the map. Sits above the ground but under the cloud marks.
-		const titleFont = { fontFamily: "'Ships Whistle', monospace", fill: 0xffffff, align: 'left' as const };
+		const titleFont = {
+			fontFamily: "'Ships Whistle', monospace",
+			fill: 0xffffff,
+			align: 'left' as const
+		};
 		titleGroup = new Container();
 		titleGroup.eventMode = 'none';
 		titleBox = new Graphics();
@@ -480,8 +473,6 @@
 			}
 		}
 
-		// Rain layer goes in first so its streaks sit UNDER the cloud puffs that
-		// spawn them (the pool anchors at top-centre so the curtain hangs downward).
 		const rainLayer = new Container();
 		camera.addChild(rainLayer);
 		rainPool = Array.from({ length: maxBins }, () => {
@@ -492,9 +483,6 @@
 			return s;
 		});
 
-		// One shared pool of maxBins sprites per band, added in index order and all
-		// hidden. applyLod re-points/rescales bins[k] -> pool[band][k] on each level
-		// change; the finest level uses every sprite, coarser levels hide the surplus.
 		const layerMap = {} as Record<BandKey, Container>;
 		for (const band of BAND_KEYS) {
 			const layer = new Container();
@@ -514,8 +502,6 @@
 		buildPlanes();
 		styleAmbient();
 
-		// Selected highlight sits under the hover box so hovering the selected
-		// cell still reads. Both live in camera space so they track pan/zoom.
 		selGfx = new Graphics();
 		camera.addChild(selGfx);
 		hoverGfx = new Graphics();
@@ -528,14 +514,11 @@
 		updateClouds();
 		bindPointer();
 		app.ticker.add(tick);
-		// Re-frame once layout has settled (host size may arrive a frame late).
 		requestAnimationFrame(() => {
 			if (!userMoved) fitCamera();
 		});
 	}
 
-	// Screen-space backdrop: one solid sky colour. Sits behind the camera, so the
-	// transparent sea of the land sprite reveals it — blue by day, navy at night.
 	function drawSky() {
 		if (!skyGfx) return;
 		const pal = SKY[skyMode(sky.timeIndex)];
@@ -543,127 +526,115 @@
 		skyGfx.rect(0, 0, vw, vh).fill({ color: pal.top });
 	}
 
-	// In-world title cartouche: a boxed title with a small-caps kicker inside it,
-	// a one-line blurb, a separator, then the shown date/time — all centred.
-	// Parked in the empty sky to the LEFT of the landmass (never over the map) and
-	// scaled to that gutter, so it pans/zooms with the world. Light white and soft.
-	//
-	// Layout here is STABLE: it depends only on geometry/viewport, never on the
-	// date/time text (which updates via updateTitleMeta) — so scrubbing the clock
-	// causes no layout shift. Zoom/night fading lives in updateTitleFade.
 	function drawTitle() {
 		if (!titleGroup || !titleBox || !titleKicker || !titleText || !titleSub || !titleMeta || !geo)
 			return;
-		const unit = 30; // title cap height (world units, pre-scale)
-		const pad = unit * 0.55; // inner box padding
-		const gap = unit * 0.5; // vertical gap between rows
+		const b = worldBBox();
+		const gutter = (vw / containZoom() - (b.maxX - b.minX)) / 2;
+		const narrow = gutter < 90;
 
-		titleKicker.style.fontSize = unit * 0.34;
+		const unit = 30;
+		const pad = unit * 0.75; // inner box padding
+		const gap = unit * 0.7; // vertical gap between rows
+
+		titleKicker.style.fontSize = unit * 0.64;
 		titleKicker.style.letterSpacing = 0;
 		titleText.style.fontSize = unit;
+		titleText.style.fontWeight = '700';
 		titleText.style.letterSpacing = unit * 0.02;
-		titleSub.style.fontSize = unit * 0.44;
-		titleMeta.style.fontSize = unit * 0.4;
+		titleSub.style.fontSize = unit * 0.64;
+		const metaFS = narrow ? unit * 0.55 : unit * 0.4;
+		titleMeta.style.fontSize = metaFS;
 		titleMeta.style.letterSpacing = unit * 0.04;
 		for (const t of [titleKicker, titleText, titleSub, titleMeta]) t.style.fill = 0xffffff;
 
-		// The box wraps the one-line title (top) + a small-caps kicker below it,
-		// both centred inside it.
 		const boxInnerW = Math.max(titleKicker.width, titleText.width);
 		const boxW = boxInnerW + pad * 2;
 		const boxH = titleText.height + gap * 0.4 + titleKicker.height + pad * 2;
 
-		// Everything centres on the widest stable row (box or subtitle; the date
-		// line is excluded so its changing width can't nudge the layout).
 		const contentW = Math.max(boxW, titleSub.width);
-		const cx = contentW / 2;
-		titleCx = cx;
+		titleCx = contentW / 2;
 
-		const boxX = cx - boxW / 2;
-		titleText.position.set(cx - titleText.width / 2, pad);
-		titleKicker.position.set(cx - titleKicker.width / 2, pad + titleText.height + gap * 0.4);
+		const boxX = narrow ? contentW - boxW : (contentW - boxW) / 2;
+		const bcx = boxX + boxW / 2;
+		titleText.position.set(bcx - titleText.width / 2, pad);
+		titleKicker.position.set(bcx - titleKicker.width / 2, pad + titleText.height + gap * 0.4);
 
 		let y = boxH + gap * 0.9;
-		titleSub.position.set(cx - titleSub.width / 2, y);
+		titleSub.position.set(
+			narrow ? contentW - titleSub.width - titleSub.width * 0.22 : (contentW - titleSub.width) / 2,
+			y
+		);
 		y += titleSub.height + gap * 0.75;
-
-		// Centred separator rule between blurb and date.
-		const sepW = contentW * 0.42;
-		const sepY = y;
-		y += gap * 0.9;
-
-		titleMetaY = y;
-		const metaLineH = unit * 0.4 * 1.4; // reserved height (date line, single row)
-		const groupH = y + metaLineH;
 
 		titleBox.clear();
 		titleBox
 			.rect(boxX, 0, boxW, boxH)
 			.stroke({ width: Math.max(1, unit * 0.045), color: 0xffffff, alignment: 0 });
-		titleBox
-			.moveTo(cx - sepW / 2, sepY)
-			.lineTo(cx + sepW / 2, sepY)
-			.stroke({ width: Math.max(1, unit * 0.03), color: 0xffffff, alignment: 0.5 });
 
-		// Left sky gutter at fit zoom: world-space width to the left of the map
-		// bbox. Scale the cartouche to a fraction of it and centre it there,
-		// vertically centred on the map. Narrow (portrait) viewports have no side
-		// gutter — fall back to the empty sky in the frame's top-right corner
-		// (over the Karakoram, right of the Himalayan curve).
-		const b = worldBBox();
-		const gutter = (vw / containZoom() - (b.maxX - b.minX)) / 2;
+		const metaLineH = metaFS * 1.4;
 		titleShown = true;
-		if (gutter >= 90) {
-			const s = Math.min((gutter * 0.80) / contentW, (geo.worldH * 0.5) / groupH);
+		if (!narrow) {
+			const sepW = contentW * 0.42;
+			const sepY = y;
+			y += gap * 0.9;
+			titleBox
+				.moveTo(titleCx - sepW / 2, sepY)
+				.lineTo(titleCx + sepW / 2, sepY)
+				.stroke({ width: Math.max(1, unit * 0.03), color: 0xffffff, alignment: 0.5 });
+			titleMetaAlignRight = false;
+			titleMetaY = y;
+			const groupH = y + metaLineH;
+			const s = Math.min((gutter * 0.8) / contentW, (geo.worldH * 0.5) / groupH);
 			titleGroup.scale.set(s);
 			titleGroup.position.set(
 				b.minX - (gutter + contentW * s) / 2,
 				geo.worldH / 2 - (groupH * s) / 2
 			);
 		} else {
-			const s = Math.min((geo.worldW * 0.38) / contentW, (geo.worldH * 0.18) / groupH);
+			const v = startView();
+			const groupH = y;
+			const s = Math.min((v.w * 0.49) / contentW, (v.h * 0.16) / groupH);
+			const mx = v.w * 0.04;
 			titleGroup.scale.set(s);
-			titleGroup.position.set(b.maxX - contentW * s - 14, b.minY + 14);
+			titleGroup.position.set(v.x + v.w - contentW * s - mx, v.y + mx);
+
+			titleMetaRight = contentW;
+			titleMetaY = (v.y + v.h - mx * 1.5) / s - metaLineH;
 		}
 		updateTitleMeta();
 		updateTitleFade();
 	}
 
-	// Re-centre the date/time line in place — no relayout, so scrubbing the clock
-	// (or switching views) never shifts the cartouche.
 	function updateTitleMeta() {
 		if (!titleMeta) return;
 		const time = sky.view === 'today' ? `As of ${HOUR_LABELS[sky.timeIndex]}:00 IST` : 'DAILY MEAN';
 		titleMeta.text = [prettyDate(date), time].filter(Boolean).join('  ·  ');
-		titleMeta.position.set(titleCx - titleMeta.width / 2, titleMetaY);
+		titleMeta.position.set(
+			titleMetaAlignRight ? titleMetaRight - titleMeta.width : titleCx - titleMeta.width / 2,
+			titleMetaY
+		);
 	}
 
-	// Only present when extremely zoomed out; fades to nothing as you zoom in.
 	function updateTitleFade() {
 		if (!titleGroup) return;
 		if (!titleShown) {
 			titleGroup.visible = false;
 			return;
 		}
-		const zr = zoom / containZoom(); // 1 at fit, grows as you zoom in
+		const zr = zoom / (containZoom() * startZoomFactor());
 		const fade = Math.max(0, Math.min(1, (1.55 - zr) / (1.55 - 1.05)));
 		const night = skyMode(sky.timeIndex) === 'night';
 		titleGroup.alpha = (night ? 0.72 : 0.6) * fade;
 		titleGroup.visible = fade > 0.01;
 	}
 
-	// Font size tier by population — a light hierarchy so the metros read first.
 	function placeSize(pop: number): number {
 		if (pop >= 8_000_000) return 11;
 		if (pop >= 3_000_000) return 10;
 		return 9;
 	}
 
-	// Reference layer: a limited set of major cities, each a dot + a Ships Whistle
-	// label sitting on a knockout plate so it stays legible over the busy land and
-	// clouds. Each city is its own container, pinned at the projected point and
-	// counter-scaled per frame (see updatePlacesScale) so labels hold a constant
-	// screen size instead of ballooning with zoom.
 	function buildPlaces() {
 		if (!geo || !camera) return;
 		placesLayer = new Container();
@@ -673,7 +644,7 @@
 		placeLabels = [];
 		placeDots = [];
 		placePlates = [];
-		const GAP = 5; // px between the dot and the label plate
+		const GAP = 5;
 
 		for (const p of geo.places) {
 			const m = new Container();
@@ -699,8 +670,6 @@
 			label.anchor.set(0, 0.5);
 			label.position.set(GAP, 0);
 
-			// Plate drawn from the measured label bounds, added before the label so
-			// the text sits on top. Recoloured per sky mode in stylePlaces.
 			const padX = 2.5;
 			const padY = 1.5;
 			const plate = new Graphics();
@@ -720,9 +689,6 @@
 		stylePlaces();
 	}
 
-	// Recolour city markers for the current sky mode: dark ink glyph on a pale
-	// plate by day, flipped to pale ink on a dark plate at night. The plate is
-	// what actually makes the labels readable over land + clouds.
 	function stylePlaces() {
 		const night = skyMode(sky.timeIndex) === 'night';
 		const ink = night ? 0xeaf4ff : 0x0a1a28;
@@ -742,8 +708,6 @@
 		}
 	}
 
-	// --- Ambient decoration (wandering planes with contrails) ------------------
-
 	function makeCanvas(w: number, h: number): HTMLCanvasElement {
 		const c = document.createElement('canvas');
 		c.width = w;
@@ -751,10 +715,6 @@
 		return c;
 	}
 
-	// Top-down airliner silhouette pointing right (+x): a long fuselage with a nose
-	// taper, moderately-swept mid-mounted wings, and a small tailplane set well back
-	// (the fuselage runs on past the wings) so it reads as a jetliner, not a fighter.
-	// Kept tiny (13×9 px) — the container is rotated to the plane's heading each crossing.
 	const PLANE_ROWS: number[][] = [
 		[4, 5, 6], // y0  wingtip (top)
 		[5, 6, 7], // y1  wing
@@ -766,7 +726,7 @@
 		[5, 6, 7], // y7  wing
 		[4, 5, 6] // y8  wingtip (bottom)
 	];
-	const PLANE_W = 13; // glyph cols; nose sits at the right edge
+	const PLANE_W = 13;
 	function buildPlaneTex(): Texture {
 		const px = 1;
 		const c = makeCanvas(PLANE_W * px, PLANE_ROWS.length * px);
@@ -779,8 +739,6 @@
 		return mkTex(c);
 	}
 
-	// Horizontal contrail strip whose alpha ramps 0 (tail) → full (head at the right
-	// edge). Baked once; the sprite is anchored (1, 0.5) at the plane nose.
 	function buildTrailTex(len: number): Texture {
 		const c = makeCanvas(len, 1);
 		const ctx = c.getContext('2d')!;
@@ -798,11 +756,9 @@
 		trailTex = buildTrailTex(TRAIL_LEN);
 		planeLayer = new Container();
 		planeLayer.eventMode = 'none';
-		// Above the cloud bands so planes ride high in the sky.
 		camera.addChild(planeLayer);
 		planes = [];
 		planeRand = mulberry32(fnv1a('planes'));
-		// Project each hub once into world px (some land off-map, as intended).
 		hubXY = {};
 		for (const [name, ll] of Object.entries(HUBS)) {
 			const w = geo.project(ll[0], ll[1]);
@@ -810,10 +766,10 @@
 		}
 		for (let i = 0; i < PLANE_COUNT; i++) {
 			const trail = new Sprite(trailTex);
-			trail.anchor.set(1, 0.5); // head at the plane's tail, fades toward the back
-			trail.x = -(PLANE_W - 2); // tuck the contrail head just behind the fuselage
+			trail.anchor.set(1, 0.5);
+			trail.x = -(PLANE_W - 2);
 			const body = new Sprite(planeTex);
-			body.anchor.set(1, 0.5); // nose at the container origin (the point on the chord)
+			body.anchor.set(1, 0.5);
 			const c = new Container();
 			c.eventMode = 'none';
 			c.addChild(trail);
@@ -821,22 +777,31 @@
 			planeLayer.addChild(c);
 			const p: Plane = {
 				c,
-				ox: 0, oy: 0, ux: 1, uy: 0,
-				s: 0, sStart: 0, sTarget: 0, sDir: 1,
-				speed: 0, heading: 0
+				ox: 0,
+				oy: 0,
+				ux: 1,
+				uy: 0,
+				s: 0,
+				sStart: 0,
+				sTarget: 0,
+				sDir: 1,
+				speed: 0,
+				heading: 0
 			};
-			// Reduced motion never advances the tick, so mid-flight scatter only when
-			// motion is allowed — otherwise start off-screen, invisible.
 			resetPlane(p, !reduced);
 			planes.push(p);
 		}
 	}
 
-	// Clip the infinite line (ox,oy)+s·(ux,uy) to an axis-aligned box, returning the
-	// [sMin, sMax] param range inside it (Liang-Barsky slab test), or null if it misses.
 	function rectClipLine(
-		ox: number, oy: number, ux: number, uy: number,
-		minX: number, minY: number, maxX: number, maxY: number
+		ox: number,
+		oy: number,
+		ux: number,
+		uy: number,
+		minX: number,
+		minY: number,
+		maxX: number,
+		maxY: number
 	): [number, number] | null {
 		let sMin = -Infinity;
 		let sMax = Infinity;
@@ -857,17 +822,16 @@
 		return sMin < sMax ? [sMin, sMax] : null;
 	}
 
-	// (Re)seed a plane onto a real corridor: it rides the infinite line through two hub
-	// airports, clipped so both ends sit just off-screen. `initial` scatters it partway
-	// along (mid-flight) so the sky is busy on load; a re-seed always starts off-screen.
 	function resetPlane(p: Plane, initial = false) {
 		if (!geo || !planeRand) return;
 		const r = planeRand;
 		const g = geo;
 		const M = TRAIL_LEN * 2; // how far off-screen the ends live
-		// Pick a corridor whose line actually crosses the (expanded) frame.
 		let clip: [number, number] | null = null;
-		let ax = 0, ay = 0, ux = 0, uy = 0;
+		let ax = 0,
+			ay = 0,
+			ux = 0,
+			uy = 0;
 		for (let tries = 0; tries < 12 && !clip; tries++) {
 			const route = ROUTES[Math.floor(r() * ROUTES.length)];
 			const a = hubXY[route[0]];
@@ -885,8 +849,7 @@
 			uy = dy;
 			clip = rectClipLine(ax, ay, ux, uy, -M, -M, g.worldW + M, g.worldH + M);
 		}
-		if (!clip) return; // no valid corridor this frame — leave the plane as-is
-		// Travel across the clipped chord; randomise which end we enter from.
+		if (!clip) return;
 		let [start, end] = clip;
 		if (r() < 0.5) [start, end] = [end, start];
 		p.ox = ax;
@@ -898,24 +861,21 @@
 		p.sDir = end >= start ? 1 : -1;
 		p.speed = PLANE_SPEED_MIN + r() * (PLANE_SPEED_MAX - PLANE_SPEED_MIN);
 		p.heading = Math.atan2(uy * p.sDir, ux * p.sDir);
-		p.s = initial ? start + (end - start) * r() : start; // mid-flight vs off-screen
+		p.s = initial ? start + (end - start) * r() : start;
 		p.c.x = p.ox + p.s * p.ux;
 		p.c.y = p.oy + p.s * p.uy;
 		p.c.rotation = p.heading;
-		p.c.alpha = planeAlpha(p); // ease in from transparent at the edges
+		p.c.alpha = planeAlpha(p);
 	}
 
-	// A plane eases in over the first slice of its crossing and out over the last, so
-	// it never pops on/off at the (off-screen) chord ends.
 	function planeAlpha(p: Plane): number {
 		const span = p.sTarget - p.sStart;
 		if (!span) return 0;
 		const f = (p.s - p.sStart) / span; // 0 at entry → 1 at exit
-		const FADE = 0.14; // fraction of the crossing spent fading
+		const FADE = 0.14;
 		return Math.max(0, Math.min(1, Math.min(f, 1 - f) / FADE));
 	}
 
-	// Recolour contrails for day/night, mirroring stylePlaces.
 	function styleAmbient() {
 		const night = skyMode(sky.timeIndex) === 'night';
 		const trailTint = night ? 0xcfe4ff : 0xffffff;
@@ -946,8 +906,6 @@
 		return n ? s / n : 0;
 	}
 
-	// Tooltip payload for a hovered mark. Aggregated bins report the bin MEAN —
-	// the numbers the mark actually encodes — not the representative station's.
 	function hoverInfo(code: string, clientX: number, clientY: number): HoverInfo {
 		const b = binByCode.get(code);
 		const members = b?.members.length ?? 1;
@@ -970,7 +928,6 @@
 
 	let driftTick = 0;
 	function updateClouds() {
-		// layers is set only once the sprite pools exist; values can arrive earlier.
 		if (!geo || !layers) return;
 		for (const band of BAND_KEYS) {
 			const key = VAL_KEY[band];
@@ -987,8 +944,6 @@
 		}
 	}
 
-	// Rain streaks, always on (independent of band isolation): show a curtain under
-	// any bin whose forecast precip clears RAIN_FLOOR, tiered by intensity.
 	function updateRain() {
 		if (!geo || !layers) return;
 		for (let i = 0; i < bins.length; i++) {
@@ -1003,14 +958,11 @@
 		}
 	}
 
-	// Isolation: the focused band stays at full alpha, the others become ghosts.
 	function retargetAlphas() {
 		for (const band of BAND_KEYS)
 			alphaTarget[band] = sky.focusBand === null || sky.focusBand === band ? 1 : GHOST_ALPHA;
 	}
 
-	// Tower-framing box geometry for the active level — the marks (and their spacing)
-	// shrink by the level scale, so the box must too. Returns null if no active level.
 	function towerBox(b: Bin): { x: number; y: number; w: number; h: number } | null {
 		if (lodIndex < 0) return null;
 		const lod = lods[lodIndex];
@@ -1034,14 +986,11 @@
 		const box = towerBox(b);
 		if (!box) return;
 		const night = skyMode(sky.timeIndex) === 'night';
-		// Frame the whole tower: from above the high mark to below the low mark.
 		hoverGfx
 			.rect(box.x, box.y, box.w, box.h)
 			.stroke({ width: 2, color: night ? UI.focus : 0xffffff, alignment: 0.5 });
 	}
 
-	// Persistent box around the open station, so it's clear which cell the card
-	// belongs to. Focus colour + faint fill distinguish it from the hover box.
 	function drawSelected() {
 		if (!selGfx || !geo) return;
 		selGfx.clear();
@@ -1060,7 +1009,6 @@
 	let lastDrift = 0;
 	let reduced = false;
 	function tick(t: Ticker) {
-		// Alpha tween for band isolation runs in every view (snap when reduced).
 		if (layers) {
 			for (const band of BAND_KEYS) {
 				const layer = layers[band];
@@ -1074,20 +1022,14 @@
 		if (now - lastDrift > 1200) {
 			lastDrift = now;
 			driftTick = (driftTick + 1) % 4;
-			// Subtle wisp: nudge the whole high layer a couple px so cirrus feels
-			// alive without detaching the small marks from their towers. Scaled by the
-			// active level so the nudge shrinks with the marks.
 			if (layers) layers.high.x = driftTick * 2 * (lodIndex < 0 ? 1 : lods[lodIndex].scale);
 		}
-		// Slow planes: advance straight along the corridor chord; re-seed onto a fresh
-		// route once past the far (off-screen) end.
 		for (const p of planes) {
 			p.s += p.sDir * p.speed * t.deltaMS;
 			p.c.x = p.ox + p.s * p.ux;
 			p.c.y = p.oy + p.s * p.uy;
 			p.c.alpha = planeAlpha(p);
-			if ((p.sDir > 0 && p.s >= p.sTarget) || (p.sDir < 0 && p.s <= p.sTarget))
-				resetPlane(p);
+			if ((p.sDir > 0 && p.s >= p.sTarget) || (p.sDir < 0 && p.s <= p.sTarget)) resetPlane(p);
 		}
 	}
 
@@ -1115,11 +1057,7 @@
 				last = { x: e.clientX, y: e.clientY };
 				clampPan();
 				applyCamera();
-				// Panning detaches the card from its cell — dismiss it.
 				if (moved && sky.selectedCode) sky.selectedCode = null;
-				// Persist the tooltip through the drag: keep whatever was hovered and
-				// let it follow the cursor. The world-space hover box tracks the pan
-				// on its own (it lives in camera space).
 				if (enableTooltip && sky.hoverCode)
 					onhover?.(hoverInfo(sky.hoverCode, e.clientX, e.clientY));
 				return;
@@ -1136,8 +1074,6 @@
 				const p = quad ? nearest(quad, ox, oy, hitR()) : null;
 				if (p) {
 					sky.selectedCode = p.code;
-					// Anchor the card to the cell's screen centre (not the raw cursor)
-					// so it visibly points at the tower it describes.
 					const rect = app!.canvas.getBoundingClientRect();
 					onselect?.(p.code, {
 						x: rect.left + (p.x - panX) * zoom,
@@ -1174,7 +1110,6 @@
 		panY = oy - sy / zoom;
 		clampPan();
 		applyCamera();
-		// Zooming moves the cell out from under the card — dismiss it.
 		if (sky.selectedCode) sky.selectedCode = null;
 	}
 	function clampPan() {
@@ -1195,7 +1130,6 @@
 		const rect = app?.canvas.getBoundingClientRect();
 		zoomAt((rect?.left ?? 0) + vw / 2, (rect?.top ?? 0) + vh / 2, dir > 0 ? 1.3 : 1 / 1.3);
 	}
-	// Instance API so the page can host the zoom buttons in its own control rail.
 	export function zoomIn() {
 		zoomButton(1);
 	}
@@ -1220,7 +1154,7 @@
 			drawSky();
 			drawTitle();
 			if (!userMoved) fitCamera();
-			else emitLayout(); // fit changed under a user-held camera — gutters moved
+			else emitLayout();
 		});
 		ro.observe(host);
 		init();
@@ -1255,8 +1189,6 @@
 			drawHover();
 		}
 	});
-	// Keep the title cartouche's date/time line in sync with the active view.
-	// A meta-only update — the surrounding layout stays put (no shift).
 	$effect(() => {
 		void sky.view;
 		void date;

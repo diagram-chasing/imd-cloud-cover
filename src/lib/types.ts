@@ -68,6 +68,9 @@ export interface DailyMeans {
 	l: number;
 	p: number; // relative precip intensity 0-100
 	e: number; // effective = mean of per-step max
+	/** 8-step effective series (max of h/m/l per step). Absent on days written
+	 *  before the pipeline started recording it. */
+	t?: number[];
 }
 
 export interface History {
