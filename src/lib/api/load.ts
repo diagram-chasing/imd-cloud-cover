@@ -9,8 +9,6 @@ export interface CoreData {
 	india: FeatureCollection;
 	/** Built-up (urban) polygons, clipped to India — rendered into the ground. */
 	urban: FeatureCollection;
-	/** Major river centerlines, clipped to India — rendered into the ground. */
-	rivers: FeatureCollection;
 	/** A limited set of major cities, as labelled points. */
 	places: FeatureCollection;
 	manifest: StationsManifest;
@@ -21,11 +19,10 @@ export interface CoreData {
 }
 
 export async function loadCore(): Promise<CoreData> {
-	const [topo, urbanTopo, riversTopo, places, manifest, latest, summary, rollup7, rollup30] =
+	const [topo, urbanTopo, places, manifest, latest, summary, rollup7, rollup30] =
 		await Promise.all([
 			fetch('/data/india.json').then((r) => r.json() as Promise<Topology>),
 			fetch('/data/india-urban.json').then((r) => r.json() as Promise<Topology>),
-			fetch('/data/india-rivers.json').then((r) => r.json() as Promise<Topology>),
 			fetch('/data/india-places.json').then((r) => r.json() as Promise<FeatureCollection>),
 			fetchStations(),
 			fetchLatest(),
@@ -36,7 +33,6 @@ export async function loadCore(): Promise<CoreData> {
 	return {
 		india: topoToIndia(topo),
 		urban: topoToFeatures(urbanTopo),
-		rivers: topoToFeatures(riversTopo),
 		places,
 		manifest,
 		latest,

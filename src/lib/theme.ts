@@ -66,18 +66,6 @@ export function urbanForStep(timeIndex: number): { fill: string; dither: string 
 	return URBAN[skyMode(timeIndex)];
 }
 
-// Major rivers: a muted, desaturated blue drawn one sub-cell wide over the land.
-// Pulled toward the green land so it reads as a subtle waterway, not a bright
-// stroke; night deepens to sit under the navy sky.
-export const RIVER: Record<SkyMode, string> = {
-	day: '#8DB0C7',
-	night: '#52708A'
-};
-
-export function riverForStep(timeIndex: number): string {
-	return RIVER[skyMode(timeIndex)];
-}
-
 // Cloud colors per band. Tints deepen with altitude so the three layers
 // separate when stacked flat: low = solid warm white, middle = clearly cooler
 // blue-gray, high = pale ice white. Species read apart by SHAPE + vertical

@@ -15,7 +15,6 @@
 	interface Props {
 		india: FeatureCollection;
 		urban?: FeatureCollection;
-		rivers?: FeatureCollection;
 		places?: FeatureCollection;
 		manifest: StationsManifest;
 		values: Record<string, { h: number; m: number; l: number }>;
@@ -27,7 +26,6 @@
 	let {
 		india,
 		urban,
-		rivers,
 		places,
 		manifest,
 		values,
@@ -79,6 +77,24 @@
 	// px per ms so a full-world crossing lands around 60–90s (worldW ~ 1024).
 	const PLANE_SPEED_MIN = 1024 / 90000;
 	const PLANE_SPEED_MAX = 1024 / 60000;
+	// Real airport hubs (lon, lat) acting as "gravity" points for flight corridors.
+	// Many sit off-map on purpose — planes enter/leave the frame heading to/from them.
+	const HUBS: Record<string, [number, number]> = {
+		DXB: [55.36, 25.25], DOH: [51.61, 25.27], KHI: [67.16, 24.91], // west
+		DEL: [77.1, 28.56], KTM: [85.36, 27.7], BOM: [72.87, 19.09], // north / central
+		CCU: [88.45, 22.65], DAC: [90.4, 23.84], MAA: [80.17, 12.99],
+		CMB: [79.88, 7.18], MLE: [73.53, 4.19], // south
+		SIN: [103.99, 1.36], KUL: [101.71, 2.75], BKK: [100.75, 13.69], RGN: [96.13, 16.9] // SE Asia
+	};
+	// Corridors that visibly cross Indian airspace (either direction). A plane rides the
+	// infinite line through the two hubs, clipped to just off-screen at both ends.
+	const ROUTES: [string, string][] = [
+		['DXB', 'BKK'], ['DXB', 'SIN'], ['DXB', 'CCU'], ['DXB', 'KUL'], ['DXB', 'MAA'],
+		['DOH', 'SIN'], ['DOH', 'DAC'], ['DOH', 'BKK'],
+		['KHI', 'BKK'], ['KHI', 'CCU'], ['KHI', 'RGN'],
+		['DEL', 'CMB'], ['DEL', 'MAA'], ['DEL', 'MLE'], ['DEL', 'SIN'], ['DEL', 'KUL'],
+		['KTM', 'MLE'], ['BOM', 'CCU'], ['BOM', 'DAC'], ['CCU', 'MLE']
+	];
 
 	// Pixel-boxed styling shared by the zoom/reset controls.
 	const ctlClass =
@@ -126,16 +142,20 @@
 	let planeLayer: Container | null = null;
 	interface Plane {
 		c: Container;
-		x: number;
-		y: number;
-		heading: number; // radians; travel direction (0 = +x)
+		ox: number; // a point on the corridor line (world)
+		oy: number;
+		ux: number; // unit direction of travel
+		uy: number;
+		s: number; // current param along the line
+		sStart: number; // param where it entered, off-screen
+		sTarget: number; // param where it fully exits, off-screen
+		sDir: 1 | -1; // sign of travel
 		speed: number; // px per ms
-		curvePhase: number;
-		curveSpeed: number; // curvePhase advance per ms
-		curveAmp: number; // turn rate amplitude (rad per ms)
+		heading: number; // atan2(uy, ux); constant per crossing → container.rotation
 	}
 	let planes: Plane[] = [];
 	let planeRand: (() => number) | null = null;
+	let hubXY: Record<string, [number, number]> = {}; // hubs projected to world px
 	let planeTex: Texture | null = null;
 	let trailTex: Texture | null = null;
 	const pool: Record<BandKey, Sprite[]> = { low: [], middle: [], high: [] };
@@ -323,7 +343,7 @@
 		// draws it — otherwise it renders in the fallback and never refreshes.
 		await document.fonts.load("10px 'Geist Pixel'").catch(() => {});
 		const atlas = buildMarkAtlas(MARK_CELL);
-		geo = buildGeo(india, manifest, WORLD_W, CELL, urban, places, rivers);
+		geo = buildGeo(india, manifest, WORLD_W, CELL, urban, places);
 		buildLods();
 
 		app = new Application();
@@ -547,20 +567,31 @@
 		return c;
 	}
 
-	// Small plane glyph pointing right (+x). The container is rotated to the plane's
-	// heading, so the glyph always faces its travel direction. Anchored at its nose
-	// so the contrail lines up behind it.
+	// Top-down airliner silhouette pointing right (+x): a long fuselage with a nose
+	// taper, moderately-swept mid-mounted wings, and a small tailplane set well back
+	// (the fuselage runs on past the wings) so it reads as a jetliner, not a fighter.
+	// Kept tiny (13×9 px) — the container is rotated to the plane's heading each crossing.
+	const PLANE_ROWS: number[][] = [
+		[4, 5, 6], // y0  wingtip (top)
+		[5, 6, 7], // y1  wing
+		[1, 6, 7, 8], // y2  tail nub + wing root
+		[1, 2, 4, 5, 6, 7, 8, 9, 10], // y3  tailplane + body
+		[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], // y4  fuselage spine → nose
+		[1, 2, 4, 5, 6, 7, 8, 9, 10], // y5  tailplane + body
+		[1, 6, 7, 8], // y6  tail nub + wing root
+		[5, 6, 7], // y7  wing
+		[4, 5, 6] // y8  wingtip (bottom)
+	];
+	const PLANE_W = 13; // glyph cols; nose sits at the right edge
 	function buildPlaneTex(): Texture {
 		const px = 1;
-		const c = makeCanvas(6 * px, 3 * px);
+		const c = makeCanvas(PLANE_W * px, PLANE_ROWS.length * px);
 		const ctx = c.getContext('2d')!;
 		ctx.imageSmoothingEnabled = false;
 		ctx.fillStyle = '#ffffff';
-		// fuselage
-		ctx.fillRect(0, px, 6 * px, px);
-		// wings / tail nibs
-		ctx.fillRect(2 * px, 0, px, 3 * px);
-		ctx.fillRect(px, 2 * px, px, px);
+		PLANE_ROWS.forEach((xs, y) => {
+			for (const x of xs) ctx.fillRect(x * px, y * px, px, px);
+		});
 		return mkTex(c);
 	}
 
@@ -587,11 +618,18 @@
 		camera.addChild(planeLayer);
 		planes = [];
 		planeRand = mulberry32(fnv1a('planes'));
+		// Project each hub once into world px (some land off-map, as intended).
+		hubXY = {};
+		for (const [name, ll] of Object.entries(HUBS)) {
+			const w = geo.project(ll[0], ll[1]);
+			if (w) hubXY[name] = w;
+		}
 		for (let i = 0; i < PLANE_COUNT; i++) {
 			const trail = new Sprite(trailTex);
-			trail.anchor.set(1, 0.5); // head at the plane, fades toward the tail
+			trail.anchor.set(1, 0.5); // head at the plane's tail, fades toward the back
+			trail.x = -(PLANE_W - 2); // tuck the contrail head just behind the fuselage
 			const body = new Sprite(planeTex);
-			body.anchor.set(1, 0.5);
+			body.anchor.set(1, 0.5); // nose at the container origin (the point on the chord)
 			const c = new Container();
 			c.eventMode = 'none';
 			c.addChild(trail);
@@ -599,65 +637,98 @@
 			planeLayer.addChild(c);
 			const p: Plane = {
 				c,
-				x: 0,
-				y: 0,
-				heading: 0,
-				speed: 0,
-				curvePhase: 0,
-				curveSpeed: 0,
-				curveAmp: 0
+				ox: 0, oy: 0, ux: 1, uy: 0,
+				s: 0, sStart: 0, sTarget: 0, sDir: 1,
+				speed: 0, heading: 0
 			};
-			// Reduced motion never advances the tick, so scatter across the map only
-			// when motion is allowed — otherwise park each off-edge, invisible.
+			// Reduced motion never advances the tick, so mid-flight scatter only when
+			// motion is allowed — otherwise start off-screen, invisible.
 			resetPlane(p, !reduced);
 			planes.push(p);
 		}
 	}
 
-	// (Re)seed a plane. `initial` scatters it anywhere on the map at a random heading
-	// so the sky is already busy on load; otherwise it enters from a random edge
-	// aimed inward, so the fleet keeps criss-crossing.
+	// Clip the infinite line (ox,oy)+s·(ux,uy) to an axis-aligned box, returning the
+	// [sMin, sMax] param range inside it (Liang-Barsky slab test), or null if it misses.
+	function rectClipLine(
+		ox: number, oy: number, ux: number, uy: number,
+		minX: number, minY: number, maxX: number, maxY: number
+	): [number, number] | null {
+		let sMin = -Infinity;
+		let sMax = Infinity;
+		for (const [o, u, lo, hi] of [
+			[ox, ux, minX, maxX],
+			[oy, uy, minY, maxY]
+		] as const) {
+			if (u === 0) {
+				if (o < lo || o > hi) return null; // parallel and outside the slab
+			} else {
+				let a = (lo - o) / u;
+				let b = (hi - o) / u;
+				if (a > b) [a, b] = [b, a];
+				if (a > sMin) sMin = a;
+				if (b < sMax) sMax = b;
+			}
+		}
+		return sMin < sMax ? [sMin, sMax] : null;
+	}
+
+	// (Re)seed a plane onto a real corridor: it rides the infinite line through two hub
+	// airports, clipped so both ends sit just off-screen. `initial` scatters it partway
+	// along (mid-flight) so the sky is busy on load; a re-seed always starts off-screen.
 	function resetPlane(p: Plane, initial = false) {
 		if (!geo || !planeRand) return;
 		const r = planeRand;
 		const g = geo;
-		p.speed = PLANE_SPEED_MIN + r() * (PLANE_SPEED_MAX - PLANE_SPEED_MIN);
-		// Gentle wander: a slow-varying turn so contrails curve rather than run
-		// dead straight. Amplitude is tiny (a fraction of a degree per ms).
-		p.curvePhase = r() * Math.PI * 2;
-		p.curveSpeed = 0.0002 + r() * 0.0004;
-		p.curveAmp = (0.4 + r() * 0.9) * 0.00002 * Math.PI;
-		if (initial) {
-			p.x = r() * g.worldW;
-			p.y = r() * g.worldH;
-			p.heading = r() * Math.PI * 2; // any direction
-		} else {
-			const m = TRAIL_LEN * 1.5;
-			const edge = Math.floor(r() * 4);
-			// Enter from an edge, heading roughly across the map with a wide spread
-			// so paths fan out and intersect.
-			if (edge === 0) {
-				p.x = -m;
-				p.y = r() * g.worldH;
-				p.heading = 0;
-			} else if (edge === 1) {
-				p.x = g.worldW + m;
-				p.y = r() * g.worldH;
-				p.heading = Math.PI;
-			} else if (edge === 2) {
-				p.x = r() * g.worldW;
-				p.y = -m;
-				p.heading = Math.PI / 2;
-			} else {
-				p.x = r() * g.worldW;
-				p.y = g.worldH + m;
-				p.heading = -Math.PI / 2;
-			}
-			p.heading += (r() - 0.5) * (Math.PI * 0.55); // ±~50° spread
+		const M = TRAIL_LEN * 2; // how far off-screen the ends live
+		// Pick a corridor whose line actually crosses the (expanded) frame.
+		let clip: [number, number] | null = null;
+		let ax = 0, ay = 0, ux = 0, uy = 0;
+		for (let tries = 0; tries < 12 && !clip; tries++) {
+			const route = ROUTES[Math.floor(r() * ROUTES.length)];
+			const a = hubXY[route[0]];
+			const b = hubXY[route[1]];
+			if (!a || !b) continue;
+			let dx = b[0] - a[0];
+			let dy = b[1] - a[1];
+			const len = Math.hypot(dx, dy);
+			if (len < 1) continue;
+			dx /= len;
+			dy /= len;
+			ax = a[0];
+			ay = a[1];
+			ux = dx;
+			uy = dy;
+			clip = rectClipLine(ax, ay, ux, uy, -M, -M, g.worldW + M, g.worldH + M);
 		}
-		p.c.x = p.x;
-		p.c.y = p.y;
+		if (!clip) return; // no valid corridor this frame — leave the plane as-is
+		// Travel across the clipped chord; randomise which end we enter from.
+		let [start, end] = clip;
+		if (r() < 0.5) [start, end] = [end, start];
+		p.ox = ax;
+		p.oy = ay;
+		p.ux = ux;
+		p.uy = uy;
+		p.sStart = start;
+		p.sTarget = end;
+		p.sDir = end >= start ? 1 : -1;
+		p.speed = PLANE_SPEED_MIN + r() * (PLANE_SPEED_MAX - PLANE_SPEED_MIN);
+		p.heading = Math.atan2(uy * p.sDir, ux * p.sDir);
+		p.s = initial ? start + (end - start) * r() : start; // mid-flight vs off-screen
+		p.c.x = p.ox + p.s * p.ux;
+		p.c.y = p.oy + p.s * p.uy;
 		p.c.rotation = p.heading;
+		p.c.alpha = planeAlpha(p); // ease in from transparent at the edges
+	}
+
+	// A plane eases in over the first slice of its crossing and out over the last, so
+	// it never pops on/off at the (off-screen) chord ends.
+	function planeAlpha(p: Plane): number {
+		const span = p.sTarget - p.sStart;
+		if (!span) return 0;
+		const f = (p.s - p.sStart) / span; // 0 at entry → 1 at exit
+		const FADE = 0.14; // fraction of the crossing spent fading
+		return Math.max(0, Math.min(1, Math.min(f, 1 - f) / FADE));
 	}
 
 	// Recolour contrails for day/night, mirroring stylePlaces.
@@ -786,21 +857,15 @@
 			// active level so the nudge shrinks with the marks.
 			if (layers) layers.high.x = driftTick * 2 * (lodIndex < 0 ? 1 : lods[lodIndex].scale);
 		}
-		// Slow planes: advance along a gently-curving heading; re-seed from a fresh
-		// edge once fully off the map so trails keep criss-crossing.
-		if (geo) {
-			const m = TRAIL_LEN * 2;
-			for (const p of planes) {
-				p.curvePhase += p.curveSpeed * t.deltaMS;
-				p.heading += Math.sin(p.curvePhase) * p.curveAmp * t.deltaMS;
-				p.x += Math.cos(p.heading) * p.speed * t.deltaMS;
-				p.y += Math.sin(p.heading) * p.speed * t.deltaMS;
-				p.c.x = p.x;
-				p.c.y = p.y;
-				p.c.rotation = p.heading;
-				if (p.x < -m || p.x > geo.worldW + m || p.y < -m || p.y > geo.worldH + m)
-					resetPlane(p);
-			}
+		// Slow planes: advance straight along the corridor chord; re-seed onto a fresh
+		// route once past the far (off-screen) end.
+		for (const p of planes) {
+			p.s += p.sDir * p.speed * t.deltaMS;
+			p.c.x = p.ox + p.s * p.ux;
+			p.c.y = p.oy + p.s * p.uy;
+			p.c.alpha = planeAlpha(p);
+			if ((p.sDir > 0 && p.s >= p.sTarget) || (p.sDir < 0 && p.s <= p.sTarget))
+				resetPlane(p);
 		}
 	}
 

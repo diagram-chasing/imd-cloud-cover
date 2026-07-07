@@ -77,7 +77,6 @@
 		<PixelMap
 			india={core.india}
 			urban={core.urban}
-			rivers={core.rivers}
 			places={core.places}
 			manifest={core.manifest}
 			{values}

@@ -3,7 +3,7 @@
 // oblique "from the side" tilt + cloud altitudes are applied in the Pixi layer.
 import { geoConicConformal, geoPath, type GeoProjection } from 'd3-geo';
 import type { FeatureCollection, Feature, Geometry } from 'geojson';
-import { landForStep, urbanForStep, riverForStep } from '$lib/theme';
+import { landForStep, urbanForStep } from '$lib/theme';
 import { jitter } from './hash';
 import type { StationsManifest } from '$lib/types';
 
@@ -32,10 +32,11 @@ export interface Geo {
 	worldH: number; // natural (unsquashed) projected height
 	land: Uint8Array;
 	urban: Uint8Array;
-	river: Uint8Array;
 	coast: Set<number>;
 	stations: GeoStation[];
 	places: GeoPlace[];
+	/** Project a lon/lat into world px with the map's projection (may be off-map). */
+	project(lon: number, lat: number): [number, number] | null;
 	/** Render the ground tile-map to a cell-resolution canvas for a sky mode. */
 	renderGround(timeIndex: number): HTMLCanvasElement;
 }
@@ -53,8 +54,7 @@ export function buildGeo(
 	worldW: number,
 	cell: number,
 	urbanFC?: FeatureCollection,
-	placesFC?: FeatureCollection,
-	riversFC?: FeatureCollection
+	placesFC?: FeatureCollection
 ): Geo {
 	const worldH = worldW * 1.06;
 	// The cloud/station grid works in whole `cell` units, but the ground (coast +
@@ -142,27 +142,6 @@ export function buildGeo(
 		}
 	}
 
-	// Major rivers: stroke the (India-clipped) centerlines one sub-cell wide and
-	// keep the cells that fall on land, so a river never draws out in the sea.
-	// Painted a muted blue in renderGround.
-	const river = new Uint8Array(cols * rows);
-	if (riversFC) {
-		const vctx = makeCanvas(cols, rows).getContext('2d', { willReadFrequently: true })!;
-		vctx.save();
-		vctx.scale(1 / gcell, 1 / gcell);
-		const vpath = geoPath(projection, vctx);
-		vctx.beginPath();
-		vpath(riversFC);
-		vctx.lineJoin = 'round';
-		vctx.lineCap = 'round';
-		vctx.lineWidth = gcell; // → 1 sub-cell wide
-		vctx.strokeStyle = '#000';
-		vctx.stroke();
-		vctx.restore();
-		const vpx = vctx.getImageData(0, 0, cols, rows).data;
-		for (let i = 0; i < cols * rows; i++) if (land[i] && vpx[i * 4 + 3] > 100) river[i] = 1;
-	}
-
 	const stations: GeoStation[] = [];
 	for (const [code, s] of Object.entries(manifest.stations)) {
 		const p = projection([s.lon, s.lat]);
@@ -203,8 +182,6 @@ export function buildGeo(
 		const ldRGB = hexRGB(land0.dither);
 		const uRGB = hexRGB(urban0.fill);
 		const udRGB = hexRGB(urban0.dither);
-		const rvRGB = hexRGB(riverForStep(timeIndex));
-		const RIVER_A = 0.4; // river ink opacity — blended over the ground, not solid
 		for (let y = 0; y < rows; y++) {
 			for (let x = 0; x < cols; x++) {
 				const idx = y * cols + x;
@@ -213,17 +190,9 @@ export function buildGeo(
 				const built = urban[idx] === 1;
 				const base = built ? (useD ? udRGB : uRGB) : useD ? ldRGB : lRGB;
 				const o = idx * 4;
-				// Rivers draw over land + built-up cells as a translucent blue thread,
-				// blended with the ground beneath so they never overpower it.
-				if (river[idx]) {
-					img.data[o] = base[0] + (rvRGB[0] - base[0]) * RIVER_A;
-					img.data[o + 1] = base[1] + (rvRGB[1] - base[1]) * RIVER_A;
-					img.data[o + 2] = base[2] + (rvRGB[2] - base[2]) * RIVER_A;
-				} else {
-					img.data[o] = base[0];
-					img.data[o + 1] = base[1];
-					img.data[o + 2] = base[2];
-				}
+				img.data[o] = base[0];
+				img.data[o + 1] = base[1];
+				img.data[o + 2] = base[2];
 				img.data[o + 3] = 255;
 			}
 		}
@@ -240,10 +209,10 @@ export function buildGeo(
 		worldH,
 		land,
 		urban,
-		river,
 		coast,
 		stations,
 		places,
+		project: (lon: number, lat: number) => projection([lon, lat]) ?? null,
 		renderGround
 	};
 }
