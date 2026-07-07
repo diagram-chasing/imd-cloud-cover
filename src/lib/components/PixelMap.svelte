@@ -25,13 +25,13 @@
 
 	const WORLD_W = 1024;
 	const PAD = 4;
-	const MARK_CELL = 3; // px per logical cell of a tower mark
+	const MARK_CELL = 4; // px per logical cell of a tower mark
 	// Two constraints keep towers readable (glyphs cap at 3 rows tall):
 	//   1. bands separate WITHIN a tower  → TOWER_GAP must clear a mark's height
 	//   2. towers separate FROM EACH OTHER → BIN must clear a whole tower's height
 	// Break either (e.g. TOWER_GAP > BIN) and the three bands overlap into blocks.
 	const TOWER_GAP = MARK_CELL * 3.5; // centre-to-centre px between adjacent bands
-	const BIN = TOWER_GAP * 2 + MARK_CELL * 4; // aggregation grid spacing (px)
+	const BIN = TOWER_GAP * 2 + MARK_CELL * 3; // aggregation grid spacing (px)
 	const HIT_R = BIN * 0.7; // hover/select radius; >= BIN/sqrt(2) so bins have no dead zones
 	const GHOST_ALPHA = 0.1; // non-focused bands while one band is isolated
 	// Vertical offset of each band's mark from the bin centre, in px.

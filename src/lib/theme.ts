@@ -55,12 +55,13 @@ export function landForStep(timeIndex: number): { fill: string; dither: string }
 
 // Cloud colors per band. Tints deepen with altitude so the three layers
 // separate when stacked flat: low = solid warm white, middle = clearly cooler
-// blue-gray, high = bright ice cyan. Pushed apart in hue so the species read
-// distinctly against green land even when the marks are only a few px wide.
+// blue-gray, high = pale ice white. Species read apart by SHAPE + vertical
+// position (cirrus = thin streaks up top); the high band stays near-white on
+// purpose — a saturated blue streak above the cumulus reads as falling rain.
 export const CLOUD = {
 	low: { fill: '#FFFFFF', shadow: '#C4D8EC', alpha: 1 },
 	middle: { fill: '#B7CFEA', alpha: 0.95 },
-	high: { fill: '#9FD8FF', alpha: 0.55 }
+	high: { fill: '#E6F2FB', alpha: 0.55 }
 } as const;
 
 export type BandKey = 'high' | 'middle' | 'low';

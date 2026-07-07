@@ -142,8 +142,6 @@
 			</div>
 		</div>
 	</section>
-
-	<footer><span>Data: IMD GFS meteograms · Not an official forecast.</span></footer>
 </div>
 
 {#if tip && tipStation}
