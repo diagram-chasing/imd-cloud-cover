@@ -1,6 +1,5 @@
-// Derive the per-station cover map + persistence columns from the current view.
+// Derive the per-station cover map from the current view.
 import type { AllStations, BandValues, Rollup, ViewMode } from '$lib/types';
-import { CLOUDY_DAY } from '$lib/theme';
 
 export function rollupForView(
 	view: ViewMode,
@@ -32,16 +31,6 @@ export function computeValues(
 	const i = Math.min(windowDayIndex, rollup.dates.length - 1);
 	for (const [code, s] of Object.entries(rollup.stations)) {
 		out[code] = { h: s.h[i] ?? 0, m: s.m[i] ?? 0, l: s.l[i] ?? 0, p: s.p?.[i] ?? 0 };
-	}
-	return out;
-}
-
-/** Count of cloudy days (effective >= 60) per station over the rollup window. */
-export function computePersistence(rollup: Rollup | undefined): Record<string, number> {
-	const out: Record<string, number> = {};
-	if (!rollup) return out;
-	for (const [code, s] of Object.entries(rollup.stations)) {
-		out[code] = s.e.reduce((n: number, v) => n + (v !== null && v >= CLOUDY_DAY ? 1 : 0), 0);
 	}
 	return out;
 }

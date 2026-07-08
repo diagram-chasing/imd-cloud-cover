@@ -1,0 +1,8 @@
+name = "imd-meteograms-data"
+account_id = "d14848d43e4ddb809f95839c47d61094"
+main = "worker.js"
+compatibility_date = "2025-05-01"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "imd-meteograms"

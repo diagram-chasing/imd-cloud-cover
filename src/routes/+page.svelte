@@ -2,15 +2,15 @@
 	import { onMount } from 'svelte';
 	import type { Station } from '$lib/types';
 	import { loadCore, type CoreData } from '$lib/api/load';
+	import { CORE_BASE } from '$lib/api/r2';
 	import { sky } from '$lib/state/sky.svelte';
 	import { skyMode } from '$lib/theme';
-	import { computeValues, computePersistence, rollupForView } from '$lib/data';
+	import { computeValues, rollupForView } from '$lib/data';
 
 	import PixelMap, { type HoverInfo } from '$lib/components/PixelMap.svelte';
 	import TimeDock from '$lib/components/TimeDock.svelte';
 	import ViewTabs from '$lib/components/ViewTabs.svelte';
 	import BandToggle from '$lib/components/BandToggle.svelte';
-	import PersistToggle from '$lib/components/PersistToggle.svelte';
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
 	import StreakBoard from '$lib/components/StreakBoard.svelte';
 	import StreakPanel from '$lib/components/StreakPanel.svelte';
@@ -52,8 +52,6 @@
 	let values = $derived(
 		computeValues(sky.view, core?.latest, activeRollup, sky.timeIndex, sky.windowDayIndex)
 	);
-	let persistence = $derived(computePersistence(activeRollup));
-
 	let tipStation = $derived<Station | null>(
 		tip && core ? (core.manifest.stations[tip.code] ?? null) : null
 	);
@@ -82,6 +80,19 @@
 		document.documentElement.classList.toggle('night', night);
 		return () => document.documentElement.classList.remove('night');
 	});
+
+	// Everything loadCore() fetches, preloaded from the prerendered <head> so the
+	// browser pulls the data in parallel with the JS bundle instead of waiting
+	// for hydration + onMount. Hrefs must match the fetch URLs exactly.
+	const preloads = [
+		'/data/india.json',
+		'/data/india-places.json',
+		`${CORE_BASE}/meta/stations.json`,
+		`${CORE_BASE}/latest/all-stations.json`,
+		`${CORE_BASE}/latest/summary.json`,
+		`${CORE_BASE}/rollups/7d.json`,
+		`${CORE_BASE}/rollups/30d.json`
+	];
 </script>
 
 <svelte:head>
@@ -90,6 +101,9 @@
 		name="description"
 		content="A daily pixel map of cloud cover over India, read from IMD meteograms."
 	/>
+	{#each preloads as href (href)}
+		<link rel="preload" {href} as="fetch" crossorigin="anonymous" />
+	{/each}
 </svelte:head>
 
 <!-- Framed map: a full-width bordered panel on a thin paper mat. All controls sit
@@ -103,11 +117,9 @@
 			<PixelMap
 				bind:this={map}
 				india={core.india}
-				urban={core.urban}
 				places={core.places}
 				manifest={core.manifest}
 				{values}
-				{persistence}
 				date={core.summary.date}
 				onhover={(info) => (tip = info)}
 				onselect={openStation}
@@ -157,13 +169,11 @@
 		<div class="bar bottom">
 			<div class="lane legend">
 				<BandToggle />
-				{#if sky.view !== 'today'}<PersistToggle />{/if}
 			</div>
 			<div class="lane dock">
 				<!-- Phones: the legend compresses to one glyph row above the timeline. -->
 				<div class="mobile-row">
 					<BandToggle horizontal />
-					{#if sky.view !== 'today'}<PersistToggle />{/if}
 				</div>
 				<TimeDock dates={activeRollup?.dates ?? null} />
 			</div>

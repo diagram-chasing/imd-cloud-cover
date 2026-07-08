@@ -1,0 +1,3 @@
+# Station deep-links are client-rendered (SPA fallback shell) — serve them 200,
+# not as the 404 page.
+/station/*  /404.html  200

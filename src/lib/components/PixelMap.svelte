@@ -12,10 +12,22 @@
 	import { Application, Container, Sprite, Texture, Graphics, Text, type Ticker } from 'pixi.js';
 	import type { FeatureCollection } from 'geojson';
 	import type { StationsManifest } from '$lib/types';
-	import { CELL, SKY, skyMode, coverTier, rainTier, UI, type BandKey } from '$lib/theme';
-	import { buildGeo, loadGroundTiles, type Geo } from '$lib/map/geo';
-	import grassTileA from '$lib/assets/images/medievalTile_57.png';
-	import grassTileB from '$lib/assets/images/medievalTile_58.png';
+	import {
+		CELL,
+		SKY,
+		skyMode,
+		coverTier,
+		rainTier,
+		UI,
+		SHADOW_TINT,
+		SHADOW_ALPHA,
+		WAVE,
+		type BandKey
+	} from '$lib/theme';
+	import { buildGeo, loadGroundMask, type Geo } from '$lib/map/geo';
+	import groundDayUrl from '$lib/assets/ground/ground-day.png';
+	import groundNightUrl from '$lib/assets/ground/ground-night.png';
+	import groundMaskUrl from '$lib/assets/ground/ground-mask.png';
 	import { buildMarkAtlas, buildRainAtlas, MARK_VARIANTS } from '$lib/map/sprites';
 	import { buildQuadtree, nearest, type StationPoint } from '$lib/map/hit';
 	import { fnv1a, jitter, mulberry32 } from '$lib/map/hash';
@@ -23,11 +35,9 @@
 
 	interface Props {
 		india: FeatureCollection;
-		urban?: FeatureCollection;
 		places?: FeatureCollection;
 		manifest: StationsManifest;
 		values: Record<string, { h: number; m: number; l: number; p: number }>;
-		persistence?: Record<string, number>;
 		enableTooltip?: boolean;
 		date?: string;
 		onhover?: (info: HoverInfo | null) => void;
@@ -36,7 +46,6 @@
 	}
 	let {
 		india,
-		urban,
 		places,
 		manifest,
 		values,
@@ -69,6 +78,9 @@
 	const BAND_KEYS: BandKey[] = ['low', 'middle', 'high'];
 	const VAL_KEY: Record<BandKey, 'h' | 'm' | 'l'> = { high: 'h', middle: 'm', low: 'l' };
 	const RAIN_DROP = TOWER_GAP + MARK_CELL * 1.5;
+	const SHADOW_DROP = RAIN_DROP + MARK_CELL;
+	const WAVE_SCALE = 1.25;
+	const WAVE_MAX = 100;
 	const PLANE_COUNT = 5;
 	const TRAIL_LEN = 44;
 	const PLANE_SPEED_MIN = 1024 / 90000;
@@ -161,6 +173,7 @@
 	let geo: Geo | null = null;
 	let camera: Container | null = null;
 	let groundSprite: Sprite | null = null;
+	let groundTex: { day: Texture; night: Texture } | null = null;
 	let skyGfx: Graphics | null = null;
 
 	let titleGroup: Container | null = null;
@@ -212,6 +225,11 @@
 	let cloudTex: Record<BandKey, Texture[][]> = { low: [], middle: [], high: [] };
 	let rainPool: Sprite[] = [];
 	let rainTex: Texture[][] = [];
+	let shadowLayer: Container | null = null;
+	let shadowPool: Sprite[] = [];
+	let waveLayer: Container | null = null;
+	let waveTex: Texture[] = [];
+	let waves: { s: Sprite; phase: number }[] = [];
 	let quad: ReturnType<typeof buildQuadtree> | null = null;
 
 	let zoom = 1;
@@ -289,6 +307,19 @@
 		const t = Texture.from(canvas as HTMLCanvasElement);
 		t.source.scaleMode = 'nearest';
 		return t;
+	}
+
+	function loadTex(url: string): Promise<Texture> {
+		return new Promise((res, rej) => {
+			const im = new Image();
+			im.onload = () => {
+				const t = Texture.from(im);
+				t.source.scaleMode = 'nearest';
+				res(t);
+			};
+			im.onerror = rej;
+			im.src = url;
+		});
 	}
 
 	function buildBins(binSize: number | null): Bin[] {
@@ -398,6 +429,16 @@
 			sp.scale.set(sc);
 		}
 		for (let k = bins.length; k < rainPool.length; k++) rainPool[k].visible = false;
+		// Shadows fall at the foot of the tower, nudged right and squashed flat
+		// to read as a patch on the ground plane.
+		const shadowOff = SHADOW_DROP * sc;
+		for (let k = 0; k < bins.length; k++) {
+			const sp = shadowPool[k];
+			sp.x = bins[k].px + 2 * sc;
+			sp.y = bins[k].py + shadowOff;
+			sp.scale.set(sc, sc * 0.55);
+		}
+		for (let k = bins.length; k < shadowPool.length; k++) shadowPool[k].visible = false;
 		quad = buildQuadtree(lod.points);
 		updateClouds();
 		updateRain();
@@ -410,8 +451,13 @@
 		await document.fonts.load("10px 'Ships Whistle'").catch(() => {});
 		const atlas = buildMarkAtlas(MARK_CELL);
 		const rainAtlas = buildRainAtlas(MARK_CELL);
-		const grassTiles = await loadGroundTiles([grassTileA, grassTileB]).catch(() => []);
-		geo = buildGeo(india, manifest, WORLD_W, CELL, urban, places, grassTiles);
+		const [mask, dayTex, nightTex] = await Promise.all([
+			loadGroundMask(groundMaskUrl).catch(() => undefined),
+			loadTex(groundDayUrl),
+			loadTex(groundNightUrl)
+		]);
+		groundTex = { day: dayTex, night: nightTex };
+		geo = buildGeo(india, manifest, WORLD_W, CELL, places, mask);
 		buildLods();
 
 		app = new Application();
@@ -435,9 +481,16 @@
 		camera = new Container();
 		app.stage.addChild(camera);
 
-		groundSprite = new Sprite(mkTex(geo.renderGround(sky.timeIndex)));
+		groundSprite = new Sprite(groundTex[skyMode(sky.timeIndex)]);
 		groundSprite.scale.set(geo.groundScale);
 		camera.addChild(groundSprite);
+
+		// Cloud shadows sit directly on the ground, under every other layer.
+		shadowLayer = new Container();
+		shadowLayer.eventMode = 'none';
+		camera.addChild(shadowLayer);
+
+		buildWaves();
 
 		const titleFont = {
 			fontFamily: "'Ships Whistle', monospace",
@@ -473,6 +526,15 @@
 			}
 		}
 
+		shadowPool = Array.from({ length: maxBins }, () => {
+			const s = new Sprite(cloudTex.low[1][0]);
+			s.anchor.set(0.5, 0.5);
+			s.tint = SHADOW_TINT;
+			s.visible = false;
+			shadowLayer!.addChild(s);
+			return s;
+		});
+
 		const rainLayer = new Container();
 		camera.addChild(rainLayer);
 		rainPool = Array.from({ length: maxBins }, () => {
@@ -501,6 +563,10 @@
 
 		buildPlanes();
 		styleAmbient();
+
+		// Place labels ride above the cloud towers so cities stay readable when
+		// zoomed in over dense cover.
+		if (placesLayer) camera.addChild(placesLayer);
 
 		selGfx = new Graphics();
 		camera.addChild(selGfx);
@@ -630,9 +696,9 @@
 	}
 
 	function placeSize(pop: number): number {
-		if (pop >= 8_000_000) return 11;
-		if (pop >= 3_000_000) return 10;
-		return 9;
+		if (pop >= 8_000_000) return 20;
+		if (pop >= 3_000_000) return 16;
+		return 14;
 	}
 
 	function buildPlaces() {
@@ -750,6 +816,65 @@
 		return mkTex(c);
 	}
 
+	// A tiny pixel wave crest — a "~" tilde that rises then dips. The two frames
+	// shift the crest sideways by one pixel so the ripple appears to roll across
+	// the water when the drift timer flips frames, instead of seesawing in place.
+	const WAVE_CURVE = [1, 0, 0, 1, 2, 2, 1, 1]; // crest-line row per column
+	function buildWaveTex(): Texture[] {
+		const W = WAVE_CURVE.length;
+		return [0, 1].map((shift) => {
+			const c = makeCanvas(W, 3);
+			const ctx = c.getContext('2d')!;
+			ctx.fillStyle = '#ffffff';
+			for (let x = 0; x < W; x++) ctx.fillRect(x, WAVE_CURVE[(x + shift) % W], 1, 1);
+			return mkTex(c);
+		});
+	}
+
+	function buildWaves() {
+		if (!geo || !camera) return;
+		waveTex = buildWaveTex();
+		waveLayer = new Container();
+		waveLayer.eventMode = 'none';
+		camera.addChild(waveLayer);
+		waves = [];
+		const g = geo;
+		const gc = g.groundScale;
+		const r = mulberry32(fnv1a('waves'));
+		// Scatter well past the ground raster on both sides so the open sea reaches
+		// into the gutters and fills the full viewport width, not just the map box.
+		const marginX = Math.round(g.cols * 0.7);
+		// First collect every open-sea cell in the southern band, then sample the
+		// wanted count uniformly from that whole pool — filling top-down and
+		// stopping at the cap left them bunched in a narrow band up high.
+		const cand: { x: number; y: number }[] = [];
+		for (let y = Math.ceil(g.rows * 0.5); y < g.rows; y++) {
+			for (let x = -marginX; x < g.cols + marginX; x++) {
+				// Land/shallow only exist inside the raster; anything outside is open sea.
+				if (x >= 0 && x < g.cols) {
+					const idx = y * g.cols + x;
+					if (g.land[idx] || g.shallow[idx]) continue;
+				}
+				// Slightly denser over the big open sea south of the peninsula.
+				const p = 0.0022 * (y > g.rows * 0.62 ? 1.7 : 1);
+				if (r() < p) cand.push({ x, y });
+			}
+		}
+		// Fisher-Yates shuffle so the cap trims evenly, not from the bottom.
+		for (let i = cand.length - 1; i > 0; i--) {
+			const j = Math.floor(r() * (i + 1));
+			[cand[i], cand[j]] = [cand[j], cand[i]];
+		}
+		for (const { x, y } of cand.slice(0, WAVE_MAX)) {
+			const s = new Sprite(waveTex[r() < 0.5 ? 0 : 1]);
+			s.anchor.set(0.5, 0.5);
+			s.scale.set(WAVE_SCALE);
+			s.position.set((x + 0.5) * gc + (r() * 4 - 2), (y + 0.5) * gc + (r() * 4 - 2));
+			waveLayer.addChild(s);
+			waves.push({ s, phase: Math.floor(r() * 4) });
+		}
+	}
+
 	function buildPlanes() {
 		if (!geo || !camera) return;
 		planeTex = buildPlaneTex();
@@ -827,6 +952,9 @@
 		const r = planeRand;
 		const g = geo;
 		const M = TRAIL_LEN * 2; // how far off-screen the ends live
+		// Let flight paths run well past the map box horizontally so planes cross
+		// the gutters and span the full viewport width, not just over India.
+		const EX = g.worldW * 0.7;
 		let clip: [number, number] | null = null;
 		let ax = 0,
 			ay = 0,
@@ -847,7 +975,7 @@
 			ay = a[1];
 			ux = dx;
 			uy = dy;
-			clip = rectClipLine(ax, ay, ux, uy, -M, -M, g.worldW + M, g.worldH + M);
+			clip = rectClipLine(ax, ay, ux, uy, -EX, -M, g.worldW + EX, g.worldH + M);
 		}
 		if (!clip) return;
 		let [start, end] = clip;
@@ -877,20 +1005,25 @@
 	}
 
 	function styleAmbient() {
-		const night = skyMode(sky.timeIndex) === 'night';
+		const mode = skyMode(sky.timeIndex);
+		const night = mode === 'night';
 		const trailTint = night ? 0xcfe4ff : 0xffffff;
 		for (const p of planes) {
 			const [trail, body] = p.c.children as Sprite[];
 			trail.tint = trailTint;
 			body.tint = trailTint;
 		}
+		if (shadowLayer) shadowLayer.alpha = SHADOW_ALPHA[mode];
+		const wavePal = WAVE[mode];
+		for (const w of waves) {
+			w.s.tint = wavePal.color;
+			w.s.alpha = wavePal.alpha;
+		}
 	}
 
 	function updateGround() {
-		if (!groundSprite || !geo) return;
-		const old = groundSprite.texture;
-		groundSprite.texture = mkTex(geo.renderGround(sky.timeIndex));
-		old.destroy(true);
+		if (!groundSprite || !groundTex) return;
+		groundSprite.texture = groundTex[skyMode(sky.timeIndex)];
 	}
 
 	function binCover(b: Bin, key: 'h' | 'm' | 'l' | 'p'): number {
@@ -941,6 +1074,24 @@
 				sp.visible = true;
 				sp.texture = cloudTex[band][tier][bins[i].variant];
 			}
+		}
+		// Ground shadow per bin: driven by effective cover across the tower, with
+		// higher bands contributing less (thin cirrus casts almost nothing).
+		for (let i = 0; i < bins.length; i++) {
+			const sp = shadowPool[i];
+			if (!sp) break;
+			const eff = Math.max(
+				binCover(bins[i], 'l'),
+				binCover(bins[i], 'm') * 0.8,
+				binCover(bins[i], 'h') * 0.45
+			);
+			const tier = coverTier(eff);
+			if (tier === 0) {
+				sp.visible = false;
+				continue;
+			}
+			sp.visible = true;
+			sp.texture = cloudTex.low[tier][bins[i].variant];
 		}
 	}
 
@@ -1023,6 +1174,7 @@
 			lastDrift = now;
 			driftTick = (driftTick + 1) % 4;
 			if (layers) layers.high.x = driftTick * 2 * (lodIndex < 0 ? 1 : lods[lodIndex].scale);
+			for (const w of waves) w.s.texture = waveTex[(driftTick + w.phase) & 1];
 		}
 		for (const p of planes) {
 			p.s += p.sDir * p.speed * t.deltaMS;

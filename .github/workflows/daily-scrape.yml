@@ -42,3 +42,8 @@ jobs:
           name: run-report
           path: /tmp/run-results.json
           if-no-files-found: ignore
+
+      # Netlify rebuilds the site (pnpm build re-bakes the core views) so the
+      # deployed data is exactly as fresh as this run.
+      - name: Trigger Netlify rebuild
+        run: curl -sf -X POST "${{ secrets.NETLIFY_BUILD_HOOK }}"

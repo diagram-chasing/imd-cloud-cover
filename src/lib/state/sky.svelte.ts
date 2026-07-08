@@ -15,7 +15,6 @@ class SkyState {
 	focusBand = $state<BandKey | null>(null); // isolated band; null = all bands
 	view = $state<ViewMode>('today');
 	windowDayIndex = $state(0); // index into the current rollup window
-	persistence = $state(false);
 	selectedCode = $state<string | null>(null);
 	hoverCode = $state<string | null>(null);
 	playing = $state(false);

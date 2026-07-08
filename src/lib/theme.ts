@@ -41,30 +41,19 @@ export function skyFor(timeIndex: number): SkyPalette {
 /** Quantize the sky gradient into N flat bands (banding is the aesthetic). */
 export const SKY_BANDS = 5;
 
-// Land fills per sky mode: [fill, dither] drawn in a 2x2 checker.
-// India stays green day and night (only the sky changes); night uses a slightly
-// deeper green so it settles against the navy sky without going blue.
-export const LAND: Record<SkyMode, { fill: string; dither: string }> = {
-	day: { fill: '#5B8C6E', dither: '#568768' },
-	night: { fill: '#3E6B54', dither: '#3A664F' }
+// Ground palette (land, urban, shallow water, coast outline, terrain relief,
+// night city lights) lives in scripts/bake-ground.mjs — the ground composite is
+// pre-baked into src/lib/assets/ground/*.png and only blitted at runtime.
+
+// Cloud shadows on the ground beneath each station tower.
+export const SHADOW_TINT = 0x0a1a28;
+export const SHADOW_ALPHA: Record<SkyMode, number> = { day: 0.12, night: 0.08 };
+
+// Sea waves: sparse blinking ticks over open water.
+export const WAVE: Record<SkyMode, { color: number; alpha: number }> = {
+	day: { color: 0xffffff, alpha: 0.32 },
+	night: { color: 0x9fc3e8, alpha: 0.26 }
 };
-
-export function landForStep(timeIndex: number): { fill: string; dither: string } {
-	return LAND[skyMode(timeIndex)];
-}
-
-// Built-up (urban) patches sit on top of the land raster in the same 2x2 checker.
-// A lighter, more yellow-green than the countryside reads as developed land while
-// staying in the green family (not concrete/brown); night deepens to settle under
-// the navy.
-export const URBAN: Record<SkyMode, { fill: string; dither: string }> = {
-	day: { fill: '#7D9660', dither: '#728A57' },
-	night: { fill: '#496142', dither: '#405639' }
-};
-
-export function urbanForStep(timeIndex: number): { fill: string; dither: string } {
-	return URBAN[skyMode(timeIndex)];
-}
 
 // Cloud colors per band. Tints deepen with altitude so the three layers
 // separate when stacked flat: low = solid warm white, middle = clearly cooler
@@ -108,8 +97,7 @@ export const UI = {
 	paper: '#FDFBF4',
 	focus: '#F2A65A',
 	sunGold: '#F2C14E',
-	cloudBlock: '#D8E8F4',
-	persistence: 'rgba(11, 29, 58, 0.55)'
+	cloudBlock: '#D8E8F4'
 } as const;
 
 // Below this a station reads as clear — kills the sub-scale wisps that made
@@ -129,5 +117,5 @@ export function coverTier(cover: number): 0 | 1 | 2 | 3 | 4 {
 }
 
 // Effective-cover thresholds shared with the pipeline.
-export const CLOUDY_DAY = 60; // persistence column / fog belt
+export const CLOUDY_DAY = 60; // effective cover at/above this reads as a cloudy day
 export const CLEAR_STARS = 25; // stars appear where max(h,m,l) < this

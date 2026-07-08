@@ -22,6 +22,9 @@ scraper/weather_data/
 static/sample/history/
 static/sample/20*/
 
+# Core data views downloaded at build time by scripts/bake-data.mjs
+static/baked/
+
 # Env
 .env
 .env.*

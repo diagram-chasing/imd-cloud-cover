@@ -12,16 +12,26 @@ streak mechanics, and night skies where pixel stars appear only where it's clear
    first 8 of each 10-day forecast), and writes derived JSON views to Cloudflare
    R2. See [`scraper/README.md`](scraper/README.md).
 2. **Frontend** (`src/`, SvelteKit + Svelte 5 runes + D3): a fully static site
-   that fetches those JSON views and renders a D3-projected canvas pixel map.
+   rendering a D3-projected canvas pixel map. The core views (manifest, latest,
+   summary, rollups) are **baked into each deploy** by `scripts/bake-data.mjs`
+   and preloaded from the prerendered homepage `<head>`; per-station
+   history/forecast JSON and the raw meteogram images are fetched on demand from
+   a read-only Cloudflare Worker in front of the bucket (`worker/`).
+3. **Deploy** (Netlify): builds on push to `main`; the daily scrape workflow
+   also hits a Netlify build hook so the baked data is exactly as fresh as the
+   pipeline.
 
 Everything the frontend needs is precomputed by the daily Action; the site is
-static (`adapter-static`, SPA fallback for `/station/[code]` deep-links).
+static (`adapter-static`, prerendered `/`, SPA fallback for `/station/[code]`
+deep-links).
 
 ## Develop
 
 ```sh
 pnpm install
-pnpm dev        # serves the committed /sample fixtures when VITE_R2_PUBLIC_URL is unset
+pnpm dev        # bakes fresh core views from the Worker (VITE_R2_PUBLIC_URL in .env);
+                # falls back to the committed /sample fixtures when unset
+pnpm bake       # force-refresh static/baked/ from the Worker
 pnpm check      # svelte-check
 pnpm build      # static build -> build/
 ```
@@ -38,13 +48,17 @@ cd scraper && LOCAL_MODE=1 python main.py --out /tmp/run.json && \
 
 ## Deploy
 
-- **Frontend:** Cloudflare Pages, build command `pnpm build`, output `build/`,
-  env `VITE_R2_PUBLIC_URL` = the bucket's public URL.
-- **R2:** attach a custom domain (r2.dev is rate-limited and ignores
-  Cache-Control); allow CORS GET/HEAD from the Pages domain + `localhost:5173`.
+- **Data endpoint:** `worker/` is a read-only Worker over the R2 bucket
+  (GET/HEAD, path allowlist, CORS for the site origin + localhost). Deploy with
+  `cd worker && wrangler deploy`; its URL is `VITE_R2_PUBLIC_URL`.
+- **Frontend:** Netlify, configured by `netlify.toml` (build `pnpm build`,
+  publish `build/`). Create a build hook (Site settings → Build & deploy) and
+  save its URL as the `NETLIFY_BUILD_HOOK` repo secret so the daily scrape can
+  trigger a data rebuild.
 - **Pipeline:** set the four `R2_*` secrets on the repo; the Action runs daily.
   First deploy: trigger `workflow_dispatch`, then run `aggregate.py --rebuild`
-  once with R2 creds to backfill histories from existing dated files.
+  (or the parallel `tools/backfill.py`) once with R2 creds to backfill histories
+  from existing dated files.
 
 ## Data note
 

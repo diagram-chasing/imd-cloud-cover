@@ -3,12 +3,10 @@ import type { Topology } from 'topojson-specification';
 import type { FeatureCollection } from 'geojson';
 import type { StationsManifest, AllStations, Summary, Rollup } from '$lib/types';
 import { fetchStations, fetchLatest, fetchSummary, fetchRollup } from './r2';
-import { topoToIndia, topoToFeatures } from '$lib/map/projection';
+import { topoToIndia } from '$lib/map/projection';
 
 export interface CoreData {
 	india: FeatureCollection;
-	/** Built-up (urban) polygons, clipped to India — rendered into the ground. */
-	urban: FeatureCollection;
 	/** A limited set of major cities, as labelled points. */
 	places: FeatureCollection;
 	manifest: StationsManifest;
@@ -19,20 +17,17 @@ export interface CoreData {
 }
 
 export async function loadCore(): Promise<CoreData> {
-	const [topo, urbanTopo, places, manifest, latest, summary, rollup7, rollup30] =
-		await Promise.all([
-			fetch('/data/india.json').then((r) => r.json() as Promise<Topology>),
-			fetch('/data/india-urban.json').then((r) => r.json() as Promise<Topology>),
-			fetch('/data/india-places.json').then((r) => r.json() as Promise<FeatureCollection>),
-			fetchStations(),
-			fetchLatest(),
-			fetchSummary(),
-			fetchRollup('7d'),
-			fetchRollup('30d')
-		]);
+	const [topo, places, manifest, latest, summary, rollup7, rollup30] = await Promise.all([
+		fetch('/data/india.json').then((r) => r.json() as Promise<Topology>),
+		fetch('/data/india-places.json').then((r) => r.json() as Promise<FeatureCollection>),
+		fetchStations(),
+		fetchLatest(),
+		fetchSummary(),
+		fetchRollup('7d'),
+		fetchRollup('30d')
+	]);
 	return {
 		india: topoToIndia(topo),
-		urban: topoToFeatures(urbanTopo),
 		places,
 		manifest,
 		latest,
