@@ -6,10 +6,12 @@
 		onselect?: (code: string) => void;
 		/** One column (SUN above CLOUD) — for the narrow in-map inset. */
 		stacked?: boolean;
+		/** Dense typography + terse "17d" days — for the small in-world sea plaque. */
+		compact?: boolean;
 		/** Show only the top N entries per column. */
 		limit?: number;
 	}
-	let { summary, onselect, stacked = false, limit }: Props = $props();
+	let { summary, onselect, stacked = false, compact = false, limit }: Props = $props();
 
 	function top(entries: StreakEntry[]): StreakEntry[] {
 		return limit ? entries.slice(0, limit) : entries;
@@ -33,7 +35,9 @@
 						<button onclick={() => onselect?.(e.code)}>
 							<span class="rank">{i + 1}</span>
 							<span class="name">{e.name}</span>
-							<span class="days">{e.days} {e.days === 1 ? 'DAY' : 'DAYS'}</span>
+							<span class="days">
+								{#if compact}{e.days}d{:else}{e.days} {e.days === 1 ? 'DAY' : 'DAYS'}{/if}
+							</span>
 							<span class="strip {kind}" aria-hidden="true">
 								{#each Array(blocks(e.days)) as _, b (b)}
 									<span class="blk"></span>
@@ -47,7 +51,7 @@
 	</div>
 {/snippet}
 
-<section class="streaks" class:stacked>
+<section class="streaks" class:stacked class:compact>
 	{@render column('SUN STREAKS', top(summary.streaks.sun), 'sun')}
 	{@render column('CLOUD STREAKS', top(summary.streaks.cloud), 'cloud')}
 </section>
@@ -130,6 +134,44 @@
 		font-size: 13px;
 		opacity: 0.6;
 	}
+
+	/* Dense in-world plaque: two tight columns, small type, terse day counts, mini
+	   strips. Kept two-column even on phones (higher specificity than the query
+	   below) so the sea board stays short. */
+	.streaks.compact {
+		grid-template-columns: 1fr 1fr;
+		gap: 14px;
+	}
+	.streaks.compact h3 {
+		font-size: 10px;
+		letter-spacing: 0.04em;
+		margin: 0 0 5px;
+	}
+	.streaks.compact ol {
+		gap: 3px;
+	}
+	.streaks.compact li button {
+		padding: 1px 2px;
+		gap: 1px 5px;
+	}
+	.streaks.compact .rank {
+		font-size: 11px;
+	}
+	.streaks.compact .name {
+		font-size: 9px;
+		letter-spacing: 0.02em;
+	}
+	.streaks.compact .days {
+		font-size: 9px;
+	}
+	.streaks.compact .strip {
+		margin-top: 1px;
+	}
+	.streaks.compact .blk {
+		width: 3px;
+		height: 6px;
+	}
+
 	@media (max-width: 640px) {
 		.streaks {
 			grid-template-columns: 1fr;

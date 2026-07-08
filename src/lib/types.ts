@@ -13,6 +13,20 @@ export interface StationsManifest {
 	stations: Record<string, Station>;
 }
 
+/** GeoJSON `properties` of a baked place (static/data/india-places.json).
+ *  Feeds both the map label layer and the unified search. */
+export interface PlaceProps {
+	name: string;
+	pop: number;
+	state: string | null;
+	/** Population bucket: 0 megacity … 3 town. */
+	tier: number;
+	/** Nearest IMD station code + rounded distance (km); precomputed at build. */
+	nearest: string | null;
+	nkm: number;
+	aliases: string[];
+}
+
 export interface DatesIndex {
 	dates: string[];
 	latest: string;
@@ -83,8 +97,23 @@ export interface History {
 export interface Rollup {
 	window: number;
 	dates: string[];
-	stations: Record<string, { h: (number | null)[]; m: (number | null)[]; l: (number | null)[]; p: (number | null)[]; e: (number | null)[] }>;
-	national: { h: (number | null)[]; m: (number | null)[]; l: (number | null)[]; p: (number | null)[]; e: (number | null)[] };
+	stations: Record<
+		string,
+		{
+			h: (number | null)[];
+			m: (number | null)[];
+			l: (number | null)[];
+			p: (number | null)[];
+			e: (number | null)[];
+		}
+	>;
+	national: {
+		h: (number | null)[];
+		m: (number | null)[];
+		l: (number | null)[];
+		p: (number | null)[];
+		e: (number | null)[];
+	};
 }
 
 /** Raw per-station forecast: {date}/{CODE}-meteogram.json */

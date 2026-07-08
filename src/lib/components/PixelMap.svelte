@@ -9,7 +9,16 @@
 </script>
 
 <script lang="ts">
-	import { Application, Container, Sprite, Texture, Graphics, Text, type Ticker } from 'pixi.js';
+	import {
+		Application,
+		Container,
+		Sprite,
+		Texture,
+		Graphics,
+		Text,
+		Rectangle,
+		type Ticker
+	} from 'pixi.js';
 	import type { FeatureCollection } from 'geojson';
 	import type { StationsManifest } from '$lib/types';
 	import {
@@ -43,7 +52,15 @@
 		date?: string;
 		onhover?: (info: HoverInfo | null) => void;
 		onselect?: (code: string, at?: { x: number; y: number }) => void;
-		onlayout?: (info: { gutter: number; zoomRatio: number }) => void;
+		onlayout?: (info: {
+			gutter: number;
+			zoomRatio: number;
+			view: { x: number; y: number; w: number; h: number };
+			world: { w: number; h: number };
+			/** Live canvas-px position of the streak board's world anchor (open sea
+			    south of the landmass), so the HTML board can be pinned into the world. */
+			streak: { x: number; y: number };
+		}) => void;
 	}
 	let {
 		india,
@@ -70,7 +87,13 @@
 	];
 	const LOD_DOWN_FACTOR = 0.9;
 	const GHOST_ALPHA = 0.1;
-	const LABEL_ZOOM = 4.5;
+	// Per-tier label thresholds as multiples of the START zoom (the opening view):
+	// megacities appear first, then major cities, then a sparse SAMPLE of smaller
+	// cities. Index = place.tier (0 megacity, 1 major city ≥1M, 2 city ≥200k, 3
+	// town). Towns are Infinity — never labelled. Tier 2 comes in just after the
+	// majors so regions with no big city (NE, west coast) still get labels; the
+	// wide per-tier spacing (TIER_GAP2) is what keeps it a sample, not a swarm.
+	const TIER_ZOOM = [1.6, 3.2, 3.6, Infinity];
 	const BAND_OFFSET: Record<BandKey, number> = {
 		high: -TOWER_GAP,
 		middle: 0,
@@ -86,6 +109,9 @@
 	const TRAIL_LEN = 44;
 	const PLANE_SPEED_MIN = 1024 / 90000;
 	const PLANE_SPEED_MAX = 1024 / 60000;
+	// Easter egg: a lone hot air balloon wandering across the landmass on the wind,
+	// far slower than the jets overhead — its heading is steered by smooth noise.
+	const BALLOON_SPEED = 1024 / 520000;
 	const HUBS: Record<string, [number, number]> = {
 		DXB: [55.36, 25.25],
 		DOH: [51.61, 25.27],
@@ -144,9 +170,8 @@
 	let vw = $state(1);
 	let vh = $state(1);
 
-	const STORY_KICKER = "WITH IMD'S METEOGRAMS";
-	const STORY_TITLE = 'READING THE CLOUDS';
-	const STORY_SUB = "A daily map of India's clouds";
+	const STORY_TITLE = "MAPPING INDIA'S CLOUDS";
+	const STORY_SUB = 'How cloudy is India today?';
 	const MONTHS = [
 		'JAN',
 		'FEB',
@@ -178,8 +203,11 @@
 	let skyGfx: Graphics | null = null;
 
 	let titleGroup: Container | null = null;
+	let titleBrandGroup: Container | null = null;
+	let titleBrand: Text | null = null;
+	let titleBalloon: Sprite | null = null;
+	let titleBalloonBaseY = 0;
 	let titleBox: Graphics | null = null;
-	let titleKicker: Text | null = null;
 	let titleText: Text | null = null;
 	let titleSub: Text | null = null;
 	let titleMeta: Text | null = null;
@@ -216,6 +244,14 @@
 		heading: number;
 	}
 	let planes: Plane[] = [];
+	let balloonLayer: Container | null = null;
+	let balloonTex: Texture | null = null;
+	let balloonBounds: { minX: number; maxX: number; minY: number; maxY: number } | null = null;
+	let balloon: { c: Container; x: number; y: number; phase: number } | null = null;
+	// Two independent smooth-noise channels steer the balloon's heading, so it
+	// wanders and criss-crosses the map like it's being carried on the wind.
+	let balloonNoiseX: ((t: number) => number) | null = null;
+	let balloonNoiseY: ((t: number) => number) | null = null;
 	let planeRand: (() => number) | null = null;
 	let hubXY: Record<string, [number, number]> = {};
 	let planeTex: Texture | null = null;
@@ -237,6 +273,71 @@
 	let panX = 0;
 	let panY = 0;
 	let userMoved = false;
+
+	// "Pan aside" mode: on phones the streaks overlay glides the camera south into
+	// open ocean so the leaderboard reads as a place out at sea rather than a sheet
+	// dropped on top. While active the map ignores pointer/wheel input.
+	let asideActive = false;
+	let interactionLocked = false;
+	let asideClearPx = 0; // screen px to keep clear below the land for the streak board
+	let landBottomWorldY = 0; // world Y of India's southern tip (computed once)
+	let camAnim: {
+		fromX: number;
+		fromY: number;
+		fromZ: number;
+		toX: number;
+		toY: number;
+		toZ: number;
+		t: number;
+		dur: number;
+	} | null = null;
+	// The streak board lives at a fixed spot in the open sea south of India, given
+	// as fractions of the fit view. fy > 0.5 puts it below the landmass, so at fit
+	// it sits off the bottom and the aside pan slides it up into view.
+	const STREAK_ANCHOR = { fx: 0.07, fy: 0.9 };
+
+	function easeInOut(x: number): number {
+		return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+	}
+	function streakAnchorWorld() {
+		const sv = startView();
+		return { x: sv.x + STREAK_ANCHOR.fx * sv.w, y: sv.y + STREAK_ANCHOR.fy * sv.h };
+	}
+	// Southernmost land row, so the aside pan can seat India's tip just above the
+	// board. A small per-row threshold skips 1–2px specks (stray far-south islands).
+	function computeLandBottom(): number {
+		const g = geo!;
+		for (let y = g.rows - 1; y >= 0; y--) {
+			let n = 0;
+			for (let x = 0; x < g.cols; x++) if (g.land[y * g.cols + x]) n++;
+			if (n >= 4) return (y + 1) * g.groundScale;
+		}
+		return g.worldH;
+	}
+
+	// World-space bounds of the landmass, so the drifting balloon can be kept over
+	// India rather than wandering out to sea.
+	function computeLandBBox() {
+		const g = geo!;
+		let minX = g.cols,
+			maxX = 0,
+			minY = g.rows,
+			maxY = 0,
+			found = false;
+		for (let y = 0; y < g.rows; y++) {
+			for (let x = 0; x < g.cols; x++) {
+				if (!g.land[y * g.cols + x]) continue;
+				found = true;
+				if (x < minX) minX = x;
+				if (x > maxX) maxX = x;
+				if (y < minY) minY = y;
+				if (y > maxY) maxY = y;
+			}
+		}
+		if (!found) return { minX: 0, maxX: g.worldW, minY: 0, maxY: g.worldH };
+		const gc = g.groundScale;
+		return { minX: minX * gc, maxX: (maxX + 1) * gc, minY: minY * gc, maxY: (maxY + 1) * gc };
+	}
 
 	function worldBBox() {
 		const g = geo!;
@@ -279,7 +380,7 @@
 		camera.position.set(-panX * zoom, -panY * zoom);
 		if (lods.length) applyLod(lodForZoom());
 		updatePlacesScale();
-		updateLabelVis();
+		declutterPlaces();
 		updateTitleFade();
 		emitLayout();
 	}
@@ -287,10 +388,56 @@
 	function emitLayout() {
 		if (!geo) return;
 		const b = worldBBox();
+		const g = geo;
+		const a = streakAnchorWorld();
 		onlayout?.({
 			gutter: (vw - (b.maxX - b.minX) * containZoom()) / 2,
-			zoomRatio: zoom / containZoom()
+			zoomRatio: zoom / containZoom(),
+			view: { x: panX, y: panY, w: vw / zoom, h: vh / zoom },
+			world: { w: g.worldW, h: g.worldH },
+			streak: { x: (a.x - panX) * zoom, y: (a.y - panY) * zoom }
 		});
+	}
+
+	// Camera target for the two aside states. When aside, seat India's southern tip
+	// exactly `asideClearPx` above the frame bottom — just enough room for the board
+	// plus its padding — so there's no overlap and no wasted ocean.
+	function asideTarget(on: boolean) {
+		const v = startView();
+		const z = containZoom() * startZoomFactor();
+		if (!on) return { x: v.x, y: v.y, z };
+		const tipScreenY = Math.max(0, vh - asideClearPx);
+		return { x: v.x, y: landBottomWorldY - tipScreenY / z, z };
+	}
+	export function panAside(on: boolean, clearPx = 0) {
+		if (!geo) return;
+		const wasActive = asideActive;
+		if (on) asideClearPx = clearPx;
+		asideActive = on;
+		interactionLocked = on;
+		if (!on) userMoved = false;
+		const t = asideTarget(on);
+		// Snap (no re-animate) under reduced-motion, or when just re-seating an
+		// already-open board after its measured height changed.
+		if (reduced || (wasActive && on)) {
+			camAnim = null;
+			panX = t.x;
+			panY = t.y;
+			zoom = t.z;
+			applyCamera();
+			return;
+		}
+		if (on === wasActive) return;
+		camAnim = {
+			fromX: panX,
+			fromY: panY,
+			fromZ: zoom,
+			toX: t.x,
+			toY: t.y,
+			toZ: t.z,
+			t: 0,
+			dur: 620
+		};
 	}
 
 	function updatePlacesScale() {
@@ -299,9 +446,67 @@
 		for (const m of placeMarkers) m.scale.set(s);
 	}
 
-	function updateLabelVis() {
-		if (!placesLayer) return;
-		placesLayer.visible = zoom >= containZoom() * LABEL_ZOOM;
+	// Decide which city labels are drawn: gate each by its tier's zoom threshold,
+	// then greedily thin overlaps in screen space (places are pop-sorted, so the
+	// most prominent city in any cluster wins). Cheap because we only collision-
+	// test the handful that pass the LOD gate and fall inside the viewport.
+	function declutterPlaces() {
+		if (!placesLayer || !geo) return;
+		// Gate against the START zoom, not raw fit: phones open at 1.7× fit, so
+		// measuring from fit would show labels by default. From the opening view
+		// zr === 1 on every device, and labels only appear as you zoom further in.
+		const zr = zoom / (containZoom() * startZoomFactor());
+		// Nothing qualifies until we're past the first (megacity) threshold.
+		placesLayer.visible = zr >= TIER_ZOOM[0];
+		if (!placesLayer.visible) return;
+
+		const placed: { l: number; r: number; t: number; b: number; ax: number; ay: number }[] = [];
+		const M = 40; // viewport margin so labels near the edge still declutter
+		// Minimum spacing between label anchors (screen px), by the CANDIDATE's tier.
+		// Because places are walked biggest-first, a city is suppressed if it falls
+		// within its own radius of anything already placed. Big cities pack tighter;
+		// the ≥200k tier demands a wide berth, so only a sparse sample of them shows
+		// — filling the gaps between the majors rather than crowding every one in.
+		const TIER_GAP2 = [92 * 92, 92 * 92, 160 * 160, Infinity];
+		for (let i = 0; i < placeMarkers.length; i++) {
+			const p = geo.places[i];
+			const m = placeMarkers[i];
+			if (zr < TIER_ZOOM[p.tier]) {
+				m.visible = false;
+				continue;
+			}
+			const sx = (p.px - panX) * zoom;
+			const sy = (p.py - panY) * zoom;
+			if (sx < -M || sx > vw + M || sy < -M || sy > vh + M) {
+				m.visible = false;
+				continue;
+			}
+			// Marker renders at native px on screen (its 1/zoom scale cancels the
+			// camera zoom), so the label's own width/height are the screen rect.
+			const label = placeLabels[i];
+			const l = sx - 3;
+			const r = sx + 5 + label.width + 3; // GAP(5) + text + pad
+			const t = sy - label.height / 2 - 2;
+			const b = sy + label.height / 2 + 2;
+			const gap2 = TIER_GAP2[p.tier];
+			let hit = false;
+			for (const q of placed) {
+				// Reject on either a rectangle overlap OR anchors closer than this
+				// tier's gap, so nearby-but-not-touching labels yield to bigger cities.
+				const dx = sx - q.ax;
+				const dy = sy - q.ay;
+				if (dx * dx + dy * dy < gap2 || (l < q.r && r > q.l && t < q.b && b > q.t)) {
+					hit = true;
+					break;
+				}
+			}
+			if (hit) {
+				m.visible = false;
+				continue;
+			}
+			m.visible = true;
+			placed.push({ l, r, t, b, ax: sx, ay: sy });
+		}
 	}
 
 	function mkTex(canvas: HTMLCanvasElement | OffscreenCanvas): Texture {
@@ -459,6 +664,7 @@
 		]);
 		groundTex = { day: dayTex, night: nightTex };
 		geo = buildGeo(india, manifest, WORLD_W, CELL, places, mask);
+		landBottomWorldY = computeLandBottom();
 		buildLods();
 
 		app = new Application();
@@ -499,13 +705,28 @@
 			align: 'left' as const
 		};
 		titleGroup = new Container();
-		titleGroup.eventMode = 'none';
+		// 'passive' (not 'none') so the brand group below can still receive its click.
+		titleGroup.eventMode = 'passive';
 		titleBox = new Graphics();
-		titleKicker = new Text({ text: STORY_KICKER, style: { ...titleFont, fontWeight: '400' } });
 		titleText = new Text({ text: STORY_TITLE, style: { ...titleFont, fontWeight: '700' } });
 		titleSub = new Text({ text: STORY_SUB, style: { ...titleFont, fontWeight: '400' } });
 		titleMeta = new Text({ text: '', style: { ...titleFont, fontWeight: '700' } });
-		titleGroup.addChild(titleBox, titleKicker, titleText, titleSub, titleMeta);
+		// Brand kicker above the box: "DIAGRAM CHASING" with the balloon bobbing beside
+		// it. The balloon sprite is added later, once its texture is built.
+		titleBrand = new Text({
+			text: 'DIAGRAM CHASING',
+			style: { ...titleFont, fontWeight: '700' }
+		});
+		titleBrand.anchor.set(0, 0.5);
+		// The brand row (text + balloon) is a clickable link to the studio site.
+		titleBrandGroup = new Container();
+		titleBrandGroup.eventMode = 'static';
+		titleBrandGroup.cursor = 'pointer';
+		titleBrandGroup.on('pointertap', () =>
+			window.open('https://diagramchasing.fun', '_blank', 'noopener')
+		);
+		titleBrandGroup.addChild(titleBrand);
+		titleGroup.addChild(titleBox, titleText, titleSub, titleMeta, titleBrandGroup);
 		camera.addChild(titleGroup);
 
 		buildPlaces();
@@ -563,6 +784,7 @@
 		retargetAlphas();
 
 		buildPlanes();
+		buildBalloon();
 		styleAmbient();
 
 		// Place labels ride above the cloud towers so cities stay readable when
@@ -594,80 +816,110 @@
 	}
 
 	function drawTitle() {
-		if (!titleGroup || !titleBox || !titleKicker || !titleText || !titleSub || !titleMeta || !geo)
-			return;
+		if (!titleGroup || !titleBox || !titleText || !titleSub || !titleMeta || !geo) return;
 		const b = worldBBox();
 		const gutter = (vw / containZoom() - (b.maxX - b.minX)) / 2;
 		const narrow = gutter < 90;
 
 		const unit = 30;
-		const pad = unit * 0.75; // inner box padding
-		const gap = unit * 0.7; // vertical gap between rows
+		const pad = unit * 0.72; // inner box padding
+		const gap = unit * 0.5; // vertical gap between stacked rows
 
-		titleKicker.style.fontSize = unit * 0.64;
-		titleKicker.style.letterSpacing = 0;
 		titleText.style.fontSize = unit;
 		titleText.style.fontWeight = '700';
 		titleText.style.letterSpacing = unit * 0.02;
-		titleSub.style.fontSize = unit * 0.64;
-		const metaFS = narrow ? unit * 0.55 : unit * 0.4;
+		titleSub.style.fontSize = unit * 0.7;
+		const metaFS = narrow ? unit * 0.46 : unit * 0.6;
 		titleMeta.style.fontSize = metaFS;
-		titleMeta.style.letterSpacing = unit * 0.04;
-		for (const t of [titleKicker, titleText, titleSub, titleMeta]) t.style.fill = 0xffffff;
+		titleMeta.style.letterSpacing = unit * 0.03;
+		for (const t of [titleText, titleSub, titleMeta]) t.style.fill = 0xffffff;
+		if (titleBrand) {
+			titleBrand.style.fontSize = unit * 0.5;
+			titleBrand.style.letterSpacing = unit * 0.08;
+			titleBrand.style.fill = 0xffffff;
+		}
 
-		const boxInnerW = Math.max(titleKicker.width, titleText.width);
-		const boxW = boxInnerW + pad * 2;
-		const boxH = titleText.height + gap * 0.4 + titleKicker.height + pad * 2;
+		// One box wraps title + subtitle; the date/time meta sits just below, outside it.
+		const innerW = Math.max(titleText.width, titleSub.width);
+		const boxW = innerW + pad * 2;
 
-		const contentW = Math.max(boxW, titleSub.width);
-		titleCx = contentW / 2;
+		// Brand kicker row above the box: "DIAGRAM CHASING" with the balloon bobbing
+		// beside it, the whole row centred over the lockup.
+		const rowGap = unit * 0.45;
+		let brandW = 0;
+		let brandH = 0;
+		let balloonW = 0;
+		let balloonH = 0;
+		if (titleBrand) {
+			brandW = titleBrand.width;
+			brandH = titleBrand.height;
+			if (titleBalloon) {
+				const tex = titleBalloon.texture;
+				balloonH = brandH * 1.3;
+				balloonW = balloonH * (tex.width / tex.height);
+			}
+		}
+		const brandRowH = Math.max(brandH, balloonH);
+		const brandGap = titleBrand ? gap * 1.2 : 0;
+		const rowW = brandW + (titleBalloon ? rowGap + balloonW : 0);
 
-		const boxX = narrow ? contentW - boxW : (contentW - boxW) / 2;
-		const bcx = boxX + boxW / 2;
-		titleText.position.set(bcx - titleText.width / 2, pad);
-		titleKicker.position.set(bcx - titleKicker.width / 2, pad + titleText.height + gap * 0.4);
+		let by = brandRowH + brandGap;
+		const boxTop = by;
+		by += pad;
+		const titleY = by;
+		by += titleText.height + gap;
+		const subY = by;
+		by += titleSub.height;
+		const boxBottom = by + pad;
+		const boxH = boxBottom - boxTop;
 
-		let y = boxH + gap * 0.9;
-		titleSub.position.set(
-			narrow ? contentW - titleSub.width - titleSub.width * 0.22 : (contentW - titleSub.width) / 2,
-			y
-		);
-		y += titleSub.height + gap * 0.75;
+		const groupW = Math.max(boxW, titleMeta.width, rowW);
+		const gcx = groupW / 2;
+		const boxX = gcx - boxW / 2;
+
+		if (titleBrand) {
+			const brandCY = brandRowH / 2;
+			const rowX0 = gcx - rowW / 2;
+			titleBrand.position.set(rowX0, brandCY);
+			if (titleBalloon) {
+				titleBalloon.scale.set(balloonH / titleBalloon.texture.height);
+				titleBalloon.position.set(rowX0 + brandW + rowGap + balloonW / 2, brandCY);
+				titleBalloonBaseY = brandCY;
+			}
+			// Click target spans the whole brand row.
+			if (titleBrandGroup) titleBrandGroup.hitArea = new Rectangle(rowX0, 0, rowW, brandRowH);
+		}
+
+		// Centre title + subtitle in the box; meta is placed below by updateTitleMeta().
+		titleText.position.set(gcx - titleText.width / 2, titleY);
+		titleSub.position.set(gcx - titleSub.width / 2, subY);
+		titleCx = gcx;
+		titleMetaAlignRight = false;
+		titleMetaY = boxBottom + gap * 1.5;
+		const groupH = titleMetaY + titleMeta.height;
 
 		titleBox.clear();
 		titleBox
-			.rect(boxX, 0, boxW, boxH)
+			.rect(boxX, boxTop, boxW, boxH)
 			.stroke({ width: Math.max(1, unit * 0.045), color: 0xffffff, alignment: 0 });
 
-		const metaLineH = metaFS * 1.4;
 		titleShown = true;
+
+		// Branch only for overall scale + placement: desktop parks it in the left sea
+		// gutter, phones tuck the compact lockup into the top-right sky.
 		if (!narrow) {
-			const sepW = contentW * 0.42;
-			const sepY = y;
-			y += gap * 0.9;
-			titleBox
-				.moveTo(titleCx - sepW / 2, sepY)
-				.lineTo(titleCx + sepW / 2, sepY)
-				.stroke({ width: Math.max(1, unit * 0.03), color: 0xffffff, alignment: 0.5 });
-			titleMetaAlignRight = false;
-			titleMetaY = y;
-			const groupH = y + metaLineH;
-			const s = Math.min((gutter * 0.8) / contentW, (geo.worldH * 0.5) / groupH);
+			const s = Math.min((gutter * 0.8) / groupW, (geo.worldH * 0.55) / groupH);
 			titleGroup.scale.set(s);
 			titleGroup.position.set(
-				b.minX - (gutter + contentW * s) / 2,
+				b.minX - (gutter + groupW * s) / 2,
 				geo.worldH / 2 - (groupH * s) / 2
 			);
 		} else {
 			const v = startView();
-			const groupH = y;
-			const s = Math.min((v.w * 0.49) / contentW, (v.h * 0.16) / groupH);
+			const s = Math.min((v.w * 0.5) / groupW, (v.h * 0.22) / groupH);
 			const mx = v.w * 0.04;
 			titleGroup.scale.set(s);
-			titleGroup.position.set(v.x + v.w - contentW * s - mx, v.y + mx);
-
-			titleMetaRight = contentW;
-			titleMetaY = (v.y + v.h - mx * 1.5) / s - metaLineH;
+			titleGroup.position.set(v.x + v.w - groupW * s - mx, v.y + mx);
 		}
 		updateTitleMeta();
 		updateTitleFade();
@@ -696,10 +948,9 @@
 		titleGroup.visible = fade > 0.01;
 	}
 
-	function placeSize(pop: number): number {
-		if (pop >= 8_000_000) return 20;
-		if (pop >= 3_000_000) return 16;
-		return 14;
+	// Font size by population tier (0 megacity … 3 town), matching TIER_ZOOM.
+	function placeSize(tier: number): number {
+		return [19, 16, 13, 11][tier] ?? 11;
 	}
 
 	function buildPlaces() {
@@ -728,7 +979,7 @@
 				style: {
 					fontFamily: "'Ships Whistle', monospace",
 					fontWeight: '400',
-					fontSize: placeSize(p.pop),
+					fontSize: placeSize(p.tier),
 					fill: 0xffffff,
 					letterSpacing: 0.5
 				},
@@ -804,6 +1055,101 @@
 			for (const x of xs) ctx.fillRect(x * px, y * px, px, px);
 		});
 		return mkTex(c);
+	}
+
+	// A pixel hot air balloon in the style of the reference: a rounded onion-shaped
+	// envelope with vertical gore seams, a short suspension gap, then a small basket
+	// hanging below. White with a few grey tones for the seams / shaded side.
+	const BALLOON_W = 15;
+	// Envelope half-width per row (from centre col 7): swells near the top then
+	// tapers to a point, giving the teardrop/onion outline.
+	const BALLOON_HALF = [2, 3, 4, 5, 6, 7, 7, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 1];
+	const BALLOON_SEAMS = [4, 7, 10]; // gore seam columns
+	function buildBalloonTex(): Texture {
+		const cx = 7;
+		const envH = BALLOON_HALF.length;
+		const c = makeCanvas(BALLOON_W, envH + 6);
+		const ctx = c.getContext('2d')!;
+		ctx.imageSmoothingEnabled = false;
+		const W1 = '#ffffff'; // envelope body
+		const W2 = '#c4ccd4'; // seams + rim
+		const W3 = '#e2e7ec'; // dither on the shaded (right) side
+		BALLOON_HALF.forEach((h, y) => {
+			const a = cx - h;
+			const b = cx + h;
+			for (let x = a; x <= b; x++) {
+				let col = W1;
+				if (x === a || x === b) col = W2; // soft rounded rim
+				else if (BALLOON_SEAMS.includes(x)) col = W2; // gore seam
+				else if (x > cx && ((x + y) & 1) === 0) col = W3; // shaded-side dither
+				ctx.fillStyle = col;
+				ctx.fillRect(x, y, 1, 1);
+			}
+		});
+		// Suspension ropes drop from the envelope base, leaving a gap of open sky.
+		ctx.fillStyle = W2;
+		for (const y of [envH, envH + 1]) {
+			ctx.fillRect(cx - 1, y, 1, 1);
+			ctx.fillRect(cx + 1, y, 1, 1);
+		}
+		// Basket: a small block, its top rim brighter.
+		for (let y = envH + 2; y <= envH + 4; y++) {
+			for (let x = cx - 1; x <= cx + 1; x++) {
+				ctx.fillStyle = y === envH + 2 ? W1 : W2;
+				ctx.fillRect(x, y, 1, 1);
+			}
+		}
+		return mkTex(c);
+	}
+
+	// Smooth 1-D value noise in [0,1): random values at integers, smoothstepped
+	// between — cheap wind-like wander without any per-frame randomness.
+	function makeNoise(seed: number): (t: number) => number {
+		const rand = mulberry32(seed);
+		const grad = Array.from({ length: 256 }, () => rand());
+		return (t: number) => {
+			const i = Math.floor(t);
+			const f = t - i;
+			const u = f * f * (3 - 2 * f);
+			const a = grad[i & 255];
+			const b = grad[(i + 1) & 255];
+			return a + (b - a) * u;
+		};
+	}
+
+	function buildBalloon() {
+		if (!geo || !camera) return;
+		balloonTex = buildBalloonTex();
+		balloonLayer = new Container();
+		balloonLayer.eventMode = 'none';
+		camera.addChild(balloonLayer);
+		balloonBounds = computeLandBBox();
+		balloonNoiseX = makeNoise(fnv1a('balloon-x'));
+		balloonNoiseY = makeNoise(fnv1a('balloon-y'));
+		const b = balloonBounds;
+		const sp = new Sprite(balloonTex);
+		sp.anchor.set(0.5, 1); // pivot at the basket so the balloon hangs from a point
+		sp.scale.set(0.7);
+		const c = new Container();
+		c.eventMode = 'none';
+		c.addChild(sp);
+		balloonLayer.addChild(c);
+		balloon = {
+			c,
+			x: b.minX + (b.maxX - b.minX) * 0.4,
+			y: b.minY + (b.maxY - b.minY) * 0.4,
+			phase: 0
+		};
+		c.x = balloon.x;
+		c.y = balloon.y;
+
+		// A second, static balloon rides in the title lockup beside the brand line.
+		if (titleBrandGroup && balloonTex) {
+			titleBalloon = new Sprite(balloonTex);
+			titleBalloon.anchor.set(0.5, 0.5);
+			titleBalloon.tint = 0xffffff;
+			titleBrandGroup.addChild(titleBalloon);
+		}
 	}
 
 	function buildTrailTex(len: number): Texture {
@@ -1014,6 +1360,7 @@
 			trail.tint = trailTint;
 			body.tint = trailTint;
 		}
+		if (balloon) (balloon.c.children[0] as Sprite).tint = night ? 0x9fb0cc : 0xffffff;
 		if (shadowLayer) shadowLayer.alpha = SHADOW_ALPHA[mode];
 		const wavePal = WAVE[mode];
 		for (const w of waves) {
@@ -1137,10 +1484,9 @@
 		if (!b) return;
 		const box = towerBox(b);
 		if (!box) return;
-		const night = skyMode(sky.timeIndex) === 'night';
 		hoverGfx
 			.rect(box.x, box.y, box.w, box.h)
-			.stroke({ width: 2, color: night ? UI.focus : 0xffffff, alignment: 0.5 });
+			.stroke({ width: 2, color: 0xffffff, alignment: 0.5 });
 	}
 
 	function drawSelected() {
@@ -1161,6 +1507,15 @@
 	let lastDrift = 0;
 	let reduced = false;
 	function tick(t: Ticker) {
+		if (camAnim) {
+			camAnim.t += t.deltaMS;
+			const e = easeInOut(Math.min(1, camAnim.t / camAnim.dur));
+			panX = camAnim.fromX + (camAnim.toX - camAnim.fromX) * e;
+			panY = camAnim.fromY + (camAnim.toY - camAnim.fromY) * e;
+			zoom = camAnim.fromZ + (camAnim.toZ - camAnim.fromZ) * e;
+			applyCamera();
+			if (camAnim.t >= camAnim.dur) camAnim = null;
+		}
 		if (layers) {
 			for (const band of BAND_KEYS) {
 				const layer = layers[band];
@@ -1168,6 +1523,9 @@
 				if (reduced || Math.abs(layer.alpha - target) < 0.004) layer.alpha = target;
 				else layer.alpha += (target - layer.alpha) * Math.min(1, t.deltaMS / 90);
 			}
+		}
+		if (titleBalloon && !reduced) {
+			titleBalloon.y = titleBalloonBaseY + Math.sin(performance.now() / 650) * 2;
 		}
 		if (reduced || sky.view !== 'today') return;
 		const now = performance.now();
@@ -1184,6 +1542,26 @@
 			p.c.alpha = planeAlpha(p);
 			if ((p.sDir > 0 && p.s >= p.sTarget) || (p.sDir < 0 && p.s <= p.sTarget)) resetPlane(p);
 		}
+		if (balloon && balloonBounds && balloonNoiseX && balloonNoiseY) {
+			const b = balloonBounds;
+			balloon.phase += t.deltaMS;
+			// Heading comes from two slow noise channels → a smooth wandering path
+			// that criss-crosses instead of tracking straight.
+			const F = 0.00006;
+			let vx = balloonNoiseX(balloon.phase * F) * 2 - 1;
+			let vy = balloonNoiseY(balloon.phase * F * 1.3) * 2 - 1;
+			// Steer back inside as it nears the coastline so it stays over India.
+			const margin = 60;
+			if (balloon.x < b.minX + margin) vx += (b.minX + margin - balloon.x) / margin;
+			if (balloon.x > b.maxX - margin) vx -= (balloon.x - (b.maxX - margin)) / margin;
+			if (balloon.y < b.minY + margin) vy += (b.minY + margin - balloon.y) / margin;
+			if (balloon.y > b.maxY - margin) vy -= (balloon.y - (b.maxY - margin)) / margin;
+			const m = Math.hypot(vx, vy) || 1;
+			balloon.x += (vx / m) * BALLOON_SPEED * t.deltaMS;
+			balloon.y += (vy / m) * BALLOON_SPEED * t.deltaMS;
+			balloon.c.x = balloon.x;
+			balloon.c.y = balloon.y;
+		}
 	}
 
 	function clientToWorld(clientX: number, clientY: number) {
@@ -1193,16 +1571,53 @@
 	let dragging = false;
 	let moved = false;
 	let last = { x: 0, y: 0 };
+	// Live touch/pointer points, keyed by pointerId. With two or more down we switch
+	// from one-finger pan into pinch mode; `pinch` caches the last gesture midpoint
+	// and finger spread so each move can derive a zoom factor + pan delta.
+	const pointers = new Map<number, { x: number; y: number }>();
+	let pinch: { cx: number; cy: number; dist: number } | null = null;
+
+	function pinchGeom() {
+		const pts = [...pointers.values()];
+		const a = pts[0];
+		const b = pts[1];
+		return {
+			cx: (a.x + b.x) / 2,
+			cy: (a.y + b.y) / 2,
+			dist: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y))
+		};
+	}
 	function bindPointer() {
 		const c = app!.canvas;
 		c.addEventListener('pointerdown', (e) => {
-			dragging = true;
-			moved = false;
-			userMoved = true;
-			last = { x: e.clientX, y: e.clientY };
+			if (interactionLocked) return;
+			pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 			c.setPointerCapture(e.pointerId);
+			userMoved = true;
+			if (pointers.size === 1) {
+				dragging = true;
+				moved = false;
+				last = { x: e.clientX, y: e.clientY };
+			} else if (pointers.size === 2) {
+				// Second finger down: end single-finger drag, begin pinch. Mark as
+				// moved so the lift-off never registers as a tap-to-select.
+				dragging = false;
+				moved = true;
+				pinch = pinchGeom();
+			}
 		});
 		c.addEventListener('pointermove', (e) => {
+			if (interactionLocked) return;
+			if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+			if (pinch && pointers.size >= 2) {
+				const g = pinchGeom();
+				// Two-finger translation pans; changing spread zooms about the midpoint.
+				panX -= (g.cx - pinch.cx) / zoom;
+				panY -= (g.cy - pinch.cy) / zoom;
+				zoomAt(g.cx, g.cy, g.dist / pinch.dist);
+				pinch = g;
+				return;
+			}
 			if (dragging) {
 				if (Math.abs(e.clientX - last.x) + Math.abs(e.clientY - last.y) > 3) moved = true;
 				panX -= (e.clientX - last.x) / zoom;
@@ -1221,8 +1636,25 @@
 			drawHover();
 			if (enableTooltip) onhover?.(p ? hoverInfo(p.code, e.clientX, e.clientY) : null);
 		});
-		c.addEventListener('pointerup', (e) => {
-			if (dragging && !moved) {
+		const endPointer = (e: PointerEvent) => {
+			if (interactionLocked) {
+				pointers.delete(e.pointerId);
+				return;
+			}
+			const wasTap = dragging && !moved && pointers.size === 1;
+			pointers.delete(e.pointerId);
+			if (pointers.size < 2) pinch = null;
+			if (pointers.size === 1) {
+				// Dropped from pinch back to one finger: resume panning from whichever
+				// finger is still down so the map doesn't jump.
+				const [only] = pointers.values();
+				dragging = true;
+				moved = true;
+				last = { x: only.x, y: only.y };
+				return;
+			}
+			if (pointers.size === 0) dragging = false;
+			if (wasTap) {
 				const { ox, oy } = clientToWorld(e.clientX, e.clientY);
 				const p = quad ? nearest(quad, ox, oy, hitR()) : null;
 				if (p) {
@@ -1237,8 +1669,9 @@
 					});
 				}
 			}
-			dragging = false;
-		});
+		};
+		c.addEventListener('pointerup', endPointer);
+		c.addEventListener('pointercancel', endPointer);
 		c.addEventListener('pointerleave', () => {
 			sky.hoverCode = null;
 			drawHover();
@@ -1247,6 +1680,7 @@
 		c.addEventListener(
 			'wheel',
 			(e) => {
+				if (interactionLocked) return;
 				e.preventDefault();
 				userMoved = true;
 				zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.12 : 1 / 1.12);
@@ -1309,7 +1743,14 @@
 			vh = Math.round(r.height);
 			drawSky();
 			drawTitle();
-			if (!userMoved) fitCamera();
+			if (asideActive) {
+				const t = asideTarget(true);
+				camAnim = null;
+				panX = t.x;
+				panY = t.y;
+				zoom = t.z;
+				applyCamera();
+			} else if (!userMoved) fitCamera();
 			else emitLayout();
 		});
 		ro.observe(host);

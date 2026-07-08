@@ -4,8 +4,8 @@
 # The raw Natural Earth folders (ne_*) are NOT committed — download and unzip them
 # from https://www.naturalearthdata.com/downloads/ before running:
 #   - ne_10m_urban_areas
-#   - ne_50m_populated_places
 #   - ne_50m_rivers_lake_centerlines_scale_rank
+# Populated places now come from GeoNames (src/lib/assets/IN.zip); see build-places.mjs.
 # Requires: mapshaper, ogr2ogr (GDAL). Run from repo root: bash scripts/build-map-data.sh
 set -euo pipefail
 
@@ -63,17 +63,10 @@ mapshaper "$ASSETS/ne_50m_rivers_lake_centerlines_scale_rank/ne_50m_rivers_lake_
   -clean \
   -o format=topojson "$OUT/india-rivers.json"
 
-echo "4/4  populated places (India, top ~24 by population) -> $OUT/india-places.json"
-# A limited label set: biggest Indian cities only, so the map stays legible.
-ogr2ogr -f GeoJSON -sql "
-    SELECT NAME AS name, POP_MAX AS pop
-    FROM ne_50m_populated_places
-    WHERE ADM0NAME = 'India'
-    ORDER BY POP_MAX DESC
-    LIMIT 24" \
-  -lco COORDINATE_PRECISION=4 \
-  "$OUT/india-places.json" \
-  "$ASSETS/ne_50m_populated_places/ne_50m_populated_places.shp"
+echo "4/4  populated places (GeoNames India) -> $OUT/india-places.json"
+# A denser label + search set, derived from GeoNames (src/lib/assets/IN.zip) with
+# each place linked to its nearest IMD station. See scripts/build-places.mjs.
+node scripts/build-places.mjs
 
 echo "done:"
 ls -lh "$OUT"/india.json "$OUT"/india-urban.json "$OUT"/india-rivers.json "$OUT"/india-places.json

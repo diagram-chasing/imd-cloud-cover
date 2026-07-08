@@ -128,12 +128,8 @@ html {
 }
 
 /* Night mode (data-driven, toggled from +page.svelte when the map's sky is dark):
-   only the mat/frame around the map darkens — the rest of the page stays light.
-   Near-black navy is distinctly darker than the world's sky (#081831 / #0b1d3a)
-   so the map reads as glowing inside the frame, not blending into the mat. */
-:root.night .stage {
-	background: #04070f;
-}
+   the frame/mat around the map stays paper-white in both modes, so the map always
+   reads as glowing inside a light frame. */
 
 body {
 	margin: 0;

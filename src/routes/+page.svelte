@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { fade } from 'svelte/transition';
 	import type { Station } from '$lib/types';
 	import { loadCore, type CoreData } from '$lib/api/load';
 	import { CORE_BASE } from '$lib/api/r2';
@@ -17,10 +18,10 @@
 	import StreakPanel from '$lib/components/StreakPanel.svelte';
 	import StationSearch from '$lib/components/StationSearch.svelte';
 	import StationDetails from '$lib/components/StationDetails.svelte';
+	import Minimap from '$lib/components/Minimap.svelte';
 	import SupportCTA from '$lib/components/SupportCTA.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { ScrollArea } from '$lib/components/ui/scroll-area';
 
 	let core = $state<CoreData>();
 	let error = $state<string | null>(null);
@@ -29,8 +30,38 @@
 
 	// Map instance API (the FIT link calls it) and the camera-derived layout info
 	// the streak inset + FIT link use: gutter width and zoom-vs-fit ratio.
-	let map = $state<{ zoomIn: () => void; zoomOut: () => void; zoomReset: () => void }>();
-	let layout = $state({ gutter: 0, zoomRatio: 1 });
+	let map = $state<{
+		zoomIn: () => void;
+		zoomOut: () => void;
+		zoomReset: () => void;
+		panAside: (on: boolean, clearPx?: number) => void;
+	}>();
+	let layout = $state({
+		gutter: 0,
+		zoomRatio: 1,
+		view: { x: 0, y: 0, w: 0, h: 0 },
+		world: { w: 1, h: 1 },
+		streak: { x: 0, y: 0 }
+	});
+	// Phones get the pan-aside + minimap streak reveal; desktop keeps the gutter list.
+	let isPhone = $state(false);
+	$effect(() => {
+		const mq = window.matchMedia('(max-width: 767px)');
+		isPhone = mq.matches;
+		const on = () => (isPhone = mq.matches);
+		mq.addEventListener('change', on);
+		return () => mq.removeEventListener('change', on);
+	});
+	// Glide the map into open ocean while the phone streaks overlay is up, panning
+	// India's tip up by exactly the space the board needs (measured) + padding, so
+	// it clears the land without wasting sea.
+	const STREAK_PAD = 16; // gap between the landmass and the board
+	const CONTROLS_RESERVE = 140; // space the bottom control rail occupies
+	let boardH = $state(0); // measured height of the streak board
+	let streakClearPx = $derived(boardH + STREAK_PAD + CONTROLS_RESERVE);
+	$effect(() => {
+		map?.panAside(sky.showStreaks && isPhone, streakClearPx);
+	});
 	// Scroll/pinch does the zooming; chrome appears only when there's a way back.
 	let zoomed = $derived(layout.zoomRatio > 1.05);
 
@@ -153,6 +184,15 @@
 			<div class="loading">Reading the skies…</div>
 		{/if}
 
+		<!-- Desktop: while zoomed/panned, a corner minimap shows where the viewport sits
+		     over India (and how far it's drifted into the sea). Phones use the pan-aside
+		     streak reveal instead, so this is desktop-only. -->
+		{#if core && zoomed && !isPhone}
+			<div class="minimap-corner" transition:fade={{ duration: 160 }}>
+				<Minimap view={layout.view} world={layout.world} {night} />
+			</div>
+		{/if}
+
 		<!-- Streak leaderboard: collapsed tab / inset table in the right sea gutter. -->
 		{#if core}
 			<StreakPanel
@@ -176,6 +216,7 @@
 					>
 					<StationSearch
 						manifest={core.manifest}
+						places={core.places}
 						onselect={selectFromSearch}
 						compact
 						side="bottom"
@@ -185,11 +226,6 @@
 			</div>
 		</div>
 
-		<!-- Phones: the WHERE lane is hidden, so the fit link floats above the dock. -->
-		{#if zoomed}
-			<button class="fit mobile-fit" onclick={() => map?.zoomReset()}>↺ FIT MAP</button>
-		{/if}
-
 		<!-- Bottom rail: WHAT (legend) · WHEN (timeline) · WHERE (find + fit).
 		     Quiet chrome: the legend and switchers are typography on the sky;
 		     the search trigger is the only boxed control. -->
@@ -198,9 +234,15 @@
 				<BandToggle />
 			</div>
 			<div class="lane dock">
-				<!-- Phones: the legend compresses to one glyph row above the timeline. -->
+				<!-- Phones: the legend compresses to one glyph row above the timeline,
+				     with the fit-map icon tucked to its right. -->
 				<div class="mobile-row">
 					<BandToggle horizontal />
+					{#if zoomed}
+						<button class="fit fit-icon" aria-label="Fit map" onclick={() => map?.zoomReset()}
+							>↺</button
+						>
+					{/if}
 				</div>
 				<TimeDock dates={activeRollup?.dates ?? null} />
 			</div>
@@ -217,6 +259,7 @@
 					>
 					<StationSearch
 						manifest={core.manifest}
+						places={core.places}
 						onselect={selectFromSearch}
 						compact
 						side="top"
@@ -232,50 +275,49 @@
 			Interactive pixel map of cloud cover over India.
 			{#if core}{core.summary.station_count} stations; use the station search to explore.{/if}
 		</p>
+
+		<!-- Phone streaks: the board lives out in the open sea south of India. The map
+		     glides south (see PixelMap.panAside) and this world-anchored board slides
+		     up into view with the sea — same sky-typography as the desktop gutter list.
+		     The minimap shows the viewport having moved off India onto the board. -->
+		{#if core && sky.showStreaks}
+			<div
+				class="streaks-scene"
+				role="dialog"
+				aria-modal="true"
+				aria-label="Station streaks"
+				tabindex="-1"
+				transition:fade={{ duration: 160 }}
+				onkeydown={(e) => {
+					if (e.key === 'Escape') sky.showStreaks = false;
+				}}
+			>
+				<!-- Tap the open sea to dismiss (the STREAKS toggle does the same). -->
+				<button class="sea-dismiss" aria-label="Close streaks" onclick={() => (sky.showStreaks = false)}
+				></button>
+
+				<!-- A small dense leaderboard seated in the open sea just below the panned
+				     landmass, above the control rail. Its measured height drives exactly
+				     how far the map pans. No close/minimap chrome — scenery. -->
+				<div class="streak-dock">
+					<div class="streak-world" bind:clientHeight={boardH}>
+						<h2 class="streak-title">STATION STREAKS</h2>
+						<p class="streak-caption">CONSECUTIVE CLEAR / OVERCAST DAYS</p>
+						<StreakBoard
+							summary={core.summary}
+							compact
+							limit={5}
+							onselect={(code) => {
+								sky.showStreaks = false;
+								openStation(code);
+							}}
+						/>
+					</div>
+				</div>
+			</div>
+		{/if}
 	</div>
 </section>
-
-<!-- Mobile streaks: a full-screen transparent overlay over a faded map, white
-     type on the sky like the desktop gutter list. The Streaks chip toggles it. -->
-{#if core && sky.showStreaks}
-	<div
-		class="streaks-overlay"
-		role="dialog"
-		aria-modal="true"
-		aria-label="Station streaks"
-		tabindex="-1"
-		onkeydown={(e) => {
-			if (e.key === 'Escape') sky.showStreaks = false;
-		}}
-	>
-		<!-- Tap the scrim to dismiss. -->
-		<button class="scrim" aria-label="Close streaks" onclick={() => (sky.showStreaks = false)}
-		></button>
-		<div class="overlay-body">
-			<header class="overlay-head">
-				<div>
-					<h2 class="overlay-title">STATION STREAKS</h2>
-					<p class="overlay-caption">CONSECUTIVE CLEAR / OVERCAST DAYS</p>
-				</div>
-				<button class="overlay-close" aria-label="Close streaks" onclick={() => (sky.showStreaks = false)}
-					>×</button
-				>
-			</header>
-			<ScrollArea
-				class="overlay-scroll"
-				scrollbarYClasses="w-2 p-0 border-l-0 [&_[data-slot=scroll-area-thumb]]:rounded-none [&_[data-slot=scroll-area-thumb]]:bg-current [&_[data-slot=scroll-area-thumb]]:opacity-60"
-			>
-				<StreakBoard
-					summary={core.summary}
-					onselect={(code) => {
-						sky.showStreaks = false;
-						openStation(code);
-					}}
-				/>
-			</ScrollArea>
-		</div>
-	</div>
-{/if}
 
 <!-- Short scroll below the map: purely explanation. -->
 <div class="content">
@@ -489,15 +531,25 @@
 		outline: 2px solid var(--focus);
 		outline-offset: 2px;
 	}
-	/* Phones only: the legend compresses to one glyph row above the timeline. */
+	/* Phones only: the legend compresses to one glyph row above the timeline, with
+	   the fit-map icon tucked to the right without shifting the centred glyphs. */
 	.mobile-row {
 		display: none;
+		position: relative;
 		align-items: center;
+		justify-content: center;
 		gap: 12px;
 	}
+	.fit-icon {
+		position: absolute;
+		right: 0;
+		padding: 0 4px;
+		font-size: 15px;
+		line-height: 1;
+	}
 
-	/* Mobile chrome: chips in the sky strip, fit link in the sea corner.
-	   Hidden on desktop where the bottom rail carries everything. */
+	/* Mobile chrome: chips in the sky strip. Hidden on desktop where the bottom
+	   rail carries everything. */
 	.mobile-top {
 		position: absolute;
 		top: 0;
@@ -509,13 +561,6 @@
 	.chips {
 		display: flex;
 		gap: 6px;
-	}
-	.mobile-fit {
-		position: absolute;
-		right: 12px;
-		bottom: 152px; /* float over the sea, clear above the control cluster */
-		display: none;
-		z-index: 10;
 	}
 	/* Quiet text toggle in the WHERE lane, voiced like ViewTabs: recedes at rest,
 	   brightens on hover, underlines when the streaks are shown. */
@@ -543,76 +588,78 @@
 		outline-offset: 2px;
 	}
 
-	/* Mobile full-screen streaks: a navy scrim fades the map, white type reads on
-	   top like the desktop gutter list. --ink flips the board's text to white. */
-	.streaks-overlay {
-		position: fixed;
+	/* Phone streaks: a scene bounded to the map area. The board itself is pinned to
+	   a world anchor out in the open sea and slides in with the camera pan; the same
+	   white sky-typography as the desktop gutter list. No scrim/panel — it reads as
+	   part of the world, not a sheet on top. --ink flips the board text white. */
+	.streaks-scene {
+		position: absolute;
 		inset: 0;
-		z-index: 40;
+		z-index: 20;
 		display: none;
 		--ink: #ffffff;
+		color: #fff;
 	}
-	.streaks-overlay .scrim {
+	/* Transparent catch-all: tap the open sea to dismiss. */
+	.sea-dismiss {
 		position: absolute;
 		inset: 0;
 		border: 0;
-		background: rgba(8, 24, 49, 0.9);
+		background: transparent;
 		cursor: pointer;
 	}
-	.overlay-body {
+	/* The board sits in the empty sea between the panned landmass and the control
+	   rail, auto-centered with padding. Bounds tuned to the aside pan. */
+	/* Board seats just above the control rail; the map pans so the land sits a pad
+	   above it (bottom must match CONTROLS_RESERVE in the script). */
+	.streak-dock {
 		position: absolute;
-		inset: 0;
+		left: 0;
+		right: 0;
+		bottom: 140px;
 		display: flex;
-		flex-direction: column;
-		padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
-		color: #fff;
+		justify-content: center;
+		padding: 0 14px;
+		pointer-events: none;
+	}
+	.streak-world {
+		width: min(88vw, 340px);
+		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
+		pointer-events: none; /* empty areas fall through to the sea to dismiss */
+	}
+	.streak-world :global(li button) {
+		pointer-events: auto;
 		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
 	}
-	.overlay-head {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 12px;
+	.streak-world :global(li button:hover) {
+		background: rgba(255, 255, 255, 0.14);
 	}
-	.overlay-title {
-		margin: 4px 0 2px;
+	.streak-title {
+		margin: 0;
 		font-family: var(--font-display);
-		font-size: 15px;
+		font-size: 12px;
 		letter-spacing: 0.08em;
 	}
-	.overlay-caption {
-		margin: 0 0 12px;
+	.streak-caption {
+		margin: 1px 0 8px;
 		font-family: var(--font-display);
-		font-size: 9px;
+		font-size: 8px;
 		letter-spacing: 0.06em;
 		opacity: 0.75;
 	}
-	.overlay-close {
-		flex: 0 0 auto;
-		width: 34px;
-		height: 34px;
-		border: 0;
-		background: transparent;
-		color: #fff;
-		font-size: 26px;
-		line-height: 1;
-		cursor: pointer;
-		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
-	}
-	.streaks-overlay :global(.overlay-scroll) {
-		flex: 1;
-		min-height: 0;
-	}
-	.overlay-body :global(li button) {
-		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
-	}
-	.overlay-body :global(li button:hover) {
-		background: rgba(255, 255, 255, 0.14);
-	}
-	.overlay-close:focus-visible,
-	.streaks-overlay .scrim:focus-visible {
+	.sea-dismiss:focus-visible {
 		outline: 2px solid var(--focus);
 		outline-offset: 2px;
+	}
+
+	/* Corner minimap: parks in the top-right sky while the desktop view is zoomed.
+	   Above the map canvas but below the control rail; non-interactive scenery. */
+	.minimap-corner {
+		position: absolute;
+		top: 14px;
+		right: 16px;
+		z-index: 11;
+		pointer-events: none;
 	}
 
 	.loading {
@@ -748,13 +795,11 @@
 		}
 		.mobile-row {
 			display: flex;
-			justify-content: center;
 		}
-		.mobile-top,
-		.mobile-fit {
+		.mobile-top {
 			display: flex;
 		}
-		.streaks-overlay {
+		.streaks-scene {
 			display: block;
 		}
 	}

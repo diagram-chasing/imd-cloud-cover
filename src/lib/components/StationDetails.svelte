@@ -56,7 +56,6 @@
 			return new DOMRect(x, y, 0, 0);
 		}
 	});
-
 </script>
 
 {#if isMobile}
@@ -76,7 +75,7 @@
 			side="top"
 			sideOffset={14}
 			collisionPadding={16}
-			class="w-[340px] max-w-[calc(100vw-24px)] gap-0 border-2 border-[var(--ink)] bg-[var(--paper)] p-3 text-[var(--ink)] shadow-[4px_4px_0_0_var(--ink)] ring-0"
+			class="w-[340px] max-w-[calc(100vw-24px)] gap-0 border-2 border-[var(--ink)] bg-[var(--paper)] p-3 text-[var(--ink)]  ring-0"
 		>
 			<StationCard {code} {station} {current} {rollup} {date} {when} {onclose} />
 		</PopoverContent>

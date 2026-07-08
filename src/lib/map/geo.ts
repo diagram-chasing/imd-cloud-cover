@@ -22,6 +22,12 @@ export interface GeoStation {
 export interface GeoPlace {
 	name: string;
 	pop: number;
+	/** Population bucket from the baker: 0 megacity … 3 town. Drives label LOD. */
+	tier: number;
+	state: string | null;
+	/** Nearest IMD station code + rounded distance (km), precomputed at build. */
+	nearest: string | null;
+	nkm: number;
 	px: number; // projected world px (unsquashed)
 	py: number;
 }
@@ -130,6 +136,10 @@ export function buildGeo(
 			places.push({
 				name: String(f.properties?.name ?? ''),
 				pop: Number(f.properties?.pop ?? 0),
+				tier: Number(f.properties?.tier ?? 3),
+				state: (f.properties?.state as string | null) ?? null,
+				nearest: (f.properties?.nearest as string | null) ?? null,
+				nkm: Number(f.properties?.nkm ?? 0),
 				px: p[0],
 				py: p[1]
 			});
