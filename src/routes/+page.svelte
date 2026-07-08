@@ -203,6 +203,20 @@
 			/>
 		{/if}
 
+		<!-- Desktop: station search parks in the top-left sky. -->
+		{#if core}
+			<div class="desktop-top">
+				<StationSearch
+					manifest={core.manifest}
+					places={core.places}
+					onselect={selectFromSearch}
+					compact
+					side="bottom"
+					align="start"
+				/>
+			</div>
+		{/if}
+
 		<!-- Mobile chrome: corner chips in the sky strip left of the landmass
 		     (the cartouche parks itself top-right on narrow viewports). -->
 		<div class="mobile-top">
@@ -231,7 +245,17 @@
 		     the search trigger is the only boxed control. -->
 		<div class="bar bottom">
 			<div class="lane legend">
-				<BandToggle />
+				{#if zoomed}
+					<button class="fit" onclick={() => map?.zoomReset()}>↺ FIT MAP</button>
+				{/if}
+				{#if core}
+					<button
+						class="streaks-toggle"
+						class:on={sky.showStreaks}
+						aria-pressed={sky.showStreaks}
+						onclick={toggleStreaks}>STREAKS</button
+					>
+				{/if}
 			</div>
 			<div class="lane dock">
 				<!-- Phones: the legend compresses to one glyph row above the timeline,
@@ -247,25 +271,7 @@
 				<TimeDock dates={activeRollup?.dates ?? null} />
 			</div>
 			<div class="lane where">
-				{#if zoomed}
-					<button class="fit" onclick={() => map?.zoomReset()}>↺ FIT MAP</button>
-				{/if}
-				{#if core}
-					<button
-						class="streaks-toggle"
-						class:on={sky.showStreaks}
-						aria-pressed={sky.showStreaks}
-						onclick={toggleStreaks}>STREAKS</button
-					>
-					<StationSearch
-						manifest={core.manifest}
-						places={core.places}
-						onselect={selectFromSearch}
-						compact
-						side="top"
-						align="end"
-					/>
-				{/if}
+				<BandToggle />
 			</div>
 		</div>
 
@@ -498,9 +504,8 @@
 	}
 	.lane.legend {
 		justify-self: start;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 6px;
+		align-items: center;
+		gap: 14px;
 	}
 	.lane.dock {
 		justify-self: center;
@@ -546,6 +551,15 @@
 		padding: 0 4px;
 		font-size: 15px;
 		line-height: 1;
+	}
+
+	/* Desktop station search: parks in the top-left sky. Hidden on phones, where the
+	   corner chips carry search instead. */
+	.desktop-top {
+		position: absolute;
+		top: 14px;
+		left: 16px;
+		z-index: 10;
 	}
 
 	/* Mobile chrome: chips in the sky strip. Hidden on desktop where the bottom
@@ -798,6 +812,9 @@
 		}
 		.mobile-top {
 			display: flex;
+		}
+		.desktop-top {
+			display: none;
 		}
 		.streaks-scene {
 			display: block;

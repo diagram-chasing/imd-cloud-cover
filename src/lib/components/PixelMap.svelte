@@ -170,6 +170,19 @@
 	let vw = $state(1);
 	let vh = $state(1);
 
+	// Dev camera inspector: toggle with the "d" key. Shows live pan/zoom + cursor
+	// world coords, and lets you jump the camera to typed coordinates.
+	let showDebug = $state(false);
+	let dbg = $state({ panX: 0, panY: 0, zoom: 1, wx: 0, wy: 0 });
+	let dbgForm = $state({ panX: 0, panY: 0, zoom: 1 });
+	function applyDebug() {
+		userMoved = true;
+		panX = dbgForm.panX;
+		panY = dbgForm.panY;
+		zoom = dbgForm.zoom;
+		applyCamera();
+	}
+
 	const STORY_TITLE = "MAPPING INDIA'S CLOUDS";
 	const STORY_SUB = 'How cloudy is India today?';
 	const MONTHS = [
@@ -352,7 +365,8 @@
 		return (vw / containZoom() - (b.maxX - b.minX)) / 2 < 90;
 	}
 	function startZoomFactor() {
-		return narrowLayout() ? 1.7 : 1;
+		// Desktop opens zoomed in (not at full fit); phones open tighter still.
+		return narrowLayout() ? 1.7 : 1.25;
 	}
 	function startView() {
 		const b = worldBBox();
@@ -372,6 +386,13 @@
 		zoom = containZoom() * startZoomFactor();
 		panX = v.x;
 		panY = v.y;
+		// Desktop: open with the world shoved as far left as the opening view allows,
+		// so the right sea gutter (holding the title lockup) sits fully in frame.
+		if (!narrowLayout()) {
+			const b = worldBBox();
+			const gutterWorld = (vw / containZoom() - (b.maxX - b.minX)) / 2;
+			panX = b.maxX + gutterWorld - v.w;
+		}
 		applyCamera();
 	}
 	function applyCamera() {
@@ -383,6 +404,11 @@
 		declutterPlaces();
 		updateTitleFade();
 		emitLayout();
+		if (showDebug) {
+			dbg.panX = panX;
+			dbg.panY = panY;
+			dbg.zoom = zoom;
+		}
 	}
 
 	function emitLayout() {
@@ -392,7 +418,9 @@
 		const a = streakAnchorWorld();
 		onlayout?.({
 			gutter: (vw - (b.maxX - b.minX) * containZoom()) / 2,
-			zoomRatio: zoom / containZoom(),
+			// Relative to the OPENING view (which is a bit zoomed in on desktop), so
+			// "zoomed" chrome and the gutter panels read 1 at the start, not >1.
+			zoomRatio: zoom / (containZoom() * startZoomFactor()),
 			view: { x: panX, y: panY, w: vw / zoom, h: vh / zoom },
 			world: { w: g.worldW, h: g.worldH },
 			streak: { x: (a.x - panX) * zoom, y: (a.y - panY) * zoom }
@@ -905,21 +933,26 @@
 
 		titleShown = true;
 
-		// Branch only for overall scale + placement: desktop parks it in the left sea
-		// gutter, phones tuck the compact lockup into the top-right sky.
+		// Live in world space so the lockup pans and zooms stuck to the map. Desktop
+		// parks it in the RIGHT sea gutter, vertically centred; phones tuck the compact
+		// lockup into the top-right sky of the opening view.
 		if (!narrow) {
 			const s = Math.min((gutter * 0.8) / groupW, (geo.worldH * 0.55) / groupH);
 			titleGroup.scale.set(s);
+			// TITLE_GUTTER_POS: where in the right gutter the lockup sits, 0 = flush
+			// against India's east edge, 0.5 = centred, 1 = far sea. Lower it to nudge
+			// the title left.
+			const TITLE_GUTTER_POS = -0.5;
 			titleGroup.position.set(
-				b.minX - (gutter + groupW * s) / 2,
+				b.maxX + (gutter - groupW * s) * TITLE_GUTTER_POS,
 				geo.worldH / 2 - (groupH * s) / 2
 			);
 		} else {
 			const v = startView();
 			const s = Math.min((v.w * 0.5) / groupW, (v.h * 0.22) / groupH);
-			const mx = v.w * 0.04;
+			const mx = v.w * 0.05;
 			titleGroup.scale.set(s);
-			titleGroup.position.set(v.x + v.w - groupW * s - mx, v.y + mx);
+			titleGroup.position.set(v.x + v.w - groupW * s - mx, v.y * 0.2 + mx);
 		}
 		updateTitleMeta();
 		updateTitleFade();
@@ -1079,8 +1112,10 @@
 			const b = cx + h;
 			for (let x = a; x <= b; x++) {
 				let col = W1;
-				if (x === a || x === b) col = W2; // soft rounded rim
-				else if (BALLOON_SEAMS.includes(x)) col = W2; // gore seam
+				if (x === a || x === b)
+					col = W2; // soft rounded rim
+				else if (BALLOON_SEAMS.includes(x))
+					col = W2; // gore seam
 				else if (x > cx && ((x + y) & 1) === 0) col = W3; // shaded-side dither
 				ctx.fillStyle = col;
 				ctx.fillRect(x, y, 1, 1);
@@ -1484,9 +1519,7 @@
 		if (!b) return;
 		const box = towerBox(b);
 		if (!box) return;
-		hoverGfx
-			.rect(box.x, box.y, box.w, box.h)
-			.stroke({ width: 2, color: 0xffffff, alignment: 0.5 });
+		hoverGfx.rect(box.x, box.y, box.w, box.h).stroke({ width: 2, color: 0xffffff, alignment: 0.5 });
 	}
 
 	function drawSelected() {
@@ -1608,6 +1641,11 @@
 		});
 		c.addEventListener('pointermove', (e) => {
 			if (interactionLocked) return;
+			if (showDebug) {
+				const w = clientToWorld(e.clientX, e.clientY);
+				dbg.wx = Math.round(w.ox);
+				dbg.wy = Math.round(w.oy);
+			}
 			if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 			if (pinch && pointers.size >= 2) {
 				const g = pinchGeom();
@@ -1695,7 +1733,9 @@
 		const ox = panX + sx / zoom;
 		const oy = panY + sy / zoom;
 		const fit = containZoom();
-		zoom = Math.max(fit * 0.9, Math.min(fit * 7, zoom * factor));
+		// Phones may zoom further out (down to 0.4× fit); desktop stays near fit.
+		const minZoom = fit * (narrowLayout() ? 0.4 : 0.9);
+		zoom = Math.max(minZoom, Math.min(fit * 7, zoom * factor));
 		panX = ox - sx / zoom;
 		panY = oy - sy / zoom;
 		clampPan();
@@ -1754,10 +1794,27 @@
 			else emitLayout();
 		});
 		ro.observe(host);
+		const onkey = (e: KeyboardEvent) => {
+			const el = e.target as HTMLElement | null;
+			if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return;
+			if (e.key === 'd' || e.key === 'D') {
+				showDebug = !showDebug;
+				if (showDebug) {
+					dbgForm.panX = Math.round(panX);
+					dbgForm.panY = Math.round(panY);
+					dbgForm.zoom = +zoom.toFixed(4);
+					dbg.panX = panX;
+					dbg.panY = panY;
+					dbg.zoom = zoom;
+				}
+			}
+		};
+		window.addEventListener('keydown', onkey);
 		init();
 		return () => {
 			mq.removeEventListener('change', onmq);
 			ro.disconnect();
+			window.removeEventListener('keydown', onkey);
 			app?.destroy(true);
 			app = null;
 		};
@@ -1801,7 +1858,29 @@
 	});
 </script>
 
-<div class="pixel-map" bind:this={host}></div>
+<div class="pixel-map" bind:this={host}>
+	{#if showDebug}
+		<div class="dbg">
+			<div class="dbg-title">CAMERA (press D to hide)</div>
+			<label>panX <input type="number" bind:value={dbgForm.panX} /></label>
+			<label>panY <input type="number" bind:value={dbgForm.panY} /></label>
+			<label>zoom <input type="number" step="0.01" bind:value={dbgForm.zoom} /></label>
+			<div class="dbg-btns">
+				<button onclick={applyDebug}>Apply</button>
+				<button
+					onclick={() => {
+						userMoved = false;
+						fitCamera();
+					}}>Reset</button
+				>
+			</div>
+			<div class="dbg-live">
+				live pan {dbg.panX.toFixed(1)}, {dbg.panY.toFixed(1)} · z {dbg.zoom.toFixed(3)}<br />
+				cursor world {dbg.wx}, {dbg.wy}
+			</div>
+		</div>
+	{/if}
+</div>
 
 <style>
 	.pixel-map {
@@ -1813,5 +1892,59 @@
 	}
 	.pixel-map :global(canvas) {
 		display: block;
+	}
+	.dbg {
+		position: absolute;
+		top: 8px;
+		left: 8px;
+		z-index: 50;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		padding: 8px 10px;
+		background: rgba(4, 7, 15, 0.85);
+		border: 1px solid #2a3a5a;
+		color: #cfe4ff;
+		font: 11px/1.4 monospace;
+	}
+	.dbg-title {
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		margin-bottom: 2px;
+	}
+	.dbg label {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 10px;
+	}
+	.dbg input {
+		width: 100px;
+		padding: 2px 4px;
+		background: #0b1d3a;
+		border: 1px solid #2a3a5a;
+		color: #fff;
+		font: 11px monospace;
+	}
+	.dbg-btns {
+		display: flex;
+		gap: 6px;
+		margin-top: 2px;
+	}
+	.dbg-btns button {
+		flex: 1;
+		padding: 3px 6px;
+		background: #12305a;
+		border: 1px solid #2a3a5a;
+		color: #fff;
+		font: 11px monospace;
+		cursor: pointer;
+	}
+	.dbg-btns button:hover {
+		background: #1b427a;
+	}
+	.dbg-live {
+		margin-top: 4px;
+		opacity: 0.8;
 	}
 </style>

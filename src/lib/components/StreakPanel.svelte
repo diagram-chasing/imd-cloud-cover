@@ -27,8 +27,8 @@
 		'w-2 p-0 border-l-0 [&_[data-slot=scroll-area-thumb]]:rounded-none [&_[data-slot=scroll-area-thumb]]:bg-current [&_[data-slot=scroll-area-thumb]]:opacity-60';
 </script>
 
-<!-- Transparent white-on-sky list in the sea gutter right of the landmass,
-     mirroring the title cartouche on the left. No box — reads as part of the sky. -->
+<!-- Transparent white-on-sky list in the sea gutter left of the landmass,
+     mirroring the title cartouche on the right. No box — reads as part of the sky. -->
 {#if hasRoom}
 	<aside class="panel" class:shown style="width:{width}px" aria-label="Station streaks">
 		<h2>STATION STREAKS</h2>
@@ -49,8 +49,8 @@
 		--ink: #ffffff;
 		position: absolute;
 		top: 50%;
-		right: 16px;
-		transform: translateY(-50%) translateX(8px);
+		left: 16px;
+		transform: translateY(-50%) translateX(-8px);
 		z-index: 10;
 		color: #ffffff;
 		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
