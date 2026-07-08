@@ -18,6 +18,7 @@ class SkyState {
 	selectedCode = $state<string | null>(null);
 	hoverCode = $state<string | null>(null);
 	playing = $state(false);
+	showStreaks = $state(false); // reveal the streak leaderboard (gutter inset / mobile overlay)
 
 	toggleFocus(band: BandKey) {
 		this.focusBand = this.focusBand === band ? null : band;

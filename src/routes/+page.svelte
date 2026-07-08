@@ -6,6 +6,7 @@
 	import { sky } from '$lib/state/sky.svelte';
 	import { skyMode } from '$lib/theme';
 	import { computeValues, rollupForView } from '$lib/data';
+	import { click } from '$lib/feedback';
 
 	import PixelMap, { type HoverInfo } from '$lib/components/PixelMap.svelte';
 	import TimeDock from '$lib/components/TimeDock.svelte';
@@ -19,7 +20,6 @@
 	import SupportCTA from '$lib/components/SupportCTA.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { Drawer, DrawerContent } from '$lib/components/ui/drawer';
 	import { ScrollArea } from '$lib/components/ui/scroll-area';
 
 	let core = $state<CoreData>();
@@ -33,9 +33,6 @@
 	let layout = $state({ gutter: 0, zoomRatio: 1 });
 	// Scroll/pinch does the zooming; chrome appears only when there's a way back.
 	let zoomed = $derived(layout.zoomRatio > 1.05);
-
-	// Mobile streaks drawer.
-	let streaksOpen = $state(false);
 
 	const chipClass =
 		'h-8 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] px-2.5 text-[10px] tracking-wider text-[var(--ink)] uppercase shadow-none [font-family:var(--font-display)] hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]';
@@ -86,6 +83,17 @@
 	}
 	function closePanel() {
 		sky.selectedCode = null;
+	}
+
+	// Light "open" click for chrome that appears: the streaks reveal and a chosen
+	// search result. (Map taps get their own firmer click inside PixelMap.)
+	function toggleStreaks() {
+		click('open');
+		sky.showStreaks = !sky.showStreaks;
+	}
+	function selectFromSearch(code: string) {
+		click('open');
+		openStation(code);
 	}
 
 	let night = $derived(skyMode(sky.timeIndex) === 'night');
@@ -160,12 +168,15 @@
 		<div class="mobile-top">
 			<div class="chips">
 				{#if core}
-					<Button variant="outline" class={chipClass} onclick={() => (streaksOpen = true)}
-						>Streaks</Button
+					<Button
+						variant="outline"
+						class={chipClass}
+						aria-pressed={sky.showStreaks}
+						onclick={toggleStreaks}>Streaks</Button
 					>
 					<StationSearch
 						manifest={core.manifest}
-						onselect={openStation}
+						onselect={selectFromSearch}
 						compact
 						side="bottom"
 						align="start"
@@ -198,9 +209,15 @@
 					<button class="fit" onclick={() => map?.zoomReset()}>↺ FIT MAP</button>
 				{/if}
 				{#if core}
+					<button
+						class="streaks-toggle"
+						class:on={sky.showStreaks}
+						aria-pressed={sky.showStreaks}
+						onclick={toggleStreaks}>STREAKS</button
+					>
 					<StationSearch
 						manifest={core.manifest}
-						onselect={openStation}
+						onselect={selectFromSearch}
 						compact
 						side="top"
 						align="end"
@@ -218,33 +235,46 @@
 	</div>
 </section>
 
-<!-- Mobile streaks: the chip opens the same drawer idiom as the station card. -->
-{#if core}
-	<Drawer bind:open={streaksOpen} shouldScaleBackground={false}>
-		<DrawerContent
-			class="max-h-[85vh] gap-0 border-0 p-4 pt-2 before:rounded-none before:border {night
-				? 'text-[#eaf4ff] before:border-[rgba(255,255,255,0.8)] before:bg-[rgba(8,24,49,0.97)]'
-				: 'text-[var(--ink)] before:border-[rgba(11,29,58,0.85)] before:bg-[rgba(247,250,246,0.97)]'}"
-		>
-			<!-- --ink flips the board's text with the sky, like the gutter inset. -->
-			<div class="sheet-scroll" style={night ? '--ink: #eaf4ff' : ''}>
-				<h2 class="drawer-title">STATION STREAKS</h2>
-				<p class="drawer-caption">CONSECUTIVE CLEAR / OVERCAST DAYS</p>
-				<ScrollArea
-					class="max-h-[calc(85vh-90px)]"
-					scrollbarYClasses="w-2 p-0 border-l-0 [&_[data-slot=scroll-area-thumb]]:rounded-none [&_[data-slot=scroll-area-thumb]]:bg-current [&_[data-slot=scroll-area-thumb]]:opacity-60"
+<!-- Mobile streaks: a full-screen transparent overlay over a faded map, white
+     type on the sky like the desktop gutter list. The Streaks chip toggles it. -->
+{#if core && sky.showStreaks}
+	<div
+		class="streaks-overlay"
+		role="dialog"
+		aria-modal="true"
+		aria-label="Station streaks"
+		tabindex="-1"
+		onkeydown={(e) => {
+			if (e.key === 'Escape') sky.showStreaks = false;
+		}}
+	>
+		<!-- Tap the scrim to dismiss. -->
+		<button class="scrim" aria-label="Close streaks" onclick={() => (sky.showStreaks = false)}
+		></button>
+		<div class="overlay-body">
+			<header class="overlay-head">
+				<div>
+					<h2 class="overlay-title">STATION STREAKS</h2>
+					<p class="overlay-caption">CONSECUTIVE CLEAR / OVERCAST DAYS</p>
+				</div>
+				<button class="overlay-close" aria-label="Close streaks" onclick={() => (sky.showStreaks = false)}
+					>×</button
 				>
-					<StreakBoard
-						summary={core.summary}
-						onselect={(code) => {
-							streaksOpen = false;
-							openStation(code);
-						}}
-					/>
-				</ScrollArea>
-			</div>
-		</DrawerContent>
-	</Drawer>
+			</header>
+			<ScrollArea
+				class="overlay-scroll"
+				scrollbarYClasses="w-2 p-0 border-l-0 [&_[data-slot=scroll-area-thumb]]:rounded-none [&_[data-slot=scroll-area-thumb]]:bg-current [&_[data-slot=scroll-area-thumb]]:opacity-60"
+			>
+				<StreakBoard
+					summary={core.summary}
+					onselect={(code) => {
+						sky.showStreaks = false;
+						openStation(code);
+					}}
+				/>
+			</ScrollArea>
+		</div>
+	</div>
 {/if}
 
 <!-- Short scroll below the map: purely explanation. -->
@@ -487,21 +517,102 @@
 		display: none;
 		z-index: 10;
 	}
-	.sheet-scroll :global(li button:hover) {
-		background: rgba(127, 155, 183, 0.18);
+	/* Quiet text toggle in the WHERE lane, voiced like ViewTabs: recedes at rest,
+	   brightens on hover, underlines when the streaks are shown. */
+	.streaks-toggle {
+		padding: 0;
+		font-family: var(--font-display);
+		font-size: 11px;
+		letter-spacing: 0.08em;
+		color: #fff;
+		opacity: 0.55;
+		cursor: pointer;
+		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
 	}
-	.drawer-title {
+	.streaks-toggle:hover {
+		opacity: 0.9;
+	}
+	.streaks-toggle.on {
+		opacity: 1;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		text-decoration-thickness: 2px;
+	}
+	.streaks-toggle:focus-visible {
+		outline: 2px solid var(--focus);
+		outline-offset: 2px;
+	}
+
+	/* Mobile full-screen streaks: a navy scrim fades the map, white type reads on
+	   top like the desktop gutter list. --ink flips the board's text to white. */
+	.streaks-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 40;
+		display: none;
+		--ink: #ffffff;
+	}
+	.streaks-overlay .scrim {
+		position: absolute;
+		inset: 0;
+		border: 0;
+		background: rgba(8, 24, 49, 0.9);
+		cursor: pointer;
+	}
+	.overlay-body {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
+		color: #fff;
+		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
+	}
+	.overlay-head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 12px;
+	}
+	.overlay-title {
 		margin: 4px 0 2px;
 		font-family: var(--font-display);
-		font-size: 14px;
+		font-size: 15px;
 		letter-spacing: 0.08em;
 	}
-	.drawer-caption {
+	.overlay-caption {
 		margin: 0 0 12px;
 		font-family: var(--font-display);
 		font-size: 9px;
 		letter-spacing: 0.06em;
-		opacity: 0.6;
+		opacity: 0.75;
+	}
+	.overlay-close {
+		flex: 0 0 auto;
+		width: 34px;
+		height: 34px;
+		border: 0;
+		background: transparent;
+		color: #fff;
+		font-size: 26px;
+		line-height: 1;
+		cursor: pointer;
+		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
+	}
+	.streaks-overlay :global(.overlay-scroll) {
+		flex: 1;
+		min-height: 0;
+	}
+	.overlay-body :global(li button) {
+		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
+	}
+	.overlay-body :global(li button:hover) {
+		background: rgba(255, 255, 255, 0.14);
+	}
+	.overlay-close:focus-visible,
+	.streaks-overlay .scrim:focus-visible {
+		outline: 2px solid var(--focus);
+		outline-offset: 2px;
 	}
 
 	.loading {
@@ -642,6 +753,9 @@
 		.mobile-top,
 		.mobile-fit {
 			display: flex;
+		}
+		.streaks-overlay {
+			display: block;
 		}
 	}
 	@media (max-width: 640px) {

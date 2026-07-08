@@ -32,6 +32,7 @@
 	import { buildQuadtree, nearest, type StationPoint } from '$lib/map/hit';
 	import { fnv1a, jitter, mulberry32 } from '$lib/map/hash';
 	import { sky } from '$lib/state/sky.svelte';
+	import { click, tap } from '$lib/feedback';
 
 	interface Props {
 		india: FeatureCollection;
@@ -1226,6 +1227,9 @@
 				const p = quad ? nearest(quad, ox, oy, hitR()) : null;
 				if (p) {
 					sky.selectedCode = p.code;
+					// Fire with the selection box appearing: firmer click + a light tap.
+					click('select');
+					tap('light');
 					const rect = app!.canvas.getBoundingClientRect();
 					onselect?.(p.code, {
 						x: rect.left + (p.x - panX) * zoom,
