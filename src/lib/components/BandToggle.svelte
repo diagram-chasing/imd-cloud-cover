@@ -142,8 +142,25 @@
 		align-items: center;
 		gap: 4px;
 	}
+	/* Phone: drop the radio square and let each option read as a small, minimal
+	   button — a hollow pixel outline that fills sun-gold when it's the live band. */
+	.legend.horizontal .box {
+		display: none;
+	}
 	.legend.horizontal .band {
 		gap: 5px;
-		padding: 3px 5px;
+		padding: 4px 7px;
+		box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.45);
+	}
+	.legend.horizontal .band.active {
+		background: rgba(242, 193, 78, 0.18);
+		box-shadow: inset 0 0 0 1.5px var(--sun-gold);
+	}
+	.legend.horizontal .swatch {
+		width: 30px;
+		height: auto;
+	}
+	.legend.horizontal .label {
+		font-size: 11px;
 	}
 </style>

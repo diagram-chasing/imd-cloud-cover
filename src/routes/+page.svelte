@@ -52,6 +52,22 @@
 	let values = $derived(
 		computeValues(sky.view, core?.latest, activeRollup, sky.timeIndex, sky.windowDayIndex)
 	);
+
+	// The single "when am I looking at" answer, derived from the scrub state so the
+	// cartouche, tooltip and station card all agree. In today view the date is fixed
+	// and the time steps; in week/month the date is the scrubbed window day and the
+	// reading is a daily mean.
+	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
+	let activeDate = $derived.by(() => {
+		if (!core) return '';
+		if (sky.view === 'today') return core.summary.date;
+		const dates = activeRollup?.dates;
+		if (!dates?.length) return core.summary.date;
+		return dates[Math.min(sky.windowDayIndex, dates.length - 1)] ?? core.summary.date;
+	});
+	let whenLabel = $derived(
+		sky.view === 'today' ? `${HOUR_LABELS[sky.timeIndex]}:00 IST` : 'DAILY MEAN'
+	);
 	let tipStation = $derived<Station | null>(
 		tip && core ? (core.manifest.stations[tip.code] ?? null) : null
 	);
@@ -120,7 +136,7 @@
 				places={core.places}
 				manifest={core.manifest}
 				{values}
-				date={core.summary.date}
+				date={activeDate}
 				onhover={(info) => (tip = info)}
 				onselect={openStation}
 				onlayout={(info) => (layout = info)}
@@ -312,6 +328,8 @@
 		clientX={tip.clientX}
 		clientY={tip.clientY}
 		members={tip.members}
+		date={activeDate}
+		when={whenLabel}
 	/>
 {/if}
 
@@ -321,7 +339,8 @@
 		station={panelStation}
 		current={values[sky.selectedCode] ?? null}
 		rollup={core.rollup30}
-		date={core.summary.date}
+		date={activeDate}
+		when={whenLabel}
 		at={anchorPoint}
 		onclose={closePanel}
 	/>
@@ -343,7 +362,10 @@
 		overflow: hidden;
 		border: 0px solid var(--ink);
 		background: #0b1d3a; /* navy sky behind the canvas while it loads */
-		min-height: max(90svh, 440px); /* mobile: never let the map get cramped */
+		/* Definite height (not just min-height) so the canvas fills the frame on
+		   mobile too — otherwise the solid navy fallback shows behind the controls
+		   instead of the sea + gradient scrim the way it does on desktop. */
+		height: max(90svh, 440px);
 	}
 	/* Edge scrim: an eased deep-sky wash under the control rail so the white
 	   chrome keeps a contrast floor whatever the map draws beneath it. Tinted
@@ -461,7 +483,7 @@
 	.mobile-fit {
 		position: absolute;
 		right: 12px;
-		bottom: 110px; /* clear the mobile dock */
+		bottom: 152px; /* float over the sea, clear above the control cluster */
 		display: none;
 		z-index: 10;
 	}
@@ -606,8 +628,16 @@
 		.lane.where {
 			display: none;
 		}
+		/* The dock carries the whole rail on phones — let it use the full width so
+		   the scrubber spans edge to edge and the compact legend centres above it.
+		   stretch makes the TimeDock child fill, so its scrubber can go full width. */
+		.lane.dock {
+			width: 100%;
+			align-items: stretch;
+		}
 		.mobile-row {
 			display: flex;
+			justify-content: center;
 		}
 		.mobile-top,
 		.mobile-fit {

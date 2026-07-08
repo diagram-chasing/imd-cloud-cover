@@ -295,7 +295,7 @@
 			<!-- Outlook -->
 			<section>
 				<h2>NEXT 10 DAYS</h2>
-				<StationMeteogram {forecast} />
+				<StationMeteogram {forecast} today={date} />
 			</section>
 
 			<footer class="links">

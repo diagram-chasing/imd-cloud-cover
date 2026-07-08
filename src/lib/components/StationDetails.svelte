@@ -10,11 +10,13 @@
 		current: { h: number; m: number; l: number } | null;
 		rollup: Rollup | null;
 		date: string;
+		/** Scrub-aware time descriptor, e.g. "15:00 IST" or "DAILY MEAN". */
+		when: string;
 		/** Screen point the card should anchor to on desktop (the click). */
 		at: { x: number; y: number } | null;
 		onclose: () => void;
 	}
-	let { code, station, current, rollup, date, at, onclose }: Props = $props();
+	let { code, station, current, rollup, date, when, at, onclose }: Props = $props();
 
 	// The card mounts already-open (parent only renders it for a selected station).
 	// When the popover/drawer closes itself (swipe, click-away, Esc), open flips
@@ -63,7 +65,7 @@
 			class="max-h-[85vh] gap-0 border-0 bg-[var(--paper)] p-4 pt-2 text-[var(--ink)] before:border-2 before:border-[var(--ink)] before:bg-[var(--paper)]"
 		>
 			<div class="sheet-scroll">
-				<StationCard {code} {station} {current} {rollup} {date} {onclose} />
+				<StationCard {code} {station} {current} {rollup} {date} {when} {onclose} />
 			</div>
 		</DrawerContent>
 	</Drawer>
@@ -76,7 +78,7 @@
 			collisionPadding={16}
 			class="w-[340px] max-w-[calc(100vw-24px)] gap-0 border-2 border-[var(--ink)] bg-[var(--paper)] p-3 text-[var(--ink)] shadow-[4px_4px_0_0_var(--ink)] ring-0"
 		>
-			<StationCard {code} {station} {current} {rollup} {date} {onclose} />
+			<StationCard {code} {station} {current} {rollup} {date} {when} {onclose} />
 		</PopoverContent>
 	</Popover>
 {/if}

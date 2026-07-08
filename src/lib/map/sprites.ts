@@ -154,7 +154,7 @@ const HIGH_W = [3, 5, 7, 9]; // cirrus streak width per tier (always 2 rows)
 
 // Per-band alpha for tower marks. High is bumped vs the flat CLOUD.high so the
 // separated top mark stays legible against both sky and land.
-const MARK_ALPHA: Record<BandKey, number> = { high: 0.8, middle: 0.95, low: 1 };
+const MARK_ALPHA: Record<BandKey, number> = { high: 0.55, middle: 0.95, low: 1 };
 
 // Cover tier → luminance ramp. Size alone barely separates tiers when zoomed
 // out, so we also fade low-cover marks and drive high-cover ones to full
@@ -197,12 +197,12 @@ function cirrusPattern(rand: () => number, w: number): Pattern {
 	let x = 0;
 	let drew = false;
 	while (x < w) {
-		if (rand() < 0.78) {
-			const len = 2 + Math.floor(rand() * 2); // 2-3 cell dash
+		if (rand() < 0.62) {
+			const len = 1 + Math.floor(rand() * 2); // 1-2 cell dash — shorter wisps
 			const y = rand() < 0.5 ? 0 : 1; // which row it drifts along
 			for (let i = 0; i < len && x + i < w; i++) grid[y][x + i] = 1;
 			drew = true;
-			x += len + 1 + Math.floor(rand() * 2); // gap before the next wisp
+			x += len + 2 + Math.floor(rand() * 2); // wider gap before the next wisp
 		} else {
 			x += 1 + Math.floor(rand() * 2);
 		}

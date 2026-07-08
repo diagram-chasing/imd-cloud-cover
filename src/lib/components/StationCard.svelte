@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { Station, Rollup, Forecast } from '$lib/types';
-	import { fetchForecast, meteogramImageUrl } from '$lib/api/r2';
+	import { fetchForecast } from '$lib/api/r2';
+	import { prettyDate } from '$lib/format';
+	import { skyCondition } from '$lib/summary';
 	import { CLEAR_STARS } from '$lib/theme';
 	import StationMeteogram from './StationMeteogram.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Separator } from '$lib/components/ui/separator';
 
 	interface Props {
 		code: string;
@@ -13,13 +14,14 @@
 		current: { h: number; m: number; l: number } | null;
 		rollup: Rollup | null;
 		date: string;
+		/** Scrub-aware time descriptor, e.g. "15:00 IST" or "DAILY MEAN". */
+		when: string;
 		onclose?: () => void;
 	}
-	let { code, station, current, rollup, date, onclose }: Props = $props();
+	let { code, station, current, rollup, date, when, onclose }: Props = $props();
 
 	let forecast = $state<Forecast | null>(null);
 	let forecastError = $state(false);
-	let copied = $state(false);
 
 	// One fetch per opened station (card mounts fresh each open).
 	$effect(() => {
@@ -35,11 +37,21 @@
 			});
 	});
 
+	// Row labels mirror the tooltip + band legend so every surface speaks the
+	// same language: altitude band · cloud species.
 	const ROWS: { key: 'h' | 'm' | 'l'; label: string }[] = [
-		{ key: 'h', label: 'H' },
-		{ key: 'm', label: 'M' },
-		{ key: 'l', label: 'L' }
+		{ key: 'h', label: 'HIGH · CIRRUS' },
+		{ key: 'm', label: 'MID · ALTO' },
+		{ key: 'l', label: 'LOW · CUMULUS' }
 	];
+	function filled(v: number): number {
+		return Math.round(v / 10);
+	}
+
+	// Plain-language read of the sky, in NWS public sky-condition wording. Mirrors
+	// StationTooltip so the card reads like a continuation of the hover.
+	let summary = $derived(current ? skyCondition(current) : 'NO READING TODAY');
+
 	let series = $derived(rollup?.stations[code] ?? null);
 
 	// Current clear streak (effective < CLEAR_STARS) walking back from the latest day.
@@ -54,16 +66,6 @@
 		}
 		return n;
 	});
-
-	async function copyPermalink() {
-		try {
-			await navigator.clipboard.writeText(`${location.origin}/station/${code}`);
-			copied = true;
-			setTimeout(() => (copied = false), 1500);
-		} catch {
-			copied = false;
-		}
-	}
 </script>
 
 <div class="card">
@@ -71,6 +73,7 @@
 		<div class="title">
 			<h2>{station.name}</h2>
 			{#if station.state}<p class="state">{station.state}</p>{/if}
+			<p class="when">{prettyDate(date)} · {when}</p>
 		</div>
 		<div class="head-right">
 			{#if clearStreak > 0}
@@ -88,57 +91,38 @@
 		</div>
 	</header>
 
-	<!-- Priority 1: the meteogram -->
+	<!-- The read: plain-language summary + the H/M/L breakdown behind it -->
+	<section class="readout">
+		<p class="summary">{summary}</p>
+		{#if current}
+			<div class="bands" aria-label="Percent of sky covered, by altitude">
+				<p class="caption">% OF SKY COVERED <span class="now">{when}</span>, BY ALTITUDE</p>
+				{#each ROWS as row (row.key)}
+					<div class="band-row">
+						<span class="blabel">{row.label}</span>
+						<span class="bar" aria-hidden="true">
+							{#each Array(10) as _, i (i)}
+								<span class="seg" class:on={i < filled(current[row.key])}></span>
+							{/each}
+						</span>
+						<span class="num">{current[row.key]}%</span>
+					</div>
+				{/each}
+			</div>
+		{/if}
+	</section>
+
+	<!-- The 10-day forecast: date axis + band tags live inside the chart -->
 	<figure class="meteogram">
 		{#if forecastError}
 			<p class="note">Forecast chart unavailable.</p>
 		{:else}
-			<StationMeteogram {forecast} />
+			<StationMeteogram {forecast} today={date} />
 		{/if}
-		<figcaption>10-day forecast · 3-hourly · high / mid / low</figcaption>
 	</figure>
 
-	<!-- Priority 2: the sky calendar -->
-	{#if series}
-		<section class="calendar">
-			<h3>SKY CALENDAR · {rollup?.window ?? 30} DAYS</h3>
-			{#each ROWS as r (r.key)}
-				<div class="cal-row">
-					<span class="cal-label">{r.label}</span>
-					<div class="cells">
-						{#each series[r.key] as v, i (i)}
-							<span
-								class="cal-cell"
-								class:null={v === null}
-								style={v === null ? '' : `background: rgba(11,29,58,${(v ?? 0) / 100})`}
-								title={rollup?.dates[i]}
-							></span>
-						{/each}
-					</div>
-				</div>
-			{/each}
-		</section>
-	{/if}
-
-	<!-- Priority 3: stats + links, if space -->
-	<!-- {#if current}
-		<Separator />
-		<section class="readout">
-			{#each ROWS as r (r.key)}
-				<div class="stat">
-					<span class="lbl">{r.label}</span>
-					<span class="val">{current[r.key]}</span>
-				</div>
-			{/each}
-		</section>
-	{/if} -->
-
-	<footer class="links">
-		<Button variant="link" size="xs" href={meteogramImageUrl(date, code)} target="_blank"
-			>Raw meteogram ↗</Button
-		>
-		<Button variant="link" size="xs" onclick={copyPermalink}>{copied ? 'Copied ✓' : 'Copy link'}</Button
-		>
+	<footer class="cta">
+		<Button variant="default" size="sm" href="/station/{code}" class="more">More details →</Button>
 	</footer>
 </div>
 
@@ -169,6 +153,13 @@
 		opacity: 0.7;
 		margin: 2px 0 0;
 	}
+	.when {
+		font-family: var(--font-display);
+		font-size: 11px;
+		letter-spacing: 0.05em;
+		opacity: 0.6;
+		margin: 3px 0 0;
+	}
 	.head-right {
 		display: flex;
 		align-items: center;
@@ -177,9 +168,77 @@
 	}
 	.head-right :global(.streak) {
 		font-family: var(--font-display);
+		font-size: 12px;
 		color: #b8860b;
 		border-color: #b8860b;
 		white-space: nowrap;
+	}
+
+	/* The read */
+	.readout {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+	.summary {
+		font-family: var(--font-display);
+		font-size: 12px;
+		letter-spacing: 0.05em;
+		margin: 0;
+	}
+	.bands {
+		display: flex;
+		flex-direction: column;
+		gap: 3px;
+	}
+	.caption {
+		font-family: var(--font-display);
+		font-size: 12px;
+		letter-spacing: 0.05em;
+		/* Muted via colour alpha, not opacity, so the .now highlight below can
+		   stay full-strength (opacity would compound onto the child). */
+		color: rgba(11, 29, 58, 0.55);
+		margin: 0 0 3px;
+	}
+	/* Yellow "now" cue, matching the current-day highlight on the chart. */
+	.caption .now {
+		background: var(--sun-gold);
+		color: var(--ink);
+		font-weight: 700;
+		padding: 1px 3px;
+	}
+	.band-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.blabel {
+		font-family: var(--font-display);
+		font-size: 12px;
+		letter-spacing: 0.03em;
+		width: 104px;
+		opacity: 0.8;
+	}
+	.bar {
+		display: flex;
+		gap: 1px;
+		flex: 1;
+	}
+	.seg {
+		flex: 1;
+		height: 8px;
+		/* An empty-track that stays visible on cream paper (the shadcn --accent
+		   token is near-white here, so it's set explicitly, not from a var). */
+		background: #cddcec;
+	}
+	.seg.on {
+		background: #2e7cc4;
+	}
+	.num {
+		font-family: var(--font-display);
+		font-size: 12px;
+		width: 38px;
+		text-align: right;
 	}
 
 	.meteogram {
@@ -189,13 +248,6 @@
 		width: 100%;
 		max-width: none;
 	}
-	figcaption {
-		font-family: var(--font-display);
-		font-size: 9px;
-		letter-spacing: 0.03em;
-		opacity: 0.6;
-		margin-top: 5px;
-	}
 	.note {
 		font-size: 13px;
 		opacity: 0.7;
@@ -203,77 +255,21 @@
 		text-align: center;
 	}
 
-	.calendar h3 {
+	/* Primary CTA to the full station page */
+	.cta {
+		margin-top: 2px;
+	}
+	.cta :global(.more) {
+		width: 100%;
 		font-family: var(--font-display);
-		font-size: 11px;
-		letter-spacing: 0.05em;
-		margin: 0 0 6px;
-	}
-	.cal-row {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		margin-bottom: 2px;
-	}
-	.cal-label {
-		font-family: var(--font-display);
-		font-size: 10px;
-		width: 10px;
-	}
-	.cells {
-		display: flex;
-		gap: 1px;
+		font-size: 12px;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
 		background: var(--ink);
-		padding: 1px;
-		flex: 1;
+		color: var(--paper);
 	}
-	.cal-cell {
-		flex: 1;
-		height: 11px;
-		background: var(--paper);
-	}
-	.cal-cell.null {
-		background-image: repeating-linear-gradient(
-			45deg,
-			#9aa7b4,
-			#9aa7b4 2px,
-			#c3ccd6 2px,
-			#c3ccd6 4px
-		);
-	}
-
-	.readout {
-		display: flex;
-		gap: 20px;
-	}
-	.stat {
-		display: flex;
-		flex-direction: column;
-	}
-	.lbl {
-		font-family: var(--font-display);
-		font-size: 10px;
-		opacity: 0.6;
-	}
-	.val {
-		font-family: var(--font-display);
-		font-size: 24px;
-		line-height: 1;
-	}
-
-	.links {
-		display: flex;
-		gap: 8px;
-		align-items: center;
-		justify-content: space-between;
-	}
-	.links :global(a),
-	.links :global(button) {
-		font-family: var(--font-display);
-		font-size: 9px;
-		letter-spacing: 0.03em;
+	.cta :global(.more:hover) {
+		background: var(--focus);
 		color: var(--ink);
-		padding-left: 0;
-		padding-right: 0;
 	}
 </style>

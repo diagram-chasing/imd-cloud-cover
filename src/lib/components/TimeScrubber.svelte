@@ -194,4 +194,15 @@
 		outline: 2px solid var(--focus);
 		outline-offset: 2px;
 	}
+	/* Phone: the scrubber stretches to the full dock width. */
+	@media (max-width: 767px) {
+		.scrubber {
+			width: 100%;
+		}
+		.timeline {
+			width: auto;
+			min-width: 0;
+			flex: 1 1 auto;
+		}
+	}
 </style>

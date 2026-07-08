@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { Station } from '$lib/types';
 	import { rainTier } from '$lib/theme';
+	import { prettyDate } from '$lib/format';
+	import { skyCondition } from '$lib/summary';
 
 	interface Props {
 		station: Station | null;
@@ -9,9 +11,13 @@
 		clientY: number;
 		/** Stations aggregated under the hovered mark (1 = a single station). */
 		members?: number;
+		/** Scrubbed ISO date being viewed. */
+		date?: string;
+		/** Scrub-aware time descriptor, e.g. "15:00 IST" or "DAILY MEAN". */
+		when?: string;
 	}
 
-	let { station, values, clientX, clientY, members = 1 }: Props = $props();
+	let { station, values, clientX, clientY, members = 1, date, when }: Props = $props();
 
 	// Flip near the right/bottom edges of the viewport.
 	let style = $derived.by(() => {
@@ -36,22 +42,11 @@
 		return Math.round(v / 10);
 	}
 
-	// Plain-language read of the sky: overall cover from the densest band, then a
-	// flavour for WHICH band dominates, then rain when the precip signal clears
-	// the same floor the map's rain streaks use.
-	const FLAVOUR = { h: 'HIGH VEIL', m: 'ALTO SHEET', l: 'LOW DECK' } as const;
+	// Plain-language read of the sky in NWS public sky-condition wording, then rain
+	// when the precip signal clears the same floor the map's rain streaks use.
 	let summary = $derived.by(() => {
 		if (!values) return '';
-		const { h, m, l } = values;
-		const c = Math.max(h, m, l);
-		let s: string;
-		if (c < 15) s = 'CLEAR SKIES';
-		else if (c < 40) s = 'A FEW CLOUDS';
-		else if (c < 70) s = 'PARTLY CLOUDY';
-		else {
-			const dom = h >= m && h >= l ? 'h' : m >= l ? 'm' : 'l';
-			s = `OVERCAST · ${FLAVOUR[dom]}`;
-		}
+		let s = skyCondition(values);
 		const rain = rainTier(values.p ?? 0);
 		if (rain === 1) s += ' · RAIN POSSIBLE';
 		else if (rain === 2) s += ' · RAIN LIKELY';
@@ -64,6 +59,7 @@
 	<div class="tooltip" style={style} role="tooltip">
 		<div class="name">{station.name}</div>
 		{#if station.state}<div class="state">{station.state}</div>{/if}
+		{#if when}<div class="when">{[prettyDate(date), when].filter(Boolean).join(' · ')}</div>{/if}
 		<div class="summary">{summary}</div>
 		<div class="caption">% OF SKY COVERED, BY ALTITUDE</div>
 		<div class="rows">
@@ -109,6 +105,13 @@
 	.state {
 		font-size: 11px;
 		opacity: 0.7;
+	}
+	.when {
+		font-family: var(--font-display);
+		font-size: 8px;
+		letter-spacing: 0.05em;
+		opacity: 0.55;
+		margin-top: 3px;
 	}
 	.summary {
 		font-family: var(--font-display);

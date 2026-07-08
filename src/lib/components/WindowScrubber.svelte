@@ -148,4 +148,15 @@
 		color: #fff;
 		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
 	}
+	/* Phone: the scrubber stretches to the full dock width. */
+	@media (max-width: 767px) {
+		.win {
+			width: 100%;
+		}
+		.timeline {
+			width: auto;
+			min-width: 0;
+			flex: 1 1 auto;
+		}
+	}
 </style>
