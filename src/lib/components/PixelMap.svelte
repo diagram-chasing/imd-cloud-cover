@@ -26,7 +26,6 @@
 		SKY,
 		skyMode,
 		coverTier,
-		rainTier,
 		UI,
 		SHADOW_TINT,
 		SHADOW_ALPHA,
@@ -37,7 +36,7 @@
 	import groundDayUrl from '$lib/assets/ground/ground-day.png';
 	import groundNightUrl from '$lib/assets/ground/ground-night.png';
 	import groundMaskUrl from '$lib/assets/ground/ground-mask.png';
-	import { buildMarkAtlas, buildRainAtlas, MARK_VARIANTS } from '$lib/map/sprites';
+	import { buildMarkAtlas, MARK_VARIANTS } from '$lib/map/sprites';
 	import { buildQuadtree, nearest, type StationPoint } from '$lib/map/hit';
 	import { fnv1a, jitter, mulberry32 } from '$lib/map/hash';
 	import { sky } from '$lib/state/sky.svelte';
@@ -101,8 +100,7 @@
 	};
 	const BAND_KEYS: BandKey[] = ['low', 'middle', 'high'];
 	const VAL_KEY: Record<BandKey, 'h' | 'm' | 'l'> = { high: 'h', middle: 'm', low: 'l' };
-	const RAIN_DROP = TOWER_GAP + MARK_CELL * 1.5;
-	const SHADOW_DROP = RAIN_DROP + MARK_CELL;
+	const SHADOW_DROP = TOWER_GAP + MARK_CELL * 2.5;
 	const WAVE_SCALE = 1.25;
 	const WAVE_MAX = 100;
 	const PLANE_COUNT = 5;
@@ -273,8 +271,6 @@
 	let layers: Record<BandKey, Container> | null = null;
 	const alphaTarget: Record<BandKey, number> = { low: 1, middle: 1, high: 1 };
 	let cloudTex: Record<BandKey, Texture[][]> = { low: [], middle: [], high: [] };
-	let rainPool: Sprite[] = [];
-	let rainTex: Texture[][] = [];
 	let shadowLayer: Container | null = null;
 	let shadowPool: Sprite[] = [];
 	let waveLayer: Container | null = null;
@@ -655,14 +651,6 @@
 			}
 			for (let k = bins.length; k < arr.length; k++) arr[k].visible = false;
 		}
-		const rainOff = RAIN_DROP * sc;
-		for (let k = 0; k < bins.length; k++) {
-			const sp = rainPool[k];
-			sp.x = bins[k].px;
-			sp.y = bins[k].py + rainOff;
-			sp.scale.set(sc);
-		}
-		for (let k = bins.length; k < rainPool.length; k++) rainPool[k].visible = false;
 		// Shadows fall at the foot of the tower, nudged right and squashed flat
 		// to read as a patch on the ground plane.
 		const shadowOff = SHADOW_DROP * sc;
@@ -675,7 +663,6 @@
 		for (let k = bins.length; k < shadowPool.length; k++) shadowPool[k].visible = false;
 		quad = buildQuadtree(lod.points);
 		updateClouds();
-		updateRain();
 		drawSelected();
 		drawHover();
 	}
@@ -684,7 +671,6 @@
 		if (!host) return;
 		await document.fonts.load("10px 'Ships Whistle'").catch(() => {});
 		const atlas = buildMarkAtlas(MARK_CELL);
-		const rainAtlas = buildRainAtlas(MARK_CELL);
 		const [mask, dayTex, nightTex] = await Promise.all([
 			loadGroundMask(groundMaskUrl).catch(() => undefined),
 			loadTex(groundDayUrl),
@@ -768,30 +754,12 @@
 				}
 			}
 		}
-		rainTex = [];
-		for (let tier = 1; tier <= 3; tier++) {
-			rainTex[tier] = [];
-			for (let v = 0; v < MARK_VARIANTS; v++) {
-				rainTex[tier][v] = mkTex(rainAtlas.get(tier as 1 | 2 | 3, v).canvas);
-			}
-		}
-
 		shadowPool = Array.from({ length: maxBins }, () => {
 			const s = new Sprite(cloudTex.low[1][0]);
 			s.anchor.set(0.5, 0.5);
 			s.tint = SHADOW_TINT;
 			s.visible = false;
 			shadowLayer!.addChild(s);
-			return s;
-		});
-
-		const rainLayer = new Container();
-		camera.addChild(rainLayer);
-		rainPool = Array.from({ length: maxBins }, () => {
-			const s = new Sprite(rainTex[1][0]);
-			s.anchor.set(0.5, 0);
-			s.visible = false;
-			rainLayer.addChild(s);
 			return s;
 		});
 
@@ -1478,20 +1446,6 @@
 		}
 	}
 
-	function updateRain() {
-		if (!geo || !layers) return;
-		for (let i = 0; i < bins.length; i++) {
-			const sp = rainPool[i];
-			const tier = rainTier(binCover(bins[i], 'p'));
-			if (tier === 0) {
-				sp.visible = false;
-				continue;
-			}
-			sp.visible = true;
-			sp.texture = rainTex[tier][bins[i].variant];
-		}
-	}
-
 	function retargetAlphas() {
 		for (const band of BAND_KEYS)
 			alphaTarget[band] = sky.focusBand === null || sky.focusBand === band ? 1 : GHOST_ALPHA;
@@ -1824,7 +1778,6 @@
 		void values;
 		if (app) {
 			updateClouds();
-			updateRain();
 		}
 	});
 	$effect(() => {

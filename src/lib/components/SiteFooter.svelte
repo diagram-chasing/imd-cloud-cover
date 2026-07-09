@@ -5,6 +5,19 @@
 	// portrait-of-population's Footer into this project's ink/paper aesthetic.
 	import rssFeedData from '$lib/data/rss-feed.json';
 	import logo from '$lib/assets/images/log.png';
+	import islandUrl from '$lib/assets/cards/world-map.png';
+	import islandPortraitUrl from '$lib/assets/cards/world-map-portrait.png';
+
+	// The "More From Us" section is a top-down RPG island (PixelMap palette).
+	// Each project is a "city" pinned to a spot on the island — its card (with the
+	// original thumbnail) sits above the pin, whose tip marks the exact location.
+	// Desktop uses a wide island (one project per landmass, either side of the
+	// river); mobile swaps to a tall portrait island with the projects stacked.
+	// Each spot's %s MUST match the matching bake() call in tmp-bake-map.mjs.
+	const citySpots = [
+		{ x: 24, y: 80, mx: 42, my: 38 },
+		{ x: 76, y: 64, mx: 58, my: 80 }
+	];
 
 	const currentYear = new Date().getFullYear();
 
@@ -46,24 +59,66 @@
 			day: 'numeric'
 		})
 	}));
+
+	// On touch devices (no hover) the desktop hover-to-expand can't work, so a
+	// pin's card expands on the first tap and the link opens on the second.
+	let openIndex = $state(-1);
+
+	function onCityClick(e: MouseEvent, i: number) {
+		// Hover-capable pointers (desktop) expand on hover — let the link work.
+		if (window.matchMedia('(hover: hover)').matches) return;
+		if (openIndex === i) return; // already open → this tap follows the link
+		e.preventDefault();
+		openIndex = i;
+	}
+
+	function onIslandClick(e: MouseEvent) {
+		// Tapping bare map (not a pin/card) collapses any open card.
+		if ((e.target as HTMLElement).classList.contains('island')) openIndex = -1;
+	}
 </script>
 
 <footer class="site-footer">
 	<div class="more">
 		<h2 class="more-title">~ More From Us ~</h2>
-		<div class="feed">
-			{#each feedItems as item (item.link)}
-				<a class="card" href={item.link} target="_blank" rel="noopener noreferrer">
-					{#if item.image}
-						<div class="thumb">
-							<img src={item.image} alt={item.title} loading="lazy" />
+		<div
+			class="island"
+			style="--island-wide: url({islandUrl}); --island-tall: url({islandPortraitUrl})"
+			onclick={onIslandClick}
+			role="presentation"
+		>
+			{#each feedItems as item, i (item.link)}
+				{@const spot = citySpots[i % citySpots.length]}
+				<a
+					class="city"
+					class:open={openIndex === i}
+					href={item.link}
+					target="_blank"
+					rel="noopener noreferrer"
+					onclick={(e) => onCityClick(e, i)}
+					style="--x: {spot.x}%; --y: {spot.y}%; --mx: {spot.mx}%; --my: {spot.my}%"
+				>
+					<div class="plaque">
+						{#if item.image}
+							<div class="thumb">
+								<img src={item.image} alt={item.title} loading="lazy" />
+							</div>
+						{/if}
+						<div class="body">
+							<h3 class="card-title">{item.title}</h3>
+							<p class="card-desc">{item.description}</p>
+							<time class="card-date">{item.date}</time>
 						</div>
-					{/if}
-					<div class="body">
-						<h3 class="card-title">{item.title}</h3>
-						<p class="card-desc">{item.description}</p>
-						<time class="card-date">{item.date}</time>
 					</div>
+					<svg class="pin" viewBox="0 0 12 17" aria-hidden="true">
+						<path
+							d="M6 0C2.7 0 0 2.7 0 6c0 4.5 6 11 6 11s6-6.5 6-11C12 2.7 9.3 0 6 0Z"
+							fill="var(--ink)"
+							stroke="var(--paper)"
+							stroke-width="1"
+						/>
+						<circle cx="6" cy="6" r="2.3" fill="var(--paper)" />
+					</svg>
 				</a>
 			{/each}
 		</div>
@@ -112,7 +167,7 @@
 		margin: 0 auto;
 	}
 	.more-title {
-		margin: 0 0 24px;
+
 		text-align: center;
 		font-family: var(--font-display);
 		font-size: 16px;
@@ -120,30 +175,87 @@
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
 	}
-	.feed {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 12px;
+	/* Top-down island the projects are pinned onto. The PNG has a transparent
+	   background, so paper shows through around the coast. Extra vertical margin
+	   gives the plaques (which rise above their pins) room to overflow. */
+	.island {
+		position: relative;
+		max-width: 560px;
+		/* The hover card pops up over the map; the top margin gives it room to
+		   rise without colliding with the section title. */
+		margin: 80px auto 0;
+		aspect-ratio: 384 / 128;
+		background-image: var(--island-wide);
+		background-repeat: no-repeat;
+		background-position: center;
+		background-size: contain;
+		image-rendering: pixelated;
 	}
-	.card {
-		display: flex;
-		flex-direction: column;
+	/* A pinned city: the anchor point (left/top) is the pin's tip on the ground;
+	   the plaque sits just above it, centred on the same spot. */
+	.city {
+		position: absolute;
+		left: var(--x);
+		top: var(--y);
 		color: var(--ink);
 		text-decoration: none;
+	}
+	.city:hover,
+	.city:focus-visible,
+	.city.open {
+		z-index: 20;
+		outline: none;
+	}
+	.pin {
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		width: 15px;
+		height: auto;
+		transform: translateX(-50%);
+		filter: drop-shadow(1px 2px 0 rgba(11, 29, 58, 0.3));
+		transition: transform 0.12s ease;
+	}
+	/* The card sits on the map as a compact marker (a sliver of thumbnail + the
+	   title); hovering/focusing expands it to the full Tailwind `xs` (20rem) card.
+	   The `bottom` offset leaves clear air between the pin and the card. */
+	.plaque {
+		position: absolute;
+		left: 0;
+		bottom: 34px;
+		width: 208px;
+		transform: translateX(-50%);
 		background: var(--paper);
 		border: 2px solid var(--ink);
+		box-shadow: 3px 3px 0 rgba(11, 29, 58, 0.28);
 		transition:
-			box-shadow 0.12s,
-			transform 0.12s;
+			width 0.16s ease,
+			box-shadow 0.16s ease,
+			transform 0.16s ease;
 	}
-	.card:hover {
-		box-shadow: 4px 4px 0 var(--ink);
-		transform: translate(-2px, -2px);
+	.city:hover .plaque,
+	.city:focus-visible .plaque,
+	.city.open .plaque {
+		width: min(20rem, calc(100vw - 32px));
+		box-shadow: 6px 6px 0 var(--ink);
+		transform: translate(calc(-50% - 1px), -3px);
 	}
+	.city:hover .pin,
+	.city:focus-visible .pin,
+	.city.open .pin {
+		transform: translateX(-50%) translateY(-2px) scale(1.08);
+	}
+	/* Collapsed shows a sliver of the thumbnail; hover reveals the full image. */
 	.thumb {
-		height: 128px;
+		height: 56px;
 		overflow: hidden;
 		border-bottom: 2px solid var(--ink);
+		transition: height 0.16s ease;
+	}
+	.city:hover .thumb,
+	.city:focus-visible .thumb,
+	.city.open .thumb {
+		height: 150px;
 	}
 	.thumb img {
 		width: 100%;
@@ -156,28 +268,48 @@
 		display: flex;
 		flex-direction: column;
 		gap: 6px;
-		padding: 12px;
-		flex: 1;
+		padding: 12px 14px 14px;
 	}
 	.card-title {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: 14px;
-		line-height: 1.35;
+		font-size: 16px;
+		line-height: 1.25;
 	}
 	.card-desc {
 		margin: 0;
-		flex: 1;
-		font-size: 12px;
-		line-height: 1.55;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		font-size: 13px;
+		line-height: 1.5;
 		color: var(--muted-foreground);
 		text-wrap: pretty;
 	}
 	.card-date {
-		font-size: 10px;
+		font-size: 11px;
 		letter-spacing: 0.04em;
 		color: var(--muted-foreground);
 		opacity: 0.75;
+	}
+	/* On the map, the collapsed card hides its description + date; hovering the
+	   city reveals them (mobile's stacked list keeps the base rules and shows
+	   everything). */
+	.island .card-desc,
+	.island .card-date {
+		display: none;
+	}
+	.city:hover .card-desc,
+	.city:focus-visible .card-desc,
+	.city.open .card-desc {
+		display: -webkit-box;
+	}
+	.city:hover .card-date,
+	.city:focus-visible .card-date,
+	.city.open .card-date {
+		display: block;
 	}
 
 	.colophon {
@@ -247,9 +379,20 @@
 		color: var(--muted-foreground);
 	}
 
+	/* The wide island doesn't fit a phone, so swap to the tall portrait island.
+	   Each pin still shows its compact preview card (thumbnail sliver + title);
+	   since touch has no hover, tapping a pin expands it in place (`.open`) and a
+	   second tap follows the link. */
 	@media (max-width: 560px) {
-		.feed {
-			grid-template-columns: 1fr;
+		.island {
+			max-width: 280px;
+			margin-top: 20px;
+			aspect-ratio: 128 / 224;
+			background-image: var(--island-tall);
+		}
+		.city {
+			left: var(--mx);
+			top: var(--my);
 		}
 	}
 </style>
