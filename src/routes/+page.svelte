@@ -299,7 +299,10 @@
 				}}
 			>
 				<!-- Tap the open sea to dismiss (the STREAKS toggle does the same). -->
-				<button class="sea-dismiss" aria-label="Close streaks" onclick={() => (sky.showStreaks = false)}
+				<button
+					class="sea-dismiss"
+					aria-label="Close streaks"
+					onclick={() => (sky.showStreaks = false)}
 				></button>
 
 				<!-- A small dense leaderboard seated in the open sea just below the panned
