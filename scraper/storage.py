@@ -38,6 +38,14 @@ class Store:
     def list_keys(self, prefix):
         raise NotImplementedError
 
+    def list_prefixes(self, prefix="", delimiter="/"):
+        """Immediate "folders" under `prefix` (e.g. date dirs at the root).
+
+        Cheap alternative to list_keys() when you only need the top-level
+        groupings and not every object beneath them.
+        """
+        raise NotImplementedError
+
     def exists(self, key):
         return self.get_bytes(key) is not None
 
@@ -91,6 +99,16 @@ class LocalStore(Store):
                     out.append(rel)
         return sorted(out)
 
+    def list_prefixes(self, prefix="", delimiter="/"):
+        search = os.path.join(self.root, prefix)
+        if not os.path.isdir(search):
+            return []
+        out = []
+        for name in os.listdir(search):
+            if os.path.isdir(os.path.join(search, name)):
+                out.append(f"{prefix}{name}{delimiter}")
+        return sorted(out)
+
     def exists(self, key):
         return os.path.exists(self._path(key))
 
@@ -133,6 +151,22 @@ class R2Store(Store):
             else:
                 break
         return keys
+
+    def list_prefixes(self, prefix="", delimiter="/"):
+        prefixes = []
+        token = None
+        while True:
+            kwargs = {"Bucket": self.bucket, "Prefix": prefix, "Delimiter": delimiter}
+            if token:
+                kwargs["ContinuationToken"] = token
+            resp = self.s3.list_objects_v2(**kwargs)
+            for cp in resp.get("CommonPrefixes", []):
+                prefixes.append(cp["Prefix"])
+            if resp.get("IsTruncated"):
+                token = resp.get("NextContinuationToken")
+            else:
+                break
+        return prefixes
 
     def exists(self, key):
         from botocore.exceptions import ClientError

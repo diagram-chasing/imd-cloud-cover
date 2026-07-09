@@ -25,6 +25,7 @@ import datetime
 import json
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 
 from storage import get_store, SHORT
 
@@ -32,6 +33,20 @@ STEPS = ["00:00", "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00"]
 DAY0_SAMPLES = 8
 HISTORY_CAP = 400
 DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})/([A-Za-z0-9_-]+)-meteogram\.json$")
+DATE_ONLY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+# The store's per-object ops are network round-trips; run them concurrently.
+# boto3 clients are thread-safe for distinct calls (main.py already relies on this).
+MAX_WORKERS = 16
+
+
+def pmap(fn, items):
+    """Map `fn` over `items` concurrently, preserving order. Empty-safe."""
+    items = list(items)
+    if not items:
+        return []
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+        return list(ex.map(fn, items))
 
 SUN_THRESHOLD = 25   # effective daily mean < 25 => clear
 CLOUD_THRESHOLD = 70  # effective daily mean >= 70 => cloudy
@@ -104,12 +119,16 @@ def read_slice(store, date, code):
 
 
 def list_dates(store):
-    """All dates that have at least one dated meteogram JSON, sorted ascending."""
-    dates = set()
-    for key in store.list_keys(""):
-        m = DATE_RE.match(key)
-        if m:
-            dates.add(m.group(1))
+    """All snapshot dates, sorted ascending.
+
+    Uses a delimited listing of top-level "folders" (one cheap paginated call)
+    instead of enumerating every object in the bucket.
+    """
+    dates = []
+    for prefix in store.list_prefixes(""):
+        name = prefix.rstrip("/")
+        if DATE_ONLY_RE.match(name):
+            dates.append(name)
     return sorted(dates)
 
 
@@ -143,41 +162,55 @@ def build_latest(store, date, manifest_codes, slices):
     return doc
 
 
-def update_histories(store, date, slices, manifest_codes):
-    """Merge today's daily means into each mapped station's history file.
+def load_histories(store, manifest_codes):
+    """Fetch every station's history file once, concurrently.
 
-    Idempotent by date key. Returns {code: daily_means} for today.
+    Returns {code: hist-or-None}. rollups, streaks and update_histories all read
+    from this single in-memory copy instead of re-fetching from the store.
+    """
+    codes = sorted(manifest_codes)
+    results = pmap(lambda c: store.get_json(f"history/{c}.json"), codes)
+    return dict(zip(codes, results))
+
+
+def update_histories(store, date, slices, manifest_codes, histories):
+    """Merge today's daily means into the in-memory histories, then persist the
+    changed files concurrently.
+
+    Mutates `histories` so downstream rollups/streaks see today's data without
+    re-reading the store. Idempotent by date key. Returns {code: daily_means}.
     """
     today_means = {}
+    changed = []
     for code, bands in slices.items():
         if code not in manifest_codes:
             continue
         h, m, l, p = bands
-        dm = daily_means(h, m, l, p)
-        today_means[code] = dm
+        today_means[code] = daily_means(h, m, l, p)
 
-        key = f"history/{code}.json"
-        hist = store.get_json(key) or {"code": code, "kind": "day0-forecast", "days": {}}
+        hist = histories.get(code) or {"code": code, "kind": "day0-forecast", "days": {}}
         hist.setdefault("days", {})
         hist["days"][date] = history_entry(h, m, l, p)
         # Cap to most recent HISTORY_CAP dates.
         if len(hist["days"]) > HISTORY_CAP:
-            keep = dict(sorted(hist["days"].items())[-HISTORY_CAP:])
-            hist["days"] = keep
-        store.put_json(key, hist, cache_control=SHORT)
+            hist["days"] = dict(sorted(hist["days"].items())[-HISTORY_CAP:])
+        histories[code] = hist
+        changed.append(code)
+
+    pmap(lambda c: store.put_json(f"history/{c}.json", histories[c], cache_control=SHORT), changed)
     return today_means
 
 
-def build_rollups(store, dates_window, manifest_codes):
-    """Per-station daily-mean series over a date window, from history files.
+def build_rollups(histories, dates_window, manifest_codes):
+    """Per-station daily-mean series over a date window, from in-memory histories.
 
     dates_window is ascending list of dates. Missing days are null-filled.
     """
     stations = {}
     national = {"h": [], "m": [], "l": [], "p": [], "e": []}
     # Gather per-station series
-    for code in manifest_codes:
-        hist = store.get_json(f"history/{code}.json")
+    for code in sorted(manifest_codes):
+        hist = histories.get(code)
         if not hist:
             continue
         days = hist.get("days", {})
@@ -199,15 +232,15 @@ def build_rollups(store, dates_window, manifest_codes):
     return {"window": len(dates_window), "dates": dates_window, "stations": stations, "national": national}
 
 
-def compute_streaks(store, latest_date, manifest_codes, manifest):
+def compute_streaks(histories, latest_date, manifest_codes, manifest):
     """Current active streaks per station, walking back calendar-consecutively.
 
     Returns {"sun": [{code,name,days}], "cloud": [...]} top-5 each.
     """
     sun, cloud = [], []
     latest = datetime.date.fromisoformat(latest_date)
-    for code in manifest_codes:
-        hist = store.get_json(f"history/{code}.json")
+    for code in sorted(manifest_codes):
+        hist = histories.get(code)
         if not hist:
             continue
         days = hist.get("days", {})
@@ -273,8 +306,9 @@ def build_summary(store, date, manifest, today_means, streaks, failed_count):
     }
 
 
-def update_dates_index(store, latest_date):
-    dates = list_dates(store)
+def update_dates_index(store, latest_date, dates=None):
+    if dates is None:
+        dates = list_dates(store)
     doc = {"dates": dates, "latest": dates[-1] if dates else latest_date}
     store.put_json("meta/dates.json", doc, cache_control=SHORT)
     return doc
@@ -302,13 +336,10 @@ def aggregate_date(store, date, generated_at, report=None):
     manifest_codes = set(manifest["stations"].keys())
 
     codes = codes_for_date(store, date)
-    slices = {}
+    print(f"Reading {len(codes)} raw slices for {date}...")
+    bands_list = pmap(lambda c: read_slice(store, date, c), codes)
+    slices = {c: b for c, b in zip(codes, bands_list) if b is not None}
     suspicious = []
-    for code in codes:
-        bands = read_slice(store, date, code)
-        if bands is None:
-            continue
-        slices[code] = bands
 
     unmapped = sorted(c for c in slices if c not in manifest_codes)
 
@@ -316,20 +347,23 @@ def aggregate_date(store, date, generated_at, report=None):
     latest["generated_at"] = generated_at
     store.put_json("latest/all-stations.json", latest, cache_control=SHORT)
 
-    today_means = update_histories(store, date, slices, manifest_codes)
+    print(f"Loading {len(manifest_codes)} station histories...")
+    histories = load_histories(store, manifest_codes)
+    today_means = update_histories(store, date, slices, manifest_codes, histories)
 
+    print("Building rollups, streaks and summary...")
     all_dates = list_dates(store)
     for n, name in ((7, "7d"), (30, "30d")):
         win = window_dates(all_dates, date, n)
-        roll = build_rollups(store, win, manifest_codes)
+        roll = build_rollups(histories, win, manifest_codes)
         store.put_json(f"rollups/{name}.json", roll, cache_control=SHORT)
 
-    streaks = compute_streaks(store, date, manifest_codes, manifest)
+    streaks = compute_streaks(histories, date, manifest_codes, manifest)
     failed_count = report.get("failed_count", 0) if report else 0
     summary = build_summary(store, date, manifest, today_means, streaks, failed_count)
     store.put_json("latest/summary.json", summary, cache_control=SHORT)
 
-    update_dates_index(store, date)
+    update_dates_index(store, date, all_dates)
 
     run_report = {
         "date": date,
@@ -357,23 +391,24 @@ def rebuild(store, generated_at):
     manifest = upload_manifest(store)
     manifest_codes = set(manifest["stations"].keys())
 
-    # Rebuild histories from scratch in date order.
+    # Rebuild histories from scratch in date order. Reads within a date run
+    # concurrently; dates stay ordered so each history's `days` keys insert in
+    # chronological order.
     fresh_hist = {}
     for date in all_dates:
-        for code in codes_for_date(store, date):
-            if code not in manifest_codes:
-                continue
-            bands = read_slice(store, date, code)
+        codes = [c for c in codes_for_date(store, date) if c in manifest_codes]
+        bands_list = pmap(lambda c: read_slice(store, date, c), codes)
+        for code, bands in zip(codes, bands_list):
             if bands is None:
                 continue
-            h, m, l, p = bands
             fresh_hist.setdefault(code, {"code": code, "kind": "day0-forecast", "days": {}})
-            fresh_hist[code]["days"][date] = history_entry(h, m, l, p)
+            fresh_hist[code]["days"][date] = history_entry(*bands)
 
-    for code, hist in fresh_hist.items():
+    for hist in fresh_hist.values():
         if len(hist["days"]) > HISTORY_CAP:
             hist["days"] = dict(sorted(hist["days"].items())[-HISTORY_CAP:])
-        store.put_json(f"history/{code}.json", hist, cache_control=SHORT)
+    pmap(lambda c: store.put_json(f"history/{c}.json", fresh_hist[c], cache_control=SHORT),
+         list(fresh_hist))
     print(f"Wrote {len(fresh_hist)} history files.")
 
     # Regenerate latest/rollups/summary for the most recent date.
