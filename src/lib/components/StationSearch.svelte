@@ -9,7 +9,7 @@
 		CommandEmpty,
 		CommandItem
 	} from '$lib/components/ui/command';
-	import { Button } from '$lib/components/ui/button';
+	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { SearchIcon } from '@hugeicons/core-free-icons';
 
@@ -158,18 +158,20 @@
 <Popover bind:open>
 	<PopoverTrigger>
 		{#snippet child({ props })}
-			<Button
+			<!-- Paper pixel key; compact drops the text and squares the cap padding. -->
+			<PixelButton
 				{...props}
-				variant="outline"
-				size={compact ? 'icon' : 'sm'}
+				size="sm"
+				cap="paper"
 				aria-label="Find a city or station"
-				class="{compact
-					? 'size-8'
-					: 'h-11 px-3'} rounded-none border-2 border-ink bg-paper text-xs tracking-wider text-ink uppercase shadow-none hover:bg-cloud-block hover:text-ink"
+				class="text-xs tracking-wider uppercase"
+				style={compact ? '--pad: 4px 7px' : undefined}
 			>
-				<HugeiconsIcon icon={SearchIcon} strokeWidth={2} />
-				{#if !compact}<span>Find a place</span>{/if}
-			</Button>
+				<span class="flex items-center gap-1.5">
+					<HugeiconsIcon icon={SearchIcon} strokeWidth={2} size={16} />
+					{#if !compact}<span>Find a place</span>{/if}
+				</span>
+			</PixelButton>
 		{/snippet}
 	</PopoverTrigger>
 	<PopoverContent

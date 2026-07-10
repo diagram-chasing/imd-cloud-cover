@@ -154,13 +154,13 @@ const HIGH_W = [3, 5, 7, 9]; // cirrus streak width per tier (always 2 rows)
 
 // Per-band alpha for tower marks. High is bumped vs the flat CLOUD.high so the
 // separated top mark stays legible against both sky and land.
-const MARK_ALPHA: Record<BandKey, number> = { high: 0.55, middle: 0.95, low: 1 };
+export const MARK_ALPHA: Record<BandKey, number> = { high: 0.55, middle: 0.95, low: 1 };
 
 // Cover tier → luminance ramp. Size alone barely separates tiers when zoomed
 // out, so we also fade low-cover marks and drive high-cover ones to full
 // opacity. This is the dominant cue: dense regions visibly glow, sparse ones
 // recede, and spatial patterns read at any zoom. Indexed by tier-1 (tiers 1-4).
-const TIER_ALPHA = [0.42, 0.6, 0.82, 1];
+export const TIER_ALPHA = [0.42, 0.6, 0.82, 1];
 
 /** A bumpy-topped, flat-bottomed height profile → the body of a puff cloud. */
 function puffProfile(rand: () => number, w: number, maxH: number, rough: number): number[] {
@@ -211,7 +211,7 @@ function cirrusPattern(rand: () => number, w: number): Pattern {
 	return grid;
 }
 
-function makePattern(band: BandKey, tier: number, variant: number): Pattern {
+export function makePattern(band: BandKey, tier: number, variant: number): Pattern {
 	const rand = mulberry32(fnv1a(`${band}:${tier}:${variant}`));
 	if (band === 'high') return cirrusPattern(rand, HIGH_W[tier - 1]);
 	const [w, maxH] = SIZES[band][tier - 1];

@@ -6,7 +6,6 @@
 		annotationCalloutCurve,
 		annotationXYThreshold
 	} from 'd3-svg-annotation';
-	import AtlasWordmark from './AtlasWordmark.svelte';
 	import * as Carousel from '$lib/components/ui/carousel/index.js';
 	import type { CarouselAPI } from '$lib/components/ui/carousel/context.js';
 
@@ -17,6 +16,10 @@
 		title: string;
 		note: string;
 		rect: Rect; // panel bounds — marquee + hotspot
+		pad?: [number, number]; // extra thumbnail crop margin [top, bottom] in % of image, so
+		// plotted ink that overshoots the panel frame (markers, whiskers, peaks) isn't clipped
+		nudgeX?: number; // shift the thumbnail crop window right by this % (content moves left);
+		// only affects the thumbnail, not the marquee/hotspot. Trims the axis gutter at the left edge.
 		mark: { x: number; y: number }; // numbered chip, % of the image (hand-placed)
 		side: 'left' | 'right';
 		anchorY: number; // card vertical center, % of image height
@@ -24,8 +27,6 @@
 
 	const SRC = '/method-meteogram.webp';
 
-	// Panel frame lines measured off the 1100×1100 plate: plot area x=10.91→99.09,
-	// horizontal rules at y = 6.36, 40, 47.73, 55.45, 63.18, 70.91, 78.64, 86.36, 96.36.
 	const PLOT_X = 10.91;
 	const PLOT_W = 88.18;
 
@@ -36,9 +37,9 @@
 			side: 'left',
 			anchorY: 12,
 			title: 'UPPER AIR',
-			note: 'A vertical slice of the sky up to about 5 km — barbs for wind, green shading for moist air, lines for temperature aloft.',
+			note: 'A vertical cross-section of the sky up to about 5 km. Barbs for wind direction, green shading for how moist the air is.',
 			rect: { x: PLOT_X, y: 6.36, w: PLOT_W, h: 33.64 },
-			mark: { x: 15, y: 19.5 }
+			mark: { x: 20, y: 19.5 }
 		},
 		{
 			id: 'pressure',
@@ -47,8 +48,9 @@
 			anchorY: 11,
 			title: 'PRESSURE & THICKNESS',
 			note: 'Air pressure at sea level, with a second line that tracks how warm the whole air column is.',
-			rect: { x: PLOT_X, y: 40, w: PLOT_W, h: 7.73 },
-			mark: { x: 95.5, y: 44.2 }
+			rect: { x: PLOT_X, y: 41, w: PLOT_W, h: 6.8 },
+			pad: [0.5, 0.12],
+			mark: { x: 85, y: 44.2 }
 		},
 		{
 			id: 'instability',
@@ -56,9 +58,10 @@
 			side: 'left',
 			anchorY: 43.5,
 			title: 'INSTABILITY',
-			note: 'How primed the air is to build storms: bars are storm fuel (CAPE), the line is the lifted index.',
-			rect: { x: PLOT_X, y: 47.73, w: PLOT_W, h: 7.72 },
-			mark: { x: 14, y: 51.8 }
+			note: 'How likely the atmosphere is to build storms, shown by the bars.',
+			rect: { x: PLOT_X, y: 48, w: PLOT_W, h: 7.3 },
+			pad: [0.28, 0.26],
+			mark: { x: 20, y: 51.8 }
 		},
 		{
 			id: 'wind',
@@ -66,9 +69,10 @@
 			side: 'right',
 			anchorY: 37.5,
 			title: 'SURFACE WIND',
-			note: 'Wind just above the ground: steady speed below, gusts on top, barbs for direction.',
-			rect: { x: PLOT_X, y: 55.45, w: PLOT_W, h: 7.73 },
-			mark: { x: 96.2, y: 59.4 }
+			note: 'Wind speed and direction 10m above the ground.',
+			rect: { x: PLOT_X, y: 55.65, w: PLOT_W, h: 7.33 },
+			pad: [0.34, 0.3],
+			mark: { x: 85, y: 59.4 }
 		},
 		{
 			id: 'temperature',
@@ -76,9 +80,10 @@
 			side: 'left',
 			anchorY: 68.5,
 			title: 'TEMPERATURE',
-			note: 'The day-night swing of air temperature, with whiskers marking each 3-hour high and low.',
-			rect: { x: PLOT_X, y: 63.18, w: PLOT_W, h: 7.73 },
-			mark: { x: 14.6, y: 66.9 }
+			note: 'The day-night swing of air temperature, in celsius, with whiskers marking each 3-hour high and low.',
+			rect: { x: PLOT_X, y: 63.78, w: PLOT_W, h: 6.93 },
+			pad: [0.56, 0.12],
+			mark: { x: 20, y: 66.9 }
 		},
 		{
 			id: 'humidity',
@@ -86,9 +91,12 @@
 			side: 'right',
 			anchorY: 63,
 			title: 'HUMIDITY',
-			note: 'How damp the air is — near-saturated overnight, drying out through the afternoon.',
-			rect: { x: PLOT_X, y: 70.91, w: PLOT_W, h: 7.73 },
-			mark: { x: 95.2, y: 74.9 }
+			note: 'How much moisture is in the air, calculated in percentage.',
+			rect: { x: PLOT_X, y: 70.75, w: PLOT_W, h: 7.73 },
+			pad: [0, 0.22],
+			nudgeX: 1.2,
+
+			mark: { x: 85, y: 74.9 }
 		},
 		{
 			id: 'cloud',
@@ -96,9 +104,11 @@
 			side: 'right',
 			anchorY: 91.5,
 			title: 'CLOUD COVER',
-			note: 'How much of the sky is covered, split into high, middle and low decks. The one panel this site reads.',
-			rect: { x: PLOT_X, y: 78.64, w: PLOT_W, h: 7.72 },
-			mark: { x: 95.8, y: 82.4 }
+			note: 'How much of the sky is covered, split into high, middle and low decks.',
+			rect: { x: PLOT_X, y: 78.64, w: PLOT_W, h: 7.42 },
+			pad: [0, 0],
+			nudgeX: 1.2,
+			mark: { x: 85, y: 82.4 }
 		},
 		{
 			id: 'precip',
@@ -106,9 +116,11 @@
 			side: 'left',
 			anchorY: 92.5,
 			title: 'PRECIPITATION',
-			note: 'Rain expected in each 3-hour window — green for the total, red for the thunderstorm share.',
-			rect: { x: PLOT_X, y: 86.36, w: PLOT_W, h: 10 },
-			mark: { x: 14, y: 91.5 }
+			note: 'Rain expected in each 3-hour window. Green for the total, red for thunderstorms.',
+			rect: { x: PLOT_X, y: 86.46, w: PLOT_W, h: 10 },
+			nudgeX: 1.2,
+
+			mark: { x: 20, y: 91.5 }
 		}
 	];
 
@@ -129,18 +141,11 @@
 
 	let root: HTMLElement | undefined = $state();
 
-	// Atlas x-coordinates: grid columns are 19.5% | 56% | 19.5% with 2.5% gaps,
-	// so the image spans [22, 78] of the atlas width.
 	const IMG_L = 22;
 	const IMG_W = 56;
 	const CARD_L = 19.5;
 	const CARD_R = 80.5;
 
-	// Leader lines: d3-annotation connectors in atlas pixel space. Every line
-	// leaves the chip horizontally from its side-edge center, runs its vertical
-	// in the clean gutter between plate and cards, takes one 45° elbow into the
-	// card's row, and enters the card flat. Drawn twice — paper casing under ink
-	// — so the line stays legible over the busy plate.
 	let aw = $state(0);
 	let ah = $state(0);
 	let leadsEl: SVGSVGElement | undefined = $state();
@@ -152,7 +157,6 @@
 		const ELBOW = 14; // 45° segment size
 		const specs = REGIONS.map((r) => {
 			const dir = r.side === 'left' ? -1 : 1;
-			// start at the chip's center — the chip paints above, so the line tucks under it
 			const sx = ((IMG_L + (r.mark.x * IMG_W) / 100) / 100) * aw;
 			const sy = (r.mark.y / 100) * ah;
 			const ex = ((r.side === 'left' ? CARD_L : CARD_R) / 100) * aw;
@@ -176,7 +180,6 @@
 				connector: { points, curve: curveLinear }
 			};
 		});
-		// Time-span annotation under the plate: the whole strip is one 10-day run.
 		const bx0 = ((IMG_L + (PLOT_X * IMG_W) / 100) / 100) * aw;
 		const bx1 = ((IMG_L + ((PLOT_X + PLOT_W) * IMG_W) / 100) / 100) * aw;
 		const spanY = ah + 16;
@@ -189,7 +192,7 @@
 			type: annotationXYThreshold,
 			disable: ['connector'],
 			subject: { x1: bx0, x2: bx1 },
-			note: { label: 'ONE PLATE = A 10-DAY FORECAST, EVERY 3 HOURS', align: 'middle', wrap: 600 }
+			note: { label: '10-DAY FORECAST WITH 3 HOUR INTERVALS', align: 'middle', wrap: 600 }
 		};
 		const sel = select(svg);
 		sel.selectAll('*').remove();
@@ -232,9 +235,6 @@
 		}
 	}
 
-	// Deck cards don't pin: clicking a side card slides it to the center. The
-	// highlight moves right away — waiting for Embla's 'select' would flash the
-	// old card while the scroll is still settling.
 	function cardClick(id: string, ctx: string) {
 		if (ctx === 'm') {
 			pinned = null;
@@ -252,8 +252,6 @@
 		deckDismissed = true;
 	}
 
-	// Swiping the deck sweeps the spotlight across the plate above. Embla fires
-	// 'select' mid-drag as the target snap changes, so the sweep tracks the finger.
 	let deckApi = $state<CarouselAPI>();
 
 	$effect(() => {
@@ -270,10 +268,6 @@
 		};
 	});
 
-	// ---- Card charts: real excerpts of the plate, not redrawn minis ----
-	// The same webp, cropped with background-position math. Row panels show
-	// their opening days at near-native resolution; the tall upper-air panel
-	// shows its full run. Deck cards (phones) get a tighter, larger crop.
 	function cropStyle(rect: Rect) {
 		return (
 			`aspect-ratio:${rect.w} / ${rect.h};` +
@@ -285,7 +279,13 @@
 
 	function chartCrop(r: Region, ctx: string) {
 		const frac = r.id === 'upper-air' ? 1 : ctx === 'm' ? 0.31 : 0.34;
-		return cropStyle({ ...r.rect, w: PLOT_W * frac });
+		const [pt, pb] = r.pad ?? [0, 0];
+		return cropStyle({
+			x: r.rect.x + (r.nudgeX ?? 0),
+			y: r.rect.y - pt,
+			w: PLOT_W * frac,
+			h: r.rect.h + pt + pb
+		});
 	}
 
 	function onWindowKeydown(e: KeyboardEvent) {
@@ -311,9 +311,6 @@
 </script>
 
 {#snippet chart(r: Region, ctx: string)}
-	<!-- Card chart: a real excerpt of the panel, cropped from the plate. In the deck it
-	     pins to the bottom edge (mt-auto) and must not flex-grow — the crop's background
-	     math assumes its aspect ratio. Muted state (dimming, inactive) desaturates it. -->
 	<span
 		class={[
 			'chart block w-full border border-ink bg-white bg-no-repeat',
@@ -326,13 +323,12 @@
 {/snippet}
 
 {#snippet card(r: Region, ctx: string)}
-	<!-- Muted cards fade by color, not opacity — they stay opaque over the leader lines. -->
 	{@const muted = dimming && shown !== r.id}
 	<button
 		type="button"
 		class={[
 			'card flex w-full cursor-pointer appearance-none flex-col gap-1.5 border-2 border-transparent bg-paper px-2.5 pt-2 pb-2.5 text-left text-inherit transition-[box-shadow,border-color] duration-180 ease-[ease] motion-reduce:transition-none',
-			shown === r.id && 'border-ink shadow-[4px_4px_0] shadow-focus'
+			shown === r.id && 'border-ink! shadow-[4px_4px_0] shadow-focus'
 		]}
 		data-card={r.n}
 		aria-pressed={pinned === r.id}
@@ -344,7 +340,6 @@
 		onkeydown={(e) => onCardKeydown(e, r.n)}
 	>
 		<span class="card-head flex items-center gap-2">
-			<!-- inline marker: shrinks to nothing (flex-none) so the title keeps its baseline -->
 			<span
 				class={[
 					'marker inline inline-flex h-[19px] w-[19px] flex-none items-center justify-center bg-ink text-xs leading-none font-bold text-paper',
@@ -364,40 +359,19 @@
 				muted && 'text-steel-600'
 			]}>{r.note}</span
 		>
-		{#if r.id === 'cloud'}
-			<span
-				class={[
-					'card-day0 block text-xs leading-normal text-muted-foreground',
-					muted && 'text-steel-600'
-				]}
-			>
-				<span
-					class={[
-						'day0-chip mr-1 inline-block bg-ink px-[5px] pt-0 pb-px align-[1px] text-xs leading-snug font-bold tracking-[0.08em] text-paper',
-						muted && 'bg-steel-500'
-					]}>DAY 0</span
-				>
-				the first eight 3-hour steps — the slice the pipeline keeps.
-			</span>
-		{/if}
+
 		{@render chart(r, ctx)}
 	</button>
 {/snippet}
 
 <svelte:window onkeydown={onWindowKeydown} onpointerdown={onWindowPointerdown} />
 
-<!-- <AtlasWordmark /> -->
-
-<!-- The wordmark above is part of the same plate — keep them close. -->
 <figure class={['specimen mx-auto mt-6 mb-20', dimming && 'dimming']} bind:this={root}>
-	<!-- Desktop atlas grid: cards | plate | cards, one shared %-space. Collapses to a
-	     single centered column below 1099px (must match narrow MediaQuery). -->
 	<div
 		class="atlas relative left-1/2 grid w-[min(100vw-48px,1380px)] -translate-x-1/2 [grid-template-columns:19.5%_56%_19.5%] [column-gap:2.5%] max-[1099px]:left-auto max-[1099px]:mx-auto max-[1099px]:block max-[1099px]:w-full max-[1099px]:max-w-[640px] max-[1099px]:translate-x-0"
 		bind:clientWidth={aw}
 		bind:clientHeight={ah}
 	>
-		<!-- overflow-hidden clips the marquee's spotlight shadow; line-height:0 removes the img gap -->
 		<div
 			class="mount relative col-start-2 overflow-hidden border-2 border-ink bg-white leading-none shadow-[6px_6px_0] shadow-cloud-block"
 		>
@@ -418,8 +392,7 @@
 					onclick={() => tapRegion(r.id)}
 				></button>
 			{/each}
-			<!-- Spotlight marquee: one element that morphs between panels. When dimming it
-			     casts a huge paper-tinted shadow over everything but the framed panel. -->
+
 			<div
 				class={[
 					'marquee pointer-events-none absolute border-2 border-focus transition-[left,top,width,height,box-shadow] duration-180 ease-[ease] motion-reduce:transition-none',
@@ -430,9 +403,6 @@
 				aria-hidden="true"
 			></div>
 			{#each REGIONS as r (r.id)}
-				<!-- Numbered markers, hand-placed on the plate. Chips sit above the leader lines
-				     (z-2) with a paper ring. Muting is a color shift, never translucency — overlaps
-				     stay clean. Hidden on narrow layouts (nothing to key without lines/side cards). -->
 				<span
 					class={[
 						'marker on-plate absolute z-[2] inline-flex h-[19px] w-[19px] -translate-x-1/2 -translate-y-1/2 items-center justify-center bg-ink text-xs leading-none font-bold text-paper shadow-[0_0_0_2px] shadow-paper transition-[background,color] duration-180 ease-[ease] motion-reduce:transition-none max-[1099px]:hidden',
@@ -444,7 +414,6 @@
 			{/each}
 		</div>
 
-		<!-- cards paint over the leader lines (z-2); hidden on narrow layouts -->
 		<div class="cards pointer-events-none absolute inset-0 z-[2] max-[1099px]:hidden">
 			{#each REGIONS as r (r.id)}
 				<div
@@ -459,8 +428,6 @@
 			{/each}
 		</div>
 
-		<!-- Leader lines: straight connectors with a paper casing, drawn by d3-annotation.
-		     overflow-visible so the elbows can leave the SVG box. -->
 		<svg
 			class="leads pointer-events-none absolute inset-0 h-full w-full overflow-visible"
 			bind:this={leadsEl}
@@ -468,8 +435,6 @@
 		></svg>
 	</div>
 
-	<!-- Legend deck (narrow layouts): Embla carousel, swipe to sweep the spotlight.
-	     Full-bleed 100vw swipe lane; hidden on wide layouts. -->
 	<div
 		class="legend mt-4 hidden max-[1099px]:relative max-[1099px]:left-1/2 max-[1099px]:block max-[1099px]:w-screen max-[1099px]:-translate-x-1/2"
 	>
@@ -485,8 +450,7 @@
 				{/each}
 			</Carousel.Content>
 		</Carousel.Root>
-		<!-- Spotlight exit (narrow layouts): clears the callout to read the plate plain.
-		     Hidden, not removed, when idle — the deck below must not jump under the tap. -->
+
 		<button
 			type="button"
 			class={[
@@ -501,10 +465,6 @@
 </figure>
 
 <style>
-	/* Residual bridge rules: the leader-line internals (g.casing / g.ink / g.annotation
-	   / paths / note label / span-ticks) are appended at runtime by d3-svg-annotation, so
-	   they never exist in the markup and can't take utility classes. Colors reference the
-	   token vars; the steel greys are the dimmed-state connectors. */
 	.leads :global(g.casing g.annotation path) {
 		fill: none;
 		stroke: var(--paper);

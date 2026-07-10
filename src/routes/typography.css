@@ -1,0 +1,280 @@
+
+
+:root {
+
+	--leading: 1.625rem; /* 26px */
+	--article-body: 1rem;
+	--measure: 40rem; /* 640px prose measure, ~65ch at body size */
+
+
+	--ms--1: 0.8125;
+	--ms-0: 1;
+	--ms-1: 1.2;
+	--ms-2: 1.4375;
+	--ms-3: 1.6875;
+	--ms-4: 2;
+	--ms-5: 2.5;
+	--ms-6: 3;
+	--ms-7: 3.5;
+	--ms-8: 4.3;
+}
+
+@media (min-width: 48em) {
+	:root {
+		--leading: 1.9375rem; /* 31px */
+		--article-body: 1.325rem; /* 18px */
+	}
+}
+
+/* Rhythm + measure as Tailwind tokens for the rest of the site:
+   mt-leading / gap-leading / p-leading…, and max-w-measure. */
+@theme inline {
+	--spacing-leading: var(--leading);
+	--container-measure: var(--measure);
+}
+
+@layer base {
+	.article {
+		max-width: 67.5rem; /* 1080px content width; breakouts stretch to this */
+		margin-inline: auto;
+		padding: calc(2 * var(--leading)) 1.25rem calc(2.5 * var(--leading));
+		font-size: var(--article-body);
+		line-height: var(--leading);
+		color: var(--ink);
+	}
+
+	/* Gutenberg's universal rhythm: every top-level block sits on the prose
+	   measure and lands back on the grid with one leading below it. Headings
+	   and breakouts override below. */
+	.article > :where(*) {
+		max-width: var(--measure);
+		margin: 0 auto var(--leading);
+	}
+	.article > :where(.breakout, .support-band) {
+		max-width: none;
+	}
+
+	/* Display headline: the one element allowed off the grid — set solid so
+	   the pixel face reads as a title block, not lines of text. */
+	.article > :where(h1) {
+		max-width: 45rem;
+		margin-bottom: var(--leading);
+		font-size: clamp(calc(var(--ms-6) * 1rem), 2rem + 4.5vw, calc(var(--ms-8) * 1rem));
+		line-height: 1.05;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+		text-align: center;
+		text-wrap: balance;
+	}
+
+	/* Lede: the paragraph straight after the headline. */
+	.article > :where(h1 + p) {
+		max-width: 35rem;
+		margin-bottom: calc(2 * var(--leading));
+		font-size: calc(var(--ms-1) * 1em);
+		line-height: calc(1.25 * var(--leading));
+		text-align: center;
+		text-wrap: balance;
+	}
+
+	/* Standfirst: the hook line under the headline. Same centred, balanced
+	   treatment as the lede but tighter below it, since the byline follows.
+	   Must come after the h1 + p rule to win on source order (equal specificity
+	   via :where). */
+	.article > :where(.dek) {
+		max-width: 35rem;
+		margin-bottom: calc(0.5 * var(--leading));
+		font-size: calc(var(--ms-1) * 1em);
+		line-height: calc(1.25 * var(--leading));
+		text-align: center;
+		text-wrap: balance;
+	}
+
+	/* Byline: small credit + outbound link, closing the header block with a
+	   chapter's worth of air before the copy. */
+	.article > :where(.byline) {
+		margin-bottom: calc(2 * var(--leading));
+		font-size: calc(var(--ms--1) * 1em);
+		text-align: center;
+		opacity: 0.7;
+	}
+
+	/* Heading scale — Gutenberg's (size, line-height, space-before, space-after)
+	   quadruples, in leading multiples so headings stay on the grid. */
+	.article > :where(h2) {
+		margin-top: calc(2 * var(--leading));
+		margin-bottom: calc(0.5 * var(--leading));
+		font-size: calc(var(--ms-3) * 1em);
+		line-height: calc(1.5 * var(--leading));
+		letter-spacing: 0.01em;
+	}
+	.article > :where(h3) {
+		margin-top: calc(1.5 * var(--leading));
+		margin-bottom: calc(0.5 * var(--leading));
+		font-size: calc(var(--ms-2) * 1em);
+		line-height: var(--leading);
+	}
+	.article > :where(h4) {
+		margin-top: calc(1.5 * var(--leading));
+		margin-bottom: calc(0.5 * var(--leading));
+		font-size: calc(var(--ms-1) * 1em);
+		line-height: var(--leading);
+	}
+	.article > :where(h5) {
+		margin-top: calc(1.5 * var(--leading));
+		margin-bottom: calc(0.5 * var(--leading));
+		font-size: 1em;
+		line-height: var(--leading);
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+	.article > :where(h6) {
+		margin-top: calc(1.5 * var(--leading));
+		margin-bottom: calc(0.5 * var(--leading));
+		font-size: 1em;
+		line-height: var(--leading);
+		font-style: italic;
+		font-weight: 400;
+	}
+	/* Stacked headings need less air between them. */
+	.article > :where(h1, h2, h3, h4) + :where(h2, h3, h4, h5, h6) {
+		margin-top: 0;
+	}
+
+	.article > :where(p) {
+		text-wrap: pretty;
+	}
+
+	/* Lists: square markers keep the pixel voice; rows stay on the grid. */
+	.article > :where(ul, ol) {
+		padding-left: var(--leading);
+	}
+	.article > :where(ul) {
+		list-style: square;
+	}
+	.article :where(li) {
+		margin-bottom: 0;
+	}
+	.article :where(li > ul, li > ol) {
+		margin-bottom: 0;
+		padding-left: var(--leading);
+	}
+
+	/* Quotes: a 3px ink rule (the map-frame weight) instead of Gutenberg's
+	   bare indent. */
+	.article > :where(blockquote) {
+		padding-left: calc(var(--leading) - 3px);
+		border-left: 3px solid var(--ink);
+		font-style: italic;
+	}
+	.article > blockquote > :where(p) {
+		margin: 0 0 var(--leading);
+	}
+	.article > blockquote > :where(p:last-child) {
+		margin-bottom: 0;
+	}
+	.article :where(cite) {
+		display: block;
+		font-style: normal;
+		font-size: calc(var(--ms--1) * 1em);
+	}
+
+	/* Thematic break: the shoreline's own 8×3 pixel wave instead of a line
+	   (same tile as .shore-waves; the fill is the image ink, not a token). */
+	.article > :where(hr) {
+		width: 112px;
+		height: 6px;
+		margin-top: calc(2 * var(--leading));
+		margin-bottom: calc(2 * var(--leading));
+		border: 0;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='3'%3E%3Cpath d='M1 0h2v1H1zM0 1h1v1H0zM3 1h1v1H3zM6 1h2v1H6zM4 2h2v1H4z' fill='%230b1d3a'/%3E%3C/svg%3E");
+		background-size: 28px 6px;
+		background-repeat: repeat-x;
+		image-rendering: pixelated;
+		opacity: 0.5;
+	}
+
+	/* Figures & images. */
+	.article :where(img) {
+		display: block;
+		max-width: 100%;
+		height: auto;
+		margin-inline: auto;
+	}
+	.article :where(figcaption) {
+		margin-top: calc(0.5 * var(--leading));
+		font-size: calc(var(--ms--1) * 1em);
+		line-height: var(--leading);
+		font-style: italic;
+		text-align: center;
+	}
+
+	/* Code: same face (the site is one typeface), set apart on a mist chip. */
+	.article :where(:not(pre) > code) {
+		padding: 0.05em 0.3em;
+		background: var(--mist-50);
+		box-shadow: 0 0 0 1px var(--mist-200);
+	}
+	.article > :where(pre) {
+		padding: calc(0.5 * var(--leading)) var(--leading);
+		background: var(--mist-50);
+		border: 2px solid var(--ink);
+		line-height: var(--leading);
+		overflow-x: auto;
+	}
+
+	/* Tables (top-level markdown tables only, so embedded components keep theirs). */
+	.article > :where(table) {
+		width: 100%;
+		border-collapse: collapse;
+		line-height: var(--leading);
+	}
+	.article > table :where(th, td) {
+		padding: calc(0.25 * var(--leading)) 0.75em;
+		border-bottom: 1px solid var(--mist-300);
+		text-align: left;
+	}
+	.article > table :where(th) {
+		border-bottom: 2px solid var(--ink);
+	}
+
+	/* Inline voice. */
+	.article :where(a) {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		transition: color 120ms;
+	}
+	.article :where(a:hover) {
+		color: var(--focus);
+	}
+	.article :where(strong) {
+		font-weight: 700;
+	}
+	.article :where(small) {
+		font-size: calc(var(--ms--1) * 1em);
+	}
+	.article :where(mark) {
+		padding: 0 0.15em;
+		background: var(--sun-gold);
+		color: var(--navy);
+	}
+	.article :where(abbr) {
+		letter-spacing: 0.1em;
+	}
+	.article ::selection {
+		background: var(--cloud-block);
+	}
+
+	/* In-content components: the specimen breaks out to the full content
+	   width; the support band gets a chapter's worth of air above it. */
+	.article > .breakout {
+		margin-top: calc(1.5 * var(--leading));
+		margin-bottom: calc(2 * var(--leading));
+	}
+	.article > .support-band {
+		margin-top: calc(3 * var(--leading));
+		margin-bottom: 0;
+	}
+}
