@@ -60,7 +60,8 @@ TWIN_MIN_KM = 400       # hard floor; twins must be far apart
 TWIN_R_FLOOR = 0.35     # min ANOMALY correlation to qualify at all
 TWIN_R_SLACK = 0.05     # among far candidates near the best r, take the FURTHEST
 TWIN_WINDOW = 10        # ± days for each city's own rolling baseline
-TWIN_MIN_STD = 5.0      # anomaly std below this = sky never changes; no twin
+TWIN_MIN_STD = 5.0      # anomaly std below this = sky never changes; no alltime twin
+TWIN_TODAY_MAX_RMSE = 12.0  # today's 8-step profiles must be at least this close
 ONSET_FROM_MONTH = 4    # look for monsoon onset from Apr 1 (skips winter fog runs)
 
 
@@ -408,29 +409,41 @@ def std(vals):
     return (sum((v - m) ** 2 for v in vals) / len(vals)) ** 0.5
 
 
-def assign_twins(entries, stations):
-    """Twin: a far-away city in a DIFFERENT state, >= TWIN_MIN_KM away, whose
-    day-to-day sky fluctuations track yours.
+def rmse(xs, ys):
+    return (sum((x - y) ** 2 for x, y in zip(xs, ys)) / len(xs)) ** 0.5
 
-    Correlates own-climatology anomalies, so neither shared seasonality nor
-    saturated flat-sky cities can fake a match; cities whose sky barely
-    changes (anomaly std < TWIN_MIN_STD) are excluded outright — nothing to
-    twin on. Among candidates within TWIN_R_SLACK of the best correlation,
-    the FURTHEST wins: the point of the feature is "opposite end of the
-    country, same sky". No qualifying far city => twin: null.
+
+def assign_twins(entries, stations, profiles):
+    """Two twins per city, both far away (>= TWIN_MIN_KM, different state):
+
+      alltime — best own-climatology anomaly correlation over the shared
+                history; among candidates within TWIN_R_SLACK of the best r,
+                the furthest wins. Flat-sky cities (anomaly std < TWIN_MIN_STD)
+                sit this one out — nothing to co-fluctuate.
+      today   — the city whose 8-step effective profile for the latest day is
+                closest (lowest RMSE), ties broken by higher historical r,
+                then distance. Daily mean `e` is too coarse (dozens of cities
+                share e=80); the shape of the day is what distinguishes.
+                Flat-sky cities DO participate here: sharing today's overcast
+                is legitimate even if your sky never varies.
+
+    Ships as twin: {"today": {code, rmse, km} | null,
+                    "alltime": {code, r, km} | null}.
     """
     codes = sorted(entries)
-    anom, eligible = {}, []
+    anom, eligible = {}, set()
     for c in codes:
         a = own_anomalies(entries[c]["e"])
         anom[c] = a
         vals = [x for x in a if x is not None]
         if len(vals) >= TWIN_MIN_OVERLAP and std(vals) >= TWIN_MIN_STD:
-            eligible.append(c)
+            eligible.add(c)
 
-    scored = {c: [] for c in codes}  # (other, r, km)
-    for i, a in enumerate(eligible):
-        for b in eligible[i + 1:]:
+    hist_cands = {c: [] for c in codes}   # (other, r, km)
+    today_cands = {c: [] for c in codes}  # (other, rmse, km)
+    pair_r = {}                           # anomaly r per far pair, for tie-breaks
+    for i, a in enumerate(codes):
+        for b in codes[i + 1:]:
             sa, sb = stations[a], stations[b]
             km = haversine_km(sa["lat"], sa["lon"], sb["lat"], sb["lon"])
             if km < TWIN_MIN_KM:
@@ -438,25 +451,46 @@ def assign_twins(entries, stations):
             st_a, st_b = entries[a].get("state"), entries[b].get("state")
             if st_a and st_b and st_a == st_b:
                 continue  # same state isn't a twin, however far
-            xy = [(x, y) for x, y in zip(anom[a], anom[b])
-                  if x is not None and y is not None]
-            if len(xy) < TWIN_MIN_OVERLAP:
-                continue
-            r = pearson([x for x, _ in xy], [y for _, y in xy])
-            if r is None or r < TWIN_R_FLOOR:
-                continue
-            scored[a].append((b, r, km))
-            scored[b].append((a, r, km))
+
+            # All-time: anomaly correlation between variance-eligible cities.
+            if a in eligible and b in eligible:
+                xy = [(x, y) for x, y in zip(anom[a], anom[b])
+                      if x is not None and y is not None]
+                if len(xy) >= TWIN_MIN_OVERLAP:
+                    r = pearson([x for x, _ in xy], [y for _, y in xy])
+                    if r is not None:
+                        pair_r[a, b] = r
+                        if r >= TWIN_R_FLOOR:
+                            hist_cands[a].append((b, r, km))
+                            hist_cands[b].append((a, r, km))
+
+            # Today: profile distance, when both cities reported today.
+            pa, pb = profiles.get(a), profiles.get(b)
+            if pa and pb and len(pa) == len(pb):
+                d = rmse(pa, pb)
+                if d <= TWIN_TODAY_MAX_RMSE:
+                    today_cands[a].append((b, d, km))
+                    today_cands[b].append((a, d, km))
 
     for code in codes:
-        cands = scored[code]
-        twin = None
-        if cands:
+        alltime = None
+        if hist_cands[code]:
+            cands = hist_cands[code]
             cutoff = max(r for _, r, _ in cands) - TWIN_R_SLACK
             other, r, km = max((s for s in cands if s[1] >= cutoff),
                                key=lambda s: (s[2], s[0]))
-            twin = {"code": other, "r": round(r, 2), "km": round(km)}
-        entries[code]["twin"] = twin
+            alltime = {"code": other, "r": round(r, 2), "km": round(km)}
+
+        today = None
+        if today_cands[code]:
+            def rank(s):
+                other, d, km = s
+                r = pair_r.get((min(code, other), max(code, other)), -1.0)
+                return (d, -r, -km, other)  # closest sky; ties: higher r, further
+            other, d, km = min(today_cands[code], key=rank)
+            today = {"code": other, "rmse": round(d, 1), "km": round(km)}
+
+        entries[code]["twin"] = {"today": today, "alltime": alltime}
 
 
 def build_cities(histories, cities, latest_date, manifest):
@@ -466,18 +500,21 @@ def build_cities(histories, cities, latest_date, manifest):
     if dates is None:
         return None
 
-    entries = {}
+    entries, profiles = {}, {}
     for code, place in cities.items():
-        entry = city_entry(place, (histories.get(code) or {}).get("days", {}),
-                           dates, latest_date)
+        days = (histories.get(code) or {}).get("days", {})
+        entry = city_entry(place, days, dates, latest_date)
         if entry:
             entries[code] = entry
+            t = days.get(latest_date, {}).get("t")
+            if t:
+                profiles[code] = t  # today's 8-step effective profile
 
     # Rank 1 = cloudiest long-term mean; ties broken by code for stability.
     for rank, code in enumerate(sorted(entries, key=lambda c: (-entries[c]["mean"], c)), 1):
         entries[code]["rank"] = rank
 
-    assign_twins(entries, manifest["stations"])
+    assign_twins(entries, manifest["stations"], profiles)
 
     def record(kind):
         withrun = [c for c in sorted(entries) if entries[c]["runs"][kind]]
