@@ -389,7 +389,7 @@
 
 <svelte:window onkeydown={onWindowKeydown} onpointerdown={onWindowPointerdown} />
 
-<AtlasWordmark />
+<!-- <AtlasWordmark /> -->
 
 <figure class="specimen" class:dimming bind:this={root}>
 	<div class="atlas" bind:clientWidth={aw} bind:clientHeight={ah}>

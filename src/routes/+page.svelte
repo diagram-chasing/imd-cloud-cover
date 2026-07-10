@@ -21,8 +21,6 @@
 	import Minimap from '$lib/components/Minimap.svelte';
 	import SupportCTA from '$lib/components/SupportCTA.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
-	import PixelBalloon from '$lib/components/PixelBalloon.svelte';
-	import ChapterMark from '$lib/components/ChapterMark.svelte';
 	import MeteogramAtlas from '$lib/components/MeteogramAtlas.svelte';
 	import { Button } from '$lib/components/ui/button';
 
@@ -173,27 +171,9 @@
 	{/each}
 </svelte:head>
 
-<!-- Framed map: a full-width bordered panel on a thin paper mat. All controls sit
-     on one bottom rail — WHAT (layers) · WHEN (time) · WHERE (find + zoom) — with
-     the streak inset in the right sea gutter, mirroring the cartouche on the left.
-     Bounded height so the page scrolls past it to the content. -->
-<!-- Thin paper mat so the frame border reads; the map goes as wide as the mat allows.
-     On desktop the mat fills the first screen — short of 100svh so the shoreline and
-     the article title peek above the fold (map height driven by it) and the page
-     scrolls past to the content; on mobile the map keeps a tall min-height and the
-     section grows in normal flow. -->
 <section
 	class="stage box-border bg-paper p-[clamp(8px,1.4vw,18px)] transition-[background-color] duration-[400ms] ease-[ease] md:h-[95svh]"
 >
-	<!-- Navy sky (bg-navy) behind the canvas while it loads. Definite height (not just
-	     min-height) so the canvas fills the frame on mobile too — otherwise the solid
-	     navy fallback shows behind the controls instead of the sea + gradient scrim the
-	     way it does on desktop. Short of the full viewport so the shoreline and the
-	     article's kicker peek above the fold — the cue that there's more to scroll to.
-	     ::after is the edge scrim: an eased deep-sky wash under the control rail so the
-	     white chrome keeps a contrast floor whatever the map draws beneath it. Tinted
-	     with the scene's own navy (night-sky) it reads as sea depth, not a UI panel;
-	     z just under the control bars (z-10). -->
 	<div
 		class="map-frame relative h-[max(88svh,440px)] overflow-hidden bg-navy after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-[9] after:h-[170px] after:bg-[linear-gradient(to_top,color-mix(in_srgb,var(--color-night-sky)_60%,transparent),color-mix(in_srgb,var(--color-night-sky)_42%,transparent)_35%,color-mix(in_srgb,var(--color-night-sky)_18%,transparent)_65%,transparent)] after:content-[''] md:h-full md:min-h-0"
 	>
@@ -215,11 +195,7 @@
 			</div>
 		{/if}
 
-		<!-- Desktop: while zoomed/panned, a corner minimap shows where the viewport sits
-		     over India (and how far it's drifted into the sea). Phones use the pan-aside
-		     streak reveal instead, so this is desktop-only. -->
 		{#if core && zoomed && !isPhone}
-			<!-- Above the map canvas but below the control rail; non-interactive scenery. -->
 			<div
 				class="minimap-corner pointer-events-none absolute top-3.5 right-4 z-[11]"
 				transition:fade={{ duration: 160 }}
@@ -228,7 +204,6 @@
 			</div>
 		{/if}
 
-		<!-- Streak leaderboard: collapsed tab / inset table in the right sea gutter. -->
 		{#if core}
 			<StreakPanel
 				summary={core.summary}
@@ -238,7 +213,6 @@
 			/>
 		{/if}
 
-		<!-- Desktop: station search parks in the top-left sky. -->
 		{#if core}
 			<div class="desktop-top absolute top-3.5 left-4 z-10 max-md:hidden">
 				<StationSearch
@@ -252,8 +226,6 @@
 			</div>
 		{/if}
 
-		<!-- Mobile chrome: corner chips in the sky strip left of the landmass
-		     (the cartouche parks itself top-right on narrow viewports). -->
 		<div class="mobile-top absolute top-0 left-0 z-10 hidden px-3 py-2.5 max-md:flex">
 			<div class="chips flex gap-1.5">
 				{#if core}
@@ -275,9 +247,6 @@
 			</div>
 		</div>
 
-		<!-- Bottom rail: WHAT (legend) · WHEN (timeline) · WHERE (find + fit).
-		     Quiet chrome: the legend and switchers are typography on the sky;
-		     the search trigger is the only boxed control. -->
 		<div class="bar bottom">
 			<div class="lane legend">
 				{#if zoomed}
@@ -293,8 +262,6 @@
 				{/if}
 			</div>
 			<div class="lane dock">
-				<!-- Phones: the legend compresses to one glyph row above the timeline,
-				     with the fit-map icon tucked to its right. -->
 				<div class="mobile-row">
 					<BandToggle horizontal />
 					{#if zoomed}
@@ -317,10 +284,6 @@
 			{#if core}{core.summary.station_count} stations; use the station search to explore.{/if}
 		</p>
 
-		<!-- Phone streaks: the board lives out in the open sea south of India. The map
-		     glides south (see PixelMap.panAside) and this world-anchored board slides
-		     up into view with the sea — same sky-typography as the desktop gutter list.
-		     The minimap shows the viewport having moved off India onto the board. -->
 		{#if core && sky.showStreaks}
 			<div
 				class="streaks-scene"
@@ -333,16 +296,12 @@
 					if (e.key === 'Escape') sky.showStreaks = false;
 				}}
 			>
-				<!-- Tap the open sea to dismiss (the STREAKS toggle does the same). -->
 				<button
 					class="sea-dismiss"
 					aria-label="Close streaks"
 					onclick={() => (sky.showStreaks = false)}
 				></button>
 
-				<!-- A small dense leaderboard seated in the open sea just below the panned
-				     landmass, above the control rail. Its measured height drives exactly
-				     how far the map pans. No close/minimap chrome — scenery. -->
 				<div class="streak-dock">
 					<div class="streak-world" bind:clientHeight={boardH}>
 						<h2 class="streak-title">STATION STREAKS</h2>
@@ -363,8 +322,6 @@
 	</div>
 </section>
 
-<!-- Shoreline: the seam between map and page reads as a coastline — pixel waves
-     lapping either side of a quiet link down to the field notes. -->
 <div class="shore">
 	<span class="shore-waves" aria-hidden="true"></span>
 	<button class="shore-link" onclick={scrollToNotes}>
@@ -376,8 +333,6 @@
 	<span class="shore-waves" aria-hidden="true"></span>
 </div>
 
-<!-- The field notes: the below-the-fold article. One centred prose measure, with
-     the meteogram specimen and the pipeline diagram breaking out wide. -->
 <div class="content" id="field-notes">
 	<header class="article-head">
 		<h1 class="headline">MAPPING CLOUDS WITH METEOGRAMS</h1>
@@ -385,26 +340,22 @@
 			Every morning the India Meteorological Department publishes a GFS <em>meteogram</em> for each of
 			its ~1,200 observation stations.
 		</p>
-		<!-- <div class="byline">
-			<a
-				class="byline-plate"
-				href="https://diagramchasing.fun"
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				<span class="byline-dot" aria-hidden="true"></span>
-				DIAGRAM CHASING
-			</a>
-			<PixelBalloon size={24} />
-		</div> -->
 	</header>
 
 	<section class="ch mt-8">
 		<div class="prose">
 			<p>
-				A <strong>meteogram</strong> is a strip chart the India Meteorological Department publishes for
-				each station — a 10-day forecast of cloud, rain, wind and temperature in eight stacked panels,
-				dissected below.
+				The Indian Meteorological Department (IMD) publishes a dense, complex data product called a <strong
+					>meteogram</strong
+				>. While it can be overwhelming at first glance, it packs a massive amount of information
+				into a single image, which makes it a very useful tool for forecasters, power grid
+				operators, and anyone tracking the weather.
+			</p>
+			<p>
+				A meteogram is a visual 10-day forecast broken down into three-hour intervals, stacked with
+				vertical panels that track variables like temperature, humidity, and atmospheric pressure.
+				With hundreds of on-ground weather stations scattered across India generating these
+				graphics, the IMD can map out the weather at a granular level nationwide.
 			</p>
 		</div>
 		<div class="breakout">
@@ -415,16 +366,27 @@
 	<section class="ch mt-8">
 		<div class="prose">
 			<p>
-				A daily
-				<a
-					class="m-link"
-					href="https://github.com/diagram-chasing"
-					target="_blank"
-					rel="noopener noreferrer">GitHub Action</a
-				>
-				(11:00 IST) downloads every station's meteogram, pixel-extracts the cloud-cover panel, and keeps
-				the day-0 slice — the first eight three-hourly steps. Those readings, split into high cirrus,
-				mid alto and low cumulus bands, are aggregated into the static JSON views this site loads.
+				But what really caught my eye was how these graphics represent cloud cover. Look closely,
+				and you’ll realize it’s actually drawn to look like a literal cloudy sky!
+			</p>
+			<p>
+				The cloud coverage panel is essentially a stacked histogram divided into three distinct
+				atmospheric tiers: low clouds (surface to 2 km), medium clouds (2 to 7 km), and high clouds
+				(above 7 km). If a specific block of time is fully white, it means the station expects
+				roughly 100% cloud coverage at that altitude. Since low clouds, like cumulus, are the ones
+				that bring rain, a dense white block in the bottom tier usually correlates perfectly with a
+				spike in the precipitation bar right above it.
+			</p>
+			<p>
+				I love this visualization. The fact that some developer, years ago, decided to map
+				meteorological data in such a cute, pixel-art style feels like something straight out of
+				Super Mario or Flappy Bird.
+			</p>
+			<p>
+				It appealed to me so much that a few months ago, I started archiving these every day. I
+				wrote a script to analyse the pixels, turning the histogram images back into structured data
+				so I could plot the current slice of time on a map. We now run this collection and analysis
+				daily, gathering the data to map out India's 8-bit skies right at the top of this page.
 			</p>
 		</div>
 	</section>
@@ -492,9 +454,9 @@
 
 <style>
 	/* Thin paper mat so the frame border reads; the map goes as wide as the mat allows.
-	   On desktop the mat fills the first screen (map height driven by it) so the page
-	   scrolls past to the content; on mobile the map keeps a tall min-height and the
-	   section grows in normal flow. */
+     On desktop the mat fills the first screen (map height driven by it) so the page
+     scrolls past to the content; on mobile the map keeps a tall min-height and the
+     section grows in normal flow. */
 	.stage {
 		box-sizing: border-box;
 		padding: clamp(8px, 1.4vw, 18px);
@@ -507,15 +469,15 @@
 		border: 0px solid var(--ink);
 		background: #0b1d3a; /* navy sky behind the canvas while it loads */
 		/* Definite height (not just min-height) so the canvas fills the frame on
-		   mobile too — otherwise the solid navy fallback shows behind the controls
-		   instead of the sea + gradient scrim the way it does on desktop. Short of
-		   the full viewport so the shoreline and the article's kicker peek above
-		   the fold — the cue that there's more to scroll to. */
+       mobile too — otherwise the solid navy fallback shows behind the controls
+       instead of the sea + gradient scrim the way it does on desktop. Short of
+       the full viewport so the shoreline and the article's kicker peek above
+       the fold — the cue that there's more to scroll to. */
 		height: max(88svh, 440px);
 	}
 	/* Edge scrim: an eased deep-sky wash under the control rail so the white
-	   chrome keeps a contrast floor whatever the map draws beneath it. Tinted
-	   with the scene's own navy it reads as sea depth, not as a UI panel. */
+     chrome keeps a contrast floor whatever the map draws beneath it. Tinted
+     with the scene's own navy it reads as sea depth, not as a UI panel. */
 	.map-frame::after {
 		content: '';
 		position: absolute;
@@ -535,7 +497,7 @@
 	}
 	@media (min-width: 768px) {
 		/* Short of 100svh so the shoreline strip and the top of the article title
-		   peek above the fold. */
+       peek above the fold. */
 		.stage {
 			height: 95svh;
 		}
@@ -560,7 +522,7 @@
 		pointer-events: auto;
 	}
 	/* One rail, three lanes: WHAT (band legend, left) · WHEN (time dock, centre) ·
-	   WHERE (search + zoom, right). Grid keeps the dock optically centred. */
+     WHERE (search + zoom, right). Grid keeps the dock optically centred. */
 	.bar.bottom {
 		bottom: 0;
 		display: grid;
@@ -607,7 +569,7 @@
 		outline-offset: 2px;
 	}
 	/* Phones only: the legend compresses to one glyph row above the timeline, with
-	   the fit-map icon tucked to the right without shifting the centred glyphs. */
+     the fit-map icon tucked to the right without shifting the centred glyphs. */
 	.mobile-row {
 		display: none;
 		position: relative;
@@ -624,7 +586,7 @@
 	}
 
 	/* Desktop station search: parks in the top-left sky. Hidden on phones, where the
-	   corner chips carry search instead. */
+     corner chips carry search instead. */
 	.desktop-top {
 		position: absolute;
 		top: 14px;
@@ -633,7 +595,7 @@
 	}
 
 	/* Mobile chrome: chips in the sky strip. Hidden on desktop where the bottom
-	   rail carries everything. */
+     rail carries everything. */
 	.mobile-top {
 		position: absolute;
 		top: 0;
@@ -647,7 +609,7 @@
 		gap: 6px;
 	}
 	/* Quiet text toggle in the WHERE lane, voiced like ViewTabs: recedes at rest,
-	   brightens on hover, underlines when the streaks are shown. */
+     brightens on hover, underlines when the streaks are shown. */
 	.streaks-toggle {
 		padding: 0;
 		font-family: var(--font-display);
@@ -673,9 +635,9 @@
 	}
 
 	/* Phone streaks: a scene bounded to the map area. The board itself is pinned to
-	   a world anchor out in the open sea and slides in with the camera pan; the same
-	   white sky-typography as the desktop gutter list. No scrim/panel — it reads as
-	   part of the world, not a sheet on top. --ink flips the board text white. */
+     a world anchor out in the open sea and slides in with the camera pan; the same
+     white sky-typography as the desktop gutter list. No scrim/panel — it reads as
+     part of the world, not a sheet on top. --ink flips the board text white. */
 	.streaks-scene {
 		position: absolute;
 		inset: 0;
@@ -693,9 +655,9 @@
 		cursor: pointer;
 	}
 	/* The board sits in the empty sea between the panned landmass and the control
-	   rail, auto-centered with padding. Bounds tuned to the aside pan. */
+     rail, auto-centered with padding. Bounds tuned to the aside pan. */
 	/* Board seats just above the control rail; the map pans so the land sits a pad
-	   above it (bottom must match CONTROLS_RESERVE in the script). */
+     above it (bottom must match CONTROLS_RESERVE in the script). */
 	.streak-dock {
 		position: absolute;
 		left: 0;
@@ -737,7 +699,7 @@
 	}
 
 	/* Corner minimap: parks in the top-right sky while the desktop view is zoomed.
-	   Above the map canvas but below the control rail; non-interactive scenery. */
+     Above the map canvas but below the control rail; non-interactive scenery. */
 	.minimap-corner {
 		position: absolute;
 		top: 14px;
@@ -766,8 +728,8 @@
 	}
 
 	/* ————— Shoreline: pixel waves either side of a quiet scroll link. The wave
-	   tile is the map's own 8×3 crest curve (buildWaveTex), inked for paper, and
-	   the steps() animation flips it one pixel sideways like the sea's drift. */
+     tile is the map's own 8×3 crest curve (buildWaveTex), inked for paper, and
+     the steps() animation flips it one pixel sideways like the sea's drift. */
 	.shore {
 		display: flex;
 		align-items: center;
@@ -832,7 +794,7 @@
 	}
 
 	/* ————— The field notes article. One centred 640px prose measure; the
-	   specimen and pipeline break out to the full content width. */
+     specimen and pipeline break out to the full content width. */
 	.content {
 		max-width: 1080px;
 		margin: 0 auto;
@@ -870,7 +832,7 @@
 		text-wrap: balance;
 	}
 	/* Byline as a station plate — the author labelled the way cities are on the
-	   map: square dot, white plate, ink text. */
+     map: square dot, white plate, ink text. */
 	.byline {
 		display: flex;
 		align-items: center;
@@ -962,7 +924,7 @@
 		}
 	}
 	/* Phones: the dock keeps time + compact layers + collapsed view picker;
-	   everything else moves to the corner chips / fit button. */
+     everything else moves to the corner chips / fit button. */
 	@media (max-width: 767px) {
 		.bar.bottom {
 			grid-template-columns: 1fr;
@@ -973,8 +935,8 @@
 			display: none;
 		}
 		/* The dock carries the whole rail on phones — let it use the full width so
-		   the scrubber spans edge to edge and the compact legend centres above it.
-		   stretch makes the TimeDock child fill, so its scrubber can go full width. */
+       the scrubber spans edge to edge and the compact legend centres above it.
+       stretch makes the TimeDock child fill, so its scrubber can go full width. */
 		.lane.dock {
 			width: 100%;
 			align-items: stretch;
