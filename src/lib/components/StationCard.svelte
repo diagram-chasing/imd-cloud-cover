@@ -79,7 +79,7 @@
 		</div>
 		<div class="head-right flex shrink-0 items-center gap-2">
 			{#if clearStreak > 0}
-				<Badge variant="outline" class="streak text-xs text-record-gold border-record-gold"
+				<Badge variant="outline" class="streak border-record-gold text-xs text-record-gold"
 					>☀ {clearStreak}d clear</Badge
 				>
 			{/if}

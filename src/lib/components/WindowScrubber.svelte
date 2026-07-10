@@ -59,9 +59,7 @@
 		}
 	}
 
-	let handleX = $derived(
-		dates.length > 1 ? (sky.windowDayIndex / (dates.length - 1)) * 100 : 0
-	);
+	let handleX = $derived(dates.length > 1 ? (sky.windowDayIndex / (dates.length - 1)) * 100 : 0);
 </script>
 
 <!-- Phone: the scrubber stretches to the full dock width. -->
@@ -81,7 +79,9 @@
 		{onpointerup}
 		{onkeydown}
 	>
-		<div class="rail absolute top-2 right-0 left-0 h-0.5 bg-white shadow-[1px_1px_0] shadow-navy/90"></div>
+		<div
+			class="rail absolute top-2 right-0 left-0 h-0.5 bg-white shadow-[1px_1px_0] shadow-navy/90"
+		></div>
 		{#each dates as d, i (d)}
 			<span
 				class="tick absolute top-1.5 -ml-px h-1.5 w-0.5 bg-white opacity-70 shadow-[1px_1px_0] shadow-navy/90"

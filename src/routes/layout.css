@@ -1,6 +1,6 @@
 @import 'tailwindcss';
-@import "tw-animate-css";
-@import "shadcn-svelte/tailwind.css";
+@import 'tw-animate-css';
+@import 'shadcn-svelte/tailwind.css';
 
 /* Ships Whistle — self-hosted from src/lib/assets/fonts, bundled by Vite.
    The single typeface across the whole app, in its full weight/style set.
@@ -10,7 +10,8 @@
 	font-style: normal;
 	font-weight: 400;
 	font-display: swap;
-	src: url('../lib/assets/fonts/ShipsWhistle-Regular.woff2') format('woff2'),
+	src:
+		url('../lib/assets/fonts/ShipsWhistle-Regular.woff2') format('woff2'),
 		url('../lib/assets/fonts/ShipsWhistle-Regular.woff') format('woff');
 }
 @font-face {
@@ -18,7 +19,8 @@
 	font-style: italic;
 	font-weight: 400;
 	font-display: swap;
-	src: url('../lib/assets/fonts/ShipsWhistle-Italic.woff2') format('woff2'),
+	src:
+		url('../lib/assets/fonts/ShipsWhistle-Italic.woff2') format('woff2'),
 		url('../lib/assets/fonts/ShipsWhistle-Italic.woff') format('woff');
 }
 @font-face {
@@ -26,7 +28,8 @@
 	font-style: normal;
 	font-weight: 700;
 	font-display: swap;
-	src: url('../lib/assets/fonts/ShipsWhistle-Bold.woff2') format('woff2'),
+	src:
+		url('../lib/assets/fonts/ShipsWhistle-Bold.woff2') format('woff2'),
 		url('../lib/assets/fonts/ShipsWhistle-Bold.woff') format('woff');
 }
 @font-face {
@@ -34,7 +37,8 @@
 	font-style: italic;
 	font-weight: 700;
 	font-display: swap;
-	src: url('../lib/assets/fonts/ShipsWhistle-BoldItalic.woff2') format('woff2'),
+	src:
+		url('../lib/assets/fonts/ShipsWhistle-BoldItalic.woff2') format('woff2'),
 		url('../lib/assets/fonts/ShipsWhistle-BoldItalic.woff') format('woff');
 }
 @font-face {
@@ -42,7 +46,8 @@
 	font-style: normal;
 	font-weight: 400;
 	font-display: swap;
-	src: url('../lib/assets/fonts/ShipsWhistle-Rough.woff2') format('woff2'),
+	src:
+		url('../lib/assets/fonts/ShipsWhistle-Rough.woff2') format('woff2'),
 		url('../lib/assets/fonts/ShipsWhistle-Rough.woff') format('woff');
 }
 @font-face {
@@ -50,7 +55,8 @@
 	font-style: italic;
 	font-weight: 400;
 	font-display: swap;
-	src: url('../lib/assets/fonts/ShipsWhistle-ItalicRough.woff2') format('woff2'),
+	src:
+		url('../lib/assets/fonts/ShipsWhistle-ItalicRough.woff2') format('woff2'),
 		url('../lib/assets/fonts/ShipsWhistle-ItalicRough.woff') format('woff');
 }
 @font-face {
@@ -58,7 +64,8 @@
 	font-style: normal;
 	font-weight: 700;
 	font-display: swap;
-	src: url('../lib/assets/fonts/ShipsWhistle-BoldRough.woff2') format('woff2'),
+	src:
+		url('../lib/assets/fonts/ShipsWhistle-BoldRough.woff2') format('woff2'),
 		url('../lib/assets/fonts/ShipsWhistle-BoldRough.woff') format('woff');
 }
 @font-face {
@@ -66,7 +73,8 @@
 	font-style: italic;
 	font-weight: 700;
 	font-display: swap;
-	src: url('../lib/assets/fonts/ShipsWhistle-BoldItalicRough.woff2') format('woff2'),
+	src:
+		url('../lib/assets/fonts/ShipsWhistle-BoldItalicRough.woff2') format('woff2'),
 		url('../lib/assets/fonts/ShipsWhistle-BoldItalicRough.woff') format('woff');
 }
 
@@ -101,6 +109,13 @@
 	--mist-100: var(--cloud-block);
 	--mist-200: #cfe0f2;
 	--mist-300: #cddcec;
+	/* Jelly bands for the pixel push-button (PixelButton.svelte), built from
+	   the sun-gold accent: hi = glazed top band, face = body, lo = under-bezel
+	   shade, glint = the small specular flick on the cap. */
+	--btn-cap-hi: #f7d67e;
+	--btn-cap: var(--sun-gold);
+	--btn-cap-lo: #d09c2c;
+	--btn-glint: #fbe9b4;
 	/* Steel: cool annotation greys for the meteogram specimen. */
 	--steel-300: #c5cbd6;
 	--steel-400: #b9c2d0;
@@ -239,6 +254,10 @@ body {
 	--color-focus: var(--focus);
 	--color-sun-gold: var(--sun-gold);
 	--color-cloud-block: var(--cloud-block);
+	--color-btn-cap-hi: var(--btn-cap-hi);
+	--color-btn-cap: var(--btn-cap);
+	--color-btn-cap-lo: var(--btn-cap-lo);
+	--color-btn-glint: var(--btn-glint);
 	--color-night-sky: var(--night-sky);
 	--color-day-sea: var(--day-sea);
 	--color-record-gold: var(--record-gold);

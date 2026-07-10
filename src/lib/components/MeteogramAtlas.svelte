@@ -6,7 +6,6 @@
 		annotationCalloutCurve,
 		annotationXYThreshold
 	} from 'd3-svg-annotation';
-	import { MINIS, MINI_CLIPS, MINI_H, VB } from './meteogram-minis';
 	import AtlasWordmark from './AtlasWordmark.svelte';
 	import * as Carousel from '$lib/components/ui/carousel/index.js';
 	import type { CarouselAPI } from '$lib/components/ui/carousel/context.js';
@@ -201,7 +200,11 @@
 		sel
 			.append('g')
 			.attr('class', 'ink')
-			.call(makeAnnotation().type(annotationCalloutCurve).annotations([...specs, span]));
+			.call(
+				makeAnnotation()
+					.type(annotationCalloutCurve)
+					.annotations([...specs, span])
+			);
 		sel
 			.append('path')
 			.attr('class', 'span-ticks')
@@ -267,32 +270,23 @@
 		};
 	});
 
-	// ---- Loupe (narrow layouts): a magnified strip of the spotlighted panel ----
-	// The same webp, cropped to the region's rect with background-position math.
-	// Zoom fills the strip height but never exceeds the plate's native pixels —
-	// past 1:1 there is nothing left to resolve, only blur.
-	const LOUPE_H = 200; // strip content height, px
-	const PLATE_PX = 1100; // native plate resolution
-	let loupeEl: HTMLElement | undefined = $state();
-	const loupeZoom = $derived.by(() => {
-		if (!aw) return 1;
-		const fillH = (LOUPE_H * cur.rect.w) / (cur.rect.h * aw);
-		const native = (PLATE_PX * cur.rect.w) / (100 * aw);
-		return Math.min(fillH, native); // may dip below 1 — the panel then fits whole, no pan
-	});
-
-	const loupeCropStyle = $derived(
-		`width:${loupeZoom * 100}%;` +
-			`aspect-ratio:${cur.rect.w} / ${cur.rect.h};` +
+	// ---- Card charts: real excerpts of the plate, not redrawn minis ----
+	// The same webp, cropped with background-position math. Row panels show
+	// their opening days at near-native resolution; the tall upper-air panel
+	// shows its full run. Deck cards (phones) get a tighter, larger crop.
+	function cropStyle(rect: Rect) {
+		return (
+			`aspect-ratio:${rect.w} / ${rect.h};` +
 			`background-image:url(${SRC});` +
-			`background-size:${10000 / cur.rect.w}% auto;` +
-			`background-position:${(cur.rect.x / (100 - cur.rect.w)) * 100}% ${(cur.rect.y / (100 - cur.rect.h)) * 100}%`
-	);
+			`background-size:${10000 / rect.w}% auto;` +
+			`background-position:${(rect.x / (100 - rect.w)) * 100}% ${(rect.y / (100 - rect.h)) * 100}%`
+		);
+	}
 
-	$effect(() => {
-		void shown; // the pan restarts at Day 0 whenever the spotlight moves
-		if (loupeEl) loupeEl.scrollLeft = 0;
-	});
+	function chartCrop(r: Region, ctx: string) {
+		const frac = r.id === 'upper-air' ? 1 : ctx === 'm' ? 0.31 : 0.34;
+		return cropStyle({ ...r.rect, w: PLOT_W * frac });
+	}
 
 	function onWindowKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') pinned = null;
@@ -314,55 +308,32 @@
 			}
 		}
 	}
-
 </script>
 
-{#snippet mini(id: string, ctx: string)}
-	<svg
-		class="mini"
-		viewBox="0 0 {VB.w} {MINI_H[id] ?? VB.h}"
-		style="aspect-ratio: {VB.w} / {MINI_H[id] ?? VB.h}"
-		preserveAspectRatio="none"
+{#snippet chart(r: Region, ctx: string)}
+	<!-- Card chart: a real excerpt of the panel, cropped from the plate. In the deck it
+	     pins to the bottom edge (mt-auto) and must not flex-grow — the crop's background
+	     math assumes its aspect ratio. Muted state (dimming, inactive) desaturates it. -->
+	<span
+		class={[
+			'chart block w-full border border-ink bg-white bg-no-repeat',
+			ctx === 'm' && 'mt-auto',
+			dimming && shown !== r.id && 'border-steel-400 opacity-55 grayscale'
+		]}
+		style={chartCrop(r, ctx)}
 		aria-hidden="true"
-	>
-		{#if MINI_CLIPS[id]}
-			<defs>
-				<clipPath id="mini-clip-{ctx}-{id}"><path d={MINI_CLIPS[id]} /></clipPath>
-			</defs>
-		{/if}
-		{#each MINIS[id] as el, i (i)}
-			{#if el.t === 'path'}
-				<path
-					d={el.d}
-					fill={el.fill ?? 'none'}
-					stroke={el.stroke}
-					stroke-width={el.sw}
-					stroke-dasharray={el.dash}
-					opacity={el.o}
-					clip-path={el.clip ? `url(#mini-clip-${ctx}-${id})` : undefined}
-				/>
-			{:else if el.t === 'rect'}
-				<rect
-					x={el.x}
-					y={el.y}
-					width={el.w}
-					height={el.h}
-					fill={el.fill}
-					opacity={el.o}
-					clip-path={el.clip ? `url(#mini-clip-${ctx}-${id})` : undefined}
-				/>
-			{:else}
-				<circle cx={el.cx} cy={el.cy} r={el.r} fill={el.fill} stroke={el.stroke} stroke-width={el.sw} />
-			{/if}
-		{/each}
-	</svg>
+	></span>
 {/snippet}
 
 {#snippet card(r: Region, ctx: string)}
+	<!-- Muted cards fade by color, not opacity — they stay opaque over the leader lines. -->
+	{@const muted = dimming && shown !== r.id}
 	<button
 		type="button"
-		class="card"
-		class:active={shown === r.id}
+		class={[
+			'card flex w-full cursor-pointer appearance-none flex-col gap-1.5 border-2 border-transparent bg-paper px-2.5 pt-2 pb-2.5 text-left text-inherit transition-[box-shadow,border-color] duration-180 ease-[ease] motion-reduce:transition-none',
+			shown === r.id && 'border-ink shadow-[4px_4px_0] shadow-focus'
+		]}
 		data-card={r.n}
 		aria-pressed={pinned === r.id}
 		onpointerenter={() => ctx === 'd' && (hovered = r.id)}
@@ -372,18 +343,44 @@
 		onclick={() => cardClick(r.id, ctx)}
 		onkeydown={(e) => onCardKeydown(e, r.n)}
 	>
-		<span class="card-head">
-			<span class="marker inline">{r.n}</span>
-			<span class="card-title">{r.title}</span>
+		<span class="card-head flex items-center gap-2">
+			<!-- inline marker: shrinks to nothing (flex-none) so the title keeps its baseline -->
+			<span
+				class={[
+					'marker inline inline-flex h-[19px] w-[19px] flex-none items-center justify-center bg-ink text-xs leading-none font-bold text-paper',
+					muted && 'bg-steel-500'
+				]}>{r.n}</span
+			>
+			<span
+				class={[
+					'card-title text-sm font-bold tracking-[0.08em] text-ink uppercase',
+					muted && 'text-steel-700'
+				]}>{r.title}</span
+			>
 		</span>
-		<span class="card-note">{r.note}</span>
+		<span
+			class={[
+				'card-note text-sm leading-normal text-pretty text-muted-foreground',
+				muted && 'text-steel-600'
+			]}>{r.note}</span
+		>
 		{#if r.id === 'cloud'}
-			<span class="card-day0">
-				<span class="day0-chip">DAY 0</span>
+			<span
+				class={[
+					'card-day0 block text-xs leading-normal text-muted-foreground',
+					muted && 'text-steel-600'
+				]}
+			>
+				<span
+					class={[
+						'day0-chip mr-1 inline-block bg-ink px-[5px] pt-0 pb-px align-[1px] text-xs leading-snug font-bold tracking-[0.08em] text-paper',
+						muted && 'bg-steel-500'
+					]}>DAY 0</span
+				>
 				the first eight 3-hour steps — the slice the pipeline keeps.
 			</span>
 		{/if}
-		{@render mini(r.id, ctx)}
+		{@render chart(r, ctx)}
 	</button>
 {/snippet}
 
@@ -391,18 +388,28 @@
 
 <!-- <AtlasWordmark /> -->
 
-<figure class="specimen" class:dimming bind:this={root}>
-	<div class="atlas" bind:clientWidth={aw} bind:clientHeight={ah}>
-		<div class="mount">
+<!-- The wordmark above is part of the same plate — keep them close. -->
+<figure class={['specimen mx-auto mt-6 mb-20', dimming && 'dimming']} bind:this={root}>
+	<!-- Desktop atlas grid: cards | plate | cards, one shared %-space. Collapses to a
+	     single centered column below 1099px (must match narrow MediaQuery). -->
+	<div
+		class="atlas relative left-1/2 grid w-[min(100vw-48px,1380px)] -translate-x-1/2 [grid-template-columns:19.5%_56%_19.5%] [column-gap:2.5%] max-[1099px]:left-auto max-[1099px]:mx-auto max-[1099px]:block max-[1099px]:w-full max-[1099px]:max-w-[640px] max-[1099px]:translate-x-0"
+		bind:clientWidth={aw}
+		bind:clientHeight={ah}
+	>
+		<!-- overflow-hidden clips the marquee's spotlight shadow; line-height:0 removes the img gap -->
+		<div
+			class="mount relative col-start-2 overflow-hidden border-2 border-ink bg-white leading-none shadow-[6px_6px_0] shadow-cloud-block"
+		>
 			<img
-				class="plate"
+				class="plate block h-auto w-full"
 				src={SRC}
 				alt="Sample IMD GFS meteogram for Bangalore: eight stacked forecast panels, described in the numbered notes."
 			/>
 			{#each REGIONS as r (r.id)}
 				<button
 					type="button"
-					class="hotspot"
+					class="hotspot absolute cursor-pointer appearance-none border-0 bg-transparent p-0"
 					tabindex="-1"
 					aria-hidden="true"
 					style="left:{r.rect.x}%; top:{r.rect.y}%; width:{r.rect.w}%; height:{r.rect.h}%"
@@ -411,45 +418,61 @@
 					onclick={() => tapRegion(r.id)}
 				></button>
 			{/each}
+			<!-- Spotlight marquee: one element that morphs between panels. When dimming it
+			     casts a huge paper-tinted shadow over everything but the framed panel. -->
 			<div
-				class="marquee"
-				class:dim={dimming}
-				class:off={shown === null}
+				class={[
+					'marquee pointer-events-none absolute border-2 border-focus transition-[left,top,width,height,box-shadow] duration-180 ease-[ease] motion-reduce:transition-none',
+					dimming && 'shadow-[0_0_0_9999px_color-mix(in_srgb,var(--paper)_80%,transparent)]',
+					shown === null && 'hidden'
+				]}
 				style="left:{cur.rect.x}%; top:{cur.rect.y}%; width:{cur.rect.w}%; height:{cur.rect.h}%"
 				aria-hidden="true"
 			></div>
 			{#each REGIONS as r (r.id)}
+				<!-- Numbered markers, hand-placed on the plate. Chips sit above the leader lines
+				     (z-2) with a paper ring. Muting is a color shift, never translucency — overlaps
+				     stay clean. Hidden on narrow layouts (nothing to key without lines/side cards). -->
 				<span
-					class="marker on-plate"
-					class:hot={shown === r.id}
+					class={[
+						'marker on-plate absolute z-[2] inline-flex h-[19px] w-[19px] -translate-x-1/2 -translate-y-1/2 items-center justify-center bg-ink text-xs leading-none font-bold text-paper shadow-[0_0_0_2px] shadow-paper transition-[background,color] duration-180 ease-[ease] motion-reduce:transition-none max-[1099px]:hidden',
+						shown === r.id ? 'bg-focus text-ink' : dimming && 'bg-steel-500 text-paper'
+					]}
 					style="left:{r.mark.x}%; top:{r.mark.y}%"
 					aria-hidden="true">{r.n}</span
 				>
 			{/each}
 		</div>
 
-		<div class="cards">
+		<!-- cards paint over the leader lines (z-2); hidden on narrow layouts -->
+		<div class="cards pointer-events-none absolute inset-0 z-[2] max-[1099px]:hidden">
 			{#each REGIONS as r (r.id)}
-				<div class="card-slot {r.side}" style="top: {r.anchorY}%">
+				<div
+					class={[
+						'card-slot pointer-events-auto absolute w-[19.5%] -translate-y-1/2',
+						r.side === 'left' ? 'left-0' : 'right-0'
+					]}
+					style="top: {r.anchorY}%"
+				>
 					{@render card(r, 'd')}
 				</div>
 			{/each}
 		</div>
 
-		<svg class="leads" bind:this={leadsEl} aria-hidden="true"></svg>
+		<!-- Leader lines: straight connectors with a paper casing, drawn by d3-annotation.
+		     overflow-visible so the elbows can leave the SVG box. -->
+		<svg
+			class="leads pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+			bind:this={leadsEl}
+			aria-hidden="true"
+		></svg>
 	</div>
 
-	{#if narrow.current}
-		<div class="loupe" class:open={active !== null} aria-hidden="true">
-			<div class="loupe-frame">
-				<div class="loupe-scroll" bind:this={loupeEl}>
-					<div class="loupe-crop" style={loupeCropStyle}></div>
-				</div>
-			</div>
-		</div>
-	{/if}
-
-	<div class="legend">
+	<!-- Legend deck (narrow layouts): Embla carousel, swipe to sweep the spotlight.
+	     Full-bleed 100vw swipe lane; hidden on wide layouts. -->
+	<div
+		class="legend mt-4 hidden max-[1099px]:relative max-[1099px]:left-1/2 max-[1099px]:block max-[1099px]:w-screen max-[1099px]:-translate-x-1/2"
+	>
 		<Carousel.Root
 			opts={{ align: 'center', containScroll: false }}
 			setApi={(api) => (deckApi = api)}
@@ -462,158 +485,26 @@
 				{/each}
 			</Carousel.Content>
 		</Carousel.Root>
-		<!-- Hidden, not removed, when idle — the deck below must not jump under the tap. -->
-		<button type="button" class="plate-exit" class:off={!dimming} onclick={exitSpotlight}>
+		<!-- Spotlight exit (narrow layouts): clears the callout to read the plate plain.
+		     Hidden, not removed, when idle — the deck below must not jump under the tap. -->
+		<button
+			type="button"
+			class={[
+				'plate-exit mx-auto mt-1 block cursor-pointer appearance-none border-0 bg-ink px-2.5 py-1.5 text-xs leading-none font-bold tracking-[0.08em] text-paper',
+				!dimming && 'invisible'
+			]}
+			onclick={exitSpotlight}
+		>
 			✕ SHOW ALL
 		</button>
 	</div>
-
 </figure>
 
 <style>
-	/* The wordmark above is part of the same plate — keep them close. */
-	.specimen {
-		margin: 1.5rem auto 5rem;
-	}
-
-	/* ---- Desktop atlas grid: cards | plate | cards, one shared %-space ---- */
-	.atlas {
-		position: relative;
-		left: 50%;
-		transform: translateX(-50%);
-		width: min(100vw - 48px, 1380px);
-		display: grid;
-		grid-template-columns: 19.5% 56% 19.5%;
-		column-gap: 2.5%;
-	}
-	.cards {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		z-index: 2; /* cards paint over the leader lines */
-	}
-	.card-slot {
-		position: absolute;
-		width: 19.5%;
-		transform: translateY(-50%);
-		pointer-events: auto;
-	}
-	.card-slot.left {
-		left: 0;
-	}
-	.card-slot.right {
-		right: 0;
-	}
-
-	.mount {
-		grid-column: 2;
-		position: relative;
-		border: 2px solid var(--ink);
-		box-shadow: 6px 6px 0 var(--cloud-block);
-		background: #fff;
-		line-height: 0;
-		overflow: hidden; /* clips the marquee's spotlight shadow */
-	}
-	.plate {
-		width: 100%;
-		height: auto;
-		display: block;
-	}
-
-	.hotspot {
-		position: absolute;
-		padding: 0;
-		border: 0;
-		background: transparent;
-		cursor: pointer;
-		appearance: none;
-	}
-
-	/* ---- Spotlight marquee: one element that morphs between panels ---- */
-	.marquee {
-		position: absolute;
-		border: 2px solid var(--focus);
-		pointer-events: none;
-		transition:
-			left 0.18s ease,
-			top 0.18s ease,
-			width 0.18s ease,
-			height 0.18s ease,
-			box-shadow 0.18s ease;
-	}
-	.marquee.dim {
-		box-shadow: 0 0 0 9999px color-mix(in srgb, var(--paper) 80%, transparent);
-	}
-	.marquee.off {
-		display: none;
-	}
-
-	/* ---- Spotlight exit (narrow layouts): clears the callout to read the plate plain ---- */
-	.plate-exit {
-		display: block;
-		margin: 4px auto 0;
-		padding: 6px 10px;
-		border: 0;
-		appearance: none;
-		cursor: pointer;
-		background: var(--ink);
-		color: var(--paper);
-		font-family: var(--font-display);
-		font-size: 11px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		line-height: 1;
-	}
-	.plate-exit.off {
-		visibility: hidden;
-	}
-
-	/* ---- Numbered markers, hand-placed on the plate ---- */
-	.marker {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 19px;
-		height: 19px;
-		background: var(--ink);
-		color: var(--paper);
-		font-family: var(--font-display);
-		font-size: 12px;
-		font-weight: 700;
-		line-height: 1;
-	}
-	.marker.on-plate {
-		position: absolute;
-		transform: translate(-50%, -50%);
-		pointer-events: none;
-		box-shadow: 0 0 0 2px var(--paper);
-		z-index: 2; /* chips sit on top of the leader lines */
-		transition:
-			background 0.18s ease,
-			color 0.18s ease;
-	}
-	.marker.on-plate.hot {
-		background: var(--focus);
-		color: var(--ink);
-	}
-	/* Muting is a color shift, never translucency — overlaps stay clean. */
-	.specimen.dimming .marker.on-plate:not(.hot) {
-		background: #aeb6c4;
-		color: var(--paper);
-	}
-	.marker.inline {
-		flex: none;
-	}
-
-	/* ---- Leader lines: straight connectors with a paper casing ---- */
-	.leads {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		pointer-events: none;
-		overflow: visible;
-	}
+	/* Residual bridge rules: the leader-line internals (g.casing / g.ink / g.annotation
+	   / paths / note label / span-ticks) are appended at runtime by d3-svg-annotation, so
+	   they never exist in the markup and can't take utility classes. Colors reference the
+	   token vars; the steel greys are the dimmed-state connectors. */
 	.leads :global(g.casing g.annotation path) {
 		fill: none;
 		stroke: var(--paper);
@@ -631,7 +522,7 @@
 		stroke-width: 2;
 	}
 	.specimen.dimming .leads :global(g.ink g.annotation:not(.hot):not(.span) path) {
-		stroke: #c5cbd6;
+		stroke: var(--color-steel-300);
 	}
 	/* Time-span annotation under the plate */
 	.leads :global(g.ink g.annotation.span path) {
@@ -642,7 +533,6 @@
 		display: none;
 	}
 	.leads :global(g.ink g.annotation.span .annotation-note-label) {
-		font-family: var(--font-display);
 		font-size: 12px;
 		font-weight: 700;
 		letter-spacing: 0.1em;
@@ -655,189 +545,7 @@
 		fill: none;
 	}
 
-	/* ---- Annotation cards ---- */
-	.card {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		width: 100%;
-		padding: 8px 10px 10px;
-		text-align: left;
-		background: var(--paper);
-		border: 2px solid transparent;
-		cursor: pointer;
-		appearance: none;
-		font: inherit;
-		color: inherit;
-		transition:
-			box-shadow 0.18s ease,
-			border-color 0.18s ease;
-	}
-	.card.active {
-		box-shadow: 4px 4px 0 var(--focus);
-		border: 2px solid var(--ink);
-	}
-	/* Muted cards fade by color, not opacity — they stay opaque over the lines. */
-	.specimen.dimming .card:not(.active) {
-		border-color: transparent;
-	}
-	.specimen.dimming .card:not(.active) .card-title {
-		color: #8a93a6;
-	}
-	.specimen.dimming .card:not(.active) .card-note,
-	.specimen.dimming .card:not(.active) .card-day0 {
-		color: #a4adbe;
-	}
-	.specimen.dimming .card:not(.active) .marker.inline {
-		background: #aeb6c4;
-	}
-	.specimen.dimming .card:not(.active) .day0-chip {
-		background: #aeb6c4;
-	}
-	.specimen.dimming .card:not(.active) .mini {
-		filter: grayscale(1);
-		opacity: 0.55; /* sits on the card's solid paper, so no see-through */
-		border-color: #b9c2d0;
-	}
-	.card-head {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-	.card-title {
-		font-family: var(--font-display);
-		font-size: 13px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--ink);
-	}
-	.card-note {
-		font-size: 13px;
-		line-height: 1.5;
-		color: var(--muted-foreground);
-		text-wrap: pretty;
-	}
-	.card-day0 {
-		display: block;
-		font-size: 12px;
-		line-height: 1.5;
-		color: var(--muted-foreground);
-	}
-	.day0-chip {
-		display: inline-block;
-		padding: 0 5px 1px;
-		margin-right: 4px;
-		background: var(--ink);
-		color: var(--paper);
-		font-family: var(--font-display);
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		line-height: 1.4;
-		vertical-align: 1px;
-	}
-
-	/* ---- Mini-diagram: a drawn, simplified echo of the panel ---- */
-	.mini {
-		display: block;
-		width: 100%;
-		border: 1px solid var(--ink);
-		background: #fff;
-	}
-
-	/* ---- Caption ---- */
-	.plate-caption {
-		margin-top: 64px;
-		text-align: center;
-		font-family: var(--font-display);
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.14em;
-		color: var(--muted-foreground);
-	}
-
-	/* ---- Loupe (narrow layouts): magnified strip of the spotlighted panel ---- */
-	.loupe {
-		height: 0;
-		overflow: hidden;
-		transition: height 0.25s ease;
-		/* mirror the narrow .atlas so the zoom math (based on its width) holds */
-		max-width: 640px;
-		margin: 0 auto;
-	}
-	.loupe.open {
-		height: 216px; /* 12px gap + strip + 4px border — fixed so the deck below never jumps */
-	}
-	.loupe-frame {
-		margin-top: 12px;
-		height: 204px;
-		border: 2px solid var(--ink);
-		background: #fff;
-	}
-	.loupe-scroll {
-		display: flex;
-		height: 100%;
-		overflow-x: auto;
-		scrollbar-width: none;
-	}
-	.loupe-scroll::-webkit-scrollbar {
-		display: none;
-	}
-	.loupe-crop {
-		flex: none;
-		/* auto margins letterbox short panels and center narrow ones, but
-		   collapse to 0 when the crop overflows — unlike justify-content:center
-		   they never push content out of scroll reach */
-		margin: auto;
-		background-repeat: no-repeat;
-	}
-
-	/* ---- Legend deck (narrow layouts): Embla carousel, swipe to sweep the spotlight ---- */
-	.legend {
-		display: none;
-		margin: 16px 0 0;
-	}
-	/* Slides stretch to match the tallest card; the chart absorbs the leftover height. */
-	.legend .card .mini {
-		flex-grow: 1;
-	}
-
-	@media (max-width: 1099px) {
-		.cards,
-		.leads {
-			display: none;
-		}
-		.atlas {
-			display: block;
-			left: auto;
-			transform: none;
-			width: 100%;
-			max-width: 640px;
-			margin: 0 auto;
-		}
-		.legend {
-			display: block;
-			position: relative;
-			left: 50%;
-			transform: translateX(-50%);
-			width: 100vw; /* full-bleed swipe lane */
-		}
-		/* Without leader lines or side cards the numbers key nothing — hide them. */
-		.marker.on-plate,
-		.legend .marker.inline {
-			display: none;
-		}
-		.plate-caption {
-			margin-top: 12px;
-		}
-	}
-
 	@media (prefers-reduced-motion: reduce) {
-		.marquee,
-		.card,
-		.marker.on-plate,
-		.loupe,
 		.leads :global(g.annotation path) {
 			transition: none;
 		}

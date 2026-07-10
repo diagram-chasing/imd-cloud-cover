@@ -58,7 +58,7 @@
 {#if station && values}
 	<div
 		class="tooltip pointer-events-none fixed z-40 min-w-[190px] bg-paper px-2.5 py-2 text-ink shadow-[0_0_0_2px] shadow-ink"
-		style={style}
+		{style}
 		role="tooltip"
 	>
 		<div class="name text-xs leading-relaxed tracking-wider uppercase">{station.name}</div>

@@ -13,7 +13,7 @@
 
 <!-- One consolidated "when am I looking at" control: the text range switcher
      rides above the matching scrubber like a chart annotation. -->
-<div class="dock">
+<div class="dock flex flex-col items-start gap-1.5">
 	<ViewTabs />
 	{#if sky.view === 'today'}
 		<TimeScrubber />
@@ -21,12 +21,3 @@
 		<WindowScrubber {dates} />
 	{/if}
 </div>
-
-<style>
-	.dock {
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 6px;
-	}
-</style>

@@ -5,7 +5,7 @@
 </script>
 
 <h2
-	class="chapter mt-18 mb-6 flex items-baseline justify-center gap-2.5 text-lg font-bold tracking-[0.09em] uppercase text-ink"
+	class="chapter mt-18 mb-6 flex items-baseline justify-center gap-2.5 text-lg font-bold tracking-[0.09em] text-ink uppercase"
 >
 	<span class="tilde opacity-40" aria-hidden="true">~</span>
 	<span class="num text-muted-foreground">{num}</span>

@@ -27,48 +27,22 @@
 	});
 </script>
 
+<!-- day-sea backdrop; night flips to navy (a fixed sea colour, not the flippable --ink) -->
 <div
-	class="minimap"
-	class:night
+	class="minimap relative w-[120px] overflow-hidden bg-day-sea shadow-[0_0_0_1px] shadow-white/70 night:bg-navy night:shadow-white/60"
 	style="aspect-ratio:{world.w} / {world.h * V_SPAN}; --land-top:{((V_TOP / V_SPAN) * 100).toFixed(
 		3
 	)}%; --land-h:{((1 / V_SPAN) * 100).toFixed(3)}%"
 	aria-hidden="true"
 >
-	<img class="land" src={night ? groundNightUrl : groundDayUrl} alt="" />
+	<img
+		class="absolute top-[var(--land-top)] left-0 h-[var(--land-h)] w-full object-fill opacity-90 [image-rendering:pixelated]"
+		src={night ? groundNightUrl : groundDayUrl}
+		alt=""
+	/>
+	<!-- current camera rect; navy hairline stays put when --ink flips -->
 	<div
-		class="viewport"
+		class="pointer-events-none absolute box-border border border-white shadow-[0_0_0_1px] shadow-navy/60"
 		style="left:{box.left}%; top:{box.top}%; width:{box.width}%; height:{box.height}%"
 	></div>
 </div>
-
-<style>
-	.minimap {
-		position: relative;
-		width: 120px;
-		overflow: hidden;
-		background: #2e7cc4; /* day sea */
-		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
-	}
-	.minimap.night {
-		background: #0b1d3a; /* night sea */
-		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
-	}
-	.land {
-		position: absolute;
-		top: var(--land-top);
-		left: 0;
-		width: 100%;
-		height: var(--land-h);
-		object-fit: fill;
-		image-rendering: pixelated;
-		opacity: 0.9;
-	}
-	.viewport {
-		position: absolute;
-		border: 1px solid #fff;
-		box-sizing: border-box;
-		box-shadow: 0 0 0 1px rgba(11, 29, 58, 0.6);
-		pointer-events: none;
-	}
-</style>

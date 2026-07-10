@@ -89,43 +89,41 @@
 	];
 </script>
 
-<ol class="pipeline">
+<ol
+	class="pipeline mx-auto flex max-w-[980px] list-none items-stretch gap-[22px] p-0 max-[820px]:max-w-[380px] max-[820px]:flex-col max-[820px]:items-stretch max-[820px]:gap-[26px]"
+>
 	{#each steps as s, i (s.label)}
-		<li class="step" class:first={i === 0}>
-			<svg class="icon" viewBox="0 0 11 11" width="44" height="44" aria-hidden="true">
+		<!-- Each plaque carries a dashed flight trail (::before) and a stamped
+		     step number (::after) — see residual style; both need CSS counters
+		     and pseudo-content, so they can't be utilities. -->
+		<li
+			class="step relative flex flex-1 flex-col items-center gap-2 border-2 border-ink bg-paper px-3.5 pt-[18px] pb-4 text-center shadow-[4px_4px_0] shadow-cloud-block"
+			class:first={i === 0}
+		>
+			<svg
+				class="icon [shape-rendering:crispEdges]"
+				viewBox="0 0 11 11"
+				width="44"
+				height="44"
+				aria-hidden="true"
+			>
 				{#each iconRects(s.icon) as p (`${p.x},${p.y}`)}
-					<rect x={p.x} y={p.y} width="1" height="1" />
+					<rect class="fill-ink" x={p.x} y={p.y} width="1" height="1" />
 				{/each}
 			</svg>
-			<h3 class="label">{s.label}</h3>
-			<p class="text">{s.text}</p>
+			<h3 class="label m-0 text-sm font-bold tracking-[0.08em] uppercase">{s.label}</h3>
+			<p class="text m-0 text-xs leading-normal text-pretty text-muted-foreground">{s.text}</p>
 		</li>
 	{/each}
 </ol>
 
 <style>
+	/* CSS counters + pseudo-element content are not expressible as utilities,
+	   so the numbered plaque + dashed flight trail stay here. */
 	.pipeline {
-		list-style: none;
-		display: flex;
-		align-items: stretch;
-		gap: 22px;
-		max-width: 980px;
-		margin: 0 auto;
-		padding: 0;
 		counter-reset: step;
 	}
 	.step {
-		position: relative;
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 8px;
-		padding: 18px 14px 16px;
-		text-align: center;
-		background: var(--paper);
-		border: 2px solid var(--ink);
-		box-shadow: 4px 4px 0 var(--cloud-block);
 		counter-increment: step;
 	}
 	/* Dashed flight trail joining the plaques, at mid-icon height. */
@@ -135,7 +133,7 @@
 		top: 40px;
 		left: -24px;
 		width: 24px;
-		border-top: 2px dashed var(--ink);
+		border-top: 2px dashed var(--color-ink);
 		opacity: 0.45;
 	}
 	/* Step number, stamped on the plaque's top-left corner. */
@@ -145,49 +143,21 @@
 		top: -2px;
 		left: -2px;
 		padding: 2px 6px 1px;
-		background: var(--ink);
-		color: var(--paper);
-		font-family: var(--font-display);
+		background: var(--color-ink);
+		color: var(--color-paper);
 		font-size: 10px;
 		font-weight: 700;
 		letter-spacing: 0.06em;
 		line-height: 1.4;
 	}
-	.icon {
-		shape-rendering: crispEdges;
-	}
-	.icon rect {
-		fill: var(--ink);
-	}
-	.label {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: 13px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-	.text {
-		margin: 0;
-		font-size: 12.5px;
-		line-height: 1.5;
-		color: var(--muted-foreground);
-		text-wrap: pretty;
-	}
 	@media (max-width: 820px) {
-		.pipeline {
-			flex-direction: column;
-			align-items: stretch;
-			gap: 26px;
-			max-width: 380px;
-		}
 		.step:not(.first)::before {
 			top: -28px;
 			left: 50%;
 			width: 0;
 			height: 26px;
 			border-top: none;
-			border-left: 2px dashed var(--ink);
+			border-left: 2px dashed var(--color-ink);
 		}
 	}
 </style>

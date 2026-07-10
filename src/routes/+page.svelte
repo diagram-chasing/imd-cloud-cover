@@ -174,6 +174,11 @@
 <section
 	class="stage box-border bg-paper p-[clamp(8px,1.4vw,18px)] transition-[background-color] duration-[400ms] ease-[ease] md:h-[95svh]"
 >
+	<!-- Framed map: a full-width bordered panel on a thin paper mat. Definite height so
+		the canvas fills the frame on mobile too, short of the full viewport so the
+		shoreline and article title peek above the fold. bg-navy = sky behind the canvas
+		while it loads. Edge scrim (::after) = eased deep-sky wash under the control rail,
+		z-9 (just under the z-10 bars), so the white chrome keeps a contrast floor. -->
 	<div
 		class="map-frame relative h-[max(88svh,440px)] overflow-hidden bg-navy after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-[9] after:h-[170px] after:bg-[linear-gradient(to_top,color-mix(in_srgb,var(--color-night-sky)_60%,transparent),color-mix(in_srgb,var(--color-night-sky)_42%,transparent)_35%,color-mix(in_srgb,var(--color-night-sky)_18%,transparent)_65%,transparent)] after:content-[''] md:h-full md:min-h-0"
 	>
@@ -195,6 +200,8 @@
 			</div>
 		{/if}
 
+		<!-- Desktop: while zoomed/panned, a corner minimap shows where the viewport sits
+			over India. Above the map canvas, below the control rail; non-interactive. -->
 		{#if core && zoomed && !isPhone}
 			<div
 				class="minimap-corner pointer-events-none absolute top-3.5 right-4 z-[11]"
@@ -204,6 +211,7 @@
 			</div>
 		{/if}
 
+		<!-- Streak leaderboard: collapsed tab / inset table in the right sea gutter. -->
 		{#if core}
 			<StreakPanel
 				summary={core.summary}
@@ -213,6 +221,8 @@
 			/>
 		{/if}
 
+		<!-- Desktop: station search parks in the top-left sky. Hidden on phones, where
+			the corner chips carry search instead. -->
 		{#if core}
 			<div class="desktop-top absolute top-3.5 left-4 z-10 max-md:hidden">
 				<StationSearch
@@ -226,6 +236,8 @@
 			</div>
 		{/if}
 
+		<!-- Mobile chrome: corner chips in the sky strip. Hidden on desktop where the
+			bottom rail carries everything. -->
 		<div class="mobile-top absolute top-0 left-0 z-10 hidden px-3 py-2.5 max-md:flex">
 			<div class="chips flex gap-1.5">
 				{#if core}
@@ -247,46 +259,78 @@
 			</div>
 		</div>
 
-		<div class="bar bottom">
-			<div class="lane legend">
+		<!-- Bottom rail: WHAT (legend) · WHEN (timeline) · WHERE (find + fit). One rail,
+			three lanes; grid keeps the dock optically centred. Tablets stack the lanes
+			(dock first); phones drop legend/where and let the dock span full width. -->
+		<div
+			class="bar bottom pointer-events-none absolute inset-x-0 bottom-0 z-10 grid grid-cols-[1fr_auto_1fr] items-end gap-x-5 gap-y-3 px-4 py-3.5 **:pointer-events-auto max-md:grid-cols-1 max-md:justify-items-center md:max-lg:grid-cols-1 md:max-lg:justify-items-center md:max-lg:gap-2.5"
+		>
+			<div
+				class="lane legend flex min-w-0 items-center gap-3.5 justify-self-start max-md:hidden md:max-lg:justify-self-center"
+			>
 				{#if zoomed}
-					<button class="fit" onclick={() => map?.zoomReset()}>↺ FIT MAP</button>
+					<!-- Quiet "way back": appears only while the view is actually zoomed. -->
+					<button
+						class="fit cursor-pointer px-1 py-0.5 text-xs tracking-[0.08em] text-white opacity-80 text-shadow-sky hover:opacity-100"
+						onclick={() => map?.zoomReset()}>↺ FIT MAP</button
+					>
 				{/if}
 				{#if core}
+					<!-- Quiet text toggle voiced like ViewTabs: recedes at rest, brightens on
+						hover, underlines when the streaks are shown. -->
 					<button
-						class="streaks-toggle"
-						class:on={sky.showStreaks}
+						class={[
+							'streaks-toggle cursor-pointer p-0 text-xs tracking-[0.08em] text-white text-shadow-sky',
+							sky.showStreaks
+								? 'underline decoration-2 underline-offset-[3px] opacity-100'
+								: 'opacity-55 hover:opacity-90'
+						]}
 						aria-pressed={sky.showStreaks}
 						onclick={toggleStreaks}>STREAKS</button
 					>
 				{/if}
 			</div>
-			<div class="lane dock">
-				<div class="mobile-row">
+			<div
+				class="lane dock flex min-w-0 flex-col items-start gap-2 justify-self-center max-md:w-full max-md:items-stretch md:max-lg:order-first md:max-lg:justify-self-center"
+			>
+				<!-- Phones only: legend compresses to one glyph row above the timeline, with
+					the fit-map icon tucked right without shifting the centred glyphs. -->
+				<div class="mobile-row relative hidden items-center justify-center gap-3 max-md:flex">
 					<BandToggle horizontal />
 					{#if zoomed}
-						<button class="fit fit-icon" aria-label="Fit map" onclick={() => map?.zoomReset()}
-							>↺</button
+						<button
+							class="fit fit-icon absolute right-0 cursor-pointer px-1 text-base leading-none text-white opacity-80 text-shadow-sky hover:opacity-100"
+							aria-label="Fit map"
+							onclick={() => map?.zoomReset()}>↺</button
 						>
 					{/if}
 				</div>
 				<TimeDock dates={activeRollup?.dates ?? null} />
 			</div>
-			<div class="lane where">
+			<div
+				class="lane where flex min-w-0 items-center gap-3 justify-self-end max-md:hidden md:max-lg:justify-self-center"
+			>
 				<BandToggle />
 			</div>
 		</div>
 
-		{#if error}<p class="error">Couldn’t load today’s sky: {error}</p>{/if}
+		{#if error}<p class="error absolute top-[60px] left-4 z-[11] text-xs text-error-tint">
+				Couldn’t load today’s sky: {error}
+			</p>{/if}
 
 		<p class="sr-only">
 			Interactive pixel map of cloud cover over India.
 			{#if core}{core.summary.station_count} stations; use the station search to explore.{/if}
 		</p>
 
+		<!-- Streak leaderboard: collapsed tab / inset table in the right sea gutter.
+			Phone streaks: a scene bounded to the map area. The board is pinned to a
+			world anchor in the open sea and slides in with the camera pan; same white
+			sky-typography as the desktop gutter list. No scrim/panel — it reads as part
+			of the world. --ink flips the board text white. -->
 		{#if core && sky.showStreaks}
 			<div
-				class="streaks-scene"
+				class="streaks-scene absolute inset-0 z-20 hidden text-white [--ink:var(--color-ink-on-dark)] max-md:block"
 				role="dialog"
 				aria-modal="true"
 				aria-label="Station streaks"
@@ -296,16 +340,26 @@
 					if (e.key === 'Escape') sky.showStreaks = false;
 				}}
 			>
+				<!-- Transparent catch-all: tap the open sea to dismiss. -->
 				<button
-					class="sea-dismiss"
+					class="sea-dismiss absolute inset-0 cursor-pointer border-0 bg-transparent"
 					aria-label="Close streaks"
 					onclick={() => (sky.showStreaks = false)}
 				></button>
 
-				<div class="streak-dock">
-					<div class="streak-world" bind:clientHeight={boardH}>
-						<h2 class="streak-title">STATION STREAKS</h2>
-						<p class="streak-caption">CONSECUTIVE CLEAR / OVERCAST DAYS</p>
+				<!-- Board seats just above the control rail; the map pans so the land sits a
+					pad above it (bottom must match CONTROLS_RESERVE in the script). -->
+				<div
+					class="streak-dock pointer-events-none absolute inset-x-0 bottom-[140px] flex justify-center px-3.5"
+				>
+					<div
+						class="streak-world pointer-events-none w-[min(88vw,340px)] text-shadow-sky"
+						bind:clientHeight={boardH}
+					>
+						<h2 class="streak-title m-0 text-xs tracking-[0.08em]">STATION STREAKS</h2>
+						<p class="streak-caption mx-0 mt-px mb-2 text-xs tracking-[0.06em] opacity-75">
+							CONSECUTIVE CLEAR / OVERCAST DAYS
+						</p>
 						<StreakBoard
 							summary={core.summary}
 							compact
@@ -322,28 +376,55 @@
 	</div>
 </section>
 
-<div class="shore">
-	<span class="shore-waves" aria-hidden="true"></span>
-	<button class="shore-link" onclick={scrollToNotes}>
+<!-- Shoreline: pixel waves either side of a quiet scroll link. The wave tile is the
+	map's own 8×3 crest curve (buildWaveTex), inked for paper; the steps() animation
+	flips it one pixel sideways like the sea's drift. -->
+<div class="shore mx-auto flex max-w-[1080px] items-center gap-[18px] px-5">
+	<span
+		class="shore-waves h-[6px] flex-1 animate-shore-drift bg-size-[28px_6px] bg-repeat-x opacity-50 [image-rendering:pixelated] motion-reduce:animate-none"
+		aria-hidden="true"
+	></span>
+	<button
+		class="shore-link inline-flex cursor-pointer items-center gap-2 px-0.5 py-1.5 text-xs font-bold tracking-widest text-ink opacity-75 transition-[opacity,color] duration-120 hover:text-focus hover:opacity-100"
+		onclick={scrollToNotes}
+	>
 		NOTES
-		<svg class="shore-arrow" viewBox="0 0 7 7" width="11" height="11" aria-hidden="true">
+		<svg
+			class="shore-arrow animate-shore-dip [shape-rendering:crispEdges] motion-reduce:animate-none"
+			viewBox="0 0 7 7"
+			width="11"
+			height="11"
+			aria-hidden="true"
+		>
 			<path d="M3 0h1v4h-1z M1 4h5v1h-5z M2 5h3v1h-3z M3 6h1v1h-1z" fill="currentColor" />
 		</svg>
 	</button>
-	<span class="shore-waves" aria-hidden="true"></span>
+	<span
+		class="shore-waves h-[6px] flex-1 animate-shore-drift bg-size-[28px_6px] bg-repeat-x opacity-50 [image-rendering:pixelated] motion-reduce:animate-none"
+		aria-hidden="true"
+	></span>
 </div>
 
-<div class="content" id="field-notes">
-	<header class="article-head">
-		<h1 class="headline">MAPPING CLOUDS WITH METEOGRAMS</h1>
-		<p class="lede">
+<!-- The field notes article. One centred 640px prose measure; the specimen and
+	pipeline break out to the full content width. -->
+<div class="content mx-auto max-w-[1080px] scroll-mt-4 px-5 pt-14 pb-[60px]" id="field-notes">
+	<header class="article-head mx-auto max-w-[720px] text-center">
+		<h1
+			class="headline m-0 text-5xl leading-none font-bold tracking-[0.02em] text-balance md:text-7xl"
+		>
+			MAPPING CLOUDS WITH METEOGRAMS
+		</h1>
+		<p class="lede mx-auto mt-5 max-w-[560px] text-lg leading-relaxed text-balance md:text-xl">
 			Every morning the India Meteorological Department publishes a GFS <em>meteogram</em> for each of
 			its ~1,200 observation stations.
 		</p>
 	</header>
 
 	<section class="ch mt-8">
-		<div class="prose">
+		<!-- Prose measure: 640px centred column; paragraphs inherit the ink body. -->
+		<div
+			class="prose mx-auto max-w-[640px] [&_p]:mx-0 [&_p]:mt-0 [&_p]:mb-3.5 [&_p]:text-base [&_p]:leading-relaxed [&_p]:text-pretty [&_p]:text-ink"
+		>
 			<p>
 				The Indian Meteorological Department (IMD) publishes a dense, complex data product called a <strong
 					>meteogram</strong
@@ -358,13 +439,15 @@
 				graphics, the IMD can map out the weather at a granular level nationwide.
 			</p>
 		</div>
-		<div class="breakout">
+		<div class="breakout mt-8">
 			<MeteogramAtlas />
 		</div>
 	</section>
 
 	<section class="ch mt-8">
-		<div class="prose">
+		<div
+			class="prose mx-auto max-w-[640px] [&_p]:mx-0 [&_p]:mt-0 [&_p]:mb-3.5 [&_p]:text-base [&_p]:leading-relaxed [&_p]:text-pretty [&_p]:text-ink"
+		>
 			<p>
 				But what really caught my eye was how these graphics represent cloud cover. Look closely,
 				and you’ll realize it’s actually drawn to look like a literal cloudy sky!
@@ -392,26 +475,34 @@
 	</section>
 
 	<section class="ch">
-		<div class="prose">
+		<div
+			class="prose mx-auto max-w-[640px] [&_p]:mx-0 [&_p]:mt-0 [&_p]:mb-3.5 [&_p]:text-base [&_p]:leading-relaxed [&_p]:text-pretty [&_p]:text-ink"
+		>
 			<p>
 				The site is built with
 				<a
-					class="m-link"
+					class="m-link text-ink underline underline-offset-[3px] transition-colors duration-120 hover:text-focus"
 					href="https://svelte.dev/docs/kit/introduction"
 					target="_blank"
 					rel="noopener noreferrer">SvelteKit</a
 				>
 				and Svelte 5 runes. The map is projected with
-				<a class="m-link" href="https://d3js.org/d3-geo" target="_blank" rel="noopener noreferrer"
-					>D3</a
+				<a
+					class="m-link text-ink underline underline-offset-[3px] transition-colors duration-120 hover:text-focus"
+					href="https://d3js.org/d3-geo"
+					target="_blank"
+					rel="noopener noreferrer">D3</a
 				>
 				and rendered as an interactive pixel field with
-				<a class="m-link" href="https://pixijs.com" target="_blank" rel="noopener noreferrer"
-					>PixiJS</a
+				<a
+					class="m-link text-ink underline underline-offset-[3px] transition-colors duration-120 hover:text-focus"
+					href="https://pixijs.com"
+					target="_blank"
+					rel="noopener noreferrer">PixiJS</a
 				>: each station becomes a three-mark cloud tower, and the grid subdivides toward individual
 				stations as you zoom in. The full pipeline and source are open on
 				<a
-					class="m-link"
+					class="m-link text-ink underline underline-offset-[3px] transition-colors duration-120 hover:text-focus"
 					href="https://github.com/diagram-chasing"
 					target="_blank"
 					rel="noopener noreferrer">GitHub</a
@@ -420,7 +511,7 @@
 		</div>
 	</section>
 
-	<section class="support-band">
+	<section class="support-band mt-16">
 		<SupportCTA />
 	</section>
 </div>
@@ -453,505 +544,20 @@
 {/if}
 
 <style>
-	/* Thin paper mat so the frame border reads; the map goes as wide as the mat allows.
-     On desktop the mat fills the first screen (map height driven by it) so the page
-     scrolls past to the content; on mobile the map keeps a tall min-height and the
-     section grows in normal flow. */
-	.stage {
-		box-sizing: border-box;
-		padding: clamp(8px, 1.4vw, 18px);
-		background: var(--paper);
-		transition: background-color 0.4s ease;
+	/* Shoreline wave tile: the map's own 8×3 crest curve (buildWaveTex) inked for
+	   paper. Kept here because the data-URL carries internal single quotes AND
+	   spaces, so it can't survive a Tailwind bg-[url(...)] arbitrary value; the
+	   %230b1d3a in the fill is the image ink, not a CSS color token. */
+	.shore-waves {
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='3'%3E%3Cpath d='M1 0h2v1H1zM0 1h1v1H0zM3 1h1v1H3zM6 1h2v1H6zM4 2h2v1H4z' fill='%230b1d3a'/%3E%3C/svg%3E");
 	}
-	.map-frame {
-		position: relative;
-		overflow: hidden;
-		border: 0px solid var(--ink);
-		background: #0b1d3a; /* navy sky behind the canvas while it loads */
-		/* Definite height (not just min-height) so the canvas fills the frame on
-       mobile too — otherwise the solid navy fallback shows behind the controls
-       instead of the sea + gradient scrim the way it does on desktop. Short of
-       the full viewport so the shoreline and the article's kicker peek above
-       the fold — the cue that there's more to scroll to. */
-		height: max(88svh, 440px);
-	}
-	/* Edge scrim: an eased deep-sky wash under the control rail so the white
-     chrome keeps a contrast floor whatever the map draws beneath it. Tinted
-     with the scene's own navy it reads as sea depth, not as a UI panel. */
-	.map-frame::after {
-		content: '';
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		height: 170px;
-		pointer-events: none;
-		z-index: 9; /* just under the control bars (z-index 10) */
-		background: linear-gradient(
-			to top,
-			rgba(8, 24, 49, 0.6),
-			rgba(8, 24, 49, 0.42) 35%,
-			rgba(8, 24, 49, 0.18) 65%,
-			transparent
-		);
-	}
-	@media (min-width: 768px) {
-		/* Short of 100svh so the shoreline strip and the top of the article title
-       peek above the fold. */
-		.stage {
-			height: 95svh;
-		}
-		.map-frame {
-			height: 100%;
-			min-height: 0;
-		}
-	}
-
-	.bar {
-		position: absolute;
-		left: 0;
-		right: 0;
-		display: flex;
-		align-items: center;
-		gap: 16px;
-		padding: 14px 16px;
-		pointer-events: none;
-		z-index: 10;
-	}
-	.bar :global(*) {
-		pointer-events: auto;
-	}
-	/* One rail, three lanes: WHAT (band legend, left) · WHEN (time dock, centre) ·
-     WHERE (search + zoom, right). Grid keeps the dock optically centred. */
-	.bar.bottom {
-		bottom: 0;
-		display: grid;
-		grid-template-columns: 1fr auto 1fr;
-		align-items: end;
-		gap: 12px 20px;
-	}
-	.lane {
-		display: flex;
-		min-width: 0;
-	}
-	.lane.legend {
-		justify-self: start;
-		align-items: center;
-		gap: 14px;
-	}
-	.lane.dock {
-		justify-self: center;
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 8px;
-	}
-	.lane.where {
-		justify-self: end;
-		align-items: center;
-		gap: 12px;
-	}
-	/* Quiet "way back": appears only while the view is actually zoomed. */
-	.fit {
-		padding: 2px 4px;
-		font-family: var(--font-display);
-		font-size: 11px;
-		letter-spacing: 0.08em;
-		color: #fff;
-		opacity: 0.8;
-		cursor: pointer;
-		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
-	}
-	.fit:hover {
-		opacity: 1;
-	}
-	.fit:focus-visible {
-		outline: 2px solid var(--focus);
-		outline-offset: 2px;
-	}
-	/* Phones only: the legend compresses to one glyph row above the timeline, with
-     the fit-map icon tucked to the right without shifting the centred glyphs. */
-	.mobile-row {
-		display: none;
-		position: relative;
-		align-items: center;
-		justify-content: center;
-		gap: 12px;
-	}
-	.fit-icon {
-		position: absolute;
-		right: 0;
-		padding: 0 4px;
-		font-size: 15px;
-		line-height: 1;
-	}
-
-	/* Desktop station search: parks in the top-left sky. Hidden on phones, where the
-     corner chips carry search instead. */
-	.desktop-top {
-		position: absolute;
-		top: 14px;
-		left: 16px;
-		z-index: 10;
-	}
-
-	/* Mobile chrome: chips in the sky strip. Hidden on desktop where the bottom
-     rail carries everything. */
-	.mobile-top {
-		position: absolute;
-		top: 0;
-		left: 0;
-		display: none;
-		padding: 10px 12px;
-		z-index: 10;
-	}
-	.chips {
-		display: flex;
-		gap: 6px;
-	}
-	/* Quiet text toggle in the WHERE lane, voiced like ViewTabs: recedes at rest,
-     brightens on hover, underlines when the streaks are shown. */
-	.streaks-toggle {
-		padding: 0;
-		font-family: var(--font-display);
-		font-size: 11px;
-		letter-spacing: 0.08em;
-		color: #fff;
-		opacity: 0.55;
-		cursor: pointer;
-		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
-	}
-	.streaks-toggle:hover {
-		opacity: 0.9;
-	}
-	.streaks-toggle.on {
-		opacity: 1;
-		text-decoration: underline;
-		text-underline-offset: 3px;
-		text-decoration-thickness: 2px;
-	}
-	.streaks-toggle:focus-visible {
-		outline: 2px solid var(--focus);
-		outline-offset: 2px;
-	}
-
-	/* Phone streaks: a scene bounded to the map area. The board itself is pinned to
-     a world anchor out in the open sea and slides in with the camera pan; the same
-     white sky-typography as the desktop gutter list. No scrim/panel — it reads as
-     part of the world, not a sheet on top. --ink flips the board text white. */
-	.streaks-scene {
-		position: absolute;
-		inset: 0;
-		z-index: 20;
-		display: none;
-		--ink: #ffffff;
-		color: #fff;
-	}
-	/* Transparent catch-all: tap the open sea to dismiss. */
-	.sea-dismiss {
-		position: absolute;
-		inset: 0;
-		border: 0;
-		background: transparent;
-		cursor: pointer;
-	}
-	/* The board sits in the empty sea between the panned landmass and the control
-     rail, auto-centered with padding. Bounds tuned to the aside pan. */
-	/* Board seats just above the control rail; the map pans so the land sits a pad
-     above it (bottom must match CONTROLS_RESERVE in the script). */
-	.streak-dock {
-		position: absolute;
-		left: 0;
-		right: 0;
-		bottom: 140px;
-		display: flex;
-		justify-content: center;
-		padding: 0 14px;
-		pointer-events: none;
-	}
-	.streak-world {
-		width: min(88vw, 340px);
-		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
-		pointer-events: none; /* empty areas fall through to the sea to dismiss */
-	}
+	/* StreakBoard internals bridge: the leaderboard rows are a child component's
+	   <li><button>; reach in to add the sky text-shadow and a hover wash. */
 	.streak-world :global(li button) {
 		pointer-events: auto;
-		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
+		text-shadow: 1px 1px 0 --alpha(var(--color-navy) / 90%);
 	}
 	.streak-world :global(li button:hover) {
-		background: rgba(255, 255, 255, 0.14);
-	}
-	.streak-title {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: 12px;
-		letter-spacing: 0.08em;
-	}
-	.streak-caption {
-		margin: 1px 0 8px;
-		font-family: var(--font-display);
-		font-size: 8px;
-		letter-spacing: 0.06em;
-		opacity: 0.75;
-	}
-	.sea-dismiss:focus-visible {
-		outline: 2px solid var(--focus);
-		outline-offset: 2px;
-	}
-
-	/* Corner minimap: parks in the top-right sky while the desktop view is zoomed.
-     Above the map canvas but below the control rail; non-interactive scenery. */
-	.minimap-corner {
-		position: absolute;
-		top: 14px;
-		right: 16px;
-		z-index: 11;
-		pointer-events: none;
-	}
-
-	.loading {
-		width: 100%;
-		height: 100%;
-		display: grid;
-		place-items: center;
-		color: #fff;
-		font-family: var(--font-display);
-		font-size: 12px;
-	}
-	.error {
-		position: absolute;
-		top: 60px;
-		left: 16px;
-		font-family: var(--font-display);
-		font-size: 12px;
-		color: #ffd7cf;
-		z-index: 11;
-	}
-
-	/* ————— Shoreline: pixel waves either side of a quiet scroll link. The wave
-     tile is the map's own 8×3 crest curve (buildWaveTex), inked for paper, and
-     the steps() animation flips it one pixel sideways like the sea's drift. */
-	.shore {
-		display: flex;
-		align-items: center;
-		gap: 18px;
-		max-width: 1080px;
-		margin: 0 auto;
-		padding: 0 20px 0;
-	}
-	.shore-waves {
-		flex: 1;
-		height: 6px;
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='3'%3E%3Cpath d='M1 0h2v1H1zM0 1h1v1H0zM3 1h1v1H3zM6 1h2v1H6zM4 2h2v1H4z' fill='%230b1d3a'/%3E%3C/svg%3E");
-		background-repeat: repeat-x;
-		background-size: 28px 6px;
-		image-rendering: pixelated;
-		opacity: 0.5;
-		animation: shore-drift 2.4s steps(1) infinite;
-	}
-	@keyframes shore-drift {
-		0%,
-		100% {
-			background-position-x: 0;
-		}
-		50% {
-			background-position-x: 2px;
-		}
-	}
-	.shore-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		padding: 6px 2px;
-		font-family: var(--font-display);
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		color: var(--ink);
-		opacity: 0.75;
-		cursor: pointer;
-		transition:
-			opacity 0.12s,
-			color 0.12s;
-	}
-	.shore-link:hover {
-		opacity: 1;
-		color: var(--focus);
-	}
-	.shore-arrow {
-		shape-rendering: crispEdges;
-		animation: shore-dip 1.8s ease-in-out infinite;
-	}
-	@keyframes shore-dip {
-		50% {
-			transform: translateY(2px);
-		}
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.shore-waves,
-		.shore-arrow {
-			animation: none;
-		}
-	}
-
-	/* ————— The field notes article. One centred 640px prose measure; the
-     specimen and pipeline break out to the full content width. */
-	.content {
-		max-width: 1080px;
-		margin: 0 auto;
-		padding: 56px 20px 60px;
-		scroll-margin-top: 16px;
-	}
-
-	.article-head {
-		text-align: center;
-		max-width: 720px;
-		margin: 0 auto;
-	}
-	.kicker {
-		margin: 0 0 14px;
-		font-family: var(--font-display);
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.14em;
-		color: var(--muted-foreground);
-	}
-	.headline {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: clamp(42px, 8vw, 76px);
-		font-weight: 700;
-		letter-spacing: 0.02em;
-		line-height: 1.05;
-		text-wrap: balance;
-	}
-	.lede {
-		max-width: 560px;
-		margin: 20px auto 0;
-		font-size: clamp(17px, 2.2vw, 20px);
-		line-height: 1.6;
-		text-wrap: balance;
-	}
-	/* Byline as a station plate — the author labelled the way cities are on the
-     map: square dot, white plate, ink text. */
-	.byline {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 12px;
-		margin-top: 26px;
-	}
-	.byline-plate {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		padding: 5px 10px;
-		background: #fff;
-		box-shadow: 2px 2px 0 rgba(11, 29, 58, 0.3);
-		font-family: var(--font-display);
-		font-size: 13px;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		color: var(--ink);
-		text-decoration: none;
-	}
-	.byline-plate:hover {
-		color: var(--focus);
-	}
-	.byline-dot {
-		width: 6px;
-		height: 6px;
-		background: var(--ink);
-	}
-	.dateline {
-		margin: 12px 0 0;
-		font-family: var(--font-display);
-		font-size: 11px;
-		letter-spacing: 0.1em;
-		color: var(--muted-foreground);
-	}
-
-	.prose {
-		max-width: 640px;
-		margin: 0 auto;
-	}
-	.prose p {
-		font-size: 15px;
-		line-height: 1.75;
-		margin: 0 0 14px;
-		color: var(--ink);
-		text-wrap: pretty;
-	}
-	.breakout {
-		margin-top: 32px;
-	}
-	.m-link {
-		color: var(--ink);
-		text-decoration: underline;
-		text-underline-offset: 3px;
-		transition: color 0.12s;
-	}
-	.m-link:hover {
-		color: var(--focus);
-	}
-
-	.support-band {
-		margin-top: 64px;
-	}
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		border: 0;
-	}
-	/* Tablets: keep all three lanes but stack them, dock first. */
-	@media (max-width: 1023px) and (min-width: 768px) {
-		.bar.bottom {
-			grid-template-columns: 1fr;
-			justify-items: center;
-			gap: 10px;
-		}
-		.lane.dock {
-			order: -1;
-		}
-		.lane.legend,
-		.lane.where {
-			justify-self: center;
-		}
-	}
-	/* Phones: the dock keeps time + compact layers + collapsed view picker;
-     everything else moves to the corner chips / fit button. */
-	@media (max-width: 767px) {
-		.bar.bottom {
-			grid-template-columns: 1fr;
-			justify-items: center;
-		}
-		.lane.legend,
-		.lane.where {
-			display: none;
-		}
-		/* The dock carries the whole rail on phones — let it use the full width so
-       the scrubber spans edge to edge and the compact legend centres above it.
-       stretch makes the TimeDock child fill, so its scrubber can go full width. */
-		.lane.dock {
-			width: 100%;
-			align-items: stretch;
-		}
-		.mobile-row {
-			display: flex;
-		}
-		.mobile-top {
-			display: flex;
-		}
-		.desktop-top {
-			display: none;
-		}
-		.streaks-scene {
-			display: block;
-		}
+		background: --alpha(white / 14%);
 	}
 </style>

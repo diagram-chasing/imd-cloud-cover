@@ -78,39 +78,77 @@
 	}
 </script>
 
+<!-- (The 48px 20px 56px padding was commented out in the original CSS, so none is applied.) -->
 <footer class="site-footer">
-	<div class="more">
-		<h2 class="more-title">~ More From Us ~</h2>
+	<div class="more mx-auto max-w-[640px]">
+		<h2 class="more-title text-center text-base font-normal tracking-[0.08em] uppercase">
+			~ More From Us ~
+		</h2>
+		<!-- Top-down island the projects are pinned onto. The PNG has a transparent
+		     background, so paper shows through around the coast. Extra vertical margin
+		     gives the plaques (which rise above their pins) room to overflow / clear the
+		     section title. On phones the wide island doesn't fit, so we swap to the tall
+		     portrait island (≤560px) with its own aspect ratio. -->
 		<div
-			class="island"
+			class="island relative mx-auto mt-20 aspect-[384/128] max-w-[560px] bg-[image:var(--island-wide)] bg-contain bg-center bg-no-repeat [image-rendering:pixelated] max-[560px]:mt-5 max-[560px]:aspect-[128/224] max-[560px]:max-w-[280px] max-[560px]:bg-[image:var(--island-tall)]"
 			style="--island-wide: url({islandUrl}); --island-tall: url({islandPortraitUrl})"
 			onclick={onIslandClick}
 			role="presentation"
 		>
 			{#each feedItems as item, i (item.link)}
 				{@const spot = citySpots[i % citySpots.length]}
+				<!-- A pinned city: the anchor point (left/top) is the pin's tip on the
+				     ground; the plaque sits just above it, centred on the same spot.
+				     Since touch has no hover, tapping a pin expands it in place
+				     (data-open) and a second tap follows the link. -->
 				<a
-					class="city"
-					class:open={openIndex === i}
+					class="city group absolute top-[var(--y)] left-[var(--x)] text-ink no-underline hover:z-20 focus-visible:z-20 focus-visible:outline-none max-[560px]:top-[var(--my)] max-[560px]:left-[var(--mx)] data-open:z-20"
+					data-open={openIndex === i ? '' : undefined}
 					href={item.link}
 					target="_blank"
 					rel="noopener noreferrer"
 					onclick={(e) => onCityClick(e, i)}
 					style="--x: {spot.x}%; --y: {spot.y}%; --mx: {spot.mx}%; --my: {spot.my}%"
 				>
-					<div class="plaque">
+					<!-- Collapsed, the card is a compact marker (a thumbnail sliver + the
+					     title); hovering/focusing/opening expands it to the full xs (20rem)
+					     card. The `bottom` offset leaves clear air between pin and card. -->
+					<div
+						class="plaque absolute bottom-[34px] left-0 w-[208px] -translate-x-1/2 border-2 border-ink bg-paper shadow-[3px_3px_0] shadow-ink/28 transition-[width,box-shadow,transform] duration-160 ease-[ease] group-hover:w-[min(20rem,calc(100vw-32px))] group-hover:translate-x-[calc(-50%-1px)] group-hover:-translate-y-[3px] group-hover:shadow-[6px_6px_0] group-hover:shadow-ink group-focus-visible:w-[min(20rem,calc(100vw-32px))] group-focus-visible:translate-x-[calc(-50%-1px)] group-focus-visible:-translate-y-[3px] group-focus-visible:shadow-[6px_6px_0] group-focus-visible:shadow-ink group-data-open:w-[min(20rem,calc(100vw-32px))] group-data-open:translate-x-[calc(-50%-1px)] group-data-open:-translate-y-[3px] group-data-open:shadow-[6px_6px_0] group-data-open:shadow-ink"
+					>
 						{#if item.image}
-							<div class="thumb">
-								<img src={item.image} alt={item.title} loading="lazy" />
+							<!-- Collapsed shows a sliver of the thumbnail; reveal shows the full image. -->
+							<div
+								class="thumb h-14 overflow-hidden border-b-2 border-ink transition-[height] duration-160 ease-[ease] group-hover:h-[150px] group-focus-visible:h-[150px] group-data-open:h-[150px]"
+							>
+								<img
+									src={item.image}
+									alt={item.title}
+									loading="lazy"
+									class="block h-full w-full object-cover mix-blend-multiply"
+								/>
 							</div>
 						{/if}
-						<div class="body">
-							<h3 class="card-title">{item.title}</h3>
-							<p class="card-desc">{item.description}</p>
-							<time class="card-date">{item.date}</time>
+						<div class="body flex flex-col gap-1.5 px-3.5 pt-3 pb-3.5">
+							<h3 class="card-title m-0 text-base leading-tight">{item.title}</h3>
+							<!-- On the map the collapsed card hides its description + date;
+							     hovering/focusing/opening the city reveals them. -->
+							<p
+								class="card-desc m-0 [display:none] overflow-hidden text-sm leading-normal text-pretty text-muted-foreground [-webkit-box-orient:vertical] [-webkit-line-clamp:3] group-hover:[display:-webkit-box] group-focus-visible:[display:-webkit-box] group-data-open:[display:-webkit-box]"
+							>
+								{item.description}
+							</p>
+							<time
+								class="card-date hidden text-xs tracking-[0.04em] text-muted-foreground opacity-75 group-hover:block group-focus-visible:block group-data-open:block"
+								>{item.date}</time
+							>
 						</div>
 					</div>
-					<svg class="pin" viewBox="0 0 12 17" aria-hidden="true">
+					<svg
+						class="pin absolute bottom-0 left-0 h-auto w-[15px] -translate-x-1/2 drop-shadow-[1px_2px_0] drop-shadow-ink/30 transition-transform duration-120 ease-[ease] group-hover:-translate-y-0.5 group-hover:scale-[1.08] group-focus-visible:-translate-y-0.5 group-focus-visible:scale-[1.08] group-data-open:-translate-y-0.5 group-data-open:scale-[1.08]"
+						viewBox="0 0 12 17"
+						aria-hidden="true"
+					>
 						<path
 							d="M6 0C2.7 0 0 2.7 0 6c0 4.5 6 11 6 11s6-6.5 6-11C12 2.7 9.3 0 6 0Z"
 							fill="var(--ink)"
@@ -124,27 +162,41 @@
 		</div>
 	</div>
 
-	<div class="colophon">
+	<div class="colophon mt-14 text-center">
 		<a
-			class="brand bg-white"
+			class="brand inline-flex border-2 border-ink bg-white px-3 py-2 shadow-[3px_3px_0] shadow-ink"
 			href="https://diagramchasing.fun"
 			target="_blank"
 			rel="noopener noreferrer"
 			aria-label="Diagram Chasing — home"
 		>
-			<img src={logo} alt="Diagram Chasing" />
+			<img src={logo} alt="Diagram Chasing" class="block h-10 w-auto" />
 		</a>
 
-		<ul class="pages">
+		<ul class="pages mt-[22px] flex flex-wrap justify-center gap-x-4.5 gap-y-1.5">
 			{#each pageLinks as link (link.href)}
-				<li><a href={link.href} target="_blank" rel="noopener noreferrer">{link.name}</a></li>
+				<li>
+					<a
+						href={link.href}
+						target="_blank"
+						rel="noopener noreferrer"
+						class="text-sm tracking-[0.04em] text-ink no-underline transition-colors duration-120 hover:text-focus"
+						>{link.name}</a
+					>
+				</li>
 			{/each}
 		</ul>
 
-		<ul class="socials">
+		<ul class="socials mt-4.5 flex justify-center gap-2">
 			{#each socials as s (s.label)}
 				<li>
-					<a href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}>
+					<a
+						href={s.href}
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label={s.label}
+						class="inline-flex h-[34px] w-[34px] items-center justify-center border-2 border-transparent text-ink transition-[color,border-color] duration-120 hover:border-ink hover:text-focus"
+					>
 						<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
 							<path fill="currentColor" d={s.path} />
 						</svg>
@@ -153,246 +205,8 @@
 			{/each}
 		</ul>
 
-		<p class="copy">© {currentYear} Diagram Chasing</p>
+		<p class="copy mt-5 text-xs tracking-wider text-muted-foreground">
+			© {currentYear} Diagram Chasing
+		</p>
 	</div>
 </footer>
-
-<style>
-	/* .site-footer {
-		padding: 48px 20px 56px;
-	} */
-
-	.more {
-		max-width: 640px;
-		margin: 0 auto;
-	}
-	.more-title {
-
-		text-align: center;
-		font-family: var(--font-display);
-		font-size: 16px;
-		font-weight: 400;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-	}
-	/* Top-down island the projects are pinned onto. The PNG has a transparent
-	   background, so paper shows through around the coast. Extra vertical margin
-	   gives the plaques (which rise above their pins) room to overflow. */
-	.island {
-		position: relative;
-		max-width: 560px;
-		/* The hover card pops up over the map; the top margin gives it room to
-		   rise without colliding with the section title. */
-		margin: 80px auto 0;
-		aspect-ratio: 384 / 128;
-		background-image: var(--island-wide);
-		background-repeat: no-repeat;
-		background-position: center;
-		background-size: contain;
-		image-rendering: pixelated;
-	}
-	/* A pinned city: the anchor point (left/top) is the pin's tip on the ground;
-	   the plaque sits just above it, centred on the same spot. */
-	.city {
-		position: absolute;
-		left: var(--x);
-		top: var(--y);
-		color: var(--ink);
-		text-decoration: none;
-	}
-	.city:hover,
-	.city:focus-visible,
-	.city.open {
-		z-index: 20;
-		outline: none;
-	}
-	.pin {
-		position: absolute;
-		left: 0;
-		bottom: 0;
-		width: 15px;
-		height: auto;
-		transform: translateX(-50%);
-		filter: drop-shadow(1px 2px 0 rgba(11, 29, 58, 0.3));
-		transition: transform 0.12s ease;
-	}
-	/* The card sits on the map as a compact marker (a sliver of thumbnail + the
-	   title); hovering/focusing expands it to the full Tailwind `xs` (20rem) card.
-	   The `bottom` offset leaves clear air between the pin and the card. */
-	.plaque {
-		position: absolute;
-		left: 0;
-		bottom: 34px;
-		width: 208px;
-		transform: translateX(-50%);
-		background: var(--paper);
-		border: 2px solid var(--ink);
-		box-shadow: 3px 3px 0 rgba(11, 29, 58, 0.28);
-		transition:
-			width 0.16s ease,
-			box-shadow 0.16s ease,
-			transform 0.16s ease;
-	}
-	.city:hover .plaque,
-	.city:focus-visible .plaque,
-	.city.open .plaque {
-		width: min(20rem, calc(100vw - 32px));
-		box-shadow: 6px 6px 0 var(--ink);
-		transform: translate(calc(-50% - 1px), -3px);
-	}
-	.city:hover .pin,
-	.city:focus-visible .pin,
-	.city.open .pin {
-		transform: translateX(-50%) translateY(-2px) scale(1.08);
-	}
-	/* Collapsed shows a sliver of the thumbnail; hover reveals the full image. */
-	.thumb {
-		height: 56px;
-		overflow: hidden;
-		border-bottom: 2px solid var(--ink);
-		transition: height 0.16s ease;
-	}
-	.city:hover .thumb,
-	.city:focus-visible .thumb,
-	.city.open .thumb {
-		height: 150px;
-	}
-	.thumb img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		display: block;
-		mix-blend-mode: multiply;
-	}
-	.body {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		padding: 12px 14px 14px;
-	}
-	.card-title {
-		margin: 0;
-		font-family: var(--font-display);
-		font-size: 16px;
-		line-height: 1.25;
-	}
-	.card-desc {
-		margin: 0;
-		display: -webkit-box;
-		-webkit-line-clamp: 3;
-		line-clamp: 3;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-		font-size: 13px;
-		line-height: 1.5;
-		color: var(--muted-foreground);
-		text-wrap: pretty;
-	}
-	.card-date {
-		font-size: 11px;
-		letter-spacing: 0.04em;
-		color: var(--muted-foreground);
-		opacity: 0.75;
-	}
-	/* On the map, the collapsed card hides its description + date; hovering the
-	   city reveals them (mobile's stacked list keeps the base rules and shows
-	   everything). */
-	.island .card-desc,
-	.island .card-date {
-		display: none;
-	}
-	.city:hover .card-desc,
-	.city:focus-visible .card-desc,
-	.city.open .card-desc {
-		display: -webkit-box;
-	}
-	.city:hover .card-date,
-	.city:focus-visible .card-date,
-	.city.open .card-date {
-		display: block;
-	}
-
-	.colophon {
-		margin-top: 56px;
-		text-align: center;
-	}
-	.brand {
-		display: inline-flex;
-		padding: 8px 12px;
-		border: 2px solid var(--ink);
-		box-shadow: 3px 3px 0 var(--ink);
-	}
-	.brand img {
-		height: 40px;
-		width: auto;
-		display: block;
-	}
-	.pages {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 6px 18px;
-		list-style: none;
-		margin: 22px 0 0;
-		padding: 0;
-	}
-	.pages a {
-		font-family: var(--font-display);
-		font-size: 13px;
-		letter-spacing: 0.04em;
-		color: var(--ink);
-		text-decoration: none;
-		transition: color 0.12s;
-	}
-	.pages a:hover {
-		color: var(--focus);
-	}
-	.socials {
-		display: flex;
-		justify-content: center;
-		gap: 8px;
-		list-style: none;
-		margin: 18px 0 0;
-		padding: 0;
-	}
-	.socials a {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 34px;
-		height: 34px;
-		color: var(--ink);
-		border: 2px solid transparent;
-		transition:
-			color 0.12s,
-			border-color 0.12s;
-	}
-	.socials a:hover {
-		color: var(--focus);
-		border-color: var(--ink);
-	}
-	.copy {
-		margin: 20px 0 0;
-		font-family: var(--font-display);
-		font-size: 11px;
-		letter-spacing: 0.05em;
-		color: var(--muted-foreground);
-	}
-
-	/* The wide island doesn't fit a phone, so swap to the tall portrait island.
-	   Each pin still shows its compact preview card (thumbnail sliver + title);
-	   since touch has no hover, tapping a pin expands it in place (`.open`) and a
-	   second tap follows the link. */
-	@media (max-width: 560px) {
-		.island {
-			max-width: 280px;
-			margin-top: 20px;
-			aspect-ratio: 128 / 224;
-			background-image: var(--island-tall);
-		}
-		.city {
-			left: var(--mx);
-			top: var(--my);
-		}
-	}
-</style>

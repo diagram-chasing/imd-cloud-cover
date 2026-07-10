@@ -87,7 +87,9 @@
 		{onpointerup}
 		{onkeydown}
 	>
-		<div class="rail absolute top-2 right-0 left-0 h-0.5 bg-white shadow-[1px_1px_0] shadow-navy/90"></div>
+		<div
+			class="rail absolute top-2 right-0 left-0 h-0.5 bg-white shadow-[1px_1px_0] shadow-navy/90"
+		></div>
 		{#each LABELS as label, i (label)}
 			<span
 				class="tick absolute top-[5px] -ml-px h-2 w-0.5 bg-white opacity-80 shadow-[1px_1px_0] shadow-navy/90"

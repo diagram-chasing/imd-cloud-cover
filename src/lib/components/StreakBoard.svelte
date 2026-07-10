@@ -24,23 +24,46 @@
 </script>
 
 {#snippet column(title: string, entries: StreakEntry[], kind: 'sun' | 'cloud')}
-	<div class="col">
-		<h3>{title}</h3>
+	<div>
+		<h3 class={[compact ? 'mb-[5px] text-xs tracking-[0.04em]' : 'mb-3 text-sm tracking-wider']}>
+			{title}
+		</h3>
 		{#if entries.length === 0}
-			<p class="empty">No active streaks yet.</p>
+			<p class="text-sm opacity-60">No active streaks yet.</p>
 		{:else}
-			<ol>
+			<ol class={['flex list-none flex-col', compact ? 'gap-[3px]' : 'gap-1.5']}>
 				{#each entries as e, i (e.code)}
 					<li>
-						<button onclick={() => onselect?.(e.code)}>
-							<span class="rank">{i + 1}</span>
-							<span class="name">{e.name}</span>
-							<span class="days">
+						<button
+							onclick={() => onselect?.(e.code)}
+							class={[
+								"grid w-full cursor-pointer grid-cols-[20px_1fr_auto] items-center text-left text-ink [grid-template-areas:'rank_name_days'_'rank_strip_strip'] hover:bg-ink/5",
+								compact ? 'gap-x-[5px] gap-y-px px-0.5 py-px' : 'gap-x-2 gap-y-0.5 p-1'
+							]}
+						>
+							<span class={['opacity-50 [grid-area:rank]', compact ? 'text-xs' : 'text-base']}
+								>{i + 1}</span
+							>
+							<span
+								class={[
+									'text-xs uppercase [grid-area:name]',
+									compact ? 'tracking-[0.02em]' : 'tracking-[0.03em]'
+								]}>{e.name}</span
+							>
+							<span class="text-xs opacity-70 [grid-area:days]">
 								{#if compact}{e.days}d{:else}{e.days} {e.days === 1 ? 'DAY' : 'DAYS'}{/if}
 							</span>
-							<span class="strip {kind}" aria-hidden="true">
+							<span
+								class={['flex gap-px [grid-area:strip]', compact ? 'mt-px' : 'mt-0.5']}
+								aria-hidden="true"
+							>
 								{#each Array(blocks(e.days)) as _, b (b)}
-									<span class="blk"></span>
+									<span
+										class={[
+											compact ? 'h-1.5 w-[3px]' : 'h-2 w-1.5',
+											kind === 'sun' ? 'bg-sun-gold' : 'bg-cloud-block'
+										]}
+									></span>
 								{/each}
 							</span>
 						</button>
@@ -51,130 +74,18 @@
 	</div>
 {/snippet}
 
-<section class="streaks" class:stacked class:compact>
+<!-- Dense compact plaque stays two-column even on phones (the max-sm:grid-cols-1
+     only applies to the non-compact board) so the in-world sea board stays short. -->
+<section
+	class={[
+		'grid',
+		compact
+			? 'grid-cols-2 gap-[14px]'
+			: stacked
+				? 'grid-cols-1 gap-4'
+				: 'grid-cols-2 gap-6 max-sm:grid-cols-1'
+	]}
+>
 	{@render column('SUN STREAKS', top(summary.streaks.sun), 'sun')}
 	{@render column('CLOUD STREAKS', top(summary.streaks.cloud), 'cloud')}
 </section>
-
-<style>
-	.streaks {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 24px;
-	}
-	.streaks.stacked {
-		grid-template-columns: 1fr;
-		gap: 16px;
-	}
-	h3 {
-		font-family: var(--font-display);
-		font-size: 14px;
-		letter-spacing: 0.05em;
-		margin: 0 0 12px;
-	}
-	ol {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-	}
-	li button {
-		display: grid;
-		grid-template-columns: 20px 1fr auto;
-		grid-template-areas: 'rank name days' 'rank strip strip';
-		align-items: center;
-		gap: 2px 8px;
-		width: 100%;
-		text-align: left;
-		padding: 4px;
-		cursor: pointer;
-		color: var(--ink);
-	}
-	li button:hover {
-		background: rgba(11, 29, 58, 0.05);
-	}
-	.rank {
-		grid-area: rank;
-		font-family: var(--font-display);
-		font-size: 16px;
-		opacity: 0.5;
-	}
-	.name {
-		grid-area: name;
-		font-family: var(--font-display);
-		font-size: 12px;
-		letter-spacing: 0.03em;
-		text-transform: uppercase;
-	}
-	.days {
-		grid-area: days;
-		font-family: var(--font-display);
-		font-size: 11px;
-		opacity: 0.7;
-	}
-	.strip {
-		grid-area: strip;
-		display: flex;
-		gap: 1px;
-		margin-top: 2px;
-	}
-	.blk {
-		width: 6px;
-		height: 8px;
-	}
-	.strip.sun .blk {
-		background: var(--sun-gold);
-	}
-	.strip.cloud .blk {
-		background: var(--cloud-block);
-	}
-	.empty {
-		font-size: 13px;
-		opacity: 0.6;
-	}
-
-	/* Dense in-world plaque: two tight columns, small type, terse day counts, mini
-	   strips. Kept two-column even on phones (higher specificity than the query
-	   below) so the sea board stays short. */
-	.streaks.compact {
-		grid-template-columns: 1fr 1fr;
-		gap: 14px;
-	}
-	.streaks.compact h3 {
-		font-size: 10px;
-		letter-spacing: 0.04em;
-		margin: 0 0 5px;
-	}
-	.streaks.compact ol {
-		gap: 3px;
-	}
-	.streaks.compact li button {
-		padding: 1px 2px;
-		gap: 1px 5px;
-	}
-	.streaks.compact .rank {
-		font-size: 11px;
-	}
-	.streaks.compact .name {
-		font-size: 9px;
-		letter-spacing: 0.02em;
-	}
-	.streaks.compact .days {
-		font-size: 9px;
-	}
-	.streaks.compact .strip {
-		margin-top: 1px;
-	}
-	.streaks.compact .blk {
-		width: 3px;
-		height: 6px;
-	}
-
-	@media (max-width: 640px) {
-		.streaks {
-			grid-template-columns: 1fr;
-		}
-	}
-</style>

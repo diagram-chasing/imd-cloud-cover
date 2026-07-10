@@ -56,111 +56,85 @@
 
 <!-- The legend IS the control: a radio list of the map's own cloud glyphs.
      Pick a band to isolate that layer; ALL restores the full stack. The pixel
-     radio squares + hover wash are what make it read as clickable. -->
-<div class="legend" class:horizontal role="radiogroup" aria-label="Cloud layers">
+     radio squares + hover wash are what make it read as clickable.
+     Phone (horizontal): drop the radio square and let each option read as a
+     small, minimal button — a hollow pixel outline that fills sun-gold when
+     it's the live band. -->
+<div
+	class={['legend flex', horizontal ? 'flex-row items-center gap-1' : 'flex-col gap-px']}
+	role="radiogroup"
+	aria-label="Cloud layers"
+>
 	<button
-		class="band all"
+		class={[
+			'band all flex cursor-pointer items-center text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100',
+			horizontal
+				? 'gap-[5px] px-[7px] py-1 shadow-[inset_0_0_0_1.5px] shadow-white/45'
+				: 'gap-2 py-[3px] pr-1.5 pl-1',
+			horizontal &&
+				sky.focusBand === null &&
+				'bg-sun-gold/18 shadow-[inset_0_0_0_1.5px] shadow-sun-gold'
+		]}
 		role="radio"
 		aria-checked={sky.focusBand === null}
-		class:active={sky.focusBand === null}
 		onclick={() => (sky.focusBand = null)}
 	>
-		<span class="box" aria-hidden="true"></span>
-		<canvas class="swatch" width="44" height="18" use:previewAll aria-hidden="true"></canvas>
-		<span class="label">ALL</span>
+		<!-- Pixel radio square: hollow at rest, sun-gold when the option is live. Hidden on phone. -->
+		<span
+			class={[
+				'box h-2 w-2 flex-none shadow-[0_0_0_2px_white,1px_1px_0_2px_color-mix(in_srgb,var(--color-navy)_90%,transparent)]',
+				horizontal && 'hidden',
+				sky.focusBand === null && 'bg-sun-gold'
+			]}
+			aria-hidden="true"
+		></span>
+		<canvas
+			class={[
+				'swatch drop-shadow-[1px_1px_0] drop-shadow-navy/60 [image-rendering:pixelated]',
+				horizontal && 'h-auto w-[30px]'
+			]}
+			width="44"
+			height="18"
+			use:previewAll
+			aria-hidden="true"
+		></canvas>
+		<span class="label text-xs tracking-[0.06em]">ALL</span>
 	</button>
 	{#each BANDS as b (b.band)}
 		<button
-			class="band"
+			class={[
+				'band flex cursor-pointer items-center text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100',
+				horizontal
+					? 'gap-[5px] px-[7px] py-1 shadow-[inset_0_0_0_1.5px] shadow-white/45'
+					: 'gap-2 py-[3px] pr-1.5 pl-1',
+				horizontal &&
+					sky.focusBand === b.band &&
+					'bg-sun-gold/18 shadow-[inset_0_0_0_1.5px] shadow-sun-gold',
+				sky.focusBand !== null && sky.focusBand !== b.band && 'opacity-40'
+			]}
 			role="radio"
 			aria-checked={sky.focusBand === b.band}
-			class:dim={sky.focusBand !== null && sky.focusBand !== b.band}
-			class:active={sky.focusBand === b.band}
 			onclick={() => (sky.focusBand = sky.focusBand === b.band ? null : b.band)}
 		>
-			<span class="box" aria-hidden="true"></span>
-			<canvas class="swatch" width="44" height="18" use:preview={b.band} aria-hidden="true"
+			<span
+				class={[
+					'box h-2 w-2 flex-none shadow-[0_0_0_2px_white,1px_1px_0_2px_color-mix(in_srgb,var(--color-navy)_90%,transparent)]',
+					horizontal && 'hidden',
+					sky.focusBand === b.band && 'bg-sun-gold'
+				]}
+				aria-hidden="true"
+			></span>
+			<canvas
+				class={[
+					'swatch drop-shadow-[1px_1px_0] drop-shadow-navy/60 [image-rendering:pixelated]',
+					horizontal && 'h-auto w-[30px]'
+				]}
+				width="44"
+				height="18"
+				use:preview={b.band}
+				aria-hidden="true"
 			></canvas>
-			<span class="label">{horizontal ? b.short : b.label}</span>
+			<span class="label text-xs tracking-[0.06em]">{horizontal ? b.short : b.label}</span>
 		</button>
 	{/each}
 </div>
-
-<style>
-	.legend {
-		display: flex;
-		flex-direction: column;
-		gap: 1px;
-		font-family: var(--font-display);
-	}
-	.band {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 3px 6px 3px 4px;
-		cursor: pointer;
-		color: #fff;
-		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
-		transition:
-			opacity 0.12s,
-			background-color 0.12s;
-	}
-	.band:hover {
-		background: rgba(255, 255, 255, 0.12);
-		opacity: 1;
-	}
-	.band.dim {
-		opacity: 0.4;
-	}
-	/* Pixel radio square: hollow at rest, sun-gold when the option is live. */
-	.box {
-		flex: 0 0 auto;
-		width: 8px;
-		height: 8px;
-		box-shadow:
-			0 0 0 2px #fff,
-			1px 1px 0 2px rgba(11, 29, 58, 0.9);
-	}
-	.band.active .box {
-		background: var(--sun-gold);
-	}
-	.label {
-		font-size: 12px;
-		letter-spacing: 0.06em;
-	}
-	.swatch {
-		image-rendering: pixelated;
-		filter: drop-shadow(1px 1px 0 rgba(11, 29, 58, 0.6));
-	}
-	.band:focus-visible {
-		outline: 2px solid var(--focus);
-		outline-offset: 2px;
-	}
-
-	.legend.horizontal {
-		flex-direction: row;
-		align-items: center;
-		gap: 4px;
-	}
-	/* Phone: drop the radio square and let each option read as a small, minimal
-	   button — a hollow pixel outline that fills sun-gold when it's the live band. */
-	.legend.horizontal .box {
-		display: none;
-	}
-	.legend.horizontal .band {
-		gap: 5px;
-		padding: 4px 7px;
-		box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.45);
-	}
-	.legend.horizontal .band.active {
-		background: rgba(242, 193, 78, 0.18);
-		box-shadow: inset 0 0 0 1.5px var(--sun-gold);
-	}
-	.legend.horizontal .swatch {
-		width: 30px;
-		height: auto;
-	}
-	.legend.horizontal .label {
-		font-size: 11px;
-	}
-</style>

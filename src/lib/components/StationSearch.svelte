@@ -177,7 +177,7 @@
 		{align}
 		collisionPadding={12}
 		sideOffset={6}
-		class="w-[300px] rounded-none border-2 border-ink bg-paper p-0 text-ink shadow-[3px_3px_0_0] shadow-ink ring-0
+		class="w-[300px] rounded-none border-2 border-ink bg-paper p-0 text-ink shadow-[3px_3px_0_0] ring-0 shadow-ink
 			[&_[data-slot=command-input-wrapper]]:p-0
 			[&_[data-slot=input-group]]:!h-9 [&_[data-slot=input-group]]:!rounded-none [&_[data-slot=input-group]]:!border-0 [&_[data-slot=input-group]]:!border-b-2 [&_[data-slot=input-group]]:!border-ink [&_[data-slot=input-group]]:!bg-paper [&_[data-slot=input-group]]:!shadow-none"
 	>

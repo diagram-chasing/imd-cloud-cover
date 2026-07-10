@@ -40,7 +40,7 @@
 </script>
 
 <svg
-	class="balloon"
+	class="balloon block animate-balloon-bob [shape-rendering:crispEdges] motion-reduce:animate-none"
 	width={size}
 	height={(size * H) / W}
 	viewBox="0 0 {W} {H}"
@@ -52,31 +52,15 @@
 </svg>
 
 <style>
-	.balloon {
-		display: block;
-		shape-rendering: crispEdges;
-		animation: bob 2.6s ease-in-out infinite alternate;
-	}
+	/* Theming hook: nothing sets --balloon-* today, but keeping this API lets a
+	   parent recolour the balloon; fallbacks point at the palette tokens. */
 	.body {
-		fill: var(--balloon-body, var(--paper));
+		fill: var(--balloon-body, var(--color-paper));
 	}
 	.line {
-		fill: var(--balloon-line, var(--ink));
+		fill: var(--balloon-line, var(--color-ink));
 	}
 	.shade {
-		fill: var(--balloon-shade, var(--cloud-block));
-	}
-	@keyframes bob {
-		from {
-			transform: translateY(0);
-		}
-		to {
-			transform: translateY(3px);
-		}
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.balloon {
-			animation: none;
-		}
+		fill: var(--balloon-shade, var(--color-cloud-block));
 	}
 </style>
