@@ -14,6 +14,7 @@ import type {
 	AllStations,
 	Summary,
 	Rollup,
+	CitiesRollup,
 	History,
 	Forecast,
 	DatesIndex
@@ -57,6 +58,8 @@ export const fetchLatest = () => getJSON<AllStations>(CORE, 'latest/all-stations
 export const fetchSummary = () => getJSON<Summary>(CORE, 'latest/summary.json');
 export const fetchRollup = (window: '7d' | '30d') =>
 	getJSON<Rollup>(CORE, `rollups/${window}.json`);
+
+export const fetchCities = () => getJSON<CitiesRollup>(CORE, 'rollups/cities.json');
 
 // Per-station tail: baked into /baked, remote fallback for anything unbaked.
 export const fetchHistory = (code: string) => getTail<History>(`history/${code}.json`);

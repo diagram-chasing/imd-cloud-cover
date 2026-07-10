@@ -116,6 +116,62 @@ export interface Rollup {
 	};
 }
 
+/** A calendar-consecutive run of days (streaks/records in rollups/cities.json). */
+export interface CityRun {
+	len: number;
+	start: string;
+	end: string;
+}
+
+/** One city in rollups/cities.json, keyed by its nearest station's code. */
+export interface CityStats {
+	name: string;
+	state: string | null;
+	pop: number;
+	tier: number;
+	/** Daily effective cover aligned to the rollup's `dates`; null = no reading. */
+	e: (number | null)[];
+	mean: number;
+	/** 1 = cloudiest long-term mean. */
+	rank: number;
+	/** Days with a reading. */
+	n: number;
+	counts: { clear: number; mixed: number; grey: number };
+	runs: { clear: CityRun | null; grey: CityRun | null };
+	/** Longest run without a clear day ("sun drought"). */
+	drought: CityRun | null;
+	/** Monsoon arrival date, or null if the clouds haven't settled in yet. */
+	onset: string | null;
+	/** Sky twins: `today` matches the latest day's 8-step profile (lowest RMSE),
+	 * `alltime` the best long-term anomaly correlation. Either can be null when no
+	 * far, different-state city qualifies. `km`/`r`/`rmse` are absent in rollups
+	 * baked before those fields landed. */
+	twin: {
+		today: TwinRef | null;
+		alltime: TwinRef | null;
+	} | null;
+}
+
+/** A single sky-twin reference: the paired city's station code plus the metric
+ * that earned it (`rmse` for today's profile, `r` for the long-term anomaly). */
+export interface TwinRef {
+	code: string;
+	km?: number;
+	r?: number;
+	rmse?: number;
+}
+
+/** rollups/cities.json — the long-term city explorer view. */
+export interface CitiesRollup {
+	generated: string;
+	dates: string[];
+	records: {
+		clear: (CityRun & { code: string }) | null;
+		grey: (CityRun & { code: string }) | null;
+	};
+	cities: Record<string, CityStats>;
+}
+
 /** Raw per-station forecast: {date}/{CODE}-meteogram.json */
 export interface ForecastPoint {
 	datetime: string;

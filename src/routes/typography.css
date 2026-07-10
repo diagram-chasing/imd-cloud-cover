@@ -273,6 +273,12 @@
 		margin-top: calc(1.5 * var(--leading));
 		margin-bottom: calc(2 * var(--leading));
 	}
+	/* Full-bleed breakout: escapes the article's 1080px mat to span the viewport
+	   (the city sky explorer draws its own edge-to-edge sky). */
+	.article > .breakout.full-bleed {
+		width: 100vw;
+		margin-inline: calc(50% - 50vw);
+	}
 	.article > .support-band {
 		margin-top: calc(3 * var(--leading));
 		margin-bottom: 0;

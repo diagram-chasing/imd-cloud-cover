@@ -103,52 +103,9 @@
 	const SHADOW_DROP = TOWER_GAP + MARK_CELL * 2.5;
 	const WAVE_SCALE = 1.25;
 	const WAVE_MAX = 100;
-	const PLANE_COUNT = 5;
-	const TRAIL_LEN = 44;
-	const PLANE_SPEED_MIN = 1024 / 90000;
-	const PLANE_SPEED_MAX = 1024 / 60000;
-	// Easter egg: a lone hot air balloon wandering across the landmass on the wind,
-	// far slower than the jets overhead — its heading is steered by smooth noise.
+	// Easter egg: a lone hot air balloon wandering across the landmass on the wind
+	// — its heading is steered by smooth noise.
 	const BALLOON_SPEED = 1024 / 520000;
-	const HUBS: Record<string, [number, number]> = {
-		DXB: [55.36, 25.25],
-		DOH: [51.61, 25.27],
-		KHI: [67.16, 24.91], // west
-		DEL: [77.1, 28.56],
-		KTM: [85.36, 27.7],
-		BOM: [72.87, 19.09], // north / central
-		CCU: [88.45, 22.65],
-		DAC: [90.4, 23.84],
-		MAA: [80.17, 12.99],
-		CMB: [79.88, 7.18],
-		MLE: [73.53, 4.19], // south
-		SIN: [103.99, 1.36],
-		KUL: [101.71, 2.75],
-		BKK: [100.75, 13.69],
-		RGN: [96.13, 16.9] // SE Asia
-	};
-	const ROUTES: [string, string][] = [
-		['DXB', 'BKK'],
-		['DXB', 'SIN'],
-		['DXB', 'CCU'],
-		['DXB', 'KUL'],
-		['DXB', 'MAA'],
-		['DOH', 'SIN'],
-		['DOH', 'DAC'],
-		['DOH', 'BKK'],
-		['KHI', 'BKK'],
-		['KHI', 'CCU'],
-		['KHI', 'RGN'],
-		['DEL', 'CMB'],
-		['DEL', 'MAA'],
-		['DEL', 'MLE'],
-		['DEL', 'SIN'],
-		['DEL', 'KUL'],
-		['KTM', 'MLE'],
-		['BOM', 'CCU'],
-		['BOM', 'DAC'],
-		['CCU', 'MLE']
-	];
 
 	interface Bin {
 		px: number;
@@ -240,21 +197,6 @@
 	let lods: Lod[] = [];
 	let lodIndex = -1;
 	let maxBins = 0;
-	let planeLayer: Container | null = null;
-	interface Plane {
-		c: Container;
-		ox: number;
-		oy: number;
-		ux: number;
-		uy: number;
-		s: number;
-		sStart: number;
-		sTarget: number;
-		sDir: 1 | -1;
-		speed: number;
-		heading: number;
-	}
-	let planes: Plane[] = [];
 	let balloonLayer: Container | null = null;
 	let balloonTex: Texture | null = null;
 	let balloonBounds: { minX: number; maxX: number; minY: number; maxY: number } | null = null;
@@ -263,16 +205,6 @@
 	// wanders and criss-crosses the map like it's being carried on the wind.
 	let balloonNoiseX: ((t: number) => number) | null = null;
 	let balloonNoiseY: ((t: number) => number) | null = null;
-	let planeRand: (() => number) | null = null;
-	// One-shot fold hint: a plane crossing the lower sea towing a "MORE BELOW"
-	// banner. Lives in screen space (stage, not camera) so it flies across the
-	// viewport whatever the camera is doing.
-	let banner: { c: Container; speed: number; end: number } | null = null;
-	let bannerDone = false;
-	let bannerTimer = 0;
-	let hubXY: Record<string, [number, number]> = {};
-	let planeTex: Texture | null = null;
-	let trailTex: Texture | null = null;
 	const pool: Record<BandKey, Sprite[]> = { low: [], middle: [], high: [] };
 	let layers: Record<BandKey, Container> | null = null;
 	const alphaTarget: Record<BandKey, number> = { low: 1, middle: 1, high: 1 };
@@ -785,7 +717,6 @@
 		layers = layerMap;
 		retargetAlphas();
 
-		buildPlanes();
 		buildBalloon();
 		styleAmbient();
 
@@ -805,7 +736,6 @@
 		updateClouds();
 		bindPointer();
 		app.ticker.add(tick);
-		bannerTimer = window.setTimeout(spawnBanner, 8000);
 		requestAnimationFrame(() => {
 			if (!userMoved) fitCamera();
 		});
@@ -1041,30 +971,6 @@
 		return c;
 	}
 
-	const PLANE_ROWS: number[][] = [
-		[4, 5, 6], // y0  wingtip (top)
-		[5, 6, 7], // y1  wing
-		[1, 6, 7, 8], // y2  tail nub + wing root
-		[1, 2, 4, 5, 6, 7, 8, 9, 10], // y3  tailplane + body
-		[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], // y4  fuselage spine → nose
-		[1, 2, 4, 5, 6, 7, 8, 9, 10], // y5  tailplane + body
-		[1, 6, 7, 8], // y6  tail nub + wing root
-		[5, 6, 7], // y7  wing
-		[4, 5, 6] // y8  wingtip (bottom)
-	];
-	const PLANE_W = 13;
-	function buildPlaneTex(): Texture {
-		const px = 1;
-		const c = makeCanvas(PLANE_W * px, PLANE_ROWS.length * px);
-		const ctx = c.getContext('2d')!;
-		ctx.imageSmoothingEnabled = false;
-		ctx.fillStyle = '#ffffff';
-		PLANE_ROWS.forEach((xs, y) => {
-			for (const x of xs) ctx.fillRect(x * px, y * px, px, px);
-		});
-		return mkTex(c);
-	}
-
 	// A pixel hot air balloon in the style of the reference: a rounded onion-shaped
 	// envelope with vertical gore seams, a short suspension gap, then a small basket
 	// hanging below. White with a few grey tones for the seams / shaded side.
@@ -1162,17 +1068,6 @@
 		}
 	}
 
-	function buildTrailTex(len: number): Texture {
-		const c = makeCanvas(len, 1);
-		const ctx = c.getContext('2d')!;
-		const grad = ctx.createLinearGradient(0, 0, len, 0);
-		grad.addColorStop(0, 'rgba(255,255,255,0)');
-		grad.addColorStop(1, 'rgba(255,255,255,0.5)');
-		ctx.fillStyle = grad;
-		ctx.fillRect(0, 0, len, 1);
-		return mkTex(c);
-	}
-
 	// A tiny pixel wave crest — a "~" tilde that rises then dips. The two frames
 	// shift the crest sideways by one pixel so the ripple appears to roll across
 	// the water when the drift timer flips frames, instead of seesawing in place.
@@ -1232,196 +1127,9 @@
 		}
 	}
 
-	function buildPlanes() {
-		if (!geo || !camera) return;
-		planeTex = buildPlaneTex();
-		trailTex = buildTrailTex(TRAIL_LEN);
-		planeLayer = new Container();
-		planeLayer.eventMode = 'none';
-		camera.addChild(planeLayer);
-		planes = [];
-		planeRand = mulberry32(fnv1a('planes'));
-		hubXY = {};
-		for (const [name, ll] of Object.entries(HUBS)) {
-			const w = geo.project(ll[0], ll[1]);
-			if (w) hubXY[name] = w;
-		}
-		for (let i = 0; i < PLANE_COUNT; i++) {
-			const trail = new Sprite(trailTex);
-			trail.anchor.set(1, 0.5);
-			trail.x = -(PLANE_W - 2);
-			const body = new Sprite(planeTex);
-			body.anchor.set(1, 0.5);
-			const c = new Container();
-			c.eventMode = 'none';
-			c.addChild(trail);
-			c.addChild(body);
-			planeLayer.addChild(c);
-			const p: Plane = {
-				c,
-				ox: 0,
-				oy: 0,
-				ux: 1,
-				uy: 0,
-				s: 0,
-				sStart: 0,
-				sTarget: 0,
-				sDir: 1,
-				speed: 0,
-				heading: 0
-			};
-			resetPlane(p, !reduced);
-			planes.push(p);
-		}
-	}
-
-	function rectClipLine(
-		ox: number,
-		oy: number,
-		ux: number,
-		uy: number,
-		minX: number,
-		minY: number,
-		maxX: number,
-		maxY: number
-	): [number, number] | null {
-		let sMin = -Infinity;
-		let sMax = Infinity;
-		for (const [o, u, lo, hi] of [
-			[ox, ux, minX, maxX],
-			[oy, uy, minY, maxY]
-		] as const) {
-			if (u === 0) {
-				if (o < lo || o > hi) return null; // parallel and outside the slab
-			} else {
-				let a = (lo - o) / u;
-				let b = (hi - o) / u;
-				if (a > b) [a, b] = [b, a];
-				if (a > sMin) sMin = a;
-				if (b < sMax) sMax = b;
-			}
-		}
-		return sMin < sMax ? [sMin, sMax] : null;
-	}
-
-	function resetPlane(p: Plane, initial = false) {
-		if (!geo || !planeRand) return;
-		const r = planeRand;
-		const g = geo;
-		const M = TRAIL_LEN * 2; // how far off-screen the ends live
-		// Let flight paths run well past the map box horizontally so planes cross
-		// the gutters and span the full viewport width, not just over India.
-		const EX = g.worldW * 0.7;
-		let clip: [number, number] | null = null;
-		let ax = 0,
-			ay = 0,
-			ux = 0,
-			uy = 0;
-		for (let tries = 0; tries < 12 && !clip; tries++) {
-			const route = ROUTES[Math.floor(r() * ROUTES.length)];
-			const a = hubXY[route[0]];
-			const b = hubXY[route[1]];
-			if (!a || !b) continue;
-			let dx = b[0] - a[0];
-			let dy = b[1] - a[1];
-			const len = Math.hypot(dx, dy);
-			if (len < 1) continue;
-			dx /= len;
-			dy /= len;
-			ax = a[0];
-			ay = a[1];
-			ux = dx;
-			uy = dy;
-			clip = rectClipLine(ax, ay, ux, uy, -EX, -M, g.worldW + EX, g.worldH + M);
-		}
-		if (!clip) return;
-		let [start, end] = clip;
-		if (r() < 0.5) [start, end] = [end, start];
-		p.ox = ax;
-		p.oy = ay;
-		p.ux = ux;
-		p.uy = uy;
-		p.sStart = start;
-		p.sTarget = end;
-		p.sDir = end >= start ? 1 : -1;
-		p.speed = PLANE_SPEED_MIN + r() * (PLANE_SPEED_MAX - PLANE_SPEED_MIN);
-		p.heading = Math.atan2(uy * p.sDir, ux * p.sDir);
-		p.s = initial ? start + (end - start) * r() : start;
-		p.c.x = p.ox + p.s * p.ux;
-		p.c.y = p.oy + p.s * p.uy;
-		p.c.rotation = p.heading;
-		p.c.alpha = planeAlpha(p);
-	}
-
-	// Build and launch the banner plane. Skipped under reduced motion, and if the
-	// user has already scrolled toward the article (they've found it).
-	function spawnBanner() {
-		if (!app || !planeTex || reduced || banner || bannerDone) return;
-		if (window.scrollY > 48) {
-			bannerDone = true;
-			return;
-		}
-		const body = new Sprite(planeTex);
-		body.anchor.set(1, 0.5);
-		const label = new Text({
-			text: 'MORE BELOW',
-			style: {
-				fontFamily: "'Ships Whistle', monospace",
-				fontWeight: '700',
-				fontSize: 10,
-				fill: 0xffffff,
-				letterSpacing: 1
-			},
-			resolution: 3
-		});
-		// Pixel down-arrow after the text, drawn like the plane itself.
-		const AW = 5;
-		const AH = 7;
-		const arrow = new Graphics();
-		arrow.rect(2, 0, 1, 4).rect(0, 4, 5, 1).rect(1, 5, 3, 1).rect(2, 6, 1, 1).fill(0xffffff);
-		const padX = 6;
-		const padY = 3;
-		const bw = padX * 2 + label.width + 5 + AW;
-		const bh = Math.max(label.height, AH) + padY * 2;
-		const box = new Graphics();
-		box.rect(0, 0, bw, bh).stroke({ width: 1, color: 0xffffff });
-		const bannerBox = new Container();
-		label.position.set(padX, bh / 2 - label.height / 2);
-		arrow.position.set(padX + label.width + 5, bh / 2 - AH / 2);
-		bannerBox.addChild(box, label, arrow);
-		// Towed behind the plane: [banner]—rope—[plane nose at origin].
-		const ropeLen = 7;
-		bannerBox.position.set(-(PLANE_W + ropeLen + bw), -bh / 2);
-		const rope = new Graphics();
-		rope.rect(-(PLANE_W + ropeLen), -0.5, ropeLen, 1).fill({ color: 0xffffff, alpha: 0.7 });
-		const c = new Container();
-		c.eventMode = 'none';
-		c.addChild(bannerBox, rope, body);
-		c.scale.set(2);
-		const totalW = (PLANE_W + ropeLen + bw) * 2;
-		c.position.set(0, Math.round(vh * 0.74));
-		c.alpha = 0;
-		app.stage.addChild(c);
-		banner = { c, speed: (vw + totalW) / 16000, end: vw + totalW };
-	}
-
-	function planeAlpha(p: Plane): number {
-		const span = p.sTarget - p.sStart;
-		if (!span) return 0;
-		const f = (p.s - p.sStart) / span; // 0 at entry → 1 at exit
-		const FADE = 0.14;
-		return Math.max(0, Math.min(1, Math.min(f, 1 - f) / FADE));
-	}
-
 	function styleAmbient() {
 		const mode = skyMode(sky.timeIndex);
 		const night = mode === 'night';
-		const trailTint = night ? 0xcfe4ff : 0xffffff;
-		for (const p of planes) {
-			const [trail, body] = p.c.children as Sprite[];
-			trail.tint = trailTint;
-			body.tint = trailTint;
-		}
 		if (balloon) (balloon.c.children[0] as Sprite).tint = night ? 0x9fb0cc : 0xffffff;
 		if (shadowLayer) shadowLayer.alpha = SHADOW_ALPHA[mode];
 		const wavePal = WAVE[mode];
@@ -1573,18 +1281,6 @@
 		if (titleBalloon && !reduced) {
 			titleBalloon.y = titleBalloonBaseY + Math.sin(performance.now() / 650) * 2;
 		}
-		// The banner plane flies once and is destroyed at the far edge; it updates
-		// ahead of the today-view gate so it finishes its run in any view.
-		if (banner) {
-			banner.c.x += banner.speed * t.deltaMS;
-			const f = banner.c.x / banner.end;
-			banner.c.alpha = Math.max(0, Math.min(1, Math.min(f, 1 - f) / 0.08));
-			if (banner.c.x >= banner.end) {
-				banner.c.destroy({ children: true });
-				banner = null;
-				bannerDone = true;
-			}
-		}
 		if (reduced || sky.view !== 'today') return;
 		const now = performance.now();
 		if (now - lastDrift > 1200) {
@@ -1592,13 +1288,6 @@
 			driftTick = (driftTick + 1) % 4;
 			if (layers) layers.high.x = driftTick * 2 * (lodIndex < 0 ? 1 : lods[lodIndex].scale);
 			for (const w of waves) w.s.texture = waveTex[(driftTick + w.phase) & 1];
-		}
-		for (const p of planes) {
-			p.s += p.sDir * p.speed * t.deltaMS;
-			p.c.x = p.ox + p.s * p.ux;
-			p.c.y = p.oy + p.s * p.uy;
-			p.c.alpha = planeAlpha(p);
-			if ((p.sDir > 0 && p.s >= p.sTarget) || (p.sDir < 0 && p.s <= p.sTarget)) resetPlane(p);
 		}
 		if (balloon && balloonBounds && balloonNoiseX && balloonNoiseY) {
 			const b = balloonBounds;
@@ -1840,8 +1529,6 @@
 			mq.removeEventListener('change', onmq);
 			ro.disconnect();
 			window.removeEventListener('keydown', onkey);
-			clearTimeout(bannerTimer);
-			banner = null;
 			app?.destroy(true);
 			app = null;
 		};

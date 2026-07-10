@@ -2,6 +2,11 @@
 	import CloudTiers from '$lib/components/CloudTiers.svelte';
 	import MeteogramAtlas from '$lib/components/MeteogramAtlas.svelte';
 	import SupportCTA from '$lib/components/SupportCTA.svelte';
+	import CitySkyExplorer from '$lib/components/city/CitySkyExplorer.svelte';
+
+	// Passed down from +page.svelte once the core data loads; the explorer
+	// section below waits on them.
+	let { manifest = undefined, places = undefined, india = undefined } = $props();
 </script>
 
 # Mapping Clouds with Meteograms
@@ -29,6 +34,14 @@ The cloud coverage panel is essentially a stacked histogram divided into three d
 I love this visualization. The fact that some developer, years ago, decided to map meteorological data in such a cute, pixel-art style feels like something straight out of Super Mario or Flappy Bird.
 
 It appealed to me so much that a few months ago, I started archiving these every day. I wrote a script to analyse the pixels, turning the histogram images back into structured data so I could plot the current slice of time on a map. We now run this collection and analysis daily, gathering the data to map out India's 8-bit skies right at the top of this page.
+
+A single day's map only tells you about today, though. Months of archived skies let us ask a longer question: which cities live under cloud, and which under sun?
+
+{#if manifest && india}
+<div class="breakout full-bleed">
+	<CitySkyExplorer {manifest} {places} {india} />
+</div>
+{/if}
 
 <div class="support-band">
 	<SupportCTA />

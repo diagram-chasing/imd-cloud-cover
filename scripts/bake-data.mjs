@@ -26,7 +26,8 @@ const VIEWS = [
 	'latest/all-stations.json',
 	'latest/summary.json',
 	'rollups/7d.json',
-	'rollups/30d.json'
+	'rollups/30d.json',
+	'rollups/cities.json'
 ];
 const OUT = 'static/baked';
 const STALE_MS = 60 * 60 * 1000;
@@ -87,7 +88,9 @@ async function bakeTail() {
 		views.push(`${date}/${code}-meteogram.json`);
 	}
 
-	console.log(`bake-data: fetching tail (${views.length} files, ${codes.length} stations @ ${date})`);
+	console.log(
+		`bake-data: fetching tail (${views.length} files, ${codes.length} stations @ ${date})`
+	);
 	let ok = 0;
 	let skipped = 0;
 	let bytes = 0;

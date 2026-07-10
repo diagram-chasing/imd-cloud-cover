@@ -3,7 +3,7 @@
 </script>
 
 <figure
-	class="support mx-auto flex max-w-[460px] flex-col items-center gap-3.5 bg-paper px-7 py-8 text-center"
+	class="support mx-auto flex max-w-[460px] flex-col items-center gap-3.5 bg-paper px-7 text-center"
 >
 	<p class="kicker m-0 text-sm tracking-[0.06em] uppercase">
 		A <a href="https://diagramchasing.fun" class="text-ink underline underline-offset-[3px]"

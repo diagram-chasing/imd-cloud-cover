@@ -21,6 +21,7 @@
 	import Minimap from '$lib/components/Minimap.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import PixelButton from '$lib/components/PixelButton.svelte';
+	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 	import FieldNotes from '$lib/content.md';
 
 	let core = $state<CoreData>();
@@ -355,12 +356,12 @@
 	</div>
 </section>
 
-<!-- Shoreline: pixel waves either side of a quiet scroll link. The wave tile is the
-	map's own 8×3 crest curve (buildWaveTex), inked for paper; the steps() animation
-	flips it one pixel sideways like the sea's drift. -->
+<!-- Shoreline: pixel wind barbs either side of a quiet scroll link. The tile is a
+	staggered station-plot barb series (half barb → two full barbs) on wandering
+	baselines; the steps() animation nudges it sideways like a passing breeze. -->
 <div class="shore mx-auto flex max-w-[1080px] items-center gap-[18px] px-5">
 	<span
-		class="shore-waves h-[6px] flex-1 animate-shore-drift bg-size-[28px_6px] bg-repeat-x opacity-50 [image-rendering:pixelated] motion-reduce:animate-none"
+		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[120px_16px] bg-repeat-x opacity-50 [image-rendering:pixelated] motion-reduce:animate-none"
 		aria-hidden="true"
 	></span>
 	<button
@@ -368,28 +369,25 @@
 		onclick={scrollToNotes}
 	>
 		<!-- NOTES -->
-		<svg
-			class="shore-arrow animate-shore-dip [shape-rendering:crispEdges] motion-reduce:animate-none"
-			viewBox="0 0 7 7"
-			width="11"
-			height="11"
+		<ArrowDown
+			class="shore-arrow animate-shore-dip motion-reduce:animate-none"
+			size={20}
+			strokeWidth={2.5}
 			aria-hidden="true"
-		>
-			<path d="M3 0h1v4h-1z M1 4h5v1h-5z M2 5h3v1h-3z M3 6h1v1h-1z" fill="currentColor" />
-		</svg>
+		/>
 	</button>
 	<span
-		class="shore-waves h-[6px] flex-1 animate-shore-drift bg-size-[28px_6px] bg-repeat-x opacity-50 [image-rendering:pixelated] motion-reduce:animate-none"
+		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[120px_16px] bg-repeat-x opacity-50 [image-rendering:pixelated] motion-reduce:animate-none"
 		aria-hidden="true"
 	></span>
 </div>
 
 <!-- The field notes article: mdsvex copy from $lib/content.md, set by
 	the Gutenberg-style baseline grid in typography.css (.article). In-content
-	components (the specimen atlas, the support band) are imported inside the
-	markdown itself. -->
+	components (the specimen atlas, the city explorer, the support band) are
+	imported inside the markdown itself; the explorer needs the core data. -->
 <article class="article scroll-mt-4" id="field-notes">
-	<FieldNotes />
+	<FieldNotes manifest={core?.manifest} places={core?.places} india={core?.india} />
 </article>
 
 <SiteFooter />
@@ -420,12 +418,14 @@
 {/if}
 
 <style>
-	/* Shoreline wave tile: the map's own 8×3 crest curve (buildWaveTex) inked for
-	   paper. Kept here because the data-URL carries internal single quotes AND
-	   spaces, so it can't survive a Tailwind bg-[url(...)] arbitrary value; the
-	   %230b1d3a in the fill is the image ink, not a CSS color token. */
+	/* Shoreline wind-barb tile: a 60×8 station-plot barb series — half barb, full
+	   barb, barb-and-a-half, two barbs — with feathers stepping up-right and the
+	   baselines alternating a pixel so the repeat reads organic. Kept here because
+	   the data-URL carries internal single quotes AND spaces, so it can't survive
+	   a Tailwind bg-[url(...)] arbitrary value; the %230b1d3a in the fill is the
+	   image ink, not a CSS color token. */
 	.shore-waves {
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='3'%3E%3Cpath d='M1 0h2v1H1zM0 1h1v1H0zM3 1h1v1H3zM6 1h2v1H6zM4 2h2v1H4z' fill='%230b1d3a'/%3E%3C/svg%3E");
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='8'%3E%3Cpath d='M1 7h10v1H1z M2 5h1v2H2z M3 4h1v1H3z M16 6h10v1H16z M16 4h1v2H16z M17 2h1v2H17z M18 0h1v2H18z M31 7h10v1H31z M31 5h1v2H31z M32 3h1v2H32z M33 1h1v2H33z M34 5h1v2H34z M35 4h1v1H35z M45 6h10v1H45z M45 4h1v2H45z M46 2h1v2H46z M47 0h1v2H47z M48 4h1v2H48z M49 2h1v2H49z M50 0h1v2H50z' fill='%230b1d3a'/%3E%3C/svg%3E");
 	}
 	/* StreakBoard internals bridge: the leaderboard rows are a child component's
 	   <li><button>; reach in to add the sky text-shadow and a hover wash. */

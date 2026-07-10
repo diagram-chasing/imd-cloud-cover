@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import type { StationsManifest, PlaceProps } from '$lib/types';
 	import type { FeatureCollection } from 'geojson';
 	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover';
@@ -24,6 +25,13 @@
 		/** Which side of the trigger the palette opens on. */
 		side?: 'top' | 'bottom';
 		align?: 'start' | 'end';
+		/** Only offer entries resolving to one of these station codes (the city
+		    explorer passes the codes present in cities.json). */
+		codes?: Set<string>;
+		/** Cities outrank stations on tie-breaks and the trigger says so. */
+		cityFirst?: boolean;
+		/** Custom trigger markup; receives the popover trigger props to spread. */
+		trigger?: Snippet<[Record<string, unknown>]>;
 	}
 	let {
 		manifest,
@@ -31,7 +39,10 @@
 		onselect,
 		compact = false,
 		side = 'bottom',
-		align = 'end'
+		align = 'end',
+		codes,
+		cityFirst = false,
+		trigger
 	}: Props = $props();
 
 	let open = $state(false);
@@ -107,7 +118,7 @@
 				stateN: p.state ? norm(p.state) : ''
 			});
 		}
-		return out;
+		return codes ? out.filter((e) => e.code && codes.has(e.code)) : out;
 	});
 
 	// Lower score = better. Prefix hits beat word-boundary beats substring; name
@@ -137,13 +148,12 @@
 			const s = score(e, q);
 			if (s !== Infinity) scored.push({ e, s });
 		}
+		// Stations first on ties (they carry data) — unless the caller is city-
+		// centric, where the place name is the identity people search for.
+		const lead = (e: Entry) => (e.kind === (cityFirst ? 'city' : 'station') ? 0 : 1);
 		scored.sort(
 			(a, b) =>
-				a.s - b.s ||
-				// stations first on ties (they carry data), then prominence, then name
-				(a.e.kind === 'station' ? 0 : 1) - (b.e.kind === 'station' ? 0 : 1) ||
-				b.e.pop - a.e.pop ||
-				a.e.name.localeCompare(b.e.name)
+				a.s - b.s || lead(a.e) - lead(b.e) || b.e.pop - a.e.pop || a.e.name.localeCompare(b.e.name)
 		);
 		return scored.slice(0, 50).map((x) => x.e);
 	});
@@ -158,20 +168,24 @@
 <Popover bind:open>
 	<PopoverTrigger>
 		{#snippet child({ props })}
-			<!-- Paper pixel key; compact drops the text and squares the cap padding. -->
-			<PixelButton
-				{...props}
-				size="sm"
-				cap="paper"
-				aria-label="Find a city or station"
-				class="text-xs tracking-wider uppercase"
-				style={compact ? '--pad: 4px 7px' : undefined}
-			>
-				<span class="flex items-center gap-1.5">
-					<HugeiconsIcon icon={SearchIcon} strokeWidth={2} size={16} />
-					{#if !compact}<span>Find a place</span>{/if}
-				</span>
-			</PixelButton>
+			{#if trigger}
+				{@render trigger(props)}
+			{:else}
+				<!-- Paper pixel key; compact drops the text and squares the cap padding. -->
+				<PixelButton
+					{...props}
+					size="sm"
+					cap="paper"
+					aria-label={cityFirst ? 'Find your city' : 'Find a city or station'}
+					class="text-xs tracking-wider uppercase"
+					style={compact ? '--pad: 4px 7px' : undefined}
+				>
+					<span class="flex items-center gap-1.5">
+						<HugeiconsIcon icon={SearchIcon} strokeWidth={2} size={16} />
+						{#if !compact}<span>{cityFirst ? 'Find your city' : 'Find a place'}</span>{/if}
+					</span>
+				</PixelButton>
+			{/if}
 		{/snippet}
 	</PopoverTrigger>
 	<PopoverContent

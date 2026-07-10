@@ -105,6 +105,14 @@ function tierFor(pop) {
 	return 3; // town
 }
 
+/** Strip diacritics (macrons, accents) to plain ASCII. GeoNames' `name` column
+ *  carries romanised marks like ū/ā that the label font ('Ships Whistle') lacks,
+ *  so the browser swaps in a fallback glyph mid-word. Labels are English names,
+ *  so fold them down to ASCII once, here at build time. */
+function asciiName(name) {
+	return name.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+}
+
 /** ASCII exonyms/spellings from the alt-names column, distinct from the name.
  *  Curated ALIAS_EXTRA names go first so the classics survive the cap. */
 function aliasesFor(name, altField) {
@@ -178,7 +186,7 @@ rl.on('line', (line) => {
 	const pop = parseInt(c[COL.pop], 10) || 0;
 	if (pop < POP_FLOOR && !KEEP_ALWAYS.has(fcode)) return;
 
-	const name = c[COL.name];
+	const name = asciiName(c[COL.name]);
 	const lat = parseFloat(c[COL.lat]);
 	const lon = parseFloat(c[COL.lon]);
 	if (!name || !Number.isFinite(lat) || !Number.isFinite(lon)) return;
