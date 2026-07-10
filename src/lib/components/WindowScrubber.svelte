@@ -64,9 +64,10 @@
 	);
 </script>
 
-<div class="win">
+<!-- Phone: the scrubber stretches to the full dock width. -->
+<div class="win flex items-center max-md:w-full">
 	<div
-		class="timeline"
+		class="timeline relative h-[34px] w-[min(300px,62vw)] cursor-pointer touch-none focus-visible:outline-offset-4 max-md:w-auto max-md:min-w-0 max-md:flex-auto"
 		bind:this={track}
 		role="slider"
 		tabindex="0"
@@ -80,83 +81,21 @@
 		{onpointerup}
 		{onkeydown}
 	>
-		<div class="rail"></div>
+		<div class="rail absolute top-2 right-0 left-0 h-0.5 bg-white shadow-[1px_1px_0] shadow-navy/90"></div>
 		{#each dates as d, i (d)}
-			<span class="tick" style="left:{dates.length > 1 ? (i / (dates.length - 1)) * 100 : 0}%"
+			<span
+				class="tick absolute top-1.5 -ml-px h-1.5 w-0.5 bg-white opacity-70 shadow-[1px_1px_0] shadow-navy/90"
+				style="left:{dates.length > 1 ? (i / (dates.length - 1)) * 100 : 0}%"
 			></span>
 		{/each}
-		<span class="handle" style="left:{handleX}%"></span>
-		<span class="date" style="left:{handleX}%">{current ? label(current) : ''}</span>
+		<span
+			class="handle absolute top-1 -ml-[5px] h-2.5 w-2.5 bg-sun-gold shadow-[0_0_0_2px_var(--color-ink),2px_2px_0_2px_color-mix(in_srgb,var(--color-navy)_50%,transparent)]"
+			style="left:{handleX}%"
+		></span>
+		<!-- Date label follows the handle so the answer sits where you're looking. -->
+		<span
+			class="date absolute top-[18px] -translate-x-1/2 text-xs tracking-wider whitespace-nowrap text-white text-shadow-sky"
+			style="left:{handleX}%">{current ? label(current) : ''}</span
+		>
 	</div>
 </div>
-
-<style>
-	.win {
-		display: flex;
-		align-items: center;
-		font-family: var(--font-display);
-	}
-	.timeline {
-		position: relative;
-		width: min(300px, 62vw);
-		height: 34px;
-		cursor: pointer;
-		touch-action: none;
-	}
-	.timeline:focus-visible {
-		outline: 2px solid var(--focus);
-		outline-offset: 4px;
-	}
-	.rail {
-		position: absolute;
-		top: 8px;
-		left: 0;
-		right: 0;
-		height: 2px;
-		background: #fff;
-		box-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
-	}
-	.tick {
-		position: absolute;
-		top: 6px;
-		width: 2px;
-		height: 6px;
-		margin-left: -1px;
-		background: #fff;
-		box-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
-		opacity: 0.7;
-	}
-	.handle {
-		position: absolute;
-		top: 4px;
-		width: 10px;
-		height: 10px;
-		margin-left: -5px;
-		background: var(--sun-gold);
-		box-shadow:
-			0 0 0 2px var(--ink),
-			2px 2px 0 2px rgba(11, 29, 58, 0.5);
-	}
-	/* Date label follows the handle so the answer sits where you're looking. */
-	.date {
-		position: absolute;
-		top: 18px;
-		transform: translateX(-50%);
-		font-size: 10px;
-		letter-spacing: 0.05em;
-		white-space: nowrap;
-		color: #fff;
-		text-shadow: 1px 1px 0 rgba(11, 29, 58, 0.9);
-	}
-	/* Phone: the scrubber stretches to the full dock width. */
-	@media (max-width: 767px) {
-		.win {
-			width: 100%;
-		}
-		.timeline {
-			width: auto;
-			min-width: 0;
-			flex: 1 1 auto;
-		}
-	}
-</style>

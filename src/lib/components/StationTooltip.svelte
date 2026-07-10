@@ -56,122 +56,49 @@
 </script>
 
 {#if station && values}
-	<div class="tooltip" style={style} role="tooltip">
-		<div class="name">{station.name}</div>
-		{#if station.state}<div class="state">{station.state}</div>{/if}
-		{#if when}<div class="when">{[prettyDate(date), when].filter(Boolean).join(' · ')}</div>{/if}
-		<div class="summary">{summary}</div>
-		<div class="caption">% OF SKY COVERED, BY ALTITUDE</div>
-		<div class="rows">
+	<div
+		class="tooltip pointer-events-none fixed z-40 min-w-[190px] bg-paper px-2.5 py-2 text-ink shadow-[0_0_0_2px] shadow-ink"
+		style={style}
+		role="tooltip"
+	>
+		<div class="name text-xs leading-relaxed tracking-wider uppercase">{station.name}</div>
+		{#if station.state}<div class="state text-xs opacity-70">{station.state}</div>{/if}
+		{#if when}<div class="when mt-[3px] text-xs tracking-wider opacity-55">
+				{[prettyDate(date), when].filter(Boolean).join(' · ')}
+			</div>{/if}
+		<div class="summary mt-1 text-xs leading-relaxed tracking-wider">{summary}</div>
+		<div class="caption mt-1.5 mb-1 text-xs leading-relaxed tracking-wider opacity-55">
+			% OF SKY COVERED, BY ALTITUDE
+		</div>
+		<div class="rows flex flex-col gap-[3px]">
 			{#each ROWS as row (row.key)}
-				<div class="row">
-					<span class="rlabel">{row.label}</span>
-					<span class="bar" aria-hidden="true">
+				<div class="row flex items-center gap-1.5">
+					<span class="rlabel w-[74px] text-xs tracking-[0.03em]">{row.label}</span>
+					<span class="bar flex gap-px" aria-hidden="true">
 						{#each Array(6) as _, i (i)}
-							<span class="seg" class:on={i < filled(values[row.key])}></span>
+							<span
+								class={[
+									'seg h-2 w-[9px]',
+									i < filled(values[row.key]) ? 'bg-accent' : 'bg-cloud-block'
+								]}
+							></span>
 						{/each}
 					</span>
-					<span class="num">{values[row.key]}</span>
+					<span class="num w-[22px] text-right text-xs">{values[row.key]}</span>
 				</div>
 			{/each}
 		</div>
 		{#if members > 1}
-			<div class="agg">◆ MEAN OF {members} STATIONS — ZOOM TO SPLIT</div>
-			<div class="hint">CLICK FOR NEAREST: {station.name} →</div>
+			<div class="agg mt-1.5 text-xs leading-relaxed tracking-wider text-accent">
+				◆ MEAN OF {members} STATIONS — ZOOM TO SPLIT
+			</div>
+			<div class="hint mt-1 text-xs leading-relaxed tracking-wider opacity-60">
+				CLICK FOR NEAREST: {station.name} →
+			</div>
 		{:else}
-			<div class="hint">CLICK FOR STATION DETAIL →</div>
+			<div class="hint mt-1 text-xs leading-relaxed tracking-wider opacity-60">
+				CLICK FOR STATION DETAIL →
+			</div>
 		{/if}
 	</div>
 {/if}
-
-<style>
-	.tooltip {
-		position: fixed;
-		z-index: 40;
-		pointer-events: none;
-		background: var(--paper);
-		color: var(--ink);
-		box-shadow: 0 0 0 2px var(--ink);
-		padding: 8px 10px;
-		min-width: 190px;
-		font-family: var(--font-body);
-	}
-	.name {
-		font-family: var(--font-display);
-		font-size: 12px;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-	}
-	.state {
-		font-size: 11px;
-		opacity: 0.7;
-	}
-	.when {
-		font-family: var(--font-display);
-		font-size: 8px;
-		letter-spacing: 0.05em;
-		opacity: 0.55;
-		margin-top: 3px;
-	}
-	.summary {
-		font-family: var(--font-display);
-		font-size: 10px;
-		letter-spacing: 0.05em;
-		margin-top: 4px;
-	}
-	.caption {
-		font-family: var(--font-display);
-		font-size: 8px;
-		letter-spacing: 0.05em;
-		opacity: 0.55;
-		margin: 6px 0 4px;
-	}
-	.rows {
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
-	}
-	.row {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
-	.rlabel {
-		font-family: var(--font-display);
-		font-size: 9px;
-		letter-spacing: 0.03em;
-		width: 74px;
-	}
-	.bar {
-		display: flex;
-		gap: 1px;
-	}
-	.seg {
-		width: 9px;
-		height: 8px;
-		background: #d8e8f4;
-	}
-	.seg.on {
-		background: var(--accent);
-	}
-	.num {
-		font-family: var(--font-display);
-		font-size: 10px;
-		width: 22px;
-		text-align: right;
-	}
-	.agg {
-		margin-top: 6px;
-		font-family: var(--font-display);
-		font-size: 8px;
-		letter-spacing: 0.05em;
-		color: var(--accent);
-	}
-	.hint {
-		margin-top: 4px;
-		font-family: var(--font-display);
-		font-size: 8px;
-		letter-spacing: 0.05em;
-		opacity: 0.6;
-	}
-</style>

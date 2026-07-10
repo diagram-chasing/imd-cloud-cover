@@ -21,6 +21,9 @@
 	import Minimap from '$lib/components/Minimap.svelte';
 	import SupportCTA from '$lib/components/SupportCTA.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
+	import PixelBalloon from '$lib/components/PixelBalloon.svelte';
+	import ChapterMark from '$lib/components/ChapterMark.svelte';
+	import MeteogramAtlas from '$lib/components/MeteogramAtlas.svelte';
 	import { Button } from '$lib/components/ui/button';
 
 	let core = $state<CoreData>();
@@ -66,7 +69,7 @@
 	let zoomed = $derived(layout.zoomRatio > 1.05);
 
 	const chipClass =
-		'h-8 rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] px-2.5 text-[10px] tracking-wider text-[var(--ink)] uppercase shadow-none [font-family:var(--font-display)] hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]';
+		'h-8 rounded-none border-2 border-ink bg-paper px-2.5 text-xs tracking-wider text-ink uppercase shadow-none hover:bg-cloud-block hover:text-ink';
 
 	onMount(async () => {
 		try {
@@ -129,6 +132,15 @@
 
 	let night = $derived(skyMode(sky.timeIndex) === 'night');
 
+	// Shoreline link under the map: scroll to the field notes article.
+	function scrollToNotes() {
+		click('open');
+		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		document
+			.getElementById('field-notes')
+			?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
+	}
+
 	// Follow the map's sky: at night the whole page (paper mat + content below) goes
 	// dark to match the navy canvas, by overriding the paper/ink tokens on the root.
 	$effect(() => {
@@ -165,9 +177,26 @@
      on one bottom rail — WHAT (layers) · WHEN (time) · WHERE (find + zoom) — with
      the streak inset in the right sea gutter, mirroring the cartouche on the left.
      Bounded height so the page scrolls past it to the content. -->
-<section class="stage">
-	<div class="map-frame">
-		<h1 class="sr-only">Reading the Clouds</h1>
+<!-- Thin paper mat so the frame border reads; the map goes as wide as the mat allows.
+     On desktop the mat fills the first screen — short of 100svh so the shoreline and
+     the article title peek above the fold (map height driven by it) and the page
+     scrolls past to the content; on mobile the map keeps a tall min-height and the
+     section grows in normal flow. -->
+<section
+	class="stage box-border bg-paper p-[clamp(8px,1.4vw,18px)] transition-[background-color] duration-[400ms] ease-[ease] md:h-[95svh]"
+>
+	<!-- Navy sky (bg-navy) behind the canvas while it loads. Definite height (not just
+	     min-height) so the canvas fills the frame on mobile too — otherwise the solid
+	     navy fallback shows behind the controls instead of the sea + gradient scrim the
+	     way it does on desktop. Short of the full viewport so the shoreline and the
+	     article's kicker peek above the fold — the cue that there's more to scroll to.
+	     ::after is the edge scrim: an eased deep-sky wash under the control rail so the
+	     white chrome keeps a contrast floor whatever the map draws beneath it. Tinted
+	     with the scene's own navy (night-sky) it reads as sea depth, not a UI panel;
+	     z just under the control bars (z-10). -->
+	<div
+		class="map-frame relative h-[max(88svh,440px)] overflow-hidden bg-navy after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-[9] after:h-[170px] after:bg-[linear-gradient(to_top,color-mix(in_srgb,var(--color-night-sky)_60%,transparent),color-mix(in_srgb,var(--color-night-sky)_42%,transparent)_35%,color-mix(in_srgb,var(--color-night-sky)_18%,transparent)_65%,transparent)] after:content-[''] md:h-full md:min-h-0"
+	>
 		{#if core}
 			<PixelMap
 				bind:this={map}
@@ -181,14 +210,20 @@
 				onlayout={(info) => (layout = info)}
 			/>
 		{:else if !error}
-			<div class="loading">Reading the skies…</div>
+			<div class="loading grid h-full w-full place-items-center text-xs text-white">
+				Reading the skies…
+			</div>
 		{/if}
 
 		<!-- Desktop: while zoomed/panned, a corner minimap shows where the viewport sits
 		     over India (and how far it's drifted into the sea). Phones use the pan-aside
 		     streak reveal instead, so this is desktop-only. -->
 		{#if core && zoomed && !isPhone}
-			<div class="minimap-corner" transition:fade={{ duration: 160 }}>
+			<!-- Above the map canvas but below the control rail; non-interactive scenery. -->
+			<div
+				class="minimap-corner pointer-events-none absolute top-3.5 right-4 z-[11]"
+				transition:fade={{ duration: 160 }}
+			>
 				<Minimap view={layout.view} world={layout.world} {night} />
 			</div>
 		{/if}
@@ -205,7 +240,7 @@
 
 		<!-- Desktop: station search parks in the top-left sky. -->
 		{#if core}
-			<div class="desktop-top">
+			<div class="desktop-top absolute top-3.5 left-4 z-10 max-md:hidden">
 				<StationSearch
 					manifest={core.manifest}
 					places={core.places}
@@ -219,8 +254,8 @@
 
 		<!-- Mobile chrome: corner chips in the sky strip left of the landmass
 		     (the cartouche parks itself top-right on narrow viewports). -->
-		<div class="mobile-top">
-			<div class="chips">
+		<div class="mobile-top absolute top-0 left-0 z-10 hidden px-3 py-2.5 max-md:flex">
+			<div class="chips flex gap-1.5">
 				{#if core}
 					<Button
 						variant="outline"
@@ -328,71 +363,99 @@
 	</div>
 </section>
 
-<!-- Short scroll below the map: purely explanation. -->
-<div class="content">
-	<section class="method">
-		<h2>HOW TO READ THE CLOUDS</h2>
-		<div class="method-grid">
-			<figure>
-				<img
-					src="/method-meteogram.webp"
-					alt="A sample IMD meteogram with the cloud panel highlighted"
-				/>
-				<figcaption>The cloud-cover panel of one station's meteogram.</figcaption>
-			</figure>
-			<div class="method-text">
-				<p>
-					A <strong>meteogram</strong> is a strip chart the India Meteorological Department publishes
-					for each station for a 10-day forecast of cloud, rain, wind and temperature.
-				</p>
-			</div>
+<!-- Shoreline: the seam between map and page reads as a coastline — pixel waves
+     lapping either side of a quiet link down to the field notes. -->
+<div class="shore">
+	<span class="shore-waves" aria-hidden="true"></span>
+	<button class="shore-link" onclick={scrollToNotes}>
+		NOTES
+		<svg class="shore-arrow" viewBox="0 0 7 7" width="11" height="11" aria-hidden="true">
+			<path d="M3 0h1v4h-1z M1 4h5v1h-5z M2 5h3v1h-3z M3 6h1v1h-1z" fill="currentColor" />
+		</svg>
+	</button>
+	<span class="shore-waves" aria-hidden="true"></span>
+</div>
+
+<!-- The field notes: the below-the-fold article. One centred prose measure, with
+     the meteogram specimen and the pipeline diagram breaking out wide. -->
+<div class="content" id="field-notes">
+	<header class="article-head">
+		<h1 class="headline">MAPPING CLOUDS WITH METEOGRAMS</h1>
+		<p class="lede">
+			Every morning the India Meteorological Department publishes a GFS <em>meteogram</em> for each of
+			its ~1,200 observation stations.
+		</p>
+		<!-- <div class="byline">
+			<a
+				class="byline-plate"
+				href="https://diagramchasing.fun"
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				<span class="byline-dot" aria-hidden="true"></span>
+				DIAGRAM CHASING
+			</a>
+			<PixelBalloon size={24} />
+		</div> -->
+	</header>
+
+	<section class="ch mt-8">
+		<div class="prose">
+			<p>
+				A <strong>meteogram</strong> is a strip chart the India Meteorological Department publishes for
+				each station — a 10-day forecast of cloud, rain, wind and temperature in eight stacked panels,
+				dissected below.
+			</p>
+		</div>
+		<div class="breakout">
+			<MeteogramAtlas />
 		</div>
 	</section>
 
-	<section class="methodology">
-		<h2>METHODOLOGY</h2>
-		<p>
-			Every morning the India Meteorological Department publishes a GFS <em>meteogram</em> for each
-			of its ~1,200 observation stations. A daily
-			<a
-				class="m-link"
-				href="https://github.com/diagram-chasing"
-				target="_blank"
-				rel="noopener noreferrer">GitHub Action</a
-			>
-			(11:00 IST) downloads every station's meteogram, pixel-extracts the cloud-cover panel, and keeps
-			the day-0 slice — the first eight three-hourly steps. Those readings, split into high cirrus, mid
-			alto and low cumulus bands, are aggregated into the static JSON views this site loads.
-		</p>
-		<p>
-			The site is built with
-			<a
-				class="m-link"
-				href="https://svelte.dev/docs/kit/introduction"
-				target="_blank"
-				rel="noopener noreferrer">SvelteKit</a
-			>
-			and Svelte 5 runes. The map is projected with
-			<a class="m-link" href="https://d3js.org/d3-geo" target="_blank" rel="noopener noreferrer"
-				>D3</a
-			>
-			and rendered as an interactive pixel field with
-			<a class="m-link" href="https://pixijs.com" target="_blank" rel="noopener noreferrer"
-				>PixiJS</a
-			>: each station becomes a three-mark cloud tower, and the grid subdivides toward individual
-			stations as you zoom in. The full pipeline and source are open on
-			<a
-				class="m-link"
-				href="https://github.com/diagram-chasing"
-				target="_blank"
-				rel="noopener noreferrer">GitHub</a
-			>.
-		</p>
-		<h2>AI DECLARATION</h2>
-		<p>
-			No prose on this site was generated by AI. Claude was used for coding assistance, so internal
-			logic, layout maths and scripts may be partially LLM-generated.
-		</p>
+	<section class="ch mt-8">
+		<div class="prose">
+			<p>
+				A daily
+				<a
+					class="m-link"
+					href="https://github.com/diagram-chasing"
+					target="_blank"
+					rel="noopener noreferrer">GitHub Action</a
+				>
+				(11:00 IST) downloads every station's meteogram, pixel-extracts the cloud-cover panel, and keeps
+				the day-0 slice — the first eight three-hourly steps. Those readings, split into high cirrus,
+				mid alto and low cumulus bands, are aggregated into the static JSON views this site loads.
+			</p>
+		</div>
+	</section>
+
+	<section class="ch">
+		<div class="prose">
+			<p>
+				The site is built with
+				<a
+					class="m-link"
+					href="https://svelte.dev/docs/kit/introduction"
+					target="_blank"
+					rel="noopener noreferrer">SvelteKit</a
+				>
+				and Svelte 5 runes. The map is projected with
+				<a class="m-link" href="https://d3js.org/d3-geo" target="_blank" rel="noopener noreferrer"
+					>D3</a
+				>
+				and rendered as an interactive pixel field with
+				<a class="m-link" href="https://pixijs.com" target="_blank" rel="noopener noreferrer"
+					>PixiJS</a
+				>: each station becomes a three-mark cloud tower, and the grid subdivides toward individual
+				stations as you zoom in. The full pipeline and source are open on
+				<a
+					class="m-link"
+					href="https://github.com/diagram-chasing"
+					target="_blank"
+					rel="noopener noreferrer">GitHub</a
+				>.
+			</p>
+		</div>
 	</section>
 
 	<section class="support-band">
@@ -445,8 +508,10 @@
 		background: #0b1d3a; /* navy sky behind the canvas while it loads */
 		/* Definite height (not just min-height) so the canvas fills the frame on
 		   mobile too — otherwise the solid navy fallback shows behind the controls
-		   instead of the sea + gradient scrim the way it does on desktop. */
-		height: max(90svh, 440px);
+		   instead of the sea + gradient scrim the way it does on desktop. Short of
+		   the full viewport so the shoreline and the article's kicker peek above
+		   the fold — the cue that there's more to scroll to. */
+		height: max(88svh, 440px);
 	}
 	/* Edge scrim: an eased deep-sky wash under the control rail so the white
 	   chrome keeps a contrast floor whatever the map draws beneath it. Tinted
@@ -469,8 +534,10 @@
 		);
 	}
 	@media (min-width: 768px) {
+		/* Short of 100svh so the shoreline strip and the top of the article title
+		   peek above the fold. */
 		.stage {
-			height: 100svh;
+			height: 95svh;
 		}
 		.map-frame {
 			height: 100%;
@@ -698,60 +765,162 @@
 		z-index: 11;
 	}
 
+	/* ————— Shoreline: pixel waves either side of a quiet scroll link. The wave
+	   tile is the map's own 8×3 crest curve (buildWaveTex), inked for paper, and
+	   the steps() animation flips it one pixel sideways like the sea's drift. */
+	.shore {
+		display: flex;
+		align-items: center;
+		gap: 18px;
+		max-width: 1080px;
+		margin: 0 auto;
+		padding: 0 20px 0;
+	}
+	.shore-waves {
+		flex: 1;
+		height: 6px;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='3'%3E%3Cpath d='M1 0h2v1H1zM0 1h1v1H0zM3 1h1v1H3zM6 1h2v1H6zM4 2h2v1H4z' fill='%230b1d3a'/%3E%3C/svg%3E");
+		background-repeat: repeat-x;
+		background-size: 28px 6px;
+		image-rendering: pixelated;
+		opacity: 0.5;
+		animation: shore-drift 2.4s steps(1) infinite;
+	}
+	@keyframes shore-drift {
+		0%,
+		100% {
+			background-position-x: 0;
+		}
+		50% {
+			background-position-x: 2px;
+		}
+	}
+	.shore-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 2px;
+		font-family: var(--font-display);
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		color: var(--ink);
+		opacity: 0.75;
+		cursor: pointer;
+		transition:
+			opacity 0.12s,
+			color 0.12s;
+	}
+	.shore-link:hover {
+		opacity: 1;
+		color: var(--focus);
+	}
+	.shore-arrow {
+		shape-rendering: crispEdges;
+		animation: shore-dip 1.8s ease-in-out infinite;
+	}
+	@keyframes shore-dip {
+		50% {
+			transform: translateY(2px);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.shore-waves,
+		.shore-arrow {
+			animation: none;
+		}
+	}
+
+	/* ————— The field notes article. One centred 640px prose measure; the
+	   specimen and pipeline break out to the full content width. */
 	.content {
 		max-width: 1080px;
 		margin: 0 auto;
-		padding: 40px 20px 60px;
+		padding: 56px 20px 60px;
+		scroll-margin-top: 16px;
 	}
 
-	.method h2,
-	.methodology h2 {
-		font-family: var(--font-display);
-		font-size: 20px;
-		letter-spacing: 0.05em;
+	.article-head {
+		text-align: center;
+		max-width: 720px;
+		margin: 0 auto;
 	}
-	.method {
-		margin-top: 48px;
-	}
-	.method-grid {
-		display: grid;
-		grid-template-columns: minmax(0, 320px) 1fr;
-		gap: 24px;
-		align-items: start;
-	}
-	figure {
-		margin: 0;
-	}
-	.method figure img {
-		width: 100%;
-		box-shadow: 0 0 0 2px var(--ink);
-	}
-	figcaption {
-		font-size: 12px;
-		opacity: 0.7;
-		margin-top: 6px;
-	}
-	.method-text p {
-		font-size: 15px;
-		margin: 0 0 12px;
-	}
-
-	.methodology {
-		margin-top: 56px;
-		max-width: 680px;
-	}
-	.methodology h2 {
-		margin: 0 0 12px;
-	}
-	.methodology h2 + p ~ h2 {
-		margin-top: 32px;
-	}
-	.methodology p {
-		font-size: 14px;
-		line-height: 1.7;
+	.kicker {
 		margin: 0 0 14px;
+		font-family: var(--font-display);
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
 		color: var(--muted-foreground);
+	}
+	.headline {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(42px, 8vw, 76px);
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		line-height: 1.05;
+		text-wrap: balance;
+	}
+	.lede {
+		max-width: 560px;
+		margin: 20px auto 0;
+		font-size: clamp(17px, 2.2vw, 20px);
+		line-height: 1.6;
+		text-wrap: balance;
+	}
+	/* Byline as a station plate — the author labelled the way cities are on the
+	   map: square dot, white plate, ink text. */
+	.byline {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		margin-top: 26px;
+	}
+	.byline-plate {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 5px 10px;
+		background: #fff;
+		box-shadow: 2px 2px 0 rgba(11, 29, 58, 0.3);
+		font-family: var(--font-display);
+		font-size: 13px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		color: var(--ink);
+		text-decoration: none;
+	}
+	.byline-plate:hover {
+		color: var(--focus);
+	}
+	.byline-dot {
+		width: 6px;
+		height: 6px;
+		background: var(--ink);
+	}
+	.dateline {
+		margin: 12px 0 0;
+		font-family: var(--font-display);
+		font-size: 11px;
+		letter-spacing: 0.1em;
+		color: var(--muted-foreground);
+	}
+
+	.prose {
+		max-width: 640px;
+		margin: 0 auto;
+	}
+	.prose p {
+		font-size: 15px;
+		line-height: 1.75;
+		margin: 0 0 14px;
+		color: var(--ink);
 		text-wrap: pretty;
+	}
+	.breakout {
+		margin-top: 32px;
 	}
 	.m-link {
 		color: var(--ink);
@@ -821,11 +990,6 @@
 		}
 		.streaks-scene {
 			display: block;
-		}
-	}
-	@media (max-width: 640px) {
-		.method-grid {
-			grid-template-columns: 1fr;
 		}
 	}
 </style>

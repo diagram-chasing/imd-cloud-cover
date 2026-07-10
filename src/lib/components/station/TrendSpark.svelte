@@ -56,17 +56,8 @@
 </script>
 
 <canvas
+	class="block h-[72px] w-full shadow-[0_0_0_2px] shadow-ink [image-rendering:pixelated]"
 	use:spark
 	bind:clientWidth={W}
 	aria-label="Daily effective cloud cover for this station against the national mean over the last {rollup.window} days"
 ></canvas>
-
-<style>
-	canvas {
-		display: block;
-		width: 100%;
-		height: 72px;
-		box-shadow: 0 0 0 2px var(--ink);
-		image-rendering: pixelated;
-	}
-</style>

@@ -71,15 +71,42 @@
 }
 
 @custom-variant dark (&:is(.dark *));
+/* The map's data-driven night mode: +page.svelte toggles .night on <html>
+   when the scrubbed hour is after dark. */
+@custom-variant night (&:is(.night *));
 
 :root {
-	--ink: #0b1d3a;
+	/* The map's navy, as an immutable value. --ink defaults to it but can be
+	   flipped locally (the streaks overlay sets --ink: white); anything that
+	   must stay navy either way (sky text shadows, the canvas backdrop)
+	   references --navy directly. */
+	--navy: #0b1d3a;
+	--ink: var(--navy);
 	--ink-on-dark: #ffffff;
 	--accent: oklch(0.97 0 0);
 	--paper: #fdfbf4;
 	--focus: #f2a65a;
 	--sun-gold: #f2c14e;
 	--cloud-block: #d8e8f4;
+	/* Deep-sea navy for scrims over the map, matching SKY.night.top in theme.ts. */
+	--night-sky: #081831;
+	--day-sea: #2e7cc4;
+	/* Dark goldenrod for record/max markers in the station panels. */
+	--record-gold: #b8860b;
+	/* Soft salmon for error text sitting on the navy sky. */
+	--error-tint: #ffd7cf;
+	/* Mist: pale sky-blue tints for tracks, gauges and lens backgrounds.
+	   mist-100 is the cloud-block blue; the rest step around it. */
+	--mist-50: #eef4fb;
+	--mist-100: var(--cloud-block);
+	--mist-200: #cfe0f2;
+	--mist-300: #cddcec;
+	/* Steel: cool annotation greys for the meteogram specimen. */
+	--steel-300: #c5cbd6;
+	--steel-400: #b9c2d0;
+	--steel-500: #aeb6c4;
+	--steel-600: #a4adbe;
+	--steel-700: #8a93a6;
 
 	/* Ships Whistle is the single typeface across the whole app. */
 	--font-pixel: 'Ships Whistle', monospace;
@@ -148,6 +175,12 @@ body {
 	outline-offset: 2px;
 }
 
+/* The one-pixel ink drop every piece of sky typography wears so white text
+   keeps its edge over the map. One utility so the offset/alpha stay uniform. */
+@utility text-shadow-sky {
+	text-shadow: 1px 1px 0 --alpha(var(--color-navy) / 90%);
+}
+
 /* Keep the button reset in @layer base so Tailwind utilities (bg-*, border-*,
    font-*) applied to shadcn components can still override it — an UNlayered
    `button {}` rule wins over @layer utilities and would strip their styling. */
@@ -196,6 +229,65 @@ body {
 @theme inline {
 	--font-sans: 'Ships Whistle', monospace;
 	--font-mono: 'Ships Whistle', monospace;
+	--font-rough: 'Ships Whistle Rough', 'Ships Whistle', monospace;
+
+	/* Site palette as Tailwind color utilities (bg-ink, text-paper, fill-sun-gold…). */
+	--color-navy: var(--navy);
+	--color-ink: var(--ink);
+	--color-ink-on-dark: var(--ink-on-dark);
+	--color-paper: var(--paper);
+	--color-focus: var(--focus);
+	--color-sun-gold: var(--sun-gold);
+	--color-cloud-block: var(--cloud-block);
+	--color-night-sky: var(--night-sky);
+	--color-day-sea: var(--day-sea);
+	--color-record-gold: var(--record-gold);
+	--color-error-tint: var(--error-tint);
+	--color-mist-50: var(--mist-50);
+	--color-mist-100: var(--mist-100);
+	--color-mist-200: var(--mist-200);
+	--color-mist-300: var(--mist-300);
+	--color-steel-300: var(--steel-300);
+	--color-steel-400: var(--steel-400);
+	--color-steel-500: var(--steel-500);
+	--color-steel-600: var(--steel-600);
+	--color-steel-700: var(--steel-700);
+
+	/* Ambient pixel animations (animate-shore-drift, animate-bob…). The shore
+	   tile drifts one pixel sideways like the sea; bobs are the balloon/cloud
+	   idle floats. */
+	--animate-shore-drift: shore-drift 2.4s steps(1) infinite;
+	--animate-shore-dip: shore-dip 1.8s ease-in-out infinite;
+	--animate-bob: bob 5s ease-in-out infinite alternate;
+	--animate-balloon-bob: balloon-bob 2.6s ease-in-out infinite alternate;
+
+	@keyframes shore-drift {
+		0%,
+		100% {
+			background-position-x: 0;
+		}
+		50% {
+			background-position-x: 2px;
+		}
+	}
+	@keyframes shore-dip {
+		50% {
+			transform: translateY(2px);
+		}
+	}
+	@keyframes bob {
+		to {
+			transform: translateY(2px);
+		}
+	}
+	@keyframes balloon-bob {
+		from {
+			transform: translateY(0);
+		}
+		to {
+			transform: translateY(3px);
+		}
+	}
 	--color-sidebar-ring: var(--sidebar-ring);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

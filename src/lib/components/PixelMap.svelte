@@ -264,6 +264,12 @@
 	let balloonNoiseX: ((t: number) => number) | null = null;
 	let balloonNoiseY: ((t: number) => number) | null = null;
 	let planeRand: (() => number) | null = null;
+	// One-shot fold hint: a plane crossing the lower sea towing a "MORE BELOW"
+	// banner. Lives in screen space (stage, not camera) so it flies across the
+	// viewport whatever the camera is doing.
+	let banner: { c: Container; speed: number; end: number } | null = null;
+	let bannerDone = false;
+	let bannerTimer = 0;
 	let hubXY: Record<string, [number, number]> = {};
 	let planeTex: Texture | null = null;
 	let trailTex: Texture | null = null;
@@ -799,6 +805,7 @@
 		updateClouds();
 		bindPointer();
 		app.ticker.add(tick);
+		bannerTimer = window.setTimeout(spawnBanner, 8000);
 		requestAnimationFrame(() => {
 			if (!userMoved) fitCamera();
 		});
@@ -1346,6 +1353,58 @@
 		p.c.alpha = planeAlpha(p);
 	}
 
+	// Build and launch the banner plane. Skipped under reduced motion, and if the
+	// user has already scrolled toward the article (they've found it).
+	function spawnBanner() {
+		if (!app || !planeTex || reduced || banner || bannerDone) return;
+		if (window.scrollY > 48) {
+			bannerDone = true;
+			return;
+		}
+		const body = new Sprite(planeTex);
+		body.anchor.set(1, 0.5);
+		const label = new Text({
+			text: 'MORE BELOW',
+			style: {
+				fontFamily: "'Ships Whistle', monospace",
+				fontWeight: '700',
+				fontSize: 10,
+				fill: 0xffffff,
+				letterSpacing: 1
+			},
+			resolution: 3
+		});
+		// Pixel down-arrow after the text, drawn like the plane itself.
+		const AW = 5;
+		const AH = 7;
+		const arrow = new Graphics();
+		arrow.rect(2, 0, 1, 4).rect(0, 4, 5, 1).rect(1, 5, 3, 1).rect(2, 6, 1, 1).fill(0xffffff);
+		const padX = 6;
+		const padY = 3;
+		const bw = padX * 2 + label.width + 5 + AW;
+		const bh = Math.max(label.height, AH) + padY * 2;
+		const box = new Graphics();
+		box.rect(0, 0, bw, bh).stroke({ width: 1, color: 0xffffff });
+		const bannerBox = new Container();
+		label.position.set(padX, bh / 2 - label.height / 2);
+		arrow.position.set(padX + label.width + 5, bh / 2 - AH / 2);
+		bannerBox.addChild(box, label, arrow);
+		// Towed behind the plane: [banner]—rope—[plane nose at origin].
+		const ropeLen = 7;
+		bannerBox.position.set(-(PLANE_W + ropeLen + bw), -bh / 2);
+		const rope = new Graphics();
+		rope.rect(-(PLANE_W + ropeLen), -0.5, ropeLen, 1).fill({ color: 0xffffff, alpha: 0.7 });
+		const c = new Container();
+		c.eventMode = 'none';
+		c.addChild(bannerBox, rope, body);
+		c.scale.set(2);
+		const totalW = (PLANE_W + ropeLen + bw) * 2;
+		c.position.set(0, Math.round(vh * 0.74));
+		c.alpha = 0;
+		app.stage.addChild(c);
+		banner = { c, speed: (vw + totalW) / 16000, end: vw + totalW };
+	}
+
 	function planeAlpha(p: Plane): number {
 		const span = p.sTarget - p.sStart;
 		if (!span) return 0;
@@ -1513,6 +1572,18 @@
 		}
 		if (titleBalloon && !reduced) {
 			titleBalloon.y = titleBalloonBaseY + Math.sin(performance.now() / 650) * 2;
+		}
+		// The banner plane flies once and is destroyed at the far edge; it updates
+		// ahead of the today-view gate so it finishes its run in any view.
+		if (banner) {
+			banner.c.x += banner.speed * t.deltaMS;
+			const f = banner.c.x / banner.end;
+			banner.c.alpha = Math.max(0, Math.min(1, Math.min(f, 1 - f) / 0.08));
+			if (banner.c.x >= banner.end) {
+				banner.c.destroy({ children: true });
+				banner = null;
+				bannerDone = true;
+			}
 		}
 		if (reduced || sky.view !== 'today') return;
 		const now = performance.now();
@@ -1769,6 +1840,8 @@
 			mq.removeEventListener('change', onmq);
 			ro.disconnect();
 			window.removeEventListener('keydown', onkey);
+			clearTimeout(bannerTimer);
+			banner = null;
 			app?.destroy(true);
 			app = null;
 		};
@@ -1811,7 +1884,10 @@
 	});
 </script>
 
-<div class="pixel-map" bind:this={host}>
+<div
+	class="pixel-map relative h-full w-full touch-none overflow-hidden [&_canvas]:block"
+	bind:this={host}
+>
 	{#if showDebug}
 		<div class="dbg">
 			<div class="dbg-title">CAMERA (press D to hide)</div>
@@ -1836,16 +1912,7 @@
 </div>
 
 <style>
-	.pixel-map {
-		position: relative;
-		width: 100%;
-		height: 100%;
-		overflow: hidden;
-		touch-action: none;
-	}
-	.pixel-map :global(canvas) {
-		display: block;
-	}
+	/* Debug HUD: intentionally left as vanilla CSS — dev-only chrome, deliberately off-palette in real monospace. */
 	.dbg {
 		position: absolute;
 		top: 8px;

@@ -91,43 +91,22 @@
 
 <div class="wrap">
 	<canvas
+		class="block h-[138px] w-full shadow-[0_0_0_2px] shadow-ink [image-rendering:pixelated]"
 		use:strip
 		bind:clientWidth={W}
 		aria-label="Today's cloud cover by time of day: high, mid and low bands across eight 3-hourly steps"
 	></canvas>
-	<div class="ticks" aria-hidden="true">
+	<!-- Ticks dim to 55% except the clearest (record-gold) and cloudiest (bold) steps. -->
+	<div class="ticks mt-1.5 grid grid-cols-8" aria-hidden="true">
 		{#each STEP_TICKS as t, i (t)}
-			<span class:sun={i === clearestIdx} class:heavy={i === cloudiestIdx}>{t}</span>
+			<span
+				class={[
+					'text-center text-xs tracking-wider',
+					i === clearestIdx && 'text-record-gold',
+					i === cloudiestIdx && 'font-bold',
+					i !== clearestIdx && i !== cloudiestIdx && 'opacity-55'
+				]}>{t}</span
+			>
 		{/each}
 	</div>
 </div>
-
-<style>
-	canvas {
-		display: block;
-		width: 100%;
-		height: 138px;
-		box-shadow: 0 0 0 2px var(--ink);
-		image-rendering: pixelated;
-	}
-	.ticks {
-		display: grid;
-		grid-template-columns: repeat(8, 1fr);
-		margin-top: 6px;
-	}
-	.ticks span {
-		font-family: var(--font-display);
-		font-size: 10px;
-		letter-spacing: 0.05em;
-		text-align: center;
-		opacity: 0.55;
-	}
-	.ticks span.sun {
-		opacity: 1;
-		color: #b8860b;
-	}
-	.ticks span.heavy {
-		opacity: 1;
-		font-weight: 700;
-	}
-</style>

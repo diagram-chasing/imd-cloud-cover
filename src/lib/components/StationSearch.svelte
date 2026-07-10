@@ -165,7 +165,7 @@
 				aria-label="Find a city or station"
 				class="{compact
 					? 'size-8'
-					: 'h-11 px-3'} rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] [font-family:var(--font-display)] text-[10px] tracking-wider text-[var(--ink)] uppercase shadow-none hover:bg-[var(--cloud-block)] hover:text-[var(--ink)]"
+					: 'h-11 px-3'} rounded-none border-2 border-ink bg-paper text-xs tracking-wider text-ink uppercase shadow-none hover:bg-cloud-block hover:text-ink"
 			>
 				<HugeiconsIcon icon={SearchIcon} strokeWidth={2} />
 				{#if !compact}<span>Find a place</span>{/if}
@@ -177,31 +177,33 @@
 		{align}
 		collisionPadding={12}
 		sideOffset={6}
-		class="w-[300px] rounded-none border-2 border-[var(--ink)] bg-[var(--paper)] p-0 text-[var(--ink)] shadow-[3px_3px_0_0_var(--ink)] ring-0
+		class="w-[300px] rounded-none border-2 border-ink bg-paper p-0 text-ink shadow-[3px_3px_0_0] shadow-ink ring-0
 			[&_[data-slot=command-input-wrapper]]:p-0
-			[&_[data-slot=input-group]]:!h-9 [&_[data-slot=input-group]]:!rounded-none [&_[data-slot=input-group]]:!border-0 [&_[data-slot=input-group]]:!border-b-2 [&_[data-slot=input-group]]:!border-[var(--ink)] [&_[data-slot=input-group]]:!bg-[var(--paper)] [&_[data-slot=input-group]]:!shadow-none"
+			[&_[data-slot=input-group]]:!h-9 [&_[data-slot=input-group]]:!rounded-none [&_[data-slot=input-group]]:!border-0 [&_[data-slot=input-group]]:!border-b-2 [&_[data-slot=input-group]]:!border-ink [&_[data-slot=input-group]]:!bg-paper [&_[data-slot=input-group]]:!shadow-none"
 	>
 		<Command shouldFilter={false} class="rounded-none bg-transparent p-0">
 			<CommandInput bind:value={query} placeholder="Search a city or station…" />
 			<CommandList class="max-h-[280px] p-1">
-				<CommandEmpty
-					class="py-4 text-center [font-family:var(--font-display)] text-[11px] tracking-wider"
-					>No match.</CommandEmpty
-				>
+				<CommandEmpty class="py-4 text-center text-xs tracking-wider">No match.</CommandEmpty>
 				{#each results as e, i (`${e.kind}:${e.name}:${e.state ?? ''}:${i}`)}
 					<CommandItem
 						value={`${e.name}:${e.kind}:${i}`}
 						onSelect={() => pick(e)}
-						class="flex items-center gap-2 rounded-none px-2 py-1 data-selected:bg-[var(--cloud-block)] data-selected:text-[var(--ink)]"
+						class="flex items-center gap-2 rounded-none px-2 py-1 data-selected:bg-cloud-block data-selected:text-ink"
 					>
-						<span class="label">
-							<span class="name">{e.name}</span>
-							{#if e.state}<span class="state">{e.state}</span>{/if}
+						<!-- Name + state truncate together as one label so the code column stays
+						     aligned on the right and names only clip when the row is genuinely full. -->
+						<span class="label min-w-0 flex-auto truncate text-sm">
+							<span class="name text-ink">{e.name}</span>
+							{#if e.state}<span class="state ml-1.5 text-xs opacity-50">{e.state}</span>{/if}
 						</span>
 						{#if e.kind === 'station'}
-							<span class="code">{e.code}</span>
+							<span class="code flex-none text-xs tracking-wider opacity-55">{e.code}</span>
 						{:else}
-							<span class="tag">city</span>
+							<span
+								class="tag flex-none border border-ink/40 px-[3px] py-px text-xs tracking-[0.08em] uppercase opacity-50"
+								>city</span
+							>
 						{/if}
 					</CommandItem>
 				{/each}
@@ -209,42 +211,3 @@
 		</Command>
 	</PopoverContent>
 </Popover>
-
-<style>
-	.tag {
-		flex: 0 0 auto;
-		font-family: var(--font-display);
-		font-size: 8px;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		opacity: 0.5;
-		border: 1px solid color-mix(in srgb, var(--ink) 40%, transparent);
-		padding: 1px 3px;
-	}
-	/* Name + state truncate together as one label so the code column stays
-	   aligned on the right and names only clip when the row is genuinely full. */
-	.label {
-		flex: 1 1 auto;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-family: var(--font-body);
-		font-size: 13px;
-	}
-	.name {
-		color: var(--ink);
-	}
-	.state {
-		margin-left: 6px;
-		font-size: 11px;
-		opacity: 0.5;
-	}
-	.code {
-		flex: 0 0 auto;
-		font-family: var(--font-display);
-		font-size: 9px;
-		letter-spacing: 0.05em;
-		opacity: 0.55;
-	}
-</style>

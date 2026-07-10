@@ -176,119 +176,58 @@
 	}
 </script>
 
-<div class="chart">
-	<div class="canvas-wrap">
+<div class="chart flex flex-col">
+	<div class="canvas-wrap relative">
 		<canvas
 			use:meteogram
 			bind:clientWidth={W}
 			aria-label="10-day cloud-cover forecast for this station"
+			class="block h-[70px] w-full shadow-[0_0_0_2px] shadow-ink [image-rendering:pixelated]"
 		></canvas>
-		<div class="band-tags" aria-hidden="true">
-			<div class="band-tag"><span>HIGH</span></div>
-			<div class="band-tag"><span>MID</span></div>
-			<div class="band-tag"><span>LOW</span></div>
+		<!-- HIGH / MID / LOW tags pinned to the top-right of each 1/3 strip. -->
+		<div class="band-tags pointer-events-none absolute inset-0 flex flex-col" aria-hidden="true">
+			<div class="flex flex-1 items-start justify-end pt-[3px] pr-[5px]">
+				<span class="bg-paper/78 px-1 py-px text-xs leading-none tracking-[0.06em] text-ink"
+					>HIGH</span
+				>
+			</div>
+			<div class="flex flex-1 items-start justify-end pt-[3px] pr-[5px]">
+				<span class="bg-paper/78 px-1 py-px text-xs leading-none tracking-[0.06em] text-ink"
+					>MID</span
+				>
+			</div>
+			<div class="flex flex-1 items-start justify-end pt-[3px] pr-[5px]">
+				<span class="bg-paper/78 px-1 py-px text-xs leading-none tracking-[0.06em] text-ink"
+					>LOW</span
+				>
+			</div>
 		</div>
 	</div>
 	{#if ticks.length}
-		<div class="axis" aria-hidden="true">
+		<!-- Date axis: a tick per day boundary, day-of-month labels.
+		     The current day is yellow, so the eye lands on "where we are" first. -->
+		<div class="axis relative mt-[5px] h-5" aria-hidden="true">
 			{#each ticks as t (t.pct)}
-				<div class="tick" class:current={t.iso === currentIso} style="left:{t.pct}%">
-					<span class="mark"></span>
-					<span class="label">{t.day}{t.showMonth ? ' ' + t.month : ''}</span>
+				<div
+					class="tick absolute top-0 flex -translate-x-1/2 flex-col items-center gap-0.5 first:translate-x-0 first:items-start"
+					style="left:{t.pct}%"
+				>
+					<span
+						class={[
+							'mark w-px',
+							t.iso === currentIso ? 'h-1 bg-sun-gold' : 'h-[3px] bg-ink opacity-40'
+						]}
+					></span>
+					<!-- Every label carries the same padding box so the highlighted one keeps
+					     the same height/baseline as its neighbours. -->
+					<span
+						class={[
+							'label px-[3px] py-px text-xs tracking-[0.02em] whitespace-nowrap text-ink',
+							t.iso === currentIso ? 'bg-sun-gold font-bold' : 'opacity-60'
+						]}>{t.day}{t.showMonth ? ' ' + t.month : ''}</span
+					>
 				</div>
 			{/each}
 		</div>
 	{/if}
 </div>
-
-<style>
-	.chart {
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-	}
-	.canvas-wrap {
-		position: relative;
-	}
-	canvas {
-		display: block;
-		width: 100%;
-		height: 70px;
-		box-shadow: 0 0 0 2px var(--ink);
-		image-rendering: pixelated;
-	}
-
-	/* HIGH / MID / LOW tags pinned to the top-right of each 1/3 strip. */
-	.band-tags {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-		display: flex;
-		flex-direction: column;
-	}
-	.band-tag {
-		flex: 1;
-		display: flex;
-		align-items: flex-start;
-		justify-content: flex-end;
-		padding: 3px 5px 0 0;
-	}
-	.band-tag span {
-		font-family: var(--font-display);
-		font-size: 12px;
-		line-height: 1;
-		letter-spacing: 0.06em;
-		color: var(--ink);
-		background: rgba(253, 251, 244, 0.78);
-		padding: 1px 4px;
-	}
-
-	/* Date axis: a tick per day boundary, day-of-month labels. */
-	.axis {
-		position: relative;
-		height: 20px;
-		margin-top: 5px;
-	}
-	.tick {
-		position: absolute;
-		top: 0;
-		transform: translateX(-50%);
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 2px;
-	}
-	.tick:first-child {
-		transform: none;
-		align-items: flex-start;
-	}
-	.mark {
-		width: 1px;
-		height: 3px;
-		background: var(--ink);
-		opacity: 0.4;
-	}
-	.label {
-		font-family: var(--font-display);
-		font-size: 12px;
-		letter-spacing: 0.02em;
-		color: var(--ink);
-		opacity: 0.6;
-		white-space: nowrap;
-		/* Every label carries the same padding box so the highlighted one keeps
-		   the same height/baseline as its neighbours. */
-		padding: 1px 3px;
-	}
-	/* The current day: yellow, so the eye lands on "where we are" first. */
-	.tick.current .mark {
-		background: var(--sun-gold);
-		opacity: 1;
-		height: 4px;
-	}
-	.tick.current .label {
-		color: var(--ink);
-		opacity: 1;
-		font-weight: 700;
-		background: var(--sun-gold);
-	}
-</style>

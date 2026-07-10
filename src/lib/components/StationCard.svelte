@@ -68,16 +68,20 @@
 	});
 </script>
 
-<div class="card">
-	<header>
+<div class="card flex w-full flex-col gap-3 text-ink">
+	<header class="flex items-start justify-between gap-2.5">
 		<div class="title">
-			<h2>{station.name}</h2>
-			{#if station.state}<p class="state">{station.state}</p>{/if}
-			<p class="when">{prettyDate(date)} · {when}</p>
+			<h2 class="m-0 text-base leading-tight tracking-[0.03em] uppercase">{station.name}</h2>
+			{#if station.state}<p class="state m-0 mt-0.5 text-xs opacity-70">{station.state}</p>{/if}
+			<p class="when m-0 mt-[3px] text-xs tracking-wider opacity-60">
+				{prettyDate(date)} · {when}
+			</p>
 		</div>
-		<div class="head-right">
+		<div class="head-right flex shrink-0 items-center gap-2">
 			{#if clearStreak > 0}
-				<Badge variant="outline" class="streak">☀ {clearStreak}d clear</Badge>
+				<Badge variant="outline" class="streak text-xs text-record-gold border-record-gold"
+					>☀ {clearStreak}d clear</Badge
+				>
 			{/if}
 			{#if onclose}
 				<Button
@@ -92,20 +96,34 @@
 	</header>
 
 	<!-- The read: plain-language summary + the H/M/L breakdown behind it -->
-	<section class="readout">
-		<p class="summary">{summary}</p>
+	<section class="readout flex flex-col gap-2">
+		<p class="summary m-0 text-xs tracking-wider">{summary}</p>
 		{#if current}
-			<div class="bands" aria-label="Percent of sky covered, by altitude">
-				<p class="caption">% OF SKY COVERED <span class="now">{when}</span>, BY ALTITUDE</p>
+			<div class="bands flex flex-col gap-[3px]" aria-label="Percent of sky covered, by altitude">
+				<!-- Caption muted via colour alpha (text-ink/55), not opacity, so the .now
+				     highlight below can stay full-strength (opacity would compound onto the child).
+				     The yellow "now" cue matches the current-day highlight on the chart. -->
+				<p class="caption m-0 mb-[3px] text-xs tracking-wider text-ink/55">
+					% OF SKY COVERED <span class="now bg-sun-gold px-[3px] py-px font-bold text-ink"
+						>{when}</span
+					>, BY ALTITUDE
+				</p>
 				{#each ROWS as row (row.key)}
-					<div class="band-row">
-						<span class="blabel">{row.label}</span>
-						<span class="bar" aria-hidden="true">
+					<div class="band-row flex items-center gap-2">
+						<span class="blabel w-[104px] text-xs tracking-[0.03em] opacity-80">{row.label}</span>
+						<span class="bar flex flex-1 gap-px" aria-hidden="true">
 							{#each Array(10) as _, i (i)}
-								<span class="seg" class:on={i < filled(current[row.key])}></span>
+								<!-- Empty-track mist stays visible on cream paper (the shadcn --accent
+								     token is near-white here, so it's set explicitly, not from --accent). -->
+								<span
+									class={[
+										'seg h-2 flex-1',
+										i < filled(current[row.key]) ? 'bg-day-sea' : 'bg-mist-300'
+									]}
+								></span>
 							{/each}
 						</span>
-						<span class="num">{current[row.key]}%</span>
+						<span class="num w-[38px] text-right text-xs">{current[row.key]}%</span>
 					</div>
 				{/each}
 			</div>
@@ -113,163 +131,31 @@
 	</section>
 
 	<!-- The 10-day forecast: date axis + band tags live inside the chart -->
-	<figure class="meteogram">
+	<figure class="meteogram m-0">
 		{#if forecastError}
-			<p class="note">Forecast chart unavailable.</p>
+			<p class="note py-6 text-center text-sm opacity-70">Forecast chart unavailable.</p>
 		{:else}
 			<StationMeteogram {forecast} today={date} />
 		{/if}
 	</figure>
 
-	<footer class="cta">
-		<Button variant="default" size="sm" href="/station/{code}" class="more">More details →</Button>
+	<!-- Primary CTA to the full station page -->
+	<footer class="cta mt-0.5">
+		<Button
+			variant="default"
+			size="sm"
+			href="/station/{code}"
+			class="more w-full bg-ink tracking-[0.06em] text-paper uppercase hover:bg-focus hover:text-ink"
+			>More details →</Button
+		>
 	</footer>
 </div>
 
 <style>
-	.card {
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-		width: 100%;
-		color: var(--ink);
-	}
-	header {
-		display: flex;
-		justify-content: space-between;
-		align-items: flex-start;
-		gap: 10px;
-	}
-	.title h2 {
-		font-family: var(--font-display);
-		font-size: 15px;
-		letter-spacing: 0.03em;
-		text-transform: uppercase;
-		margin: 0;
-		line-height: 1.2;
-	}
-	.state {
-		font-size: 12px;
-		opacity: 0.7;
-		margin: 2px 0 0;
-	}
-	.when {
-		font-family: var(--font-display);
-		font-size: 11px;
-		letter-spacing: 0.05em;
-		opacity: 0.6;
-		margin: 3px 0 0;
-	}
-	.head-right {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		flex-shrink: 0;
-	}
-	.head-right :global(.streak) {
-		font-family: var(--font-display);
-		font-size: 12px;
-		color: #b8860b;
-		border-color: #b8860b;
-		white-space: nowrap;
-	}
-
-	/* The read */
-	.readout {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-	.summary {
-		font-family: var(--font-display);
-		font-size: 12px;
-		letter-spacing: 0.05em;
-		margin: 0;
-	}
-	.bands {
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
-	}
-	.caption {
-		font-family: var(--font-display);
-		font-size: 12px;
-		letter-spacing: 0.05em;
-		/* Muted via colour alpha, not opacity, so the .now highlight below can
-		   stay full-strength (opacity would compound onto the child). */
-		color: rgba(11, 29, 58, 0.55);
-		margin: 0 0 3px;
-	}
-	/* Yellow "now" cue, matching the current-day highlight on the chart. */
-	.caption .now {
-		background: var(--sun-gold);
-		color: var(--ink);
-		font-weight: 700;
-		padding: 1px 3px;
-	}
-	.band-row {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-	.blabel {
-		font-family: var(--font-display);
-		font-size: 12px;
-		letter-spacing: 0.03em;
-		width: 104px;
-		opacity: 0.8;
-	}
-	.bar {
-		display: flex;
-		gap: 1px;
-		flex: 1;
-	}
-	.seg {
-		flex: 1;
-		height: 8px;
-		/* An empty-track that stays visible on cream paper (the shadcn --accent
-		   token is near-white here, so it's set explicitly, not from a var). */
-		background: #cddcec;
-	}
-	.seg.on {
-		background: #2e7cc4;
-	}
-	.num {
-		font-family: var(--font-display);
-		font-size: 12px;
-		width: 38px;
-		text-align: right;
-	}
-
-	.meteogram {
-		margin: 0;
-	}
+	/* Bridge rule: the canvas lives inside StationMeteogram, so it can't be
+	   classed from here. */
 	.meteogram :global(canvas) {
 		width: 100%;
 		max-width: none;
-	}
-	.note {
-		font-size: 13px;
-		opacity: 0.7;
-		padding: 24px 0;
-		text-align: center;
-	}
-
-	/* Primary CTA to the full station page */
-	.cta {
-		margin-top: 2px;
-	}
-	.cta :global(.more) {
-		width: 100%;
-		font-family: var(--font-display);
-		font-size: 12px;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		background: var(--ink);
-		color: var(--paper);
-	}
-	.cta :global(.more:hover) {
-		background: var(--focus);
-		color: var(--ink);
 	}
 </style>
