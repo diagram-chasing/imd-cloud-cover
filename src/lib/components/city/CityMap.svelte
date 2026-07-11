@@ -18,14 +18,28 @@
 	}
 	interface Props {
 		india: FeatureCollection;
-		city: { name: string; lat: number; lon: number };
+		/** The "you are here" gold diamond. Null when the primary is a station marker. */
+		city: { name: string; lat: number; lon: number } | null;
 		stations: NearbyStation[];
 		/** Per-station cover at the current step, keyed by code — drives the clouds. */
 		values?: Record<string, { h: number; m: number; l: number; p?: number }>;
+		/** Adjoining cities: labelled only when they land inside the crop window. */
+		places?: { name: string; lat: number; lon: number }[];
 		slugByCode: Record<string, string>;
+		/** Zoom floor as a fraction of the world width — larger = wider regional view. */
+		minSpanFactor?: number;
 		onhover?: (info: { code: string; clientX: number; clientY: number } | null) => void;
 	}
-	let { india, city, stations, values, slugByCode, onhover }: Props = $props();
+	let {
+		india,
+		city,
+		stations,
+		values,
+		places = [],
+		slugByCode,
+		minSpanFactor = 0.02,
+		onhover
+	}: Props = $props();
 
 	// The home map's world geometry (PixelMap WORLD_W / bake-ground.mjs), so the
 	// ground raster and projected points agree on where India is.
@@ -54,7 +68,7 @@
 	interface RawPoint {
 		id: string;
 		label: string;
-		kind: 'city' | 'station';
+		kind: 'city' | 'station' | 'place';
 		accent: boolean;
 		code: string | null;
 		x: number;
@@ -63,8 +77,8 @@
 	}
 	let rawPoints = $derived.by<RawPoint[]>(() => {
 		const out: RawPoint[] = [];
-		const cp = projection([city.lon, city.lat]);
-		if (cp) {
+		const cp = city ? projection([city.lon, city.lat]) : null;
+		if (city && cp) {
 			out.push({
 				id: '__city',
 				label: city.name.toUpperCase(),
@@ -93,13 +107,34 @@
 		return out;
 	});
 
+	// Adjoining cities in world px. Kept out of the crop bbox below (the frame is
+	// set by the station cluster); they surface only when they fall inside it.
+	let placePoints = $derived.by<RawPoint[]>(() => {
+		const out: RawPoint[] = [];
+		for (const pl of places) {
+			const p = projection([pl.lon, pl.lat]);
+			if (!p) continue;
+			out.push({
+				id: `__place_${pl.name}`,
+				label: pl.name.toUpperCase(),
+				kind: 'place',
+				accent: false,
+				code: null,
+				x: p[0],
+				y: p[1],
+				w: labelWidth(pl.name)
+			});
+		}
+		return out;
+	});
+
 	// Crop window (world px): frame the pins' bounding box with padding, with a
 	// generous minimum span so a tight cluster still shows regional context.
 	const PAD = 1.6; // extra breathing room around the pin bbox
 	// Zoom floor: enough regional context for a lone station, but small enough
 	// that a dense metro cluster (Delhi) zooms in and spreads apart instead of
 	// collapsing onto one pixel. Overlap that remains is handled by thinning below.
-	const MIN_S = WORLD_W * 0.02;
+	let MIN_S = $derived(WORLD_W * minSpanFactor);
 	let win = $derived.by(() => {
 		const pts = rawPoints;
 		if (!pts.length) return null;
@@ -163,7 +198,7 @@
 	interface Item {
 		id: string;
 		label: string;
-		kind: 'city' | 'station';
+		kind: 'city' | 'station' | 'place';
 		accent: boolean;
 		code: string | null;
 		sx: number;
@@ -174,16 +209,24 @@
 	let base = $derived.by<Item[]>(() => {
 		const w = win;
 		if (!w) return [];
-		return rawPoints.map((p) => ({
-			id: p.id,
-			label: p.label,
-			kind: p.kind,
-			accent: p.accent,
-			code: p.code,
-			sx: (p.x - w.wx) * k,
-			sy: (p.y - w.wy) * k,
-			w: p.w
-		}));
+		const out: Item[] = [];
+		for (const p of [...rawPoints, ...placePoints]) {
+			const sx = (p.x - w.wx) * k;
+			const sy = (p.y - w.wy) * k;
+			// "if in view": drop adjoining cities that fall outside the frame.
+			if (p.kind === 'place' && (sx < 0 || sx > mapW || sy < 0 || sy > mapH)) continue;
+			out.push({
+				id: p.id,
+				label: p.label,
+				kind: p.kind,
+				accent: p.accent,
+				code: p.code,
+				sx,
+				sy,
+				w: p.w
+			});
+		}
+		return out;
 	});
 
 	const MIN_SEP = 66;
@@ -289,6 +332,13 @@
 					>
 						<path d="M3 0h1v1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-1h1v-1h1v-1h1z" fill="currentColor" />
 					</svg>
+				{:else if p.kind === 'place'}
+					<!-- Adjoining city: a small hollow ring; the name is the point. -->
+					<span
+						class="absolute rounded-full border border-white/85 bg-day-sea/50 shadow-[0_0_0_1px] shadow-ink/50"
+						style="width: 6px; height: 6px; left: -3px; top: -3px;"
+						aria-hidden="true"
+					></span>
 				{:else}
 					{@const tw = (p.code && towers[p.code]) || { cells: [], w: 0, h: 0 }}
 					{@const cw = tw.w * CLOUD_PX}
@@ -335,7 +385,11 @@
 				<span
 					class={[
 						'absolute text-[10px] leading-none font-bold tracking-[0.06em] whitespace-nowrap uppercase text-shadow-sky',
-						p.kind === 'city' ? 'text-sun-gold' : 'text-white'
+						p.kind === 'city'
+							? 'text-sun-gold'
+							: p.kind === 'place'
+								? 'text-white/70'
+								: 'text-white'
 					]}
 					style="left: {p.lx}px; top: {p.ly}px; transform: {labelTransform(p.align)};"
 				>

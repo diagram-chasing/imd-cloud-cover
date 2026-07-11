@@ -5,8 +5,11 @@
 	// dance here — only today's readings + the forecast load client-side.
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
-	import { fetchLatest, fetchForecast } from '$lib/api/r2';
-	import type { AllStations, Forecast } from '$lib/types';
+	import type { FeatureCollection } from 'geojson';
+	import type { Topology } from 'topojson-specification';
+	import { fetchLatest, fetchForecast, fetchStations } from '$lib/api/r2';
+	import type { AllStations, Forecast, StationsManifest } from '$lib/types';
+	import { topoToIndia } from '$lib/map/projection';
 	import { resolveActiveDay, computeValues } from '$lib/data';
 	import PlacePage from '$lib/components/place/PlacePage.svelte';
 
@@ -14,16 +17,24 @@
 
 	let latest = $state<AllStations>();
 	let forecast = $state<Forecast | null>(null);
+	let india = $state<FeatureCollection>();
+	let manifest = $state<StationsManifest>();
 
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 
-	onMount(() => {
+	onMount(async () => {
 		fetchLatest()
 			.then((l) => (latest = l))
 			.catch(() => {});
 		fetchForecast(data.date, data.code)
 			.then((f) => (forecast = f))
 			.catch(() => {});
+		fetchStations()
+			.then((m) => (manifest = m))
+			.catch(() => {});
+		try {
+			india = topoToIndia((await fetch('/data/india.json').then((r) => r.json())) as Topology);
+		} catch {}
 	});
 
 	let activeDay = $derived(latest ? resolveActiveDay(latest) : null);
@@ -37,9 +48,13 @@
 	);
 	let todayValues = $derived(values[data.code] ?? null);
 
+	// The station itself is the map's primary marker (gold dot + its own clouds).
+	let stations = $derived([
+		{ code: data.code, name: data.name, lat: data.lat, lon: data.lon, km: 0, primary: true }
+	]);
+
 	let dateline = $derived(
 		[
-			'STATION',
 			data.state?.toUpperCase() ?? null,
 			`${data.lat.toFixed(2)}°N ${data.lon.toFixed(2)}°E`
 		]
@@ -65,4 +80,9 @@
 	{forecast}
 	metDate={data.date}
 	metCode={data.code}
+	{india}
+	{stations}
+	cities={data.cities}
+	perStation={values}
+	stationLookup={manifest?.stations}
 />

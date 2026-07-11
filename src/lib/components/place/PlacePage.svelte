@@ -41,6 +41,8 @@
 		india?: FeatureCollection;
 		cityPoint?: { name: string; lat: number; lon: number } | null;
 		stations?: NearbyStation[];
+		/** Adjoining cities labelled on the map (station mode). */
+		cities?: { name: string; lat: number; lon: number }[];
 		slugByCode?: Record<string, string>;
 		stationLookup?: Record<string, Station>;
 	}
@@ -62,6 +64,7 @@
 		india,
 		cityPoint,
 		stations = [],
+		cities = [],
 		slugByCode = {},
 		stationLookup = {}
 	}: Props = $props();
@@ -80,7 +83,7 @@
 	}
 </script>
 
-<main class={['mx-auto px-5 pt-6 pb-18', mode === 'city' ? 'max-w-[860px]' : 'max-w-[660px]']}>
+<main class="mx-auto max-w-[860px] px-5 pt-6 pb-18">
 	<div class="my-8">
 		<PixelButton size="sm" href="/">BACK TO MAP</PixelButton>
 	</div>
@@ -91,74 +94,71 @@
 			<h1
 				class="font-rough text-[length:clamp(2rem,7vw,calc(var(--ms-6)*1rem))] leading-[1.05] tracking-[0.02em] uppercase"
 			>
-				{name}
+				{name}{#if mode === 'station'}<span class="ml-3 inline-block text-sm font-bold text-ink"
+						>[WEATHER STATION]</span
+					>{/if}
 			</h1>
 			<p class="mt-1.5 text-base">{dateline}</p>
 		</header>
 
-		{#if mode === 'city'}
-			<!-- Reading + regional locator -->
-			<section
-				class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]"
-			>
-				<CityToday expanded {values} {stationName} {km} {date} {when} />
-				<div class="min-w-0 h-full">
-					{#if india && cityPoint}
-						<CityMap
-							{india}
-							city={cityPoint}
-							{stations}
-							values={perStation}
-							{slugByCode}
-							onhover={(info) => (tip = info)}
-						/>
-					{:else}
-						<div class="aspect-[1.5] w-full bg-day-sea shadow-[0_0_0_1px] shadow-ink/40"></div>
-					{/if}
-				</div>
-			</section>
+		<!-- Reading + regional locator: same two-column layout in both modes. -->
+		<section
+			class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]"
+		>
+			<CityToday expanded {values} {stationName} {km} {date} {when} />
+			<div class="h-full min-w-0">
+				{#if india && (mode === 'city' ? cityPoint : stations.length)}
+					<CityMap
+						{india}
+						city={mode === 'city' ? (cityPoint ?? null) : null}
+						{stations}
+						values={perStation}
+						places={mode === 'city' ? [] : cities}
+						{slugByCode}
+						minSpanFactor={mode === 'city' ? 0.02 : 0.12}
+						onhover={(info) => (tip = info)}
+					/>
+				{:else}
+					<div class="aspect-[1.5] w-full bg-day-sea shadow-[0_0_0_1px] shadow-ink/40"></div>
+				{/if}
+			</div>
+		</section>
 
-			{#if stations.length}
-				<!-- Nearby stations: the map's clusters as a legible, linkable index. -->
-				<section>
-					<h2 class="mb-3 border-b border-ink pb-1 text-xl">NEARBY STATIONS</h2>
-					<ul class="grid grid-cols-2 gap-x-10 sm:grid-cols-3">
-						{#each stations as s (s.code)}
-							{@const link = href(s)}
-							<li>
-								<svelte:element
-									this={link ? 'a' : 'div'}
-									href={link ?? undefined}
-									class={[
-										'group flex items-center gap-2.5 py-0.5 no-underline',
-										link && 'cursor-pointer'
-									]}
-								>
-									<!-- Cloud/sun on a blue map-tile so the sprite reads on paper. -->
-									<span
-										class="grid h-9 w-10 shrink-0 place-items-center overflow-hidden bg-day-sea shadow-[0_0_0_1px] shadow-ink/40"
-									>
-										<CloudGlyph code={s.code} values={perStation[s.code]} cell={4} />
-									</span>
-									<span
-										class={[
-											'min-w-0 flex-1 truncate text-xs tracking-wide',
-											s.primary
-												? '-ml-1 bg-focus pl-1 font-bold text-black'
-												: 'group-hover:text-focus'
-										]}>{s.name.toUpperCase()}</span
-									>
-									<span class="shrink-0 text-xs tabular-nums opacity-45">{s.km} KM</span>
-								</svelte:element>
-							</li>
-						{/each}
-					</ul>
-				</section>
-			{/if}
-		{:else}
-			<!-- Station: a single reading, no map. -->
+		{#if mode === 'city' && stations.length}
+			<!-- Nearby stations: the map's clusters as a legible, linkable index. -->
 			<section>
-				<CityToday expanded {values} {stationName} {km} {date} {when} />
+				<h2 class="mb-3 border-b border-ink pb-1 text-xl">NEARBY STATIONS</h2>
+				<ul class="grid grid-cols-2 gap-x-10 sm:grid-cols-3">
+					{#each stations as s (s.code)}
+						{@const link = href(s)}
+						<li>
+							<svelte:element
+								this={link ? 'a' : 'div'}
+								href={link ?? undefined}
+								class={[
+									'group flex items-center gap-2.5 py-0.5 no-underline',
+									link && 'cursor-pointer'
+								]}
+							>
+								<!-- Cloud/sun on a blue map-tile so the sprite reads on paper. -->
+								<span
+									class="grid h-9 w-10 shrink-0 place-items-center overflow-hidden bg-day-sea shadow-[0_0_0_1px] shadow-ink/40"
+								>
+									<CloudGlyph code={s.code} values={perStation[s.code]} cell={4} />
+								</span>
+								<span
+									class={[
+										'min-w-0 flex-1 truncate text-xs tracking-wide',
+										s.primary
+											? '-ml-1 bg-focus pl-1 font-bold text-black'
+											: 'group-hover:text-focus'
+									]}>{s.name.toUpperCase()}</span
+								>
+								<span class="shrink-0 text-xs tabular-nums opacity-45">{s.km} KM</span>
+							</svelte:element>
+						</li>
+					{/each}
+				</ul>
 			</section>
 		{/if}
 

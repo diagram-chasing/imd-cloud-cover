@@ -66,20 +66,47 @@
 		return best;
 	}
 
+	// Prefetch the city record during idle right after mount — well before the reader
+	// scrolls down — so the explorer is ready when it enters view rather than showing
+	// a placeholder and fetching on demand. The timeout guarantees it fires even if
+	// the map keeps the main thread busy; an IntersectionObserver still short-circuits
+	// the wait if the reader scrolls straight down.
+	let fetchStarted = false;
+	function loadCities() {
+		if (fetchStarted || data || failed) return;
+		fetchStarted = true;
+		fetchCities()
+			.then((d) => (data = d))
+			.catch(() => (failed = true));
+	}
+
 	$effect(() => {
-		if (!root || data || failed) return;
-		const io = new IntersectionObserver(
-			(entries) => {
-				if (!entries.some((e) => e.isIntersecting)) return;
-				io.disconnect();
-				fetchCities()
-					.then((d) => (data = d))
-					.catch(() => (failed = true));
-			},
-			{ rootMargin: '600px' }
-		);
-		io.observe(root);
-		return () => io.disconnect();
+		if (data || failed) return;
+		const w = window as unknown as {
+			requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+			cancelIdleCallback?: (id: number) => void;
+		};
+		let idleId = 0;
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		if (w.requestIdleCallback) idleId = w.requestIdleCallback(loadCities, { timeout: 1500 });
+		else timer = setTimeout(loadCities, 500);
+
+		// Reader reached it before the idle prefetch fired: fetch immediately.
+		const io = root
+			? new IntersectionObserver(
+					(entries) => {
+						if (entries.some((e) => e.isIntersecting)) loadCities();
+					},
+					{ rootMargin: '600px' }
+				)
+			: null;
+		if (io && root) io.observe(root);
+
+		return () => {
+			if (idleId && w.cancelIdleCallback) w.cancelIdleCallback(idleId);
+			if (timer) clearTimeout(timer);
+			io?.disconnect();
+		};
 	});
 
 	// Resolve the default city. Priority: a stored/clicked pick > the city nearest

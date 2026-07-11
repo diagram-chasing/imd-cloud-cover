@@ -40,6 +40,9 @@
 	// PixelMap is imported dynamically (client-only): the shell + article paint
 	// before the PIXI engine chunk downloads, and it never runs during SSR.
 	let PixelMap = $state<typeof import('$lib/components/PixelMap.svelte').default>();
+	// Flipped on the map's first layout emit (its first painted frame) to cross-fade
+	// the India loading shell out and reveal the live canvas underneath.
+	let mapPainted = $state(false);
 	let error = $state<string | null>(null);
 
 	// One object the template reads, assembled from the always-present critical data
@@ -235,10 +238,16 @@
 				date={activeDate}
 				onhover={(info) => (tip = info)}
 				onselect={openStation}
-				onlayout={(info) => (layout = info)}
+				onlayout={(info) => {
+					layout = info;
+					mapPainted = true;
+				}}
 			/>
-		{:else}
-			<MapShell {night} />
+		{/if}
+		{#if !mapPainted}
+			<div class="pointer-events-none absolute inset-0 z-[1]" out:fade={{ duration: 320 }}>
+				<MapShell {night} />
+			</div>
 		{/if}
 
 		<!-- While zoomed/panned: the way back lives in the top-right corner on every
