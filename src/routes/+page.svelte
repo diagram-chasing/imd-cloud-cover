@@ -6,7 +6,7 @@
 	import { CORE_BASE } from '$lib/api/r2';
 	import { sky } from '$lib/state/sky.svelte';
 	import { skyMode } from '$lib/theme';
-	import { computeValues, rollupForView } from '$lib/data';
+	import { computeValues, rollupForView, resolveActiveDay } from '$lib/data';
 	import { click } from '$lib/feedback';
 
 	import PixelMap, { type HoverInfo } from '$lib/components/PixelMap.svelte';
@@ -75,8 +75,18 @@
 	});
 
 	let activeRollup = $derived(rollupForView(sky.view, core?.rollup7, core?.rollup30));
+	// In today view, which forecast day matches the visitor's current IST date.
+	// This lets the map read as "today" even before today's scrape has landed.
+	let activeDay = $derived(core ? resolveActiveDay(core.latest) : null);
 	let values = $derived(
-		computeValues(sky.view, core?.latest, activeRollup, sky.timeIndex, sky.windowDayIndex)
+		computeValues(
+			sky.view,
+			core?.latest,
+			activeRollup,
+			sky.timeIndex,
+			sky.windowDayIndex,
+			activeDay?.index ?? 0
+		)
 	);
 
 	// The single "when am I looking at" answer, derived from the scrub state so the
@@ -86,7 +96,7 @@
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 	let activeDate = $derived.by(() => {
 		if (!core) return '';
-		if (sky.view === 'today') return core.summary.date;
+		if (sky.view === 'today') return activeDay?.date ?? core.summary.date;
 		const dates = activeRollup?.dates;
 		if (!dates?.length) return core.summary.date;
 		return dates[Math.min(sky.windowDayIndex, dates.length - 1)] ?? core.summary.date;

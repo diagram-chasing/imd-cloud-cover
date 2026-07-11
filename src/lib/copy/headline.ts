@@ -37,14 +37,17 @@ export function buildHeadline(summary: Summary, today: string): Headline {
 	const parts: string[] = [];
 	if (cloudiest) parts.push(`Cloudiest: ${cloudiest.name} (${cloudiest.value}%)`);
 	if (clearest) parts.push(`Clearest: ${clearest.name} (${clearest.value}%)`);
-	parts.push(`as of ${summary.date}, 11:00 IST`);
-	let subline = parts.join(' · ');
 
-	const stale = summary.date !== today;
-	if (stale) {
-		headline = `SHOWING ${summary.date} — ${headline}`;
-		subline += ' (today’s scrape pending)';
-	}
+	// The forecast for `today` may come from an earlier run (day-0 of a previous
+	// scrape's 10-day outlook) if today's scrape hasn't landed yet. That's still
+	// current for the date — label it as issued-then, valid-now rather than stale.
+	const issuedEarlier = Boolean(today) && today > summary.date;
+	parts.push(
+		issuedEarlier
+			? `forecast for ${today}, issued ${summary.date} 11:00 IST`
+			: `as of ${summary.date}, 11:00 IST`
+	);
+	const subline = parts.join(' · ');
 
-	return { headline, subline, stale };
+	return { headline, subline, stale: issuedEarlier };
 }

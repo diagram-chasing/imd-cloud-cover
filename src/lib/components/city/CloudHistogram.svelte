@@ -38,194 +38,155 @@
 	let cell = $derived(narrow ? 2 : 4);
 	let MARGIN_X = $derived(narrow ? Math.max(10, width * 0.03) : Math.max(34, width * 0.05));
 
-	interface Item {
-		code: string;
-		name: string;
-		mean: number;
-		sprite: Sprite;
-		w: number;
-		h: number;
-	}
-	type Shelf = { items: Item[]; w: number; h: number };
+	// Headroom above the tallest cloud: the arc rail and floating tags live here.
+	let TOP_PAD = $derived(narrow ? 44 : 56);
 
-	// Bin every city into its column and pack each column into shelves, for a
-	// given value-getter. Pulled out of `layout` so the height can be measured
-	// against BOTH modes — toggling then reshuffles clouds without resizing.
-	function shelveBy(
-		valueOf: (c: CityStats) => number,
-		atlas: ReturnType<typeof buildMarkAtlas>,
-		cols: number,
-		slotW: number,
-		gap: number,
-		sz: number
-	): { shelvesPerBin: Shelf[][]; peak: number } {
-		const binned: [string, CityStats][][] = Array.from({ length: cols }, () => []);
-		for (const entry of Object.entries(data.cities)) {
-			const col = Math.min(cols - 1, Math.floor((valueOf(entry[1]) / 100) * cols));
-			binned[col].push(entry);
-		}
-		const shelvesPerBin = binned.map((bin) => {
-			bin.sort((a, b) => (b[1].pop ?? 0) - (a[1].pop ?? 0));
-			const shelves: Shelf[] = [];
-			let shelf: Shelf = { items: [], w: 0, h: 0 };
-			for (const [code, c] of bin) {
-				const val = valueOf(c);
-				const tier = Math.max(1, coverTier(val)) as 1 | 2 | 3 | 4;
-				const sprite = atlas.get('low', tier, fnv1a(code) % MARK_VARIANTS);
-				const w = sprite.wCells * cell * sz;
-				const h = sprite.hCells * cell * sz;
-				if (shelf.items.length && shelf.w + gap + w > slotW - gap) {
-					shelves.push(shelf);
-					shelf = { items: [], w: 0, h: 0 };
-				}
-				shelf.w += (shelf.items.length ? gap : 0) + w;
-				shelf.h = Math.max(shelf.h, h);
-				shelf.items.push({ code, name: c.name, mean: val, sprite, w, h });
-			}
-			if (shelf.items.length) shelves.push(shelf);
-			return shelves;
-		});
-		const peak = Math.max(
-			0,
-			...shelvesPerBin.map((shelves) => shelves.reduce((acc, s) => acc + s.h + gap, 0))
-		);
-		return { shelvesPerBin, peak };
+	// The sun that owns the clear end of the sky — disc plus eight pixel rays.
+	const SUN = [
+		'.......#.......',
+		'...............',
+		'..#.........#..',
+		'.....#####.....',
+		'....#######....',
+		'...#########...',
+		'...#########...',
+		'#..#########..#',
+		'...#########...',
+		'...#########...',
+		'....#######....',
+		'.....#####.....',
+		'..#.........#..',
+		'...............',
+		'.......#.......'
+	];
+
+	function todayVal(c: CityStats): number {
+		for (let i = c.e.length - 1; i >= 0; i--) if (c.e[i] != null) return c.e[i] as number;
+		return c.mean;
+	}
+	const valueFor = (c: CityStats, m: 'today' | 'overall') =>
+		m === 'today' ? todayVal(c) : c.mean;
+
+	// Every city, ascending by its value for a mode — ties broken by code so the
+	// order never shuffles between renders.
+	function sortedByValue(m: 'today' | 'overall'): [string, CityStats, number][] {
+		return Object.entries(data.cities)
+			.map(([code, c]) => [code, c, valueFor(c, m)] as [string, CityStats, number])
+			.sort((a, b) => a[2] - b[2] || (a[0] < b[0] ? -1 : 1));
 	}
 
-	// Pack a mode's clouds so the tallest tower fits `usable`. Shrinking the
-	// clouds packs more per row AND shortens each row, so tower height falls
-	// roughly with the square of the scale — a couple of steps converge fast.
-	function fitShelves(
-		valueOf: (c: CityStats) => number,
-		atlas: ReturnType<typeof buildMarkAtlas>,
-		cols: number,
-		slotW: number,
-		gap: number,
-		usable: number
-	): { shelvesPerBin: Shelf[][]; peak: number; sz: number } {
-		let sz = 1;
-		let res = shelveBy(valueOf, atlas, cols, slotW, gap, sz);
-		for (let i = 0; i < 6 && res.peak > usable; i++) {
-			sz = Math.max(0.35, sz * Math.sqrt(usable / res.peak) * 0.98);
-			res = shelveBy(valueOf, atlas, cols, slotW, gap, sz);
-		}
-		return { ...res, sz };
-	}
-
+	// The weather front: a sorted unit CDF drawn as a skyline. One cloud per city,
+	// placed left → right by rank and lifted to its cover value — sparse puffs on
+	// the clear left rising into a solid deck on the right. The distribution's
+	// shape IS the picture, and a city's x position IS its rank. Slots are far
+	// narrower than the sprites, so clouds overlap into a bank on purpose, and
+	// draw() fills the area beneath the silhouette with cloud mass.
 	let layout = $derived.by(() => {
-		if (!width) return { boxes: [] as Box[], height: 380 };
+		const height = narrow ? 320 : 400;
+		const baseY = height - AXIS_H - cell;
+		const bandH = baseY - TOP_PAD;
+		const empty = {
+			boxes: [] as Box[],
+			crest: [] as Box[],
+			height,
+			live: [] as number[],
+			ghost: [] as number[],
+			lo: 0,
+			span: 100,
+			baseY,
+			bandH
+		};
+		if (!width) return empty;
 		const atlas = buildMarkAtlas(cell);
-		const gap = cell;
-		// Bins are fluid: the slot width comes from the available span, never the
-		// other way round, so towers can't spill past the margins on any screen.
-		const cols = width < 480 ? 8 : 10;
 		const innerW = width - MARGIN_X * 2;
-		const slotW = innerW / cols;
-		const originX = MARGIN_X;
+		const snap = (v: number) => Math.round(v / cell) * cell;
 
-		// Desktop grows the canvas to the tallest "overall" tower. Mobile instead
-		// pins to a short band and scales the clouds down to fit it — the same trick
-		// "today" always uses — so the histogram never runs long on a phone. Height
-		// stays fixed across modes, so toggling never resizes the explorer.
-		const overall = shelveBy((c) => c.mean, atlas, cols, slotW, gap, 1);
-		const height = narrow
-			? Math.max(300, Math.min(overall.peak + AXIS_H + 80, 340))
-			: Math.max(380, overall.peak + AXIS_H + 80);
-		const usable = height - AXIS_H - gap - 40;
+		const entries = sortedByValue(mode);
+		const n = entries.length;
+		if (!n) return empty;
+		const live = entries.map((e) => e[2]);
+		// The other mode's sorted curve, ghosted behind the live front so
+		// today-vs-overall reads at a glance. Both are sorted, so the two
+		// silhouettes compare directly even though city order differs.
+		const ghost = sortedByValue(mode === 'today' ? 'overall' : 'today').map((e) => e[2]);
 
-		// "Today" bunches cities into a few columns; on mobile the "overall" tower
-		// can be just as tall. Either way, shrink the clouds to fit the same band.
-		const chosen =
-			mode === 'today'
-				? fitShelves(
-						(c) => {
-							for (let i = c.e.length - 1; i >= 0; i--)
-								if (c.e[i] != null) return c.e[i] as number;
-							return c.mean;
-						},
-						atlas,
-						cols,
-						slotW,
-						gap,
-						usable
-					)
-				: narrow && overall.peak > usable
-					? fitShelves((c) => c.mean, atlas, cols, slotW, gap, usable)
-					: overall;
-		const shelvesPerBin = chosen.shelvesPerBin;
+		// Shared y-scale across both modes, stretched to the data's actual range —
+		// the front fills the band instead of hugging the middle of 0–100.
+		const rawLo = Math.min(live[0], ghost[0] ?? live[0]);
+		const rawHi = Math.max(live[n - 1], ghost[ghost.length - 1] ?? live[n - 1]);
+		const pad = (rawHi - rawLo) * 0.06 || 1;
+		const lo = Math.max(0, rawLo - pad);
+		const span = Math.max(1, Math.min(100, rawHi + pad) - lo);
 
-		const boxes: Box[] = [];
-		shelvesPerBin.forEach((shelves, col) => {
-			const slotX = originX + col * slotW;
-			let cursor = height - AXIS_H - gap;
-			for (const s of shelves) {
-				let x = slotX + (slotW - s.w) / 2;
-				for (const item of s.items) {
-					boxes.push({ ...item, x: x + item.w / 2, y: cursor - item.h / 2 });
-					x += item.w + gap;
-				}
-				cursor -= s.h + gap;
-			}
+		const boxes: Box[] = entries.map(([code, c, val], i) => {
+			const tier = Math.max(1, coverTier(val)) as 1 | 2 | 3 | 4;
+			const sprite = atlas.get('low', tier, fnv1a(code) % MARK_VARIANTS);
+			const w = sprite.wCells * cell;
+			const h = sprite.hCells * cell;
+			// ±1 cell of seeded jitter so the front reads as weather, not a staircase.
+			const jitter = ((fnv1a(code + ':jy') % 3) - 1) * cell;
+			return {
+				code,
+				name: c.name,
+				mean: val,
+				sprite,
+				x: snap(MARGIN_X + (n > 1 ? (i / (n - 1)) * innerW : innerW / 2)),
+				// The sprite's bottom rides the value line, so the varying cloud
+				// bodies — not their centres — crest the bank's silhouette.
+				y: snap(baseY - ((val - lo) / span) * bandH) - h / 2 + jitter,
+				w,
+				h
+			};
 		});
-		return { boxes, height };
+
+		// Drawing all 400+ sprites clumps them into noise. Cresting the bank with
+		// a spaced-out sample keeps individual clouds legible; the mass fill below
+		// stands in for everyone else, and every column stays hoverable.
+		const spacing = narrow ? 22 : 36;
+		const step = Math.max(1, Math.round(n / Math.max(1, innerW / spacing)));
+		const crest = boxes.filter((_, i) => i % step === 0);
+
+		return { boxes, crest, height, live, ghost, lo, span, baseY, bandH };
 	});
 
-	// The sky-twin connector: elbowed like the meteogram atlas leads — vertical
-	// rises, a horizontal rail, 45° bends. Those segments are pixel-native, so
-	// the line rasterises crisply onto the cell grid. When the two clouds share
-	// a column the route swings out through a side lane instead of collapsing
-	// into a straight vertical line.
+	// Value → pixel y on the shared front scale; draw() and hit-testing agree.
+	let yFor = $derived(
+		(val: number) => layout.baseY - ((val - layout.lo) / layout.span) * layout.bandH
+	);
+	// Sample a sorted curve at a horizontal fraction of the band.
+	const curveAt = (arr: number[], t: number) =>
+		arr[Math.min(arr.length - 1, Math.max(0, Math.round(t * (arr.length - 1))))];
+
+	// The sky-twin connector: a single arc soaring over the front, thrown from
+	// one cloud to the other. A parabola fits the bank's swell where the old
+	// tower-era elbow rails no longer do; its rise scales with the horizontal
+	// distance, so near twins hop and far twins vault.
 	let arc = $derived.by(() => {
 		if (!twin || !width) return null;
 		const a = layout.boxes.find((b) => b.code === selected);
 		const b = layout.boxes.find((b) => b.code === twin.code);
 		if (!a || !b || a.code === b.code) return null;
-		const k = narrow ? 8 : 14; // 45° elbow size
 		const x0 = a.x;
 		const y0 = a.y - a.h / 2 - cell * 2;
 		const x1 = b.x;
 		const y1 = b.y - b.h / 2 - cell * 2;
 		const dx = x1 - x0;
 
-		let pts: [number, number][];
-		let apexX: number;
-		let railY: number;
-		if (Math.abs(dx) >= 2 * k + 44) {
-			// Up from the selected cloud, along a rail above both, down into the twin.
-			railY = Math.max(40, Math.min(y0, y1) - (narrow ? 30 : 44));
-			const dir = Math.sign(dx);
-			pts = [
-				[x0, y0],
-				[x0, railY + k],
-				[x0 + dir * k, railY],
-				[x1 - dir * k, railY],
-				[x1, railY + k],
-				[x1, y1]
-			];
-			apexX = (x0 + x1) / 2;
-		} else {
-			// Same column: out to a side lane, down (or up) the lane, back in
-			// along a low rail just above the twin's cloud.
-			railY = Math.max(40, Math.min(y0, y1) - (3 * k + 14));
-			const room = narrow ? 60 : 96;
-			const side = Math.max(x0, x1) + room + 50 < width ? 1 : -1;
-			const lane = (side > 0 ? Math.max(x0, x1) : Math.min(x0, x1)) + side * room;
-			const lowY = y1 - k - 6;
-			pts = [
-				[x0, y0],
-				[x0, railY + k],
-				[x0 + side * k, railY],
-				[lane - side * k, railY],
-				[lane, railY + k],
-				[lane, lowY - k],
-				[lane - side * k, lowY],
-				[x1 + side * k, lowY],
-				[x1, lowY + k],
-				[x1, y1]
-			];
-			apexX = (x0 + lane) / 2;
+		const rise = Math.min(narrow ? 56 : 96, Math.max(narrow ? 28 : 40, Math.abs(dx) * 0.22));
+		const apexY = Math.max(cell * 3, Math.min(y0, y1) - rise);
+		// Quadratic through the apex: the control point sits twice as high.
+		const cy = 2 * apexY - (y0 + y1) / 2;
+		const N = 32;
+		const pts: [number, number][] = [];
+		for (let i = 0; i <= N; i++) {
+			const t = i / N;
+			const u = 1 - t;
+			pts.push([
+				u * u * x0 + 2 * u * t * ((x0 + x1) / 2) + t * t * x1,
+				u * u * y0 + 2 * u * t * cy + t * t * y1
+			]);
 		}
-		return { pts, apexX, apexY: railY, twinBox: b };
+		return { pts, apexX: (x0 + x1) / 2, apexY, twinBox: b };
 	});
 
 	// d3-svg-annotation generates the connector path (hidden scaffold svg);
@@ -316,6 +277,11 @@
 	let prevMode = mode;
 	let prevWidth = 0;
 	let moveRaf = 0;
+	const DUR = 700; // per-cloud travel
+	const SPREAD = 200; // gentle ripple, first cloud to last
+	// Elapsed ms of the current glide (Infinity when settled) — draw() uses it to
+	// lerp the bank's fill silhouette on the same per-column clock as the sprites.
+	let animT = Infinity;
 	// True while clouds are in flight — the sky-twin lead stays hidden until they land.
 	let moving = $state(false);
 
@@ -339,6 +305,7 @@
 		if (snap) {
 			renderPos = targets;
 			moving = false;
+			animT = Infinity;
 			// untrack: this effect must depend only on layout/mode/width, not on the
 			// reactive state draw() reads (moving/arcP/…) — else writing `moving`
 			// below would re-run it and cancel the animation before it starts.
@@ -351,13 +318,12 @@
 		const from = new Map<string, Frame>();
 		for (const b of boxes) from.set(b.code, renderPos.get(b.code) ?? targets.get(b.code)!);
 		const innerW = Math.max(1, width - MARGIN_X * 2);
-		const DUR = 700; // per-cloud travel
-		const SPREAD = 200; // gentle ripple, first cloud to last
 		const total = DUR + SPREAD;
 		moving = true;
 		const t0 = performance.now();
 		const tick = (t: number) => {
 			const el = t - t0;
+			animT = el;
 			for (const b of boxes) {
 				const f = from.get(b.code)!;
 				const tg = targets.get(b.code)!;
@@ -377,6 +343,7 @@
 			} else {
 				// Landed: reveal the sky-twin lead so it stitches onto settled clouds.
 				moving = false;
+				animT = Infinity;
 				draw();
 			}
 		};
@@ -425,12 +392,89 @@
 		ctx.fillStyle = 'rgba(255,255,255,0.65)';
 		ctx.fillRect(MARGIN_X, height - AXIS_H, width - MARGIN_X * 2, 2);
 
-		let sel: Box | null = null;
-		for (const b of boxes) {
-			if (b.code === selected) sel = b;
+		const lv = layout.live;
+		const gv = layout.ghost;
+		const innerW = Math.max(1, width - MARGIN_X * 2);
+
+		// A pixel sun keeps the clear corner company — chunky 2-cell blocks, gold.
+		if (lv.length > 1) {
+			const su = cell * 2;
+			const sx0 = Math.round((MARGIN_X + innerW * 0.06) / su) * su;
+			const sy0 = Math.round((TOP_PAD + layout.bandH * 0.08) / su) * su;
+			ctx.fillStyle = UI.sunGold;
+			for (let r = 0; r < SUN.length; r++)
+				for (let c = 0; c < SUN[r].length; c++)
+					if (SUN[r][c] === '#') ctx.fillRect(sx0 + c * su, sy0 + r * su, su, su);
+		}
+
+		// The bank itself: a soft body under a bright, scalloped crest. Seeded puff
+		// domes billow the silhouette so it reads as cloud, not as a plotted line.
+		// During a mode flip the silhouette lerps from the old curve (the ghost) to
+		// the live one on the same per-column clock as the gliding sprites.
+		if (lv.length > 1) {
+			const g0 = Math.ceil(MARGIN_X / cell);
+			const g1 = Math.floor((width - MARGIN_X) / cell);
+			const gyBase = Math.floor(layout.baseY / cell);
+			const settling = animT < DUR + SPREAD && gv.length > 1;
+			const PW = narrow ? 9 : 8; // puff width, cells
+			for (let gx = g0; gx <= g1; gx++) {
+				const t = (gx * cell - MARGIN_X) / innerW;
+				let yTop = yFor(curveAt(lv, t));
+				if (settling) {
+					const p = easeOut(Math.min(1, Math.max(0, (animT - t * SPREAD) / DUR)));
+					const yOld = yFor(curveAt(gv, t));
+					yTop = yOld + (yTop - yOld) * p;
+				}
+				// Billow: each puff-wide segment domes up by a seeded 1–3 cells.
+				const seg = Math.floor(gx / PW);
+				const amp = (1 + (fnv1a(`puff:${seg}`) % 3)) * cell;
+				yTop -= Math.sin(Math.PI * ((gx % PW) + 0.5) / PW) * amp;
+
+				const gyTop = Math.min(gyBase, Math.round(yTop / cell));
+				// Bright crest edge…
+				ctx.fillStyle = 'rgba(255,255,255,0.92)';
+				ctx.fillRect(gx * cell, gyTop * cell, cell, cell * Math.min(2, gyBase - gyTop + 1));
+				// …a light dither just beneath it…
+				ctx.fillStyle = 'rgba(255,255,255,0.3)';
+				for (let gy = gyTop + 2; gy <= Math.min(gyBase, gyTop + 6); gy++) {
+					if ((gx + gy) % 2 === 0) ctx.fillRect(gx * cell, gy * cell, cell, cell);
+				}
+				// …and a quiet translucent body down to the ground.
+				if (gyBase > gyTop + 1) {
+					ctx.fillStyle = 'rgba(255,255,255,0.14)';
+					ctx.fillRect(gx * cell, (gyTop + 2) * cell, cell, (gyBase - gyTop - 1) * cell);
+				}
+			}
+		}
+
+		// Ghost front: the OTHER mode's sorted curve as stitched dashes (2 on,
+		// 2 off), labelled at its far end in the DOM — white out in the open sky,
+		// navy where it dips inside the bank.
+		if (gv.length > 1) {
+			const g0 = Math.round(MARGIN_X / cell);
+			const g1 = Math.round((width - MARGIN_X) / cell);
+			for (let gx = g0; gx <= g1; gx++) {
+				if ((gx & 3) >= 2) continue;
+				const t = (gx * cell - MARGIN_X) / innerW;
+				const yG = yFor(curveAt(gv, t));
+				const inside = lv.length > 1 && yG > yFor(curveAt(lv, t));
+				ctx.fillStyle = inside ? 'rgba(11,29,58,0.45)' : 'rgba(255,255,255,0.55)';
+				ctx.fillRect(gx * cell, Math.round(yG / cell) * cell, cell, cell);
+			}
+		}
+
+		// A spaced-out sample of city clouds crests the bank; the selected city,
+		// its twin and the hovered city always ride on top so they stay legible.
+		const sel = boxes.find((b) => b.code === selected) ?? null;
+		for (const b of layout.crest) {
 			const p = renderPos.get(b.code) ?? b;
-			// p.w/p.h carry the mode's size scale (tweened mid-animation), so draw
-			// explicitly sized: natural in "overall", shrunk in denser "today".
+			// p.w/p.h carry the mode's size (tweened mid-animation), so draw
+			// explicitly sized rather than at the sprite's natural size.
+			ctx.drawImage(b.sprite.canvas, Math.round(p.x - p.w / 2), Math.round(p.y - p.h / 2), p.w, p.h);
+		}
+		for (const b of [hovered, arc?.twinBox, sel]) {
+			if (!b) continue;
+			const p = renderPos.get(b.code) ?? b;
 			ctx.drawImage(b.sprite.canvas, Math.round(p.x - p.w / 2), Math.round(p.y - p.h / 2), p.w, p.h);
 		}
 
@@ -471,11 +515,18 @@
 		const rect = canvas!.getBoundingClientRect();
 		const x = ev.clientX - rect.left;
 		const y = ev.clientY - rect.top;
-		return (
-			layout.boxes.find(
-				(b) => Math.abs(x - b.x) <= b.w / 2 + cell && Math.abs(y - b.y) <= b.h / 2 + cell
-			) ?? null
-		);
+		const { boxes, live } = layout;
+		if (!boxes.length || !live.length) return null;
+		// x IS rank: any point on the bank maps straight to the city holding that
+		// column, so the whole mass is hoverable — not just the crest sprites.
+		const innerW = Math.max(1, width - MARGIN_X * 2);
+		const t = Math.min(1, Math.max(0, (x - MARGIN_X) / innerW));
+		const idx = Math.min(boxes.length - 1, Math.max(0, Math.round(t * (boxes.length - 1))));
+		const crestY = yFor(curveAt(live, t));
+		// Generous reach above the crest (sprites poke past it), hard stop below
+		// the axis line.
+		if (y < crestY - 36 || y > layout.baseY + cell) return null;
+		return boxes[idx];
 	}
 
 	let selectedBox = $derived(layout.boxes.find((b) => b.code === selected) ?? null);
@@ -483,10 +534,28 @@
 	// Keep floating tags inside the canvas on narrow screens.
 	let clampPad = $derived(narrow ? 54 : 70);
 
+	// The dotted line is the other mode's front — name it, or it's a riddle.
+	let ghostLabel = $derived(mode === 'today' ? 'overall' : 'today');
+
+	// A label for each front, sitting on its own line near the middle of the chart.
+	// The live bank is solid, the ghost is dashed — the marker glyph says which.
+	// Both curves crest together at the right edge, so we tag them mid-chart where
+	// they diverge, at slightly different x so the two labels never collide.
+	let endLabels = $derived.by(() => {
+		const lv = layout.live;
+		const gv = layout.ghost;
+		if (lv.length < 2) return [] as { key: string; label: string; x: number; y: number; solid: boolean }[];
+		const innerW = Math.max(1, width - MARGIN_X * 2);
+		const at = (arr: number[], t: number) => ({ x: MARGIN_X + t * innerW, y: yFor(curveAt(arr, t)) });
+		const items = [{ key: 'live', label: mode, solid: true, ...at(lv, 0.42) }];
+		if (gv.length > 1) items.push({ key: 'ghost', label: ghostLabel, solid: false, ...at(gv, 0.6) });
+		return items;
+	});
+
 	let coverLabel = $derived(mode === 'today' ? "today's cloud cover" : 'long-term mean cloud cover');
 	let ariaLabel = $derived(
-		`Histogram of ${layout.boxes.length} cities by ${coverLabel}, ` +
-			`clear on the left to overcast on the right, one cloud per city. ` +
+		`Weather front of ${layout.boxes.length} cities sorted by ${coverLabel}, ` +
+			`rising from clear on the left to overcast on the right, one cloud per city. ` +
 			`${selectedBox ? `${selectedBox.name} is highlighted. ` : ''}` +
 			`${twinName ? `An arc links it to its sky twin, ${twinName}. ` : ''}` +
 			`Use the city search in the title to choose a city.`
@@ -516,12 +585,27 @@
 		aria-hidden="true"
 	></svg>
 
+	<!-- One label per front, sitting on its own line near the middle of the chart.
+		The live front reads white + bold; the ghost reads in the dashed line's
+		lighter tone and regular weight — weight and color do the work of a marker. -->
+	{#each endLabels as l (l.key)}
+		<span
+			class="text-shadow-sky pointer-events-none absolute z-10 -translate-x-1/2 text-sm tracking-[0.14em] whitespace-nowrap text-white uppercase {l.solid
+				? 'font-bold'
+				: 'font-normal opacity-60'}"
+			style="left: {l.x}px; top: {Math.max(4, l.y - 36)}px;"
+		>
+			{l.label}
+		</span>
+	{/each}
+
 	{#if hovered && hovered.code !== selected}
 		<div
 			class="tag pointer-events-none absolute z-10 -translate-x-1/2 whitespace-nowrap text-white"
-			style="left: {Math.min(Math.max(hovered.x, clampPad), width - clampPad)}px; top: {hovered.y -
-				hovered.h / 2 -
-				26}px;"
+			style="left: {Math.min(Math.max(hovered.x, clampPad), width - clampPad)}px; top: {Math.max(
+				2,
+				hovered.y - hovered.h / 2 - 26
+			)}px;"
 		>
 			{hovered.name} · {Math.round(hovered.mean)}%
 		</div>
@@ -534,7 +618,7 @@
 			style="left: {Math.min(
 				Math.max(selectedBox.x, clampPad),
 				width - clampPad
-			)}px; top: {selectedBox.y - selectedBox.h / 2 - cell - 28}px;"
+			)}px; top: {Math.max(2, selectedBox.y - selectedBox.h / 2 - cell - 28)}px;"
 		>
 			{selectedBox.name}
 		</div>
@@ -547,7 +631,7 @@
 			style="left: {Math.min(
 				Math.max(arc.apexX, clampPad + 30),
 				width - clampPad - 30
-			)}px; top: {arc.apexY - 10}px;"
+			)}px; top: {Math.max(narrow ? 34 : 40, arc.apexY - 10)}px;"
 			onclick={() => onselect?.(twin.code)}
 		>
 			<span class="block text-xs leading-none tracking-[0.16em] opacity-70">Most Like</span>

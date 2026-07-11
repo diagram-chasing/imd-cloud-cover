@@ -37,6 +37,10 @@ load_dotenv()
 
 STEPS = ["00:00", "03:00", "06:00", "09:00", "12:00", "15:00", "18:00", "21:00"]
 DAY0_SAMPLES = 8
+# Days of forecast to expose in latest/all-stations.json: day-0 plus the next
+# (FORECAST_DAYS-1). The client shows the visitor's *current* IST day out of
+# this window, so the site reads as "today" even before the day's scrape runs.
+FORECAST_DAYS = 3
 HISTORY_CAP = 400
 
 # One key per band; RAW_FIELDS maps view keys to raw-JSON field names.
@@ -102,17 +106,24 @@ def mean_round(vals):
 # Raw slices
 # --------------------------------------------------------------------------
 
-def day0_bands(raw):
-    """{"h","m","l","p": 8 ints each}, or None if the raw JSON is unusable.
+def forecast_bands(raw, n_days=FORECAST_DAYS):
+    """{"h","m","l","p": up to n_days*8 ints each}, or None if unusable.
 
-    Raw JSONs predating the rain field default to 0 via clampint, keeping old
-    dates backward-compatible.
+    Reads the leading `n_days` of the 3-hourly forecast (the raw meteogram holds
+    ~10). A short forecast simply yields fewer steps; callers slice day-0 off the
+    front with `day0()`. Raw JSONs predating the rain field default to 0 via
+    clampint, keeping old dates backward-compatible.
     """
     data = raw.get("data")
     if not data or len(data) < DAY0_SAMPLES:
         return None
-    sl = data[:DAY0_SAMPLES]
+    sl = data[: n_days * DAY0_SAMPLES]
     return {k: [clampint(d.get(f)) for d in sl] for k, f in RAW_FIELDS}
+
+
+def day0(bands):
+    """The day-0 slice (first 8 steps) of a possibly multi-day bands dict."""
+    return {k: bands[k][:DAY0_SAMPLES] for k, _ in RAW_FIELDS}
 
 
 def effective(b):
@@ -138,11 +149,12 @@ def history_entry(b):
 
 def read_slice(store, date, code):
     raw = store.get_json(f"{date}/{code}-meteogram.json")
-    return day0_bands(raw) if raw is not None else None
+    return forecast_bands(raw) if raw is not None else None
 
 
 def read_slices(store, date, codes):
-    """{code: bands} for every readable raw file of `date`, fetched concurrently."""
+    """{code: multi-day bands} for every readable raw file of `date`, fetched
+    concurrently. Values span up to FORECAST_DAYS; slice day-0 with `day0()`."""
     bands = pmap(lambda c: read_slice(store, date, c), codes)
     return {c: b for c, b in zip(codes, bands) if b is not None}
 
@@ -188,10 +200,11 @@ def update_histories(store, date, slices, manifest_codes, histories):
     for code, b in slices.items():
         if code not in manifest_codes:
             continue
-        today_means[code] = daily_means(b)
+        b0 = day0(b)
+        today_means[code] = daily_means(b0)
         hist = histories.get(code) or {"code": code, "kind": "day0-forecast", "days": {}}
         hist.setdefault("days", {})
-        hist["days"][date] = history_entry(b)
+        hist["days"][date] = history_entry(b0)
         cap_days(hist)
         histories[code] = hist
         changed.append(code)
@@ -204,11 +217,41 @@ def update_histories(store, date, slices, manifest_codes, histories):
 # --------------------------------------------------------------------------
 
 def build_latest(date, generated_at, manifest_codes, slices):
-    """latest/all-stations.json — today's 8-step slice per mapped station."""
-    stations = {c: {k: b[k] for k, _ in RAW_FIELDS}
-                for c, b in slices.items() if c in manifest_codes}
-    return {"date": date, "generated_at": generated_at, "steps": STEPS,
-            "stations": stations}
+    """latest/all-stations.json — the day-0 slice per mapped station, plus a
+    short multi-day forecast tail.
+
+    `date`/`stations` are day-0 (8 steps), exactly as before. `fdays`/`forecast`
+    carry the next few calendar days (day-major, 8 steps each) so the client can
+    render the visitor's *current* IST day even before that day's scrape runs.
+    Both are omitted when no station has a usable tail (old single-day raws).
+    """
+    mapped = {c: b for c, b in slices.items() if c in manifest_codes}
+    stations = {c: day0(b) for c, b in mapped.items()}
+
+    # Every raw forecast starts at the same midnight, so one shared fdays list
+    # covers all stations. n_future is bounded by FORECAST_DAYS and by the data
+    # actually present.
+    max_steps = max((len(b["h"]) for b in mapped.values()), default=DAY0_SAMPLES)
+    n_future = min(FORECAST_DAYS - 1, max_steps // DAY0_SAMPLES - 1)
+    d0 = datetime.date.fromisoformat(date)
+    fdays = [(d0 + datetime.timedelta(days=i + 1)).isoformat() for i in range(n_future)]
+
+    forecast = {}
+    if fdays:
+        want = (n_future + 1) * DAY0_SAMPLES
+        for c, b in mapped.items():
+            tail = {k: b[k][DAY0_SAMPLES:want] for k, _ in RAW_FIELDS}
+            # Keep only stations covering every future day fully, so the client's
+            # day-major indexing never lands on a short array.
+            if len(tail["h"]) == n_future * DAY0_SAMPLES:
+                forecast[c] = tail
+
+    out = {"date": date, "generated_at": generated_at, "steps": STEPS,
+           "stations": stations}
+    if fdays and forecast:
+        out["fdays"] = fdays
+        out["forecast"] = forecast
+    return out
 
 
 def build_rollups(histories, dates_window, manifest_codes):
@@ -671,7 +714,7 @@ def rebuild(store, generated_at):
         for code, b in read_slices(store, date, codes).items():
             hist = histories.setdefault(code, {"code": code, "kind": "day0-forecast",
                                                "days": {}})
-            hist["days"][date] = history_entry(b)
+            hist["days"][date] = history_entry(day0(b))
 
     for hist in histories.values():
         cap_days(hist)

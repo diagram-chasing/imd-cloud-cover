@@ -35,6 +35,7 @@
 		longDate,
 		STEP_LABELS
 	} from '$lib/station-facts';
+	import { resolveActiveDay, stationsForDay } from '$lib/data';
 	import DayStrip from '$lib/components/station/DayStrip.svelte';
 	import StationMeteogram from '$lib/components/StationMeteogram.svelte';
 
@@ -82,13 +83,23 @@
 	});
 
 	let station = $derived<Station | null>(manifest ? (manifest.stations[code] ?? null) : null);
+	// `date` = the scrape/issue date: where the raw meteogram lives and the anchor
+	// for history-derived facts (streak, climatology, records walk back from it).
 	let date = $derived(summary?.date ?? '');
+	// `viewDate` = the visitor's current IST day within the forecast window, which
+	// may run ahead of `date` before today's scrape has landed. The "today" card
+	// and the outlook's highlight follow it; the history facts stay on `date`.
+	let activeDay = $derived(latest ? resolveActiveDay(latest) : null);
+	let viewDate = $derived(activeDay?.date ?? date);
+	let stationsView = $derived(
+		latest && activeDay ? { ...latest, stations: stationsForDay(latest, activeDay.index) } : latest
+	);
 
 	// --- Today ---------------------------------------------------------------
-	let bandsToday = $derived(latest?.stations[code] ?? null);
+	let bandsToday = $derived(stationsView?.stations[code] ?? null);
 	let shape = $derived(bandsToday ? dayShape(bandsToday) : null);
 	let head = $derived(shape ? headline(shape) : null);
-	let rank = $derived(latest && bandsToday ? rankToday(latest, code) : null);
+	let rank = $derived(stationsView && bandsToday ? rankToday(stationsView, code) : null);
 
 	// --- The record ------------------------------------------------------------
 	let tod = $derived(history && date ? todClimatology(history, 30, date) : null);
@@ -134,7 +145,7 @@
 		const text =
 			kind === 'link' || !station || !head
 				? url
-				: `${station.name}, ${shortDate(date)} — ${head} ${url}`;
+				: `${station.name}, ${shortDate(viewDate)} — ${head} ${url}`;
 		try {
 			await navigator.clipboard.writeText(text);
 			copied = kind;
@@ -167,7 +178,7 @@
 		<article>
 			<!-- Masthead -->
 			<header class="masthead">
-				<p class="kicker">{longDate(date).toUpperCase()}</p>
+				<p class="kicker">{longDate(viewDate).toUpperCase()}</p>
 				<h1>{station.name}</h1>
 				<p class="dateline">
 					{#if station.state}{station.state} ·
@@ -295,7 +306,7 @@
 			<!-- Outlook -->
 			<section>
 				<h2>NEXT 10 DAYS</h2>
-				<StationMeteogram {forecast} today={date} />
+				<StationMeteogram {forecast} today={viewDate} />
 			</section>
 
 			<footer class="links">

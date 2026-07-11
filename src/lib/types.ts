@@ -36,12 +36,22 @@ export interface DatesIndex {
  *  p = relative precip intensity (auto-scaled per station; not absolute mm). */
 export type BandValues = Record<string, { h: number; m: number; l: number; p: number }>;
 
-/** latest/all-stations.json — today's 8-step day-0 slice per station. */
+/** latest/all-stations.json — the day-0 slice per station, plus a short
+ *  multi-day forecast tail so the client can render the visitor's *current*
+ *  calendar day even before that day's scrape has run. */
 export interface AllStations {
+	/** Day-0 = the scrape/issue date (also where the raw meteogram files live). */
 	date: string;
 	generated_at: string | null;
 	steps: string[]; // ["00:00".."21:00"]
+	/** Day-0 bands (8 steps) per station. */
 	stations: Record<string, StationBands>;
+	/** Future calendar dates beyond `date` that `forecast` covers, ascending.
+	 *  Absent on views baked before the forecast tail landed. */
+	fdays?: string[];
+	/** Per-station bands spanning `fdays`, day-major: 8 steps per fday, so each
+	 *  array is `8 * fdays.length` long. Slice with `dayBands`. */
+	forecast?: Record<string, StationBands>;
 }
 
 export interface StationBands {
