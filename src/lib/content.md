@@ -15,25 +15,23 @@
 
 <p class="byline">by <a href="https://diagramchasing.fun" target="_blank" rel="noopener">Aman Bhargava</a></p>
 
-Every morning the India Meteorological Department publishes a GFS _meteogram_ for each of its ~1,200 observation stations.
+Every morning, the India Meteorological Department (IMD) publishes a GFS _meteogram_ for each of its roughly 1,200 observation stations. It's a dense, complex data product—overwhelming at first glance, but it packs an enormous amount of information into a single image, which makes it invaluable to forecasters, power-grid operators, and anyone tracking the weather.image.png
 
-The Indian Meteorological Department (IMD) publishes a dense, complex data product called a **meteogram**. While it can be overwhelming at first glance, it packs a massive amount of information into a single image, which makes it a very useful tool for forecasters, power grid operators, and anyone tracking the weather.
-
-A meteogram is a visual 10-day forecast broken down into three-hour intervals, stacked with vertical panels that track variables like temperature, humidity, and atmospheric pressure. With hundreds of on-ground weather stations scattered across India generating these graphics, the IMD can map out the weather at a granular level nationwide.
+A meteogram is a visual 10-day forecast broken into three-hour intervals, stacked into vertical panels that each track a variable: temperature, humidity, atmospheric pressure, and more. With a station generating one of these graphics at hundreds of points across the country, the IMD can map India's weather at a remarkably granular level.
 
 <div class="breakout">
 	<MeteogramAtlas />
 </div>
 
-But what really caught my eye was how these graphics represent cloud cover. Look closely, and you’ll realize it’s actually drawn to look like a literal cloudy sky!
+But what really caught my eye was how these graphics represent cloud cover. Look closely and you'll realize it's drawn to resemble a literal cloudy sky!
 
 <CloudTiers />
 
-The cloud coverage panel is essentially a stacked histogram divided into three distinct atmospheric tiers: low clouds (surface to 2 km), medium clouds (2 to 7 km), and high clouds (above 7 km). If a specific block of time is fully white, it means the station expects roughly 100% cloud coverage at that altitude. Since low clouds, like cumulus, are the ones that bring rain, a dense white block in the bottom tier usually correlates perfectly with a spike in the precipitation bar right above it.
+The cloud-cover panel is a stacked histogram split into three atmospheric tiers: low clouds (surface to 2 km), medium clouds (2–7 km), and high clouds (above 7 km). When a block of time is fully white, the station expects close to 100% coverage at that altitude. And since low clouds like cumulus are the ones that bring rain, a dense white block in the bottom tier usually lines up neatly with a spike in the precipitation bar just above it.
 
-I love this visualization. The fact that some developer, years ago, decided to map meteorological data in such a cute, pixel-art style feels like something straight out of Super Mario or Flappy Bird.
+I love this visualization. The fact that some developer, years ago, chose to render meteorological data in such a cute, pixel-art style feels like something out of Super Mario or Flappy Bird.
 
-It appealed to me so much that a few months ago, I started archiving these every day. I wrote a script to analyse the pixels, turning the histogram images back into structured data so I could plot the current slice of time on a map. We now run this collection and analysis daily, gathering the data to map out India's 8-bit skies right at the top of this page.
+Since February 2026, I've been archiving these every day. I wrote a script to read the pixels, turning the histogram images back into structured data so I could plot the current slice of time onto a map. We now run that collection and analysis daily, mapping India's clouds at the top of this page.
 
 A single day's map only tells you about today, though. Months of archived skies let us ask a longer question: which cities live under cloud, and which under sun?
 

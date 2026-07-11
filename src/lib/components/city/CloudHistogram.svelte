@@ -157,36 +157,59 @@
 	const curveAt = (arr: number[], t: number) =>
 		arr[Math.min(arr.length - 1, Math.max(0, Math.round(t * (arr.length - 1))))];
 
-	// The sky-twin connector: a single arc soaring over the front, thrown from
-	// one cloud to the other. A parabola fits the bank's swell where the old
-	// tower-era elbow rails no longer do; its rise scales with the horizontal
-	// distance, so near twins hop and far twins vault.
+	// The sky-twin connector: an elbowed staple thrown from one cloud to the
+	// other, with 45° bevelled corners matching the meteogram atlas's leads. It's
+	// height-aware — it rails over the top when there's headroom, and drops under
+	// the bank when the pair crests too high to seat a rail above (as the overcast
+	// twins on the right do).
 	let arc = $derived.by(() => {
 		if (!twin || !width) return null;
 		const a = layout.boxes.find((b) => b.code === selected);
 		const b = layout.boxes.find((b) => b.code === twin.code);
 		if (!a || !b || a.code === b.code) return null;
-		const x0 = a.x;
-		const y0 = a.y - a.h / 2 - cell * 2;
-		const x1 = b.x;
-		const y1 = b.y - b.h / 2 - cell * 2;
-		const dx = x1 - x0;
 
-		const rise = Math.min(narrow ? 56 : 96, Math.max(narrow ? 28 : 40, Math.abs(dx) * 0.22));
-		const apexY = Math.max(cell * 3, Math.min(y0, y1) - rise);
-		// Quadratic through the apex: the control point sits twice as high.
-		const cy = 2 * apexY - (y0 + y1) / 2;
-		const N = 32;
-		const pts: [number, number][] = [];
-		for (let i = 0; i <= N; i++) {
-			const t = i / N;
-			const u = 1 - t;
-			pts.push([
-				u * u * x0 + 2 * u * t * ((x0 + x1) / 2) + t * t * x1,
-				u * u * y0 + 2 * u * t * cy + t * t * y1
-			]);
-		}
-		return { pts, apexX: (x0 + x1) / 2, apexY, twinBox: b };
+		const x0 = a.x;
+		const x1 = b.x;
+		const dx = x1 - x0;
+		const sgn = Math.sign(dx) || 1;
+
+		const minTop = Math.min(a.y - a.h / 2, b.y - b.h / 2);
+		const maxBot = Math.max(a.y + a.h / 2, b.y + b.h / 2);
+
+		const rise = Math.min(narrow ? 56 : 96, Math.max(narrow ? 30 : 44, Math.abs(dx) * 0.22));
+		const TOPMIN = cell * 3;
+		const BOTMAX = layout.baseY - cell * 2;
+
+		// Route through whichever side has more clear room: over the top for clouds
+		// low on the bank, under it for clouds cresting near the top (where the sun,
+		// title and tags crowd the sky above).
+		const aboveSlack = minTop - TOPMIN;
+		const belowSlack = BOTMAX - maxBot;
+		const under = belowSlack > aboveSlack;
+
+		const gap = cell * 2;
+		const y0 = under ? a.y + a.h / 2 + gap : a.y - a.h / 2 - gap;
+		const y1 = under ? b.y + b.h / 2 + gap : b.y - b.h / 2 - gap;
+		const railY = under ? Math.min(BOTMAX, maxBot + rise) : Math.max(TOPMIN, minTop - rise);
+
+		// 45° bevels at the two corners; clamp so they never cross each other or
+		// overrun the short vertical stubs into the clouds.
+		const ELBOW = narrow ? 10 : 16;
+		const k = Math.max(
+			0,
+			Math.min(ELBOW, Math.abs(dx) / 2, Math.abs(railY - y0), Math.abs(railY - y1))
+		);
+		const railBevel = under ? railY - k : railY + k;
+
+		const pts: [number, number][] = [
+			[x0, y0],
+			[x0, railBevel],
+			[x0 + sgn * k, railY],
+			[x1 - sgn * k, railY],
+			[x1, railBevel],
+			[x1, y1]
+		];
+		return { pts, apexX: (x0 + x1) / 2, apexY: railY, under, twinBox: b };
 	});
 
 	// d3-svg-annotation generates the connector path (hidden scaffold svg);
@@ -624,14 +647,19 @@
 		</div>
 	{/if}
 
-	<!-- Sky-twin tag rides the arc's apex: press it to fly to the twin. -->
+	<!-- Sky-twin tag rides the staple's rail: press it to fly to the twin. It sits
+		above the rail when routed over the top, and below it when routed under. -->
 	{#if arc && twin && twinName && !moving}
 		<button
-			class="tag twin-tag absolute z-10 -translate-x-1/2 -translate-y-full cursor-pointer text-center whitespace-nowrap text-white transition-colors duration-120 hover:text-sun-gold"
+			class="tag twin-tag absolute z-10 -translate-x-1/2 cursor-pointer text-center whitespace-nowrap text-white transition-colors duration-120 hover:text-sun-gold {arc.under
+				? ''
+				: '-translate-y-full'}"
 			style="left: {Math.min(
 				Math.max(arc.apexX, clampPad + 30),
 				width - clampPad - 30
-			)}px; top: {Math.max(narrow ? 34 : 40, arc.apexY - 10)}px;"
+			)}px; top: {arc.under
+				? Math.min(layout.baseY - 6, arc.apexY + 8)
+				: Math.max(narrow ? 34 : 40, arc.apexY - 10)}px;"
 			onclick={() => onselect?.(twin.code)}
 		>
 			<span class="block text-xs leading-none tracking-[0.16em] opacity-70">Most Like</span>
