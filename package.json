@@ -3,6 +3,7 @@
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
+	"packageManager": "pnpm@10.5.2",
 	"scripts": {
 		"dev": "node scripts/bake-data.mjs --if-stale --core-only && vite dev",
 		"bake": "node scripts/bake-data.mjs",
