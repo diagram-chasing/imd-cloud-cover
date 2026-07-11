@@ -1,10 +1,3 @@
-// Tactile feedback for map interaction: short procedural "click" sounds via the
-// Web Audio API, plus a light haptic tap on capable devices (web-haptics wraps the
-// Vibration API and no-ops on desktop). Sounds are synthesised — no asset files —
-// so they work everywhere and stay in sync with the visual change at the callsite.
-//
-// Haptics are deliberately minimal (select only); the clicks carry the feel.
-
 import { WebHaptics } from 'web-haptics';
 
 let ctx: AudioContext | null = null;
@@ -44,8 +37,6 @@ interface ClickSpec {
 	tone: number; // tonal-body level (0 = pure noise tick)
 }
 
-// A crisp noise transient (the "tick") + a faint tonal body for weight. `select`
-// is firmer and lower; `open` is lighter and higher, for chrome appearing.
 const PRESETS = {
 	select: { freq: 620, q: 1.1, decay: 0.05, gain: 0.28, tone: 0.09 },
 	open: { freq: 960, q: 1.6, decay: 0.03, gain: 0.16, tone: 0.05 }
@@ -61,7 +52,6 @@ export function click(preset: ClickPreset = 'select'): void {
 	const p = PRESETS[preset];
 	const now = ac.currentTime;
 
-	// Noise burst through a bandpass → the click's crisp attack.
 	const src = ac.createBufferSource();
 	src.buffer = noiseBuffer(ac);
 	const bp = ac.createBiquadFilter();
@@ -75,8 +65,7 @@ export function click(preset: ClickPreset = 'select'): void {
 	src.start(now);
 	src.stop(now + p.decay + 0.02);
 
-	// A short pitched blip under the noise gives the click a little body, with a
-	// downward glide so it reads as a physical tick, not a beep.
+
 	if (p.tone > 0) {
 		const osc = ac.createOscillator();
 		osc.type = 'triangle';
@@ -98,7 +87,6 @@ function device(): WebHaptics | null {
 	return haptics;
 }
 
-// Light vibration on capable devices; silently no-ops on desktop.
 export function tap(pattern: string = 'light'): void {
 	if (muted) return;
 	device()?.trigger(pattern);

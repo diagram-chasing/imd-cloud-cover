@@ -5,6 +5,7 @@
 	import { loadCore, type CoreData } from '$lib/api/load';
 	import { CORE_BASE } from '$lib/api/r2';
 	import { sky } from '$lib/state/sky.svelte';
+	import { userGeo } from '$lib/state/geo.svelte';
 	import { skyMode } from '$lib/theme';
 	import { computeValues, rollupForView, resolveActiveDay } from '$lib/data';
 	import { click } from '$lib/feedback';
@@ -67,6 +68,7 @@
 	let zoomed = $derived(layout.zoomRatio > 1.05);
 
 	onMount(async () => {
+		userGeo.ensure(); // coarse visitor location for the "you are here" map marker
 		try {
 			core = await loadCore();
 		} catch (e) {

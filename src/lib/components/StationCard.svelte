@@ -14,7 +14,6 @@
 		current: { h: number; m: number; l: number } | null;
 		rollup: Rollup | null;
 		date: string;
-		/** Scrub-aware time descriptor, e.g. "15:00 IST" or "DAILY MEAN". */
 		when: string;
 		onclose?: () => void;
 	}
@@ -23,7 +22,6 @@
 	let forecast = $state<Forecast | null>(null);
 	let forecastError = $state(false);
 
-	// One fetch per opened station (card mounts fresh each open).
 	$effect(() => {
 		forecast = null;
 		forecastError = false;
@@ -37,8 +35,6 @@
 			});
 	});
 
-	// Row labels mirror the tooltip + band legend so every surface speaks the
-	// same language: altitude band · cloud species.
 	const ROWS: { key: 'h' | 'm' | 'l'; label: string }[] = [
 		{ key: 'h', label: 'HIGH · CIRRUS' },
 		{ key: 'm', label: 'MID · ALTO' },
@@ -48,13 +44,9 @@
 		return Math.round(v / 10);
 	}
 
-	// Plain-language read of the sky, in NWS public sky-condition wording. Mirrors
-	// StationTooltip so the card reads like a continuation of the hover.
 	let summary = $derived(current ? skyCondition(current) : 'NO READING TODAY');
 
 	let series = $derived(rollup?.stations[code] ?? null);
-
-	// Current clear streak (effective < CLEAR_STARS) walking back from the latest day.
 	let clearStreak = $derived.by(() => {
 		if (!series) return 0;
 		const e = series.e;
@@ -95,14 +87,11 @@
 		</div>
 	</header>
 
-	<!-- The read: plain-language summary + the H/M/L breakdown behind it -->
 	<section class="readout flex flex-col gap-2">
 		<p class="summary m-0 text-xs tracking-wider">{summary}</p>
 		{#if current}
 			<div class="bands flex flex-col gap-[3px]" aria-label="Percent of sky covered, by altitude">
-				<!-- Caption muted via colour alpha (text-ink/55), not opacity, so the .now
-				     highlight below can stay full-strength (opacity would compound onto the child).
-				     The yellow "now" cue matches the current-day highlight on the chart. -->
+
 				<p class="caption m-0 mb-[3px] text-xs tracking-wider text-ink/55">
 					% OF SKY COVERED <span class="now bg-sun-gold px-[3px] py-px font-bold text-ink"
 						>{when}</span
@@ -113,8 +102,7 @@
 						<span class="blabel w-[104px] text-xs tracking-[0.03em] opacity-80">{row.label}</span>
 						<span class="bar flex flex-1 gap-px" aria-hidden="true">
 							{#each Array(10) as _, i (i)}
-								<!-- Empty-track mist stays visible on cream paper (the shadcn --accent
-								     token is near-white here, so it's set explicitly, not from --accent). -->
+
 								<span
 									class={[
 										'seg h-2 flex-1',
@@ -130,7 +118,6 @@
 		{/if}
 	</section>
 
-	<!-- The 10-day forecast: date axis + band tags live inside the chart -->
 	<figure class="meteogram m-0">
 		{#if forecastError}
 			<p class="note py-6 text-center text-sm opacity-70">Forecast chart unavailable.</p>
@@ -139,7 +126,6 @@
 		{/if}
 	</figure>
 
-	<!-- Primary CTA to the full station page -->
 	<footer class="cta mt-0.5">
 		<Button
 			variant="default"
@@ -152,8 +138,6 @@
 </div>
 
 <style>
-	/* Bridge rule: the canvas lives inside StationMeteogram, so it can't be
-	   classed from here. */
 	.meteogram :global(canvas) {
 		width: 100%;
 		max-width: none;

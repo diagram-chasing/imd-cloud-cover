@@ -4,14 +4,13 @@
 
 	interface Props {
 		forecast: Forecast | null;
-		/** ISO date (YYYY-MM-DD) whose axis label is highlighted as "current". */
 		today?: string;
 	}
 	let { forecast, today }: Props = $props();
 
 	let W = $state(320);
 	const H = 102;
-	const CELL = 5; // px per pixel-cell — chunky, matches the map's tower marks
+	const CELL = 5;
 	const KEYS: BandKey[] = ['high', 'middle', 'low'];
 	const MONTHS = [
 		'JAN',
@@ -28,8 +27,6 @@
 		'DEC'
 	];
 
-	// A tick at the first sample of each calendar day. Position is a % of the
-	// canvas width so the axis stays aligned under the chart at any size.
 	interface Tick {
 		pct: number;
 		day: number;
@@ -45,7 +42,7 @@
 		let prevDate = '';
 		let prevMonth = -1;
 		for (let i = 0; i < n; i++) {
-			const iso = fc.data[i].datetime.slice(0, 10); // YYYY-MM-DD
+			const iso = fc.data[i].datetime.slice(0, 10);
 			if (iso === prevDate) continue;
 			prevDate = iso;
 			const [, m, d] = iso.split('-').map(Number);
@@ -53,8 +50,6 @@
 				pct: (i / n) * 100,
 				day: d,
 				month: MONTHS[m - 1],
-				// Month only at a rollover (day resets to 1), never on the first tick —
-				// avoids the month word colliding with the next day's label.
 				showMonth: prevMonth !== -1 && m - 1 !== prevMonth,
 				iso
 			});
@@ -63,19 +58,12 @@
 		return out;
 	});
 
-	// The "current" day: the first ticked day on/after `today`. When the outlook
-	// opens the day after the scrape date, that's simply the first tick.
 	let currentIso = $derived.by<string | null>(() => {
 		if (!today || !ticks.length) return null;
 		const hit = ticks.find((t) => t.iso >= today);
 		return hit ? hit.iso : null;
 	});
 
-	// Flatten a translucent cloud colour onto the sky into one opaque shade. The
-	// bands are drawn per-column and neighbouring columns overlap by a pixel; with
-	// a translucent fill that seam double-applies the alpha and reads as darker
-	// vertical banding (worst on low-alpha cirrus). Painting a solid pre-blended
-	// shade at full opacity removes the seam while keeping the same colour.
 	function hexRgb(hex: string): [number, number, number] {
 		const h = hex.replace('#', '');
 		return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
@@ -87,9 +75,6 @@
 		return `rgb(${mix(0)},${mix(1)},${mix(2)})`;
 	}
 
-	// Average the band's cover across the samples that fall inside a column, so
-	// downsampling to chunky cells reads the whole 3-hourly series rather than
-	// whatever sample happens to land on a cell boundary.
 	function colValue(fc: Forecast, key: BandKey, c: number, cols: number): number {
 		const n = fc.data.length;
 		const a = Math.floor((c / cols) * n);
@@ -105,8 +90,6 @@
 
 	function draw(canvas: HTMLCanvasElement, fc: Forecast | null) {
 		const dpr = window.devicePixelRatio || 1;
-		// CSS owns the layout size (width 100%); setting inline width here would
-		// override it and freeze clientWidth at whatever it was on first draw.
 		canvas.width = Math.max(1, Math.round(W * dpr));
 		canvas.height = H * dpr;
 		const ctx = canvas.getContext('2d')!;
@@ -120,21 +103,18 @@
 		const cols = Math.max(1, Math.round(W / CELL));
 		const cw = W / cols;
 		const bandH = H / 3;
-		// Reserve a slim gutter at the top of each strip so a full band doesn't
-		// butt right up against the one above it.
+
 		const GUTTER = CELL;
 		const effH = bandH - GUTTER;
-		// Whole cells per band, so tops quantize to the grid (blocky, not smooth).
 		const levels = Math.max(3, Math.round(effH / CELL));
 		const ch = effH / levels;
 
 		KEYS.forEach((key, band) => {
 			const conf = CLOUD[key];
 			const shadow = 'shadow' in conf ? conf.shadow : null;
-			// Pre-blend the band colour onto the sky so it can paint opaque — no
-			// alpha, so overlapping column seams don't darken.
+
 			const solid = flatten(conf.fill, UI.accent, conf.alpha);
-			const baseY = (band + 1) * bandH; // bottom of this band's strip
+			const baseY = (band + 1) * bandH;
 			for (let c = 0; c < cols; c++) {
 				const filled = Math.round(colValue(fc, key, c, cols) * levels);
 				if (!filled) continue;
@@ -145,8 +125,6 @@
 				ctx.fillStyle = solid;
 				ctx.fillRect(x, topY, w, filled * ch);
 
-				// Cumulus sits on a shaded base — same cue the map's low marks use.
-				// Keep it a thin sliver so it grounds the puff without weighing it down.
 				if (shadow && filled >= 2) {
 					const sh = Math.max(1, Math.round(ch / 2));
 					ctx.fillStyle = shadow;
@@ -155,14 +133,12 @@
 			}
 		});
 
-		// Day gridlines, snapped to the cell grid, so each column reads as a day.
 		ctx.fillStyle = 'rgba(255,255,255,0.18)';
 		for (const t of ticks) {
 			if (t.pct <= 0) continue;
 			ctx.fillRect(Math.round((t.pct / 100) * W), 0, 1, H);
 		}
 
-		// Divider lines at 1/3 and 2/3, snapped to the cell grid.
 		ctx.fillStyle = 'rgba(255,255,255,0.5)';
 		ctx.fillRect(0, Math.round(bandH), W, 1);
 		ctx.fillRect(0, Math.round(bandH * 2), W, 1);
@@ -170,7 +146,7 @@
 
 	function meteogram(node: HTMLCanvasElement) {
 		$effect(() => {
-			void ticks; // redraw gridlines when the day boundaries change
+			void ticks;
 			draw(node, forecast);
 		});
 	}
@@ -184,7 +160,6 @@
 			aria-label="10-day cloud-cover forecast for this station"
 			class="block h-[70px] w-full shadow-[0_0_0_2px] shadow-ink [image-rendering:pixelated]"
 		></canvas>
-		<!-- HIGH / MID / LOW tags pinned to the top-right of each 1/3 strip. -->
 		<div class="band-tags pointer-events-none absolute inset-0 flex flex-col" aria-hidden="true">
 			<div class="flex flex-1 items-start justify-end pt-[3px] pr-[5px]">
 				<span class="bg-paper/78 px-1 py-px text-xs leading-none tracking-[0.06em] text-ink"
@@ -204,8 +179,6 @@
 		</div>
 	</div>
 	{#if ticks.length}
-		<!-- Date axis: a tick per day boundary, day-of-month labels.
-		     The current day is yellow, so the eye lands on "where we are" first. -->
 		<div class="axis relative mt-[5px] h-5" aria-hidden="true">
 			{#each ticks as t (t.pct)}
 				<div
@@ -218,8 +191,6 @@
 							t.iso === currentIso ? 'h-1 bg-sun-gold' : 'h-[3px] bg-ink opacity-40'
 						]}
 					></span>
-					<!-- Every label carries the same padding box so the highlighted one keeps
-					     the same height/baseline as its neighbours. -->
 					<span
 						class={[
 							'label px-[3px] py-px text-xs tracking-[0.02em] whitespace-nowrap text-ink',

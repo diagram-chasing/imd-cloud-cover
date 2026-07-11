@@ -4,7 +4,6 @@
 	import type { BandKey } from '$lib/theme';
 
 	interface Props {
-		/** Lay the options in a row (phone dock) instead of a column. */
 		horizontal?: boolean;
 	}
 	let { horizontal = false }: Props = $props();
@@ -15,8 +14,7 @@
 		{ band: 'low', label: 'LOW · CUMULUS', short: 'LOW' }
 	];
 
-	// Draw each band's actual tower-mark glyph, so the legend matches what the
-	// map renders. The glyphs sit directly on the sky — same as on the map.
+
 	function preview(node: HTMLCanvasElement, band: BandKey) {
 		const atlas = buildMarkAtlas(4);
 		const sprite = atlas.get(band, 4, 0);
@@ -33,8 +31,6 @@
 		return {};
 	}
 
-	// ALL shows the full stack as it appears on the map: a whole tower, the
-	// three bands drawn small and stacked high-to-low.
 	function previewAll(node: HTMLCanvasElement) {
 		const atlas = buildMarkAtlas(2);
 		const ctx = node.getContext('2d')!;
@@ -54,12 +50,7 @@
 	}
 </script>
 
-<!-- The legend IS the control: a radio list of the map's own cloud glyphs.
-     Pick a band to isolate that layer; ALL restores the full stack. The pixel
-     radio squares + hover wash are what make it read as clickable.
-     Phone (horizontal): drop the radio square and let each option read as a
-     small, minimal button — a hollow pixel outline that fills sun-gold when
-     it's the live band. -->
+
 {#if horizontal}
 	<div class="legend flex flex-row items-center gap-1" role="radiogroup" aria-label="Cloud layers">
 		<button
@@ -110,7 +101,6 @@
 			aria-checked={sky.focusBand === null}
 			onclick={() => (sky.focusBand = null)}
 		>
-			<!-- Pixel radio square: hollow at rest, sun-gold when the option is live. -->
 			<span
 				class={[
 					'box h-2 w-2 flex-none shadow-[0_0_0_2px_white,1px_1px_0_2px_color-mix(in_srgb,var(--color-navy)_90%,transparent)]',

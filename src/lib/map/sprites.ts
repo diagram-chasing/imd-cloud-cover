@@ -3,7 +3,6 @@ import { fnv1a, mulberry32 } from './hash';
 
 type Pattern = number[][];
 
-// LOW — cumulus (Mario cloud), bright white flat base + base-shadow row.
 const LOW: Pattern[] = [
 	[
 		[0, 1, 0],
@@ -26,7 +25,6 @@ const LOW: Pattern[] = [
 	]
 ];
 
-// MIDDLE — alto, layered puffs.
 const MIDDLE: Pattern[] = [
 	[[1, 1]],
 	[[1, 1, 1]],
@@ -40,7 +38,6 @@ const MIDDLE: Pattern[] = [
 	]
 ];
 
-// HIGH — cirrus, thin veils (1 row except t4).
 const HIGH: Pattern[] = [
 	[[1, 1]],
 	[[1, 1, 0, 1]],
@@ -57,7 +54,6 @@ export interface Sprite {
 	canvas: CanvasRenderingContext2D['canvas'];
 	wCells: number;
 	hCells: number;
-	/** cells from the top of the canvas that are shadow (below the cloud body). */
 	shadowRows: number;
 }
 
@@ -84,7 +80,6 @@ function drawPattern(pattern: Pattern, band: BandKey, cell: number): Sprite {
 	ctx.imageSmoothingEnabled = false;
 
 	const conf = CLOUD[band];
-	// Base-shadow row for low clouds: inset by 1 cell each side, under the body.
 	if (hasShadow) {
 		ctx.fillStyle = CLOUD.low.shadow;
 		for (let x = 1; x < cols - 1; x++) {
@@ -105,7 +100,6 @@ function drawPattern(pattern: Pattern, band: BandKey, cell: number): Sprite {
 	return { canvas: canvas as HTMLCanvasElement, wCells: cols, hCells: totalRows, shadowRows };
 }
 
-/** Build (or rebuild on resize) the sprite atlas for a given cell size. */
 export function buildAtlas(cell: number): SpriteAtlas {
 	const cache = new Map<string, Sprite>();
 	for (const band of ['low', 'middle', 'high'] as BandKey[]) {
@@ -119,23 +113,8 @@ export function buildAtlas(cell: number): SpriteAtlas {
 	};
 }
 
-// --- Tower-mark cloud glyphs -----------------------------------------------
-// Each station is a small pixel cloud, generated procedurally so it reads as an
-// organic puff rather than a symmetric block, and so we can mint several
-// variations per species — the map would look mechanical if every station drew
-// the identical glyph. Three distinct species so a tower reads at a glance:
-//   HIGH   cirrus — thin, broken, wind-drifted streaks (ice blue).
-//   MIDDLE alto   — a low, wide, lumpy sheet (blue-grey).
-//   LOW    cumulus— a fat, lobed puff with a flat, shaded base (white).
-// Cover (tier 1-4) grows each glyph. Shape variety comes from a seeded PRNG, so
-// the render stays identical across loads (no Math.random in the render path).
-
-/** Number of shape variations minted per species + tier. */
 export const MARK_VARIANTS = 3;
 
-// Per-tier footprint in logical cells: [width, maxRows]. Cumulus stays compact
-// (<= 3 rows) so a whole tower still fits the bin; alto is deliberately flatter
-// and wider so it never reads as a cumulus puff.
 const SIZES: Record<'low' | 'middle', [number, number][]> = {
 	low: [
 		[4, 2],
@@ -150,21 +129,11 @@ const SIZES: Record<'low' | 'middle', [number, number][]> = {
 		[9, 2]
 	]
 };
-const HIGH_W = [3, 5, 7, 9]; // cirrus streak width per tier (always 2 rows)
-
-// Per-band alpha for tower marks. High is bumped vs the flat CLOUD.high so the
-// separated top mark stays legible against both sky and land.
+const HIGH_W = [3, 5, 7, 9];
 export const MARK_ALPHA: Record<BandKey, number> = { high: 0.55, middle: 0.95, low: 1 };
-
-// Cover tier → luminance ramp. Size alone barely separates tiers when zoomed
-// out, so we also fade low-cover marks and drive high-cover ones to full
-// opacity. This is the dominant cue: dense regions visibly glow, sparse ones
-// recede, and spatial patterns read at any zoom. Indexed by tier-1 (tiers 1-4).
 export const TIER_ALPHA = [0.42, 0.6, 0.82, 1];
 
-/** A bumpy-topped, flat-bottomed height profile → the body of a puff cloud. */
 function puffProfile(rand: () => number, w: number, maxH: number, rough: number): number[] {
-	// Peak wanders off-centre for asymmetry; height falls off toward the edges.
 	const peak = 0.5 + (rand() - 0.5) * 0.7;
 	const h: number[] = [];
 	for (let x = 0; x < w; x++) {
@@ -173,15 +142,13 @@ function puffProfile(rand: () => number, w: number, maxH: number, rough: number)
 		const arch = Math.cos((d * Math.PI) / 2); // smooth dome
 		h.push(Math.round(arch * maxH + (rand() - 0.5) * rough));
 	}
-	// Keep the interior grounded (a solid, gap-free base) but round the outer
-	// corners so the silhouette isn't a hard rectangle.
+
 	for (let x = 1; x < w - 1; x++) h[x] = Math.max(1, Math.min(maxH, h[x]));
 	h[0] = Math.max(0, Math.min(1, h[0]));
 	h[w - 1] = Math.max(0, Math.min(1, h[w - 1]));
 	return h;
 }
 
-/** Fill each column from the flat base up to its profile height. */
 function profileToPattern(heights: number[], rows: number): Pattern {
 	const w = heights.length;
 	const grid: number[][] = Array.from({ length: rows }, () => new Array(w).fill(0));
@@ -191,7 +158,6 @@ function profileToPattern(heights: number[], rows: number): Pattern {
 	return grid;
 }
 
-/** Thin, broken, drifting streaks — cirrus never looks solid. */
 function cirrusPattern(rand: () => number, w: number): Pattern {
 	const grid: number[][] = [new Array(w).fill(0), new Array(w).fill(0)];
 	let x = 0;
@@ -242,9 +208,7 @@ function drawMark(pattern: Pattern, band: BandKey, tier: number, cell: number): 
 		}
 	}
 
-	// Cumulus depth: shade the bottom-most filled cell of each column so the puff
-	// sits on a grounded base instead of reading as a flat sticker. Skip the
-	// smallest (2-row) tier where a shaded row would swallow the whole glyph.
+	// shade the bottom-most filled cell of each column
 	if (band === 'low' && rows >= 3) {
 		ctx.fillStyle = CLOUD.low.shadow;
 		for (let x = 0; x < cols; x++) {
@@ -258,14 +222,7 @@ function drawMark(pattern: Pattern, band: BandKey, tier: number, cell: number): 
 	return { canvas: canvas as HTMLCanvasElement, wCells: cols, hCells: rows, shadowRows: 0 };
 }
 
-// --- Rain streaks ----------------------------------------------------------
-// A small curtain of falling streaks that hangs beneath the low cloud where the
-// forecast shows precip. Kept deliberately sparse and thin (1-cell-wide dashes)
-// so it reads as rain, not a solid block, and so it never fights the cumulus
-// above it. Three tiers (drizzle / rain / heavy) widen the curtain and add
-// streaks; a seeded PRNG mints variants so neighbouring stations don't rhyme.
 
-// Per rain tier: [width in cells, rows tall, streak density 0..1].
 const RAIN_SIZE: [number, number, number][] = [
 	[4, 3, 0.5], // 1 drizzle
 	[6, 4, 0.7], // 2 rain
@@ -277,7 +234,6 @@ export interface RainAtlas {
 	get(tier: 1 | 2 | 3, variant?: number): Sprite;
 }
 
-/** Staggered vertical dashes → a curtain of falling rain. */
 function rainPattern(rand: () => number, tier: number): Pattern {
 	const [w, rows, density] = RAIN_SIZE[tier - 1];
 	const grid: number[][] = Array.from({ length: rows }, () => new Array(w).fill(0));
@@ -307,7 +263,6 @@ function drawRainMark(pattern: Pattern, tier: number, cell: number): Sprite {
 	const ctx = (canvas as HTMLCanvasElement).getContext('2d')!;
 	ctx.imageSmoothingEnabled = false;
 
-	// Heavier tiers deepen the blue and firm up; drizzle stays translucent.
 	ctx.globalAlpha = [0.7, 0.85, 1][tier - 1];
 	ctx.fillStyle = tier >= 3 ? RAIN.deep : RAIN.fill;
 	for (let y = 0; y < rows; y++) {
@@ -321,7 +276,6 @@ function drawRainMark(pattern: Pattern, tier: number, cell: number): Sprite {
 	return { canvas: canvas as HTMLCanvasElement, wCells: cols, hCells: rows, shadowRows: 0 };
 }
 
-/** Build the rain-streak atlas: 3 tiers x MARK_VARIANTS shapes. */
 export function buildRainAtlas(cell: number): RainAtlas {
 	const cache = new Map<string, Sprite>();
 	for (let tier = 1; tier <= 3; tier++) {
@@ -336,7 +290,6 @@ export function buildRainAtlas(cell: number): RainAtlas {
 	};
 }
 
-/** Build the tower-mark atlas: 3 bands x 4 tiers x MARK_VARIANTS shapes. */
 export function buildMarkAtlas(cell: number): SpriteAtlas {
 	const cache = new Map<string, Sprite>();
 	for (const band of ['low', 'middle', 'high'] as BandKey[]) {

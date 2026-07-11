@@ -9,11 +9,8 @@
 		values: { h: number; m: number; l: number; p?: number } | null;
 		clientX: number;
 		clientY: number;
-		/** Stations aggregated under the hovered mark (1 = a single station). */
 		members?: number;
-		/** Scrubbed ISO date being viewed. */
 		date?: string;
-		/** Scrub-aware time descriptor, e.g. "15:00 IST" or "DAILY MEAN". */
 		when?: string;
 	}
 
@@ -30,20 +27,15 @@
 		});`;
 	});
 
-	// Row labels mirror the band legend so the tooltip and the toggle speak
-	// the same language.
 	const ROWS: { key: 'h' | 'm' | 'l'; label: string }[] = [
 		{ key: 'h', label: 'HIGH · CIRRUS' },
 		{ key: 'm', label: 'MID · ALTO' },
 		{ key: 'l', label: 'LOW · CUMULUS' }
 	];
-	// 6-cell bar filled by value/10 (values run 0-100).
 	function filled(v: number): number {
 		return Math.round(v / 10);
 	}
 
-	// Plain-language read of the sky in NWS public sky-condition wording, then rain
-	// when the precip signal clears the same floor the map's rain streaks use.
 	let summary = $derived.by(() => {
 		if (!values) return '';
 		let s = skyCondition(values);

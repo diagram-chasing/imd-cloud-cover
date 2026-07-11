@@ -14,7 +14,6 @@
 		return () => mq.removeEventListener('change', on);
 	});
 
-	// Autoplay loop.
 	$effect(() => {
 		if (!sky.playing || reduced) return;
 		const id = setInterval(() => {
@@ -23,8 +22,7 @@
 		return () => clearInterval(id);
 	});
 
-	// One timeline: click or drag anywhere on the track to scrub. The handle is
-	// a pixel sun (day steps) / moon square (night steps) riding the rail.
+
 	let track = $state<HTMLDivElement>();
 	let dragging = false;
 
@@ -44,7 +42,6 @@
 		try {
 			(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 		} catch {
-			// capture is best-effort (keeps the drag through fast pointer moves)
 		}
 	}
 	function onpointermove(e: PointerEvent) {
@@ -65,12 +62,10 @@
 		}
 	}
 
-	// Handle centre as a % of track width.
 	let handleX = $derived((sky.timeIndex / (STEPS - 1)) * 100);
 	let night = $derived(NIGHT_STEPS.has(sky.timeIndex));
 </script>
 
-<!-- Phone: the scrubber stretches to the full dock width. -->
 <div class="scrubber flex items-center gap-2.5 max-md:w-full">
 	<div
 		class="timeline relative h-[34px] w-[min(300px,62vw)] cursor-pointer touch-none focus-visible:outline-offset-4 max-md:w-auto max-md:min-w-0 max-md:flex-auto"
@@ -103,7 +98,6 @@
 				style="left:{(i / (STEPS - 1)) * 100}%">{label}</span
 			>
 		{/each}
-		<!-- Pixel sun riding the rail; flips to an ice moon on night steps. -->
 		<span
 			class={[
 				'handle absolute top-1 -ml-[5px] h-2.5 w-2.5 shadow-[0_0_0_2px_var(--color-ink),2px_2px_0_2px_color-mix(in_srgb,var(--color-navy)_50%,transparent)]',

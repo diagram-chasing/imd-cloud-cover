@@ -30,7 +30,31 @@ export default {
 		if (request.method !== 'GET' && request.method !== 'HEAD')
 			return new Response('Method not allowed', { status: 405, headers });
 
-		const key = decodeURIComponent(new URL(request.url).pathname.slice(1));
+		const url = new URL(request.url);
+
+		// Coarse, IP-based visitor location from Cloudflare's edge (request.cf).
+		// City-level only; used to drop a "you are here" marker and default the
+		// city explorer. Never cached (per-visitor); returns nulls when the edge
+		// can't resolve a location (e.g. local `wrangler dev` without --remote).
+		if (url.pathname === '/geo') {
+			const cf = request.cf || {};
+			const lat = cf.latitude != null ? Number(cf.latitude) : NaN;
+			const lng = cf.longitude != null ? Number(cf.longitude) : NaN;
+			headers.set('Content-Type', 'application/json');
+			headers.set('Cache-Control', 'no-store');
+			return new Response(
+				JSON.stringify({
+					city: cf.city ?? null,
+					region: cf.region ?? null,
+					country: cf.country ?? null,
+					lat: Number.isFinite(lat) ? lat : null,
+					lng: Number.isFinite(lng) ? lng : null
+				}),
+				{ headers }
+			);
+		}
+
+		const key = decodeURIComponent(url.pathname.slice(1));
 		if (!ALLOWED_KEYS.some((re) => re.test(key)))
 			return new Response('Not found', { status: 404, headers });
 

@@ -10,24 +10,17 @@
 		current: { h: number; m: number; l: number } | null;
 		rollup: Rollup | null;
 		date: string;
-		/** Scrub-aware time descriptor, e.g. "15:00 IST" or "DAILY MEAN". */
 		when: string;
-		/** Screen point the card should anchor to on desktop (the click). */
 		at: { x: number; y: number } | null;
 		onclose: () => void;
 	}
 	let { code, station, current, rollup, date, when, at, onclose }: Props = $props();
 
-	// The card mounts already-open (parent only renders it for a selected station).
-	// When the popover/drawer closes itself (swipe, click-away, Esc), open flips
-	// false and we tell the parent to clear the selection.
 	let open = $state(true);
 	$effect(() => {
 		if (!open) onclose();
 	});
 
-	// Coarse-pointer / narrow screens get the bottom sheet; everything else the
-	// anchored popover. Reactive so a resize or device rotation re-routes.
 	let isMobile = $state(false);
 	$effect(() => {
 		const mq = window.matchMedia('(max-width: 640px), (pointer: coarse)');
@@ -37,9 +30,6 @@
 		return () => mq.removeEventListener('change', on);
 	});
 
-	// The desktop popover is anchored to a fixed screen point, so scrolling the
-	// page would leave it stranded. Dismiss on page scroll. (window's scroll only
-	// fires for the viewport, not the card's own internal scroll area.)
 	$effect(() => {
 		if (isMobile) return;
 		const onScroll = () => onclose();
@@ -47,8 +37,6 @@
 		return () => window.removeEventListener('scroll', onScroll);
 	});
 
-	// A virtual anchor at the click point for the desktop popover. Falls back to
-	// upper-centre when opened without a point (search / streak selection).
 	let anchor = $derived({
 		getBoundingClientRect: () => {
 			const x = at?.x ?? window.innerWidth / 2;

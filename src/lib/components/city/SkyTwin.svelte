@@ -5,7 +5,6 @@
 
 	interface Props {
 		city: CityStats;
-		/** The selected city's station code (cities.json key). */
 		code: string;
 		data: CitiesRollup;
 		india: FeatureCollection;
@@ -14,14 +13,12 @@
 	}
 	let { city, code, data, india, stations, mode = 'overall' }: Props = $props();
 
-	// Resolve a twin reference to its city record + station coordinates.
 	function resolve(ref: { code: string } | null | undefined) {
 		if (!ref) return null;
 		const c = data.cities[ref.code];
 		const st = stations[ref.code];
 		return c && st ? { code: ref.code, name: c.name, lat: st.lat, lon: st.lon } : null;
 	}
-	// One twin per tab: today's closest sky, or the long-term climate match.
 	let twin = $derived(resolve(mode === 'today' ? city.twin?.today : city.twin?.alltime));
 
 	let pins = $derived.by(() => {
@@ -34,7 +31,6 @@
 </script>
 
 <div class="twin flex h-full w-[132px] flex-col text-white md:block md:w-[180px]">
-	<!-- No qualifying twin for this tab: keep the map for context but grey it out. -->
 	<div class={['transition-[filter,opacity] duration-200', !twin && 'opacity-60 grayscale']}>
 		<TwinMap {india} {pins} />
 	</div>

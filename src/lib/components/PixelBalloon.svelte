@@ -1,7 +1,5 @@
 <script lang="ts" module>
-	// Same pixel data as the canvas balloon in PixelMap (buildBalloonTex), so the
-	// HTML article and the map share one balloon — here recoloured into the page's
-	// ink/paper palette instead of the sky's whites.
+
 	const W = 15;
 	const CX = 7;
 	const HALF = [2, 3, 4, 5, 6, 7, 7, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 1];
@@ -52,8 +50,6 @@
 </svg>
 
 <style>
-	/* Theming hook: nothing sets --balloon-* today, but keeping this API lets a
-	   parent recolour the balloon; fallbacks point at the palette tokens. */
 	.body {
 		fill: var(--balloon-body, var(--color-paper));
 	}

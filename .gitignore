@@ -25,6 +25,9 @@ static/sample/20*/
 # Core data views downloaded at build time by scripts/bake-data.mjs
 static/baked/
 
+# Per-city OG share images generated at build time by scripts/build-og.mjs
+static/og/
+
 # Env
 .env
 .env.*

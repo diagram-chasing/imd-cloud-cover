@@ -9,8 +9,6 @@
 	];
 </script>
 
-<!-- Quiet text switcher: the active range is bright + underlined, the others
-     recede. Reads as a chart annotation, not a button row. -->
 <nav class="views flex items-baseline gap-[7px]" aria-label="Time range">
 	{#each TABS as tab, i (tab.id)}
 		{#if i > 0}<span class="sep text-xs text-white/40 text-shadow-sky" aria-hidden="true">·</span

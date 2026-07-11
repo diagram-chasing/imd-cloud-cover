@@ -40,6 +40,7 @@
 	import { buildQuadtree, nearest, type StationPoint } from '$lib/map/hit';
 	import { fnv1a, jitter, mulberry32 } from '$lib/map/hash';
 	import { sky } from '$lib/state/sky.svelte';
+	import { userGeo } from '$lib/state/geo.svelte';
 	import { click, tap } from '$lib/feedback';
 
 	interface Props {
@@ -56,8 +57,6 @@
 			zoomRatio: number;
 			view: { x: number; y: number; w: number; h: number };
 			world: { w: number; h: number };
-			/** Live canvas-px position of the streak board's world anchor (open sea
-			    south of the landmass), so the HTML board can be pinned into the world. */
 			streak: { x: number; y: number };
 		}) => void;
 	}
@@ -86,12 +85,6 @@
 	];
 	const LOD_DOWN_FACTOR = 0.9;
 	const GHOST_ALPHA = 0.1;
-	// Per-tier label thresholds as multiples of the START zoom (the opening view):
-	// megacities appear first, then major cities, then a sparse SAMPLE of smaller
-	// cities. Index = place.tier (0 megacity, 1 major city ≥1M, 2 city ≥200k, 3
-	// town). Towns are Infinity — never labelled. Tier 2 comes in just after the
-	// majors so regions with no big city (NE, west coast) still get labels; the
-	// wide per-tier spacing (TIER_GAP2) is what keeps it a sample, not a swarm.
 	const TIER_ZOOM = [1.6, 3.2, 3.6, Infinity];
 	const BAND_OFFSET: Record<BandKey, number> = {
 		high: -TOWER_GAP,
@@ -103,8 +96,6 @@
 	const SHADOW_DROP = TOWER_GAP + MARK_CELL * 2.5;
 	const WAVE_SCALE = 1.25;
 	const WAVE_MAX = 100;
-	// Easter egg: a lone hot air balloon wandering across the landmass on the wind
-	// — its heading is steered by smooth noise.
 	const BALLOON_SPEED = 1024 / 520000;
 
 	interface Bin {
@@ -125,8 +116,6 @@
 	let vw = $state(1);
 	let vh = $state(1);
 
-	// Dev camera inspector: toggle with the "d" key. Shows live pan/zoom + cursor
-	// world coords, and lets you jump the camera to typed coordinates.
 	let showDebug = $state(false);
 	let dbg = $state({ panX: 0, panY: 0, zoom: 1, wx: 0, wy: 0 });
 	let dbgForm = $state({ panX: 0, panY: 0, zoom: 1 });
@@ -139,7 +128,7 @@
 	}
 
 	const STORY_TITLE = "MAPPING INDIA'S CLOUDS";
-	const STORY_SUB = 'How cloudy is India today?';
+	const STORY_SUB = 'A daily map of how cloudy it is today';
 	const MONTHS = [
 		'JAN',
 		'FEB',
@@ -187,6 +176,10 @@
 	let titleShown = false;
 	let hoverGfx: Graphics | null = null;
 	let selGfx: Graphics | null = null;
+	let userLayer: Container | null = null;
+	let userMarker: Container | null = null;
+	let userPulse: Graphics | null = null;
+	let userOnMap = false;
 	let placesLayer: Container | null = null;
 	let placeMarkers: Container[] = [];
 	let placeLabels: Text[] = [];
@@ -201,8 +194,6 @@
 	let balloonTex: Texture | null = null;
 	let balloonBounds: { minX: number; maxX: number; minY: number; maxY: number } | null = null;
 	let balloon: { c: Container; x: number; y: number; phase: number } | null = null;
-	// Two independent smooth-noise channels steer the balloon's heading, so it
-	// wanders and criss-crosses the map like it's being carried on the wind.
 	let balloonNoiseX: ((t: number) => number) | null = null;
 	let balloonNoiseY: ((t: number) => number) | null = null;
 	const pool: Record<BandKey, Sprite[]> = { low: [], middle: [], high: [] };
@@ -221,13 +212,10 @@
 	let panY = 0;
 	let userMoved = false;
 
-	// "Pan aside" mode: on phones the streaks overlay glides the camera south into
-	// open ocean so the leaderboard reads as a place out at sea rather than a sheet
-	// dropped on top. While active the map ignores pointer/wheel input.
 	let asideActive = false;
 	let interactionLocked = false;
-	let asideClearPx = 0; // screen px to keep clear below the land for the streak board
-	let landBottomWorldY = 0; // world Y of India's southern tip (computed once)
+	let asideClearPx = 0;
+	let landBottomWorldY = 0;
 	let camAnim: {
 		fromX: number;
 		fromY: number;
@@ -238,9 +226,7 @@
 		t: number;
 		dur: number;
 	} | null = null;
-	// The streak board lives at a fixed spot in the open sea south of India, given
-	// as fractions of the fit view. fy > 0.5 puts it below the landmass, so at fit
-	// it sits off the bottom and the aside pan slides it up into view.
+
 	const STREAK_ANCHOR = { fx: 0.07, fy: 0.9 };
 
 	function easeInOut(x: number): number {
@@ -250,8 +236,6 @@
 		const sv = startView();
 		return { x: sv.x + STREAK_ANCHOR.fx * sv.w, y: sv.y + STREAK_ANCHOR.fy * sv.h };
 	}
-	// Southernmost land row, so the aside pan can seat India's tip just above the
-	// board. A small per-row threshold skips 1–2px specks (stray far-south islands).
 	function computeLandBottom(): number {
 		const g = geo!;
 		for (let y = g.rows - 1; y >= 0; y--) {
@@ -262,8 +246,7 @@
 		return g.worldH;
 	}
 
-	// World-space bounds of the landmass, so the drifting balloon can be kept over
-	// India rather than wandering out to sea.
+
 	function computeLandBBox() {
 		const g = geo!;
 		let minX = g.cols,
@@ -299,7 +282,6 @@
 		return (vw / containZoom() - (b.maxX - b.minX)) / 2 < 90;
 	}
 	function startZoomFactor() {
-		// Desktop opens zoomed in (not at full fit); phones open tighter still.
 		return narrowLayout() ? 1.7 : 1.25;
 	}
 	function startView() {
@@ -320,8 +302,7 @@
 		zoom = containZoom() * startZoomFactor();
 		panX = v.x;
 		panY = v.y;
-		// Desktop: open with the world shoved as far left as the opening view allows,
-		// so the right sea gutter (holding the title lockup) sits fully in frame.
+
 		if (!narrowLayout()) {
 			const b = worldBBox();
 			const gutterWorld = (vw / containZoom() - (b.maxX - b.minX)) / 2;
@@ -352,8 +333,7 @@
 		const a = streakAnchorWorld();
 		onlayout?.({
 			gutter: (vw - (b.maxX - b.minX) * containZoom()) / 2,
-			// Relative to the OPENING view (which is a bit zoomed in on desktop), so
-			// "zoomed" chrome and the gutter panels read 1 at the start, not >1.
+
 			zoomRatio: zoom / (containZoom() * startZoomFactor()),
 			view: { x: panX, y: panY, w: vw / zoom, h: vh / zoom },
 			world: { w: g.worldW, h: g.worldH },
@@ -361,9 +341,6 @@
 		});
 	}
 
-	// Camera target for the two aside states. When aside, seat India's southern tip
-	// exactly `asideClearPx` above the frame bottom — just enough room for the board
-	// plus its padding — so there's no overlap and no wasted ocean.
 	function asideTarget(on: boolean) {
 		const v = startView();
 		const z = containZoom() * startZoomFactor();
@@ -379,8 +356,7 @@
 		interactionLocked = on;
 		if (!on) userMoved = false;
 		const t = asideTarget(on);
-		// Snap (no re-animate) under reduced-motion, or when just re-seating an
-		// already-open board after its measured height changed.
+
 		if (reduced || (wasActive && on)) {
 			camAnim = null;
 			panX = t.x;
@@ -403,32 +379,66 @@
 	}
 
 	function updatePlacesScale() {
+		if (userMarker) userMarker.scale.set(1 / zoom);
 		if (!placeMarkers.length) return;
 		const s = 1 / zoom;
 		for (const m of placeMarkers) m.scale.set(s);
 	}
 
-	// Decide which city labels are drawn: gate each by its tier's zoom threshold,
-	// then greedily thin overlaps in screen space (places are pop-sorted, so the
-	// most prominent city in any cluster wins). Cheap because we only collision-
-	// test the handful that pass the LOD gate and fall inside the viewport.
+	// "You are here": a ringed dot at the visitor's coarse (IP) location. Built
+	// once; positioned/toggled whenever the resolved location changes. Hidden when
+	// the visitor is outside the projected India frame (e.g. abroad).
+	function buildUserMarker() {
+		if (!camera) return;
+		userLayer = new Container();
+		userLayer.eventMode = 'none';
+		userLayer.visible = false;
+		const m = new Container();
+		const pulse = new Graphics();
+		pulse.circle(0, 0, 7).stroke({ width: 1.5, color: UI.accent, alignment: 0.5 });
+		m.addChild(pulse);
+		userPulse = pulse;
+		const dot = new Graphics();
+		dot.circle(0, 0, 4.5).fill({ color: 0xffffff });
+		dot.circle(0, 0, 3).fill({ color: UI.accent });
+		m.addChild(dot);
+		userLayer.addChild(m);
+		userMarker = m;
+		camera.addChild(userLayer);
+	}
+
+	function updateUserMarker() {
+		if (!userLayer || !geo) return;
+		const loc = userGeo.loc;
+		const p = loc ? geo.project(loc.lng, loc.lat) : null;
+		if (!p) {
+			userLayer.visible = false;
+			userOnMap = false;
+			return;
+		}
+		const [x, y] = p;
+		const b = worldBBox();
+		if (x < b.minX || x > b.maxX || y < b.minY || y > b.maxY) {
+			userLayer.visible = false;
+			userOnMap = false;
+			return;
+		}
+		userLayer.position.set(x, y);
+		userLayer.visible = true;
+		userOnMap = true;
+		if (userMarker) userMarker.scale.set(1 / zoom);
+	}
+
+
 	function declutterPlaces() {
 		if (!placesLayer || !geo) return;
-		// Gate against the START zoom, not raw fit: phones open at 1.7× fit, so
-		// measuring from fit would show labels by default. From the opening view
-		// zr === 1 on every device, and labels only appear as you zoom further in.
+
 		const zr = zoom / (containZoom() * startZoomFactor());
-		// Nothing qualifies until we're past the first (megacity) threshold.
 		placesLayer.visible = zr >= TIER_ZOOM[0];
 		if (!placesLayer.visible) return;
 
 		const placed: { l: number; r: number; t: number; b: number; ax: number; ay: number }[] = [];
-		const M = 40; // viewport margin so labels near the edge still declutter
-		// Minimum spacing between label anchors (screen px), by the CANDIDATE's tier.
-		// Because places are walked biggest-first, a city is suppressed if it falls
-		// within its own radius of anything already placed. Big cities pack tighter;
-		// the ≥200k tier demands a wide berth, so only a sparse sample of them shows
-		// — filling the gaps between the majors rather than crowding every one in.
+		const M = 40;
 		const TIER_GAP2 = [92 * 92, 92 * 92, 160 * 160, Infinity];
 		for (let i = 0; i < placeMarkers.length; i++) {
 			const p = geo.places[i];
@@ -443,18 +453,16 @@
 				m.visible = false;
 				continue;
 			}
-			// Marker renders at native px on screen (its 1/zoom scale cancels the
-			// camera zoom), so the label's own width/height are the screen rect.
+
 			const label = placeLabels[i];
 			const l = sx - 3;
-			const r = sx + 5 + label.width + 3; // GAP(5) + text + pad
+			const r = sx + 5 + label.width + 3;
 			const t = sy - label.height / 2 - 2;
 			const b = sy + label.height / 2 + 2;
 			const gap2 = TIER_GAP2[p.tier];
 			let hit = false;
 			for (const q of placed) {
-				// Reject on either a rectangle overlap OR anchors closer than this
-				// tier's gap, so nearby-but-not-touching labels yield to bigger cities.
+
 				const dx = sx - q.ax;
 				const dy = sy - q.ay;
 				if (dx * dx + dy * dy < gap2 || (l < q.r && r > q.l && t < q.b && b > q.t)) {
@@ -589,8 +597,7 @@
 			}
 			for (let k = bins.length; k < arr.length; k++) arr[k].visible = false;
 		}
-		// Shadows fall at the foot of the tower, nudged right and squashed flat
-		// to read as a patch on the ground plane.
+
 		const shadowOff = SHADOW_DROP * sc;
 		for (let k = 0; k < bins.length; k++) {
 			const sp = shadowPool[k];
@@ -644,7 +651,6 @@
 		groundSprite.scale.set(geo.groundScale);
 		camera.addChild(groundSprite);
 
-		// Cloud shadows sit directly on the ground, under every other layer.
 		shadowLayer = new Container();
 		shadowLayer.eventMode = 'none';
 		camera.addChild(shadowLayer);
@@ -657,20 +663,17 @@
 			align: 'left' as const
 		};
 		titleGroup = new Container();
-		// 'passive' (not 'none') so the brand group below can still receive its click.
 		titleGroup.eventMode = 'passive';
 		titleBox = new Graphics();
 		titleText = new Text({ text: STORY_TITLE, style: { ...titleFont, fontWeight: '700' } });
 		titleSub = new Text({ text: STORY_SUB, style: { ...titleFont, fontWeight: '400' } });
 		titleMeta = new Text({ text: '', style: { ...titleFont, fontWeight: '700' } });
-		// Brand kicker above the box: "DIAGRAM CHASING" with the balloon bobbing beside
-		// it. The balloon sprite is added later, once its texture is built.
+
 		titleBrand = new Text({
 			text: 'DIAGRAM CHASING',
 			style: { ...titleFont, fontWeight: '700' }
 		});
 		titleBrand.anchor.set(0, 0.5);
-		// The brand row (text + balloon) is a clickable link to the studio site.
 		titleBrandGroup = new Container();
 		titleBrandGroup.eventMode = 'static';
 		titleBrandGroup.cursor = 'pointer';
@@ -719,20 +722,19 @@
 
 		buildBalloon();
 		styleAmbient();
-
-		// Place labels ride above the cloud towers so cities stay readable when
-		// zoomed in over dense cover.
 		if (placesLayer) camera.addChild(placesLayer);
 
 		selGfx = new Graphics();
 		camera.addChild(selGfx);
 		hoverGfx = new Graphics();
 		camera.addChild(hoverGfx);
+		buildUserMarker();
 
 		fitCamera();
 		drawSky();
 		drawTitle();
 		drawSelected();
+		updateUserMarker();
 		updateClouds();
 		bindPointer();
 		app.ticker.add(tick);
@@ -755,8 +757,8 @@
 		const narrow = gutter < 90;
 
 		const unit = 30;
-		const pad = unit * 0.72; // inner box padding
-		const gap = unit * 0.5; // vertical gap between stacked rows
+		const pad = unit * 0.72;
+		const gap = unit * 0.5;
 
 		titleText.style.fontSize = unit;
 		titleText.style.fontWeight = '700';
@@ -772,12 +774,8 @@
 			titleBrand.style.fill = 0xffffff;
 		}
 
-		// One box wraps title + subtitle; the date/time meta sits just below, outside it.
 		const innerW = Math.max(titleText.width, titleSub.width);
 		const boxW = innerW + pad * 2;
-
-		// Brand kicker row above the box: "DIAGRAM CHASING" with the balloon bobbing
-		// beside it, the whole row centred over the lockup.
 		const rowGap = unit * 0.45;
 		let brandW = 0;
 		let brandH = 0;
@@ -819,11 +817,9 @@
 				titleBalloon.position.set(rowX0 + brandW + rowGap + balloonW / 2, brandCY);
 				titleBalloonBaseY = brandCY;
 			}
-			// Click target spans the whole brand row.
 			if (titleBrandGroup) titleBrandGroup.hitArea = new Rectangle(rowX0, 0, rowW, brandRowH);
 		}
 
-		// Centre title + subtitle in the box; meta is placed below by updateTitleMeta().
 		titleText.position.set(gcx - titleText.width / 2, titleY);
 		titleSub.position.set(gcx - titleSub.width / 2, subY);
 		titleCx = gcx;
@@ -838,15 +834,9 @@
 
 		titleShown = true;
 
-		// Live in world space so the lockup pans and zooms stuck to the map. Desktop
-		// parks it in the RIGHT sea gutter, vertically centred; phones tuck the compact
-		// lockup into the top-right sky of the opening view.
 		if (!narrow) {
 			const s = Math.min((gutter * 0.8) / groupW, (geo.worldH * 0.55) / groupH);
 			titleGroup.scale.set(s);
-			// TITLE_GUTTER_POS: where in the right gutter the lockup sits, 0 = flush
-			// against India's east edge, 0.5 = centred, 1 = far sea. Lower it to nudge
-			// the title left.
 			const TITLE_GUTTER_POS = -0.5;
 			titleGroup.position.set(
 				b.maxX + (gutter - groupW * s) * TITLE_GUTTER_POS,
@@ -886,7 +876,6 @@
 		titleGroup.visible = fade > 0.01;
 	}
 
-	// Font size by population tier (0 megacity … 3 town), matching TIER_ZOOM.
 	function placeSize(tier: number): number {
 		return [19, 16, 13, 11][tier] ?? 11;
 	}
@@ -971,44 +960,38 @@
 		return c;
 	}
 
-	// A pixel hot air balloon in the style of the reference: a rounded onion-shaped
-	// envelope with vertical gore seams, a short suspension gap, then a small basket
-	// hanging below. White with a few grey tones for the seams / shaded side.
 	const BALLOON_W = 15;
-	// Envelope half-width per row (from centre col 7): swells near the top then
-	// tapers to a point, giving the teardrop/onion outline.
+
 	const BALLOON_HALF = [2, 3, 4, 5, 6, 7, 7, 7, 7, 6, 6, 5, 5, 4, 4, 3, 3, 2, 1];
-	const BALLOON_SEAMS = [4, 7, 10]; // gore seam columns
+	const BALLOON_SEAMS = [4, 7, 10];
 	function buildBalloonTex(): Texture {
 		const cx = 7;
 		const envH = BALLOON_HALF.length;
 		const c = makeCanvas(BALLOON_W, envH + 6);
 		const ctx = c.getContext('2d')!;
 		ctx.imageSmoothingEnabled = false;
-		const W1 = '#ffffff'; // envelope body
-		const W2 = '#c4ccd4'; // seams + rim
-		const W3 = '#e2e7ec'; // dither on the shaded (right) side
+		const W1 = '#ffffff';
+		const W2 = '#c4ccd4';
+		const W3 = '#e2e7ec';
 		BALLOON_HALF.forEach((h, y) => {
 			const a = cx - h;
 			const b = cx + h;
 			for (let x = a; x <= b; x++) {
 				let col = W1;
 				if (x === a || x === b)
-					col = W2; // soft rounded rim
+					col = W2;
 				else if (BALLOON_SEAMS.includes(x))
-					col = W2; // gore seam
-				else if (x > cx && ((x + y) & 1) === 0) col = W3; // shaded-side dither
+					col = W2;
+				else if (x > cx && ((x + y) & 1) === 0) col = W3;
 				ctx.fillStyle = col;
 				ctx.fillRect(x, y, 1, 1);
 			}
 		});
-		// Suspension ropes drop from the envelope base, leaving a gap of open sky.
 		ctx.fillStyle = W2;
 		for (const y of [envH, envH + 1]) {
 			ctx.fillRect(cx - 1, y, 1, 1);
 			ctx.fillRect(cx + 1, y, 1, 1);
 		}
-		// Basket: a small block, its top rim brighter.
 		for (let y = envH + 2; y <= envH + 4; y++) {
 			for (let x = cx - 1; x <= cx + 1; x++) {
 				ctx.fillStyle = y === envH + 2 ? W1 : W2;
@@ -1018,8 +1001,7 @@
 		return mkTex(c);
 	}
 
-	// Smooth 1-D value noise in [0,1): random values at integers, smoothstepped
-	// between — cheap wind-like wander without any per-frame randomness.
+
 	function makeNoise(seed: number): (t: number) => number {
 		const rand = mulberry32(seed);
 		const grad = Array.from({ length: 256 }, () => rand());
@@ -1044,7 +1026,7 @@
 		balloonNoiseY = makeNoise(fnv1a('balloon-y'));
 		const b = balloonBounds;
 		const sp = new Sprite(balloonTex);
-		sp.anchor.set(0.5, 1); // pivot at the basket so the balloon hangs from a point
+		sp.anchor.set(0.5, 1);
 		sp.scale.set(0.7);
 		const c = new Container();
 		c.eventMode = 'none';
@@ -1059,7 +1041,6 @@
 		c.x = balloon.x;
 		c.y = balloon.y;
 
-		// A second, static balloon rides in the title lockup beside the brand line.
 		if (titleBrandGroup && balloonTex) {
 			titleBalloon = new Sprite(balloonTex);
 			titleBalloon.anchor.set(0.5, 0.5);
@@ -1068,10 +1049,7 @@
 		}
 	}
 
-	// A tiny pixel wave crest — a "~" tilde that rises then dips. The two frames
-	// shift the crest sideways by one pixel so the ripple appears to roll across
-	// the water when the drift timer flips frames, instead of seesawing in place.
-	const WAVE_CURVE = [1, 0, 0, 1, 2, 2, 1, 1]; // crest-line row per column
+	const WAVE_CURVE = [1, 0, 0, 1, 2, 2, 1, 1];
 	function buildWaveTex(): Texture[] {
 		const W = WAVE_CURVE.length;
 		return [0, 1].map((shift) => {
@@ -1093,26 +1071,19 @@
 		const g = geo;
 		const gc = g.groundScale;
 		const r = mulberry32(fnv1a('waves'));
-		// Scatter well past the ground raster on both sides so the open sea reaches
-		// into the gutters and fills the full viewport width, not just the map box.
+
 		const marginX = Math.round(g.cols * 0.7);
-		// First collect every open-sea cell in the southern band, then sample the
-		// wanted count uniformly from that whole pool — filling top-down and
-		// stopping at the cap left them bunched in a narrow band up high.
 		const cand: { x: number; y: number }[] = [];
 		for (let y = Math.ceil(g.rows * 0.5); y < g.rows; y++) {
 			for (let x = -marginX; x < g.cols + marginX; x++) {
-				// Land/shallow only exist inside the raster; anything outside is open sea.
 				if (x >= 0 && x < g.cols) {
 					const idx = y * g.cols + x;
 					if (g.land[idx] || g.shallow[idx]) continue;
 				}
-				// Slightly denser over the big open sea south of the peninsula.
 				const p = 0.0022 * (y > g.rows * 0.62 ? 1.7 : 1);
 				if (r() < p) cand.push({ x, y });
 			}
 		}
-		// Fisher-Yates shuffle so the cap trims evenly, not from the bottom.
 		for (let i = cand.length - 1; i > 0; i--) {
 			const j = Math.floor(r() * (i + 1));
 			[cand[i], cand[j]] = [cand[j], cand[i]];
@@ -1281,6 +1252,11 @@
 		if (titleBalloon && !reduced) {
 			titleBalloon.y = titleBalloonBaseY + Math.sin(performance.now() / 650) * 2;
 		}
+		if (userPulse && userOnMap && !reduced) {
+			const g = (Math.sin(performance.now() / 500) + 1) * 0.5; // 0..1
+			userPulse.scale.set(1 + g * 0.7);
+			userPulse.alpha = 1 - g;
+		}
 		if (reduced || sky.view !== 'today') return;
 		const now = performance.now();
 		if (now - lastDrift > 1200) {
@@ -1292,12 +1268,10 @@
 		if (balloon && balloonBounds && balloonNoiseX && balloonNoiseY) {
 			const b = balloonBounds;
 			balloon.phase += t.deltaMS;
-			// Heading comes from two slow noise channels → a smooth wandering path
-			// that criss-crosses instead of tracking straight.
+
 			const F = 0.00006;
 			let vx = balloonNoiseX(balloon.phase * F) * 2 - 1;
 			let vy = balloonNoiseY(balloon.phase * F * 1.3) * 2 - 1;
-			// Steer back inside as it nears the coastline so it stays over India.
 			const margin = 60;
 			if (balloon.x < b.minX + margin) vx += (b.minX + margin - balloon.x) / margin;
 			if (balloon.x > b.maxX - margin) vx -= (balloon.x - (b.maxX - margin)) / margin;
@@ -1318,9 +1292,7 @@
 	let dragging = false;
 	let moved = false;
 	let last = { x: 0, y: 0 };
-	// Live touch/pointer points, keyed by pointerId. With two or more down we switch
-	// from one-finger pan into pinch mode; `pinch` caches the last gesture midpoint
-	// and finger spread so each move can derive a zoom factor + pan delta.
+
 	const pointers = new Map<number, { x: number; y: number }>();
 	let pinch: { cx: number; cy: number; dist: number } | null = null;
 
@@ -1346,8 +1318,7 @@
 				moved = false;
 				last = { x: e.clientX, y: e.clientY };
 			} else if (pointers.size === 2) {
-				// Second finger down: end single-finger drag, begin pinch. Mark as
-				// moved so the lift-off never registers as a tap-to-select.
+
 				dragging = false;
 				moved = true;
 				pinch = pinchGeom();
@@ -1363,7 +1334,6 @@
 			if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 			if (pinch && pointers.size >= 2) {
 				const g = pinchGeom();
-				// Two-finger translation pans; changing spread zooms about the midpoint.
 				panX -= (g.cx - pinch.cx) / zoom;
 				panY -= (g.cy - pinch.cy) / zoom;
 				zoomAt(g.cx, g.cy, g.dist / pinch.dist);
@@ -1397,8 +1367,7 @@
 			pointers.delete(e.pointerId);
 			if (pointers.size < 2) pinch = null;
 			if (pointers.size === 1) {
-				// Dropped from pinch back to one finger: resume panning from whichever
-				// finger is still down so the map doesn't jump.
+
 				const [only] = pointers.values();
 				dragging = true;
 				moved = true;
@@ -1411,7 +1380,6 @@
 				const p = quad ? nearest(quad, ox, oy, hitR()) : null;
 				if (p) {
 					sky.selectedCode = p.code;
-					// Fire with the selection box appearing: firmer click + a light tap.
 					click('select');
 					tap('light');
 					const rect = app!.canvas.getBoundingClientRect();
@@ -1447,7 +1415,6 @@
 		const ox = panX + sx / zoom;
 		const oy = panY + sy / zoom;
 		const fit = containZoom();
-		// Phones may zoom further out (down to 0.4× fit); desktop stays near fit.
 		const minZoom = fit * (narrowLayout() ? 0.4 : 0.9);
 		zoom = Math.max(minZoom, Math.min(fit * 7, zoom * factor));
 		panX = ox - sx / zoom;
@@ -1569,6 +1536,10 @@
 		void sky.selectedCode;
 		if (app) drawSelected();
 	});
+	$effect(() => {
+		void userGeo.loc;
+		if (app) updateUserMarker();
+	});
 </script>
 
 <div
@@ -1599,7 +1570,6 @@
 </div>
 
 <style>
-	/* Debug HUD: intentionally left as vanilla CSS — dev-only chrome, deliberately off-palette in real monospace. */
 	.dbg {
 		position: absolute;
 		top: 8px;

@@ -26,8 +26,6 @@
 
 	type Px = { x: number; y: number; shade: boolean };
 
-	// Same cell classification as drawMark: fill the pattern, then shade the
-	// bottom-most cell of each cumulus column so the puff sits on a base.
 	function markPixels(band: Band, tier: number, variant: number) {
 		const pat = makePattern(band, tier, variant);
 		const rows = pat.length;
@@ -44,14 +42,12 @@
 		return { px, cols, rows, alpha: MARK_ALPHA[band] * TIER_ALPHA[tier - 1] };
 	}
 
-	// Each tier's headline cloud and altitude, shown in the tag.
 	const LABEL: Record<Band, { name: string; alt: string }> = {
 		high: { name: 'Cirrus', alt: 'High · 7 km +' },
 		middle: { name: 'Altocumulus', alt: 'Medium · 2–7 km' },
 		low: { name: 'Cumulus', alt: 'Low · 0–2 km' }
 	};
 
-	// The map's banded day sky as stepped gradient stops (SKY_BANDS = 5).
 	const skyStops = Array.from(
 		{ length: 5 },
 		(_, i) =>
@@ -145,13 +141,10 @@
 		color: #fff;
 		white-space: nowrap;
 		text-align: right;
-		/* The day sky is pale up high, so the white type sits on an ink chip to
-		   stay legible against every band. */
 		padding: 3px 6px;
 		background: rgba(11, 29, 58, 0.72);
 	}
-	/* Same modular scale as the article type (typography.css): the cloud name a
-	   step above the altitude, both on the uppercase caption voice of h5. */
+
 	.tag .name {
 		font-size: calc(var(--ms-1) * 1rem);
 		font-weight: 700;

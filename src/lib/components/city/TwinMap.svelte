@@ -16,21 +16,14 @@
 	}
 	let { india, pins }: Props = $props();
 
-	// The map's own world geometry (PixelMap WORLD_W / bake-ground.mjs), so the
-	// ground raster and these pins agree on where India is.
 	const WORLD_W = 1024;
 	const WORLD_H = WORLD_W * 1.06;
 	const CELL = 8;
 
-	// Sea framing above/below the land raster — mirrors Minimap.svelte.
 	const V_TOP = 0.05;
 	const V_BOT = 0.05;
 	const V_SPAN = 1 + V_TOP + V_BOT;
-	const ASPECT = WORLD_W / (WORLD_H * V_SPAN); // rendered width / height
-
-	// A pixel cumulus (the LOW tier-4 mark), drawn as SVG cells so the markers
-	// read as clouds like the rest of the atlas. Filled with currentColor, so the
-	// selected city and its twin just swap text colour.
+	const ASPECT = WORLD_W / (WORLD_H * V_SPAN);
 	const CLOUD_W = 6;
 	const CLOUD_H = 4;
 	const CLOUD_CELLS: [number, number][] = [
@@ -39,7 +32,6 @@
 		[0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 2],
 		[0, 3], [1, 3], [2, 3], [3, 3], [4, 3], [5, 3]
 	];
-	// Rendered marker footprint (px) and its half-extents for centring on the point.
 	const MARK_W = 15;
 	const MARK_H = MARK_W * (CLOUD_H / CLOUD_W);
 	const MARK_HX = MARK_W / 2;
@@ -58,20 +50,15 @@
 			)
 	);
 
-	// Labels render at a fixed 10px whatever the container width, so overlap has to
-	// be resolved in real rendered pixels. `bind:clientWidth` measures the live
-	// width; the default matches the panel so first paint doesn't jump.
+
 	let mapW = $state(180);
 
 	const LABEL_H = 11;
-	// 10px bold uppercase + 0.06em tracking; slightly over-estimated so declutter
-	// errs toward extra breathing room.
+
 	const CHAR_W = 7.2;
 	const labelWidth = (text: string) => text.length * CHAR_W;
 
-	// Candidate label placements relative to the pin (px offset + horizontal
-	// anchor), ordered by preference: below-centred first (the default look), then
-	// above, then the two sides, then progressively farther out.
+
 	const CANDIDATES = [
 		{ ox: 0, oy: MARK_HY + 2, align: 'center' },
 		{ ox: 0, oy: -MARK_HY - 2 - LABEL_H, align: 'center' },
@@ -91,7 +78,6 @@
 
 	let placed = $derived.by(() => {
 		const mapH = mapW / ASPECT;
-		// Project each pin to rendered pixels.
 		const base = pins
 			.map((p) => {
 				const pt = projection([p.lon, p.lat]);
@@ -105,8 +91,7 @@
 			})
 			.filter((p) => p !== null);
 
-		// Greedy declutter: accent pins claim their spot first, then the rest
-		// top-to-bottom so upper labels win ties.
+
 		const order = [...base.keys()].sort((i, j) => {
 			const a = base[i];
 			const b = base[j];
@@ -114,7 +99,6 @@
 			return a.sy - b.sy;
 		});
 
-		// Cloud markers are obstacles too, so a label never sits on another marker.
 		const taken: Box[] = base.map((p) => ({
 			l: p.sx - MARK_HX,
 			r: p.sx + MARK_HX,
@@ -139,8 +123,7 @@
 					break;
 				}
 			}
-			// Nothing fit: stack straight down from the default spot until clear, so
-			// labels are always kept apart even in the worst case.
+
 			if (!chosen) {
 				let oy = MARK_HY + 2;
 				let b = boxFor(p, 0, oy, 'center');
@@ -167,7 +150,6 @@
 		align === 'center' ? 'translateX(-50%)' : align === 'right' ? 'translateX(-100%)' : 'none';
 </script>
 
-<!-- Same dressing as the corner Minimap: day-sea backdrop, pixelated land raster. -->
 <div
 	bind:clientWidth={mapW}
 	class="twin-map relative w-full max-w-[240px] overflow-hidden bg-day-sea shadow-[0_0_0_1px] shadow-ink/40"
@@ -184,8 +166,7 @@
 	/>
 	{#each placed as p (p.label)}
 		<div class="absolute" style="left: {p.left}%; top: {p.top}%;">
-			<!-- Pixel cumulus centred on the station point: gold for the selected
-				city, white for its twin. -->
+
 			<svg
 				class={['absolute [shape-rendering:crispEdges]', p.accent ? 'text-sun-gold' : 'text-white']}
 				style="width: {MARK_W}px; height: {MARK_H}px; left: {-MARK_HX}px; top: {-MARK_HY}px; filter: drop-shadow(0 1px 0 rgba(11, 29, 58, 0.75));"

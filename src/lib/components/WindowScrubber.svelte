@@ -2,11 +2,10 @@
 	import { sky } from '$lib/state/sky.svelte';
 
 	interface Props {
-		dates: string[]; // ascending window dates
+		dates: string[];
 	}
 	let { dates }: Props = $props();
 
-	// Clamp the selected index whenever the window changes.
 	$effect(() => {
 		if (sky.windowDayIndex > dates.length - 1) sky.windowDayIndex = dates.length - 1;
 		if (sky.windowDayIndex < 0) sky.windowDayIndex = 0;
@@ -19,9 +18,6 @@
 	}
 
 	let current = $derived(dates[sky.windowDayIndex] ?? dates[dates.length - 1]);
-
-	// Same direct-manipulation timeline as the today scrubber: click or drag
-	// anywhere on the track; ticks mark the window's days.
 	let track = $state<HTMLDivElement>();
 	let dragging = false;
 
@@ -40,7 +36,6 @@
 		try {
 			(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 		} catch {
-			// capture is best-effort (keeps the drag through fast pointer moves)
 		}
 	}
 	function onpointermove(e: PointerEvent) {
@@ -62,7 +57,6 @@
 	let handleX = $derived(dates.length > 1 ? (sky.windowDayIndex / (dates.length - 1)) * 100 : 0);
 </script>
 
-<!-- Phone: the scrubber stretches to the full dock width. -->
 <div class="win flex items-center max-md:w-full">
 	<div
 		class="timeline relative h-[34px] w-[min(300px,62vw)] cursor-pointer touch-none focus-visible:outline-offset-4 max-md:w-auto max-md:min-w-0 max-md:flex-auto"
@@ -92,7 +86,6 @@
 			class="handle absolute top-1 -ml-[5px] h-2.5 w-2.5 bg-sun-gold shadow-[0_0_0_2px_var(--color-ink),2px_2px_0_2px_color-mix(in_srgb,var(--color-navy)_50%,transparent)]"
 			style="left:{handleX}%"
 		></span>
-		<!-- Date label follows the handle so the answer sits where you're looking. -->
 		<span
 			class="date absolute top-[18px] -translate-x-1/2 text-xs tracking-wider whitespace-nowrap text-white text-shadow-sky"
 			style="left:{handleX}%">{current ? label(current) : ''}</span

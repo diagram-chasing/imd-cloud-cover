@@ -3,6 +3,10 @@
 	import type { FeatureCollection } from 'geojson';
 	import { fetchCities } from '$lib/api/r2';
 	import { ordinal } from '$lib/format';
+	import { citySlugs } from '$lib/city/slug.js';
+	import { haversineKm } from '$lib/city/distance';
+	import { userGeo } from '$lib/state/geo.svelte';
+	import { base as APP_BASE } from '$app/paths';
 	import { click } from '$lib/feedback';
 	import StationSearch from '$lib/components/StationSearch.svelte';
 	import { TabSwitch } from '$lib/components/ui/switch';
@@ -16,16 +20,52 @@
 	}
 	let { manifest, places, india }: Props = $props();
 
-	// One remembered choice: returning visitors land straight on their city.
 	const STORE_KEY = 'csx:city';
+
+	// Max distance (km) from the visitor to their nearest city for us to default to
+	// it — beyond this (e.g. an overseas visitor) we fall back to the biggest city.
+	const NEAR_KM = 250;
 
 	let data = $state<CitiesRollup | null>(null);
 	let failed = $state(false);
 	let selected = $state<string | null>(null);
+	// True once a stored/clicked choice pins the selection; blocks the geo default
+	// from overriding a deliberate pick (but a tentative pop-default stays open so
+	// a late-arriving location can still win).
+	let pinned = $state(false);
 	let mode = $state<'today' | 'overall'>('overall');
 	let root = $state<HTMLElement>();
 
-	// The rollup lives below a long article — fetch it once, when scrolled near.
+	// Kick off the coarse (IP) location fetch as soon as the explorer mounts.
+	$effect(() => {
+		userGeo.ensure();
+	});
+
+	function nearestCity(lat: number, lng: number): string | null {
+		if (!data) return null;
+		let best: string | null = null;
+		let bestKm = Infinity;
+		for (const code of Object.keys(data.cities)) {
+			const st = manifest.stations[code];
+			if (!st) continue;
+			const km = haversineKm(lat, lng, st.lat, st.lon);
+			if (km < bestKm) {
+				bestKm = km;
+				best = code;
+			}
+		}
+		return best && bestKm <= NEAR_KM ? best : null;
+	}
+
+	function mostPopulous(): string | null {
+		if (!data) return null;
+		let best: string | null = null;
+		for (const [code, c] of Object.entries(data.cities)) {
+			if (!best || (c.pop ?? 0) > (data.cities[best].pop ?? 0)) best = code;
+		}
+		return best;
+	}
+
 	$effect(() => {
 		if (!root || data || failed) return;
 		const io = new IntersectionObserver(
@@ -42,35 +82,46 @@
 		return () => io.disconnect();
 	});
 
-	// Default city: the remembered pick if it still exists, else the biggest city.
+	// Resolve the default city. Priority: a stored/clicked pick > the city nearest
+	// the visitor's location > the most-populous fallback. While the location is
+	// still resolving we show the populous default tentatively, then let a nearby
+	// location override it once it arrives (re-runs on userGeo.loc / .resolved).
 	$effect(() => {
-		if (!data || selected) return;
+		if (!data || pinned) return;
 		const stored = localStorage.getItem(STORE_KEY);
 		if (stored && data.cities[stored]) {
 			selected = stored;
+			pinned = true;
 			return;
 		}
-		let best: string | null = null;
-		for (const [code, c] of Object.entries(data.cities)) {
-			if (!best || (c.pop ?? 0) > (data.cities[best].pop ?? 0)) best = code;
+		const loc = userGeo.loc;
+		if (loc) {
+			const near = nearestCity(loc.lat, loc.lng);
+			if (near) {
+				selected = near;
+				return;
+			}
 		}
-		selected = best;
+		// No usable location (yet, or ever): show the biggest city. Stays unpinned
+		// so a location arriving later can still take over.
+		if (!selected || userGeo.resolved) selected = mostPopulous();
 	});
 
 	function select(code: string) {
 		click('open');
 		selected = code;
+		pinned = true;
 		localStorage.setItem(STORE_KEY, code);
 	}
 
 	let city = $derived(selected && data ? (data.cities[selected] ?? null) : null);
-	// The arc points at the twin that matches the active mode: today's closest sky
-	// vs the long-term climate match.
+
 	let activeTwin = $derived(
 		city ? (mode === 'today' ? (city.twin?.today ?? null) : (city.twin?.alltime ?? null)) : null
 	);
 	let total = $derived(data ? Object.keys(data.cities).length : 0);
 	let cityCodes = $derived(data ? new Set(Object.keys(data.cities)) : undefined);
+	let slugByCode = $derived(data ? citySlugs(data.cities).slugByCode : {});
 </script>
 
 <section
@@ -111,7 +162,6 @@
 								class="block cursor-pointer border-b-4 border-sun-gold p-0 px-1 align-baseline font-bold whitespace-nowrap text-ink uppercase transition-colors duration-120 hover:text-focus"
 							>
 								{city.name}
-								<!-- Pixel caret: this word is a key, press it. -->
 								<svg
 									class="ml-0.5 inline-block [shape-rendering:crispEdges]"
 									viewBox="0 0 7 4"
@@ -126,8 +176,6 @@
 					</StationSearch>
 				</h2>
 
-				<!-- Today vs the long record: reshuffles the sky, clouds gliding to
-					their new columns. -->
 				<div class="mt-5 flex justify-start">
 					<TabSwitch
 						options={[
@@ -141,16 +189,14 @@
 					{ordinal(city.rank)} cloudiest of {total} cities
 					<span class="opacity-60">·</span>
 					<a
-						href={`/station/${selected}`}
+						href={`${APP_BASE}/city/${slugByCode[selected] ?? ''}`}
 						class="font-bold text-ink underline decoration-ink/40 underline-offset-4 transition-colors duration-120 hover:text-focus"
 					>
-						Station page →
+						City page →
 					</a>
 				</p>
 			</div>
 
-			<!-- Sky panel: day-sea blue matches the histogram's own fill, so the map
-				reads as a window into the same sky. Hard pixel drop. -->
 			<div class="flex md:block md:self-end">
 				<div
 					class="flex bg-day-sea p-2.5 shadow-[3px_3px_0_rgba(11,29,58,0.35)] md:block md:px-4 md:pt-4 md:pb-3 md:shadow-[4px_4px_0_rgba(11,29,58,0.35)]"
@@ -160,8 +206,6 @@
 			</div>
 		</header>
 
-		<!-- The sky: full-bleed histogram canvas, unobstructed. The twin lead is
-			drawn inside it, a dotted arc between the two clouds. -->
 		<CloudHistogram {data} {selected} {mode} twin={activeTwin} onselect={select} />
 	{/if}
 </section>

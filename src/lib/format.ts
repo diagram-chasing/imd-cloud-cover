@@ -1,5 +1,4 @@
-// Shared date formatting so every surface (map cartouche, tooltip, station card)
-// prints the same "when" and can't drift apart.
+
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 

@@ -7,9 +7,7 @@
 	interface Props {
 		summary: Summary;
 		onselect?: (code: string) => void;
-		/** Free sea-gutter width beside the landmass, screen px (from PixelMap.onlayout). */
 		gutter: number;
-		/** Current zoom as a multiple of the fit zoom. */
 		zoomRatio: number;
 	}
 	let { summary, onselect, gutter, zoomRatio }: Props = $props();

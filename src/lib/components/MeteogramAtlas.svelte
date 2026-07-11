@@ -9,20 +9,18 @@
 	import * as Carousel from '$lib/components/ui/carousel/index.js';
 	import type { CarouselAPI } from '$lib/components/ui/carousel/context.js';
 
-	type Rect = { x: number; y: number; w: number; h: number }; // % of the full image
+	type Rect = { x: number; y: number; w: number; h: number };
 	type Region = {
 		id: string;
 		n: number;
 		title: string;
 		note: string;
-		rect: Rect; // panel bounds — marquee + hotspot
-		pad?: [number, number]; // extra thumbnail crop margin [top, bottom] in % of image, so
-		// plotted ink that overshoots the panel frame (markers, whiskers, peaks) isn't clipped
-		nudgeX?: number; // shift the thumbnail crop window right by this % (content moves left);
-		// only affects the thumbnail, not the marquee/hotspot. Trims the axis gutter at the left edge.
-		mark: { x: number; y: number }; // numbered chip, % of the image (hand-placed)
+		rect: Rect;
+		pad?: [number, number];
+		nudgeX?: number;
+		mark: { x: number; y: number };
 		side: 'left' | 'right';
-		anchorY: number; // card vertical center, % of image height
+		anchorY: number;
 	};
 
 	const SRC = '/method-meteogram.webp';
@@ -124,17 +122,16 @@
 		}
 	];
 
-	const narrow = new MediaQuery('(max-width: 1099px)'); // must match the CSS breakpoint
+	const narrow = new MediaQuery('(max-width: 1099px)');
 
 	let hovered = $state<string | null>(null);
 	let pinned = $state<string | null>(null);
-	let swipeActive = $state<string | null>(null); // narrow layouts: card snapped in the deck
-	let deckDismissed = $state(false); // narrow layouts: spotlight closed to view the plate plain
+	let swipeActive = $state<string | null>(null);
+	let deckDismissed = $state(false);
 	const active = $derived(
 		pinned ?? hovered ?? (narrow.current && !deckDismissed ? swipeActive : null)
 	);
-	// At rest the wide plate shows the cloud-panel callout (the panel the pipeline
-	// reads); narrow layouts rest with no callout so the plate reads unobstructed.
+
 	const shown = $derived(active ?? (narrow.current ? null : 'cloud'));
 	const dimming = $derived(active !== null);
 	const cur = $derived(REGIONS.find((r) => r.id === shown) ?? REGIONS[6]);
@@ -153,15 +150,15 @@
 	$effect(() => {
 		const svg = leadsEl;
 		if (!svg || !aw || !ah || narrow.current) return;
-		const STUB = 12; // flat entry into the card
-		const ELBOW = 14; // 45° segment size
+		const STUB = 12;
+		const ELBOW = 14;
 		const specs = REGIONS.map((r) => {
 			const dir = r.side === 'left' ? -1 : 1;
 			const sx = ((IMG_L + (r.mark.x * IMG_W) / 100) / 100) * aw;
 			const sy = (r.mark.y / 100) * ah;
 			const ex = ((r.side === 'left' ? CARD_L : CARD_R) / 100) * aw;
 			const ey = (r.anchorY / 100) * ah;
-			const bendX = ex - dir * (STUB + ELBOW); // gutter, just off the card edge
+			const bendX = ex - dir * (STUB + ELBOW);
 			const dy = ey - sy;
 			const k = Math.min(ELBOW, Math.abs(dy));
 			const points: [number, number][] = [
@@ -228,7 +225,6 @@
 
 	function tapRegion(id: string) {
 		toggle(id);
-		// On narrow layouts the cards live in the deck below — swipe it to the tapped panel.
 		if (pinned === id && window.matchMedia('(max-width: 1099px)').matches) {
 			deckDismissed = false;
 			deckScrollTo(id);
@@ -261,7 +257,7 @@
 			swipeActive = REGIONS[api.selectedScrollSnap()]?.id ?? null;
 			deckDismissed = false;
 		};
-		onSelect(); // the snapped slide is highlighted from the start
+		onSelect(); 
 		api.on('select', onSelect);
 		return () => {
 			api.off('select', onSelect);

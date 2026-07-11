@@ -69,6 +69,31 @@ export const fetchForecast = (date: string, code: string) =>
 // Remote, on-demand.
 export const fetchDates = () => getLatest<DatesIndex>('meta/dates.json');
 
+/** Coarse visitor location from the Worker's Cloudflare edge (`request.cf`).
+ *  City-level, IP-based, no permission prompt. Null in sample mode (no Worker)
+ *  or when the edge can't resolve a location. */
+export interface GeoHint {
+	city: string | null;
+	region: string | null;
+	country: string | null;
+	lat: number;
+	lng: number;
+}
+export async function fetchGeo(): Promise<GeoHint | null> {
+	if (!REMOTE) return null;
+	const res = await fetch(`${REMOTE}/geo`, { cache: 'no-store' });
+	if (!res.ok) return null;
+	const d = (await res.json()) as Partial<GeoHint>;
+	if (typeof d.lat !== 'number' || typeof d.lng !== 'number') return null;
+	return {
+		city: d.city ?? null,
+		region: d.region ?? null,
+		country: d.country ?? null,
+		lat: d.lat,
+		lng: d.lng
+	};
+}
+
 /** URL of a raw meteogram image (for the method note / station links). */
 export const meteogramImageUrl = (date: string, code: string) =>
 	`${BASE}/${date}/${code}-meteogram.webp`;
