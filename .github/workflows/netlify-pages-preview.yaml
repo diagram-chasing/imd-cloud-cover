@@ -44,6 +44,8 @@ jobs:
       - name: Build artifact
         run: |
           pnpm run build
+        env:
+          VITE_R2_PUBLIC_URL: ${{ secrets.VITE_R2_PUBLIC_URL }}
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
