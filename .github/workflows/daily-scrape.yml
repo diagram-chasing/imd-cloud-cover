@@ -43,7 +43,11 @@ jobs:
           path: /tmp/run-results.json
           if-no-files-found: ignore
 
-      # Netlify rebuilds the site (pnpm build re-bakes the core views) so the
-      # deployed data is exactly as fresh as this run.
-      - name: Trigger Netlify rebuild
-        run: curl -sf -X POST "${{ secrets.NETLIFY_BUILD_HOOK }}"
+  # Once fresh data has landed in R2, hand off to the production deploy
+  # workflow. It runs `pnpm build`, which re-bakes the core views from R2, so
+  # the deployed site is exactly as fresh as this run — and both scheduled and
+  # manual production deploys go through the same single code path.
+  deploy:
+    needs: scrape
+    uses: ./.github/workflows/netlify-pages-publish.yaml
+    secrets: inherit
