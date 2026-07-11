@@ -91,10 +91,10 @@
 		</div>
 	{:else}
 		<header
-			class="mx-auto mb-7 grid max-w-2xl items-center gap-x-8 gap-y-6 px-5 md:grid-cols-[minmax(0,1fr)_auto]"
+			class="mx-auto mb-7 grid max-w-2xl grid-cols-[minmax(0,1fr)_auto] items-stretch gap-x-6 gap-y-6 px-5 md:items-center md:gap-x-8"
 		>
-			<div class="flex min-h-[110px] flex-col items-start justify-start text-center md:text-left">
-				<h2 class="m-0 font-bold" style="font-size: clamp(24px, 3.6vw, 38px); line-height: 1.3;">
+			<div class="flex min-h-[110px] flex-col items-start justify-start text-left">
+				<h2 class="m-0 font-bold" style="font-size: clamp(20px, 3.6vw, 38px); line-height: 1.3;">
 					How cloudy <br /> has it been in
 					<StationSearch
 						{manifest}
@@ -128,7 +128,7 @@
 
 				<!-- Today vs the long record: reshuffles the sky, clouds gliding to
 					their new columns. -->
-				<div class="mt-5 flex justify-center md:justify-start">
+				<div class="mt-5 flex justify-start">
 					<TabSwitch
 						options={[
 							{ value: 'overall', label: 'Overall' },
@@ -150,9 +150,11 @@
 			</div>
 
 			<!-- Sky panel: day-sea blue matches the histogram's own fill, so the map
-				reads as a window into the same sky. Hard pixel drop, desktop only. -->
-			<div class="hidden self-end md:block">
-				<div class="bg-day-sea px-4 pt-4 pb-3 shadow-[4px_4px_0_rgba(11,29,58,0.35)]">
+				reads as a window into the same sky. Hard pixel drop. -->
+			<div class="flex md:block md:self-end">
+				<div
+					class="flex bg-day-sea p-2.5 shadow-[3px_3px_0_rgba(11,29,58,0.35)] md:block md:px-4 md:pt-4 md:pb-3 md:shadow-[4px_4px_0_rgba(11,29,58,0.35)]"
+				>
 					<SkyTwin {city} code={selected} {mode} {data} {india} stations={manifest.stations} />
 				</div>
 			</div>

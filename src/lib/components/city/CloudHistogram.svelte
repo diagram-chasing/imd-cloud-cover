@@ -123,14 +123,18 @@
 		const slotW = innerW / cols;
 		const originX = MARGIN_X;
 
-		// Height is fixed to the "overall" arrangement — the mode switch must not
-		// resize the explorer.
+		// Desktop grows the canvas to the tallest "overall" tower. Mobile instead
+		// pins to a short band and scales the clouds down to fit it — the same trick
+		// "today" always uses — so the histogram never runs long on a phone. Height
+		// stays fixed across modes, so toggling never resizes the explorer.
 		const overall = shelveBy((c) => c.mean, atlas, cols, slotW, gap, 1);
-		const height = Math.max(narrow ? 320 : 380, overall.peak + AXIS_H + 80);
+		const height = narrow
+			? Math.max(300, Math.min(overall.peak + AXIS_H + 80, 340))
+			: Math.max(380, overall.peak + AXIS_H + 80);
 		const usable = height - AXIS_H - gap - 40;
 
-		// "Today" bunches cities into a few columns; rather than let those towers
-		// grow the canvas, the clouds shrink to fit the same band.
+		// "Today" bunches cities into a few columns; on mobile the "overall" tower
+		// can be just as tall. Either way, shrink the clouds to fit the same band.
 		const chosen =
 			mode === 'today'
 				? fitShelves(
@@ -145,7 +149,9 @@
 						gap,
 						usable
 					)
-				: overall;
+				: narrow && overall.peak > usable
+					? fitShelves((c) => c.mean, atlas, cols, slotW, gap, usable)
+					: overall;
 		const shelvesPerBin = chosen.shelvesPerBin;
 
 		const boxes: Box[] = [];

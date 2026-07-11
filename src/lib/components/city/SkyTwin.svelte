@@ -33,12 +33,14 @@
 	});
 </script>
 
-<div class="twin w-[180px] text-white">
+<div class="twin flex h-full w-[132px] flex-col text-white md:block md:w-[180px]">
 	<!-- No qualifying twin for this tab: keep the map for context but grey it out. -->
 	<div class={['transition-[filter,opacity] duration-200', !twin && 'opacity-60 grayscale']}>
 		<TwinMap {india} {pins} />
 	</div>
-	<p class="m-0 mt-2 min-h-[3.5em] text-sm leading-relaxed font-bold uppercase text-shadow-sky">
+	<p
+		class="m-0 mt-2 min-h-[3.5em] text-[11px] leading-snug font-bold uppercase text-shadow-sky md:text-sm md:leading-relaxed"
+	>
 		{#if twin && mode === 'today'}
 			Today, this sky matches <span class="text-sun-gold">{twin.name}</span>.
 		{:else if twin}
@@ -46,7 +48,7 @@
 		{:else if mode === 'today'}
 			No city shares {city.name}'s sky today.
 		{:else}
-			No steady sky twin for {city.name}.
+			No sky twin for {city.name}.
 		{/if}
 	</p>
 </div>

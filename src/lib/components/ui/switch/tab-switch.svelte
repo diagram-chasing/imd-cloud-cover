@@ -44,22 +44,26 @@
 </div>
 
 <style>
+	/* Everything is sized in em off this one font-size, so the switch scales as a
+		whole. The clamp shrinks it fluidly on narrow screens (phones sit it beside
+		the map) and settles at 16px from tablet up — mirroring the headline. */
 	.tabswitch {
 		position: relative;
 		display: inline-grid;
 		grid-auto-flow: column;
 		grid-auto-columns: 1fr;
-		padding: 10px;
+		padding: 0.55em;
+		font-size: clamp(10px, 2.1vw, 16px);
 		background: color-mix(in srgb, var(--color-navy) 84%, transparent);
 		box-shadow: 2px 2px 0 color-mix(in srgb, var(--color-navy) 35%, transparent);
 		user-select: none;
 	}
 	.tabswitch__pill {
 		position: absolute;
-		top: 3px;
-		bottom: 3px;
-		left: 3px;
-		width: calc((100% - 6px) / var(--count));
+		top: 0.2em;
+		bottom: 0.2em;
+		left: 0.2em;
+		width: calc((100% - 0.4em) / var(--count));
 		background: var(--color-sun-gold);
 		transform: translateX(calc(var(--active) * 100%));
 		transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -67,12 +71,12 @@
 	.tabswitch__btn {
 		position: relative;
 		z-index: 1;
-		padding: 5px 15px;
+		padding: 0.3em 0.95em;
 		border: 0;
 		background: none;
 		cursor: pointer;
 		font-family: inherit;
-		font-size: 16px;
+		font-size: 1em;
 		font-weight: 900;
 		letter-spacing: 0.14em;
 		line-height: 1;
