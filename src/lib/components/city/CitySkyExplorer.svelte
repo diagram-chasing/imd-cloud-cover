@@ -135,10 +135,21 @@
 			Couldn't load the city record — try again later.
 		</p>
 	{:else if !data || !city || !selected}
-		<div
-			class="grid min-h-[560px] place-items-center bg-day-sea text-xs tracking-[0.1em] text-white uppercase"
-		>
-			Gathering the clouds…
+		<!-- Instant skeleton matching the explorer's final shape (header + histogram)
+			so scrolling into view never reveals an empty box or a layout jump. -->
+		<div class="min-h-[560px] bg-day-sea px-5 pt-2" aria-hidden="true">
+			<div class="mx-auto max-w-2xl motion-safe:animate-pulse">
+				<div class="mb-6 h-9 w-2/3 rounded-xs bg-white/25"></div>
+				<div class="mb-8 h-8 w-40 rounded-xs bg-white/15"></div>
+				<div class="flex items-end gap-1.5">
+					{#each Array(28) as _, i (i)}
+						<div
+							class="flex-1 rounded-xs bg-white/12"
+							style="height: {40 + ((i * 37) % 120)}px"
+						></div>
+					{/each}
+				</div>
+			</div>
 		</div>
 	{:else}
 		<header

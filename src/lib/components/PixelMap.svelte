@@ -190,6 +190,17 @@
 	let lods: Lod[] = [];
 	let lodIndex = -1;
 	let maxBins = 0;
+	// The finest (per-station) LOD and its larger sprite pools are built lazily the
+	// first time the user zooms all the way in — not on the critical first-paint path.
+	let finestBuilt = false;
+	// Set in the $effect cleanup so late font/idle callbacks don't touch a torn-down app.
+	let destroyed = false;
+	const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
+	const onIdle = (cb: () => void) => {
+		const w = window as unknown as { requestIdleCallback?: (cb: () => void) => void };
+		if (w.requestIdleCallback) w.requestIdleCallback(cb);
+		else setTimeout(cb, 1);
+	};
 	let balloonLayer: Container | null = null;
 	let balloonTex: Texture | null = null;
 	let balloonBounds: { minX: number; maxX: number; minY: number; maxY: number } | null = null;
@@ -546,25 +557,38 @@
 		return [...map.values()].sort((a, b) => a.py - b.py);
 	}
 
+	function buildLod(bin: number | null): Lod {
+		const resolved = bin ?? 9;
+		const built = buildBins(bin);
+		return {
+			bin: resolved,
+			scale: resolved / BIN0,
+			bins: built,
+			points: built.map((b) => ({
+				code: b.code,
+				cellX: 0,
+				cellY: 0,
+				x: b.px,
+				y: b.py,
+				members: b.members.length
+			}))
+		};
+	}
+	// Build only the coarse LODs (bin 24/16/11 ≈ 52/117/273 bins) up front. The
+	// finest per-station LOD (~1245 marks) is a lazy placeholder until zoom-in, which
+	// keeps first-paint binning + sprite pools ~4× smaller.
+	const FINE_LOD = LODS.length - 1;
 	function buildLods() {
-		lods = LODS.map(({ bin }) => {
-			const resolved = bin ?? 9;
-			const built = buildBins(bin);
-			return {
-				bin: resolved,
-				scale: resolved / BIN0,
-				bins: built,
-				points: built.map((b) => ({
-					code: b.code,
-					cellX: 0,
-					cellY: 0,
-					x: b.px,
-					y: b.py,
-					members: b.members.length
-				}))
-			};
-		});
-		maxBins = Math.max(...lods.map((l) => l.bins.length));
+		lods = LODS.map(({ bin }, i) =>
+			i < FINE_LOD ? buildLod(bin) : (null as unknown as Lod)
+		);
+		maxBins = Math.max(...lods.slice(0, FINE_LOD).map((l) => l.bins.length));
+	}
+	function ensureFineLod() {
+		if (finestBuilt) return;
+		finestBuilt = true;
+		lods[FINE_LOD] = buildLod(LODS[FINE_LOD].bin);
+		growPools(lods[FINE_LOD].bins.length);
 	}
 
 	function hitR(): number {
@@ -580,7 +604,10 @@
 	}
 
 	function applyLod(i: number) {
-		if (i === lodIndex || !layers) return;
+		if (!layers) return;
+		// Entering the finest LOD builds it (and grows the pools) on first demand.
+		if (i === FINE_LOD && !finestBuilt) ensureFineLod();
+		if (i === lodIndex) return;
 		lodIndex = i;
 		const lod = lods[i];
 		bins = lod.bins;
@@ -612,51 +639,8 @@
 		drawHover();
 	}
 
-	async function init() {
-		if (!host) return;
-		await document.fonts.load("10px 'Ships Whistle'").catch(() => {});
-		const atlas = buildMarkAtlas(MARK_CELL);
-		const [mask, dayTex, nightTex] = await Promise.all([
-			loadGroundMask(groundMaskUrl).catch(() => undefined),
-			loadTex(groundDayUrl),
-			loadTex(groundNightUrl)
-		]);
-		groundTex = { day: dayTex, night: nightTex };
-		geo = buildGeo(india, manifest, WORLD_W, CELL, places, mask);
-		landBottomWorldY = computeLandBottom();
-		buildLods();
-
-		app = new Application();
-		await app.init({
-			resizeTo: host,
-			antialias: false,
-			backgroundAlpha: 0,
-			resolution: window.devicePixelRatio || 1,
-			autoDensity: true
-		});
-		if (!host) {
-			app.destroy();
-			return;
-		}
-		host.appendChild(app.canvas);
-		app.canvas.style.cursor = 'grab';
-
-		skyGfx = new Graphics();
-		app.stage.addChild(skyGfx);
-
-		camera = new Container();
-		app.stage.addChild(camera);
-
-		groundSprite = new Sprite(groundTex[skyMode(sky.timeIndex)]);
-		groundSprite.scale.set(geo.groundScale);
-		camera.addChild(groundSprite);
-
-		shadowLayer = new Container();
-		shadowLayer.eventMode = 'none';
-		camera.addChild(shadowLayer);
-
-		buildWaves();
-
+	function buildTitle() {
+		if (!camera) return;
 		const titleFont = {
 			fontFamily: "'Ships Whistle', monospace",
 			fill: 0xffffff,
@@ -683,9 +667,113 @@
 		titleBrandGroup.addChild(titleBrand);
 		titleGroup.addChild(titleBox, titleText, titleSub, titleMeta, titleBrandGroup);
 		camera.addChild(titleGroup);
+	}
 
-		buildPlaces();
+	// Grow the shadow + cloud-band sprite pools up to `target` entries, appending
+	// into the (already z-ordered) layer containers. Called with the coarse count at
+	// first paint, then with the per-station count when the finest LOD is entered.
+	function growPools(target: number) {
+		if (!layers || !shadowLayer) return;
+		for (let k = shadowPool.length; k < target; k++) {
+			const s = new Sprite(cloudTex.low[1][0]);
+			s.anchor.set(0.5, 0.5);
+			s.tint = SHADOW_TINT;
+			s.visible = false;
+			shadowLayer.addChild(s);
+			shadowPool.push(s);
+		}
+		for (const band of BAND_KEYS) {
+			const arr = pool[band];
+			const layer = layers[band];
+			for (let k = arr.length; k < target; k++) {
+				const s = new Sprite(cloudTex[band][1][0]);
+				s.anchor.set(0.5, 0.5);
+				s.visible = false;
+				layer.addChild(s);
+				arr.push(s);
+			}
+		}
+	}
 
+	async function init() {
+		if (!host) return;
+		// Kick the font load off the critical path. When it resolves, re-lay the title
+		// (and place labels) — both are hidden/faded at the start view, so swapping in
+		// the real font metrics is invisible.
+		document.fonts
+			.load("10px 'Ships Whistle'")
+			.then(() => {
+				if (destroyed) return;
+				drawTitle();
+				if (placeMarkers.length) declutterPlaces();
+			})
+			.catch(() => {});
+
+		const atlas = buildMarkAtlas(MARK_CELL);
+		const [mask, dayTex, nightTex] = await Promise.all([
+			loadGroundMask(groundMaskUrl).catch(() => undefined),
+			loadTex(groundDayUrl),
+			loadTex(groundNightUrl)
+		]);
+		if (destroyed) return;
+		groundTex = { day: dayTex, night: nightTex };
+		geo = buildGeo(india, manifest, WORLD_W, CELL, places, mask);
+		landBottomWorldY = computeLandBottom();
+		buildLods();
+
+		app = new Application();
+		await app.init({
+			resizeTo: host,
+			antialias: false,
+			backgroundAlpha: 0,
+			resolution: window.devicePixelRatio || 1,
+			autoDensity: true
+		});
+		if (destroyed || !host) {
+			app.destroy();
+			app = null;
+			return;
+		}
+		host.appendChild(app.canvas);
+		app.canvas.style.cursor = 'grab';
+
+		skyGfx = new Graphics();
+		app.stage.addChild(skyGfx);
+
+		camera = new Container();
+		app.stage.addChild(camera);
+
+		groundSprite = new Sprite(groundTex[skyMode(sky.timeIndex)]);
+		groundSprite.scale.set(geo.groundScale);
+		camera.addChild(groundSprite);
+
+		// Reserve every layer container in its final z-order now. Ambient layers
+		// (waves, balloon, places) are created empty here and populated after the
+		// first frame, so nothing changes stacking when they fill in later.
+		shadowLayer = new Container();
+		shadowLayer.eventMode = 'none';
+		camera.addChild(shadowLayer);
+		createWaveLayer();
+		buildTitle();
+
+		const layerMap = {} as Record<BandKey, Container>;
+		for (const band of BAND_KEYS) {
+			const layer = new Container();
+			camera.addChild(layer);
+			layerMap[band] = layer;
+		}
+		layers = layerMap;
+
+		createBalloonLayer();
+		createPlacesLayer();
+
+		selGfx = new Graphics();
+		camera.addChild(selGfx);
+		hoverGfx = new Graphics();
+		camera.addChild(hoverGfx);
+		buildUserMarker();
+
+		// Cloud textures + coarse sprite pools (shadow + 3 bands).
 		cloudTex = { low: [], middle: [], high: [] };
 		for (const band of BAND_KEYS) {
 			for (let tier = 1; tier <= 4; tier++) {
@@ -695,40 +783,8 @@
 				}
 			}
 		}
-		shadowPool = Array.from({ length: maxBins }, () => {
-			const s = new Sprite(cloudTex.low[1][0]);
-			s.anchor.set(0.5, 0.5);
-			s.tint = SHADOW_TINT;
-			s.visible = false;
-			shadowLayer!.addChild(s);
-			return s;
-		});
-
-		const layerMap = {} as Record<BandKey, Container>;
-		for (const band of BAND_KEYS) {
-			const layer = new Container();
-			camera.addChild(layer);
-			layerMap[band] = layer;
-			pool[band] = Array.from({ length: maxBins }, () => {
-				const s = new Sprite(cloudTex[band][1][0]);
-				s.anchor.set(0.5, 0.5);
-				s.visible = false;
-				layer.addChild(s);
-				return s;
-			});
-		}
-		layers = layerMap;
+		growPools(maxBins);
 		retargetAlphas();
-
-		buildBalloon();
-		styleAmbient();
-		if (placesLayer) camera.addChild(placesLayer);
-
-		selGfx = new Graphics();
-		camera.addChild(selGfx);
-		hoverGfx = new Graphics();
-		camera.addChild(hoverGfx);
-		buildUserMarker();
 
 		fitCamera();
 		drawSky();
@@ -739,7 +795,23 @@
 		bindPointer();
 		app.ticker.add(tick);
 		requestAnimationFrame(() => {
-			if (!userMoved) fitCamera();
+			if (!destroyed && !userMoved) fitCamera();
+		});
+
+		// First meaningful frame (coarse clouds over India) is ready. Yield, then fill
+		// the ambient decoration; places (heaviest) wait for idle since they're hidden
+		// until the user zooms in.
+		await nextFrame();
+		if (destroyed) return;
+		fillWaves();
+		fillBalloon();
+		drawTitle(); // re-seat the title balloon in the brand row
+		styleAmbient();
+		onIdle(() => {
+			if (destroyed) return;
+			fillPlaces();
+			updatePlacesScale();
+			declutterPlaces();
 		});
 	}
 
@@ -880,11 +952,16 @@
 		return [19, 16, 13, 11][tier] ?? 11;
 	}
 
-	function buildPlaces() {
-		if (!geo || !camera) return;
+	// Reserve the (empty) places container in z-order during first paint; the markers
+	// are built afterwards in fillPlaces (they're hidden until zoomed in anyway).
+	function createPlacesLayer() {
+		if (!camera) return;
 		placesLayer = new Container();
 		placesLayer.eventMode = 'none';
 		camera.addChild(placesLayer);
+	}
+	function fillPlaces() {
+		if (!geo || !placesLayer) return;
 		placeMarkers = [];
 		placeLabels = [];
 		placeDots = [];
@@ -1015,12 +1092,16 @@
 		};
 	}
 
-	function buildBalloon() {
-		if (!geo || !camera) return;
-		balloonTex = buildBalloonTex();
+	// Reserve the (empty) balloon container in z-order during first paint.
+	function createBalloonLayer() {
+		if (!camera) return;
 		balloonLayer = new Container();
 		balloonLayer.eventMode = 'none';
 		camera.addChild(balloonLayer);
+	}
+	function fillBalloon() {
+		if (!geo || !balloonLayer) return;
+		balloonTex = buildBalloonTex();
 		balloonBounds = computeLandBBox();
 		balloonNoiseX = makeNoise(fnv1a('balloon-x'));
 		balloonNoiseY = makeNoise(fnv1a('balloon-y'));
@@ -1061,12 +1142,17 @@
 		});
 	}
 
-	function buildWaves() {
-		if (!geo || !camera) return;
-		waveTex = buildWaveTex();
+	// Reserve the (empty) wave container in z-order during first paint; the sprites
+	// themselves are generated afterwards in fillWaves.
+	function createWaveLayer() {
+		if (!camera) return;
 		waveLayer = new Container();
 		waveLayer.eventMode = 'none';
 		camera.addChild(waveLayer);
+	}
+	function fillWaves() {
+		if (!geo || !waveLayer) return;
+		waveTex = buildWaveTex();
 		waves = [];
 		const g = geo;
 		const gc = g.groundScale;
@@ -1155,6 +1241,7 @@
 			const key = VAL_KEY[band];
 			for (let i = 0; i < bins.length; i++) {
 				const sp = pool[band][i];
+				if (!sp) break;
 				const tier = coverTier(binCover(bins[i], key));
 				if (tier === 0) {
 					sp.visible = false;
@@ -1493,6 +1580,7 @@
 		window.addEventListener('keydown', onkey);
 		init();
 		return () => {
+			destroyed = true;
 			mq.removeEventListener('change', onmq);
 			ro.disconnect();
 			window.removeEventListener('keydown', onkey);

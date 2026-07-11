@@ -1,16 +1,19 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import type { Station } from '$lib/types';
-	import { loadCore, type CoreData } from '$lib/api/load';
-	import { CORE_BASE } from '$lib/api/r2';
+	import { browser } from '$app/environment';
+	import type { Station, Rollup } from '$lib/types';
+	import type { FeatureCollection } from 'geojson';
+	import { loadDeferred, type CriticalData } from '$lib/api/load';
+	import { topoToIndia } from '$lib/map/projection';
 	import { sky } from '$lib/state/sky.svelte';
 	import { userGeo } from '$lib/state/geo.svelte';
 	import { skyMode } from '$lib/theme';
 	import { computeValues, rollupForView, resolveActiveDay } from '$lib/data';
 	import { click } from '$lib/feedback';
 
-	import PixelMap, { type HoverInfo } from '$lib/components/PixelMap.svelte';
+	import type { HoverInfo } from '$lib/components/PixelMap.svelte';
+	import MapShell from '$lib/components/MapShell.svelte';
 	import TimeDock from '$lib/components/TimeDock.svelte';
 	import ViewTabs from '$lib/components/ViewTabs.svelte';
 	import BandToggle from '$lib/components/BandToggle.svelte';
@@ -25,8 +28,31 @@
 	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 	import FieldNotes from '$lib/content.md';
 
-	let core = $state<CoreData>();
+	let { data }: { data: CriticalData } = $props();
+
+	// Critical map data is present at hydration (the prerender serialized it), so the
+	// map can mount immediately. `india` is expanded from the raw topojson once. The
+	// heavy place labels + rollups fill in after first paint (ensureDeferred).
+	let india = $derived(topoToIndia(data.topo));
+	let places = $state<FeatureCollection>();
+	let rollup7 = $state<Rollup>();
+	let rollup30 = $state<Rollup>();
+	// PixelMap is imported dynamically (client-only): the shell + article paint
+	// before the PIXI engine chunk downloads, and it never runs during SSR.
+	let PixelMap = $state<typeof import('$lib/components/PixelMap.svelte').default>();
 	let error = $state<string | null>(null);
+
+	// One object the template reads, assembled from the always-present critical data
+	// plus the late-arriving deferred views (places/rollups may be undefined early).
+	let core = $derived({
+		india,
+		places,
+		manifest: data.manifest,
+		latest: data.latest,
+		summary: data.summary,
+		rollup7,
+		rollup30
+	});
 
 	let tip = $state<HoverInfo | null>(null);
 
@@ -67,13 +93,36 @@
 	// Scroll/pinch does the zooming; chrome appears only when there's a way back.
 	let zoomed = $derived(layout.zoomRatio > 1.05);
 
-	onMount(async () => {
+	// Pull the heavy place labels + rollups exactly once, off the critical path.
+	let deferredStarted = false;
+	function ensureDeferred() {
+		if (deferredStarted) return;
+		deferredStarted = true;
+		loadDeferred()
+			.then((d) => {
+				places = d.places;
+				rollup7 = d.rollup7;
+				rollup30 = d.rollup30;
+			})
+			.catch(() => {});
+	}
+
+	onMount(() => {
 		userGeo.ensure(); // coarse visitor location for the "you are here" map marker
-		try {
-			core = await loadCore();
-		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to load data';
-		}
+		// Load the PIXI map engine + its component chunk — client-side only.
+		import('$lib/components/PixelMap.svelte')
+			.then((m) => (PixelMap = m.default))
+			.catch((e) => (error = e instanceof Error ? e.message : 'Failed to load map'));
+		// Prefetch deferred views once the browser is idle (after the first frame).
+		const w = window as unknown as { requestIdleCallback?: (cb: () => void) => void };
+		if (w.requestIdleCallback) w.requestIdleCallback(ensureDeferred);
+		else setTimeout(ensureDeferred, 200);
+	});
+
+	// If the visitor jumps to Week/Month before the idle prefetch fired, pull the
+	// rollups now so those views aren't briefly empty.
+	$effect(() => {
+		if (sky.view !== 'today') ensureDeferred();
 	});
 
 	let activeRollup = $derived(rollupForView(sky.view, core?.rollup7, core?.rollup30));
@@ -155,18 +204,6 @@
 		return () => document.documentElement.classList.remove('night');
 	});
 
-	// Everything loadCore() fetches, preloaded from the prerendered <head> so the
-	// browser pulls the data in parallel with the JS bundle instead of waiting
-	// for hydration + onMount. Hrefs must match the fetch URLs exactly.
-	const preloads = [
-		'/data/india.json',
-		'/data/india-places.json',
-		`${CORE_BASE}/meta/stations.json`,
-		`${CORE_BASE}/latest/all-stations.json`,
-		`${CORE_BASE}/latest/summary.json`,
-		`${CORE_BASE}/rollups/7d.json`,
-		`${CORE_BASE}/rollups/30d.json`
-	];
 </script>
 
 <svelte:head>
@@ -175,9 +212,6 @@
 		name="description"
 		content="A daily pixel map of cloud cover over India, read from IMD meteograms."
 	/>
-	{#each preloads as href (href)}
-		<link rel="preload" {href} as="fetch" crossorigin="anonymous" />
-	{/each}
 </svelte:head>
 
 <section
@@ -191,7 +225,7 @@
 	<div
 		class="map-frame relative h-[max(88svh,440px)] overflow-hidden bg-navy after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-[9] after:h-[170px] after:bg-[linear-gradient(to_top,color-mix(in_srgb,var(--color-night-sky)_60%,transparent),color-mix(in_srgb,var(--color-night-sky)_42%,transparent)_35%,color-mix(in_srgb,var(--color-night-sky)_18%,transparent)_65%,transparent)] after:content-[''] md:h-full md:min-h-0"
 	>
-		{#if core}
+		{#if browser && PixelMap}
 			<PixelMap
 				bind:this={map}
 				india={core.india}
@@ -203,10 +237,8 @@
 				onselect={openStation}
 				onlayout={(info) => (layout = info)}
 			/>
-		{:else if !error}
-			<div class="loading grid h-full w-full place-items-center text-xs text-white">
-				Reading the skies…
-			</div>
+		{:else}
+			<MapShell {night} />
 		{/if}
 
 		<!-- While zoomed/panned: the way back lives in the top-right corner on every
@@ -421,7 +453,7 @@
 		code={sky.selectedCode}
 		station={panelStation}
 		current={values[sky.selectedCode] ?? null}
-		rollup={core.rollup30}
+		rollup={core.rollup30 ?? null}
 		date={activeDate}
 		when={whenLabel}
 		at={anchorPoint}
