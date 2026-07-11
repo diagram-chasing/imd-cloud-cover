@@ -155,7 +155,9 @@
 	let geo: Geo | null = null;
 	let camera: Container | null = null;
 	let groundSprite: Sprite | null = null;
-	let groundTex: { day: Texture; night: Texture } | null = null;
+	// Only the texture for the sky mode visible at init is loaded critically; the
+	// other mode fills in on idle, so either key can be briefly absent.
+	let groundTex: Partial<Record<'day' | 'night', Texture>> | null = null;
 	let skyGfx: Graphics | null = null;
 
 	let titleGroup: Container | null = null;
@@ -634,30 +636,60 @@
 			})
 			.catch(() => {});
 
+		// Spin up the WebGL context immediately, un-awaited, so it initialises while
+		// the mask + ground texture download/decode. `preference: 'webgl'` keeps the
+		// renderer choice deterministic — it matches the renderer chunk the
+		// prerendered page modulepreloads, and skips the async WebGPU adapter probe.
+		// `app` is only assigned once init resolves, so the $effect teardown's
+		// app?.destroy() can't race a half-initialised Application.
+		const application = new Application();
+		const appReady = application
+			.init({
+				preference: 'webgl',
+				resizeTo: host,
+				antialias: false,
+				backgroundAlpha: 0,
+				resolution: window.devicePixelRatio || 1,
+				autoDensity: true
+			})
+			.then(
+				() => true,
+				() => false
+			);
+
 		const atlas = buildMarkAtlas(MARK_CELL);
-		const [mask, dayTex, nightTex] = await Promise.all([
+		// Only the ground texture for the current sky mode gates first paint; the
+		// other mode's texture loads on idle and swaps in via updateGround.
+		const mode = skyMode(sky.timeIndex);
+		const [mask, groundNow] = await Promise.all([
 			loadGroundMask(groundMaskUrl).catch(() => undefined),
-			loadTex(groundDayUrl),
-			loadTex(groundNightUrl)
+			loadTex(mode === 'night' ? groundNightUrl : groundDayUrl)
 		]);
-		if (destroyed) return;
-		groundTex = { day: dayTex, night: nightTex };
+		if (destroyed) {
+			appReady.then((ok) => ok && application.destroy());
+			return;
+		}
+		groundTex = { [mode]: groundNow };
+		const otherMode = mode === 'night' ? 'day' : 'night';
+		onIdle(() => {
+			if (destroyed) return;
+			loadTex(otherMode === 'night' ? groundNightUrl : groundDayUrl)
+				.then((t) => {
+					if (destroyed || !groundTex) return;
+					groundTex[otherMode] = t;
+					updateGround();
+				})
+				.catch(() => {});
+		});
 		geo = buildGeo(india, manifest, WORLD_W, CELL, places, mask);
 		buildLods();
 
-		app = new Application();
-		await app.init({
-			resizeTo: host,
-			antialias: false,
-			backgroundAlpha: 0,
-			resolution: window.devicePixelRatio || 1,
-			autoDensity: true
-		});
-		if (destroyed || !host) {
-			app.destroy();
-			app = null;
+		const ok = await appReady;
+		if (destroyed || !host || !ok) {
+			if (ok) application.destroy();
 			return;
 		}
+		app = application;
 		host.appendChild(app.canvas);
 		app.canvas.style.cursor = 'grab';
 
@@ -667,7 +699,7 @@
 		camera = new Container();
 		app.stage.addChild(camera);
 
-		groundSprite = new Sprite(groundTex[skyMode(sky.timeIndex)]);
+		groundSprite = new Sprite(groundTex?.[skyMode(sky.timeIndex)] ?? groundNow);
 		groundSprite.scale.set(geo.groundScale);
 		camera.addChild(groundSprite);
 
@@ -1122,7 +1154,10 @@
 
 	function updateGround() {
 		if (!groundSprite || !groundTex) return;
-		groundSprite.texture = groundTex[skyMode(sky.timeIndex)];
+		// The off-mode texture may still be loading; keep the stale one until the
+		// idle load lands and calls back in here.
+		const t = groundTex[skyMode(sky.timeIndex)];
+		if (t) groundSprite.texture = t;
 	}
 
 	function binCover(b: Bin, key: 'h' | 'm' | 'l'): number {

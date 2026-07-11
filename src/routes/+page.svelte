@@ -36,7 +36,11 @@
 	let rollup7 = $state<Rollup>();
 	let rollup30 = $state<Rollup>();
 	// PixelMap is imported dynamically (client-only): the shell + article paint
-	// before the PIXI engine chunk downloads, and it never runs during SSR.
+	// before the PIXI engine chunk downloads, and it never runs during SSR. The
+	// import() fires at module eval — during hydration, not after it — so the chunk
+	// request overlaps the remaining hydration work (and the prerendered page's
+	// modulepreload hints, injected postbuild, usually have it in cache already).
+	const pixelMapImport = browser ? import('$lib/components/PixelMap.svelte') : null;
 	let PixelMap = $state<typeof import('$lib/components/PixelMap.svelte').default>();
 	// Flipped on the map's first layout emit (its first painted frame) to cross-fade
 	// the India loading shell out and reveal the live canvas underneath.
@@ -98,9 +102,8 @@
 
 	onMount(() => {
 		userGeo.ensure(); // coarse visitor location for the "you are here" map marker
-		// Load the PIXI map engine + its component chunk — client-side only.
-		import('$lib/components/PixelMap.svelte')
-			.then((m) => (PixelMap = m.default))
+		pixelMapImport
+			?.then((m) => (PixelMap = m.default))
 			.catch((e) => (error = e instanceof Error ? e.message : 'Failed to load map'));
 		// Prefetch deferred views once the browser is idle (after the first frame).
 		const w = window as unknown as { requestIdleCallback?: (cb: () => void) => void };

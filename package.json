@@ -9,7 +9,7 @@
 		"bake": "node scripts/bake-data.mjs",
 		"bake:ground": "node scripts/bake-ground.mjs",
 		"og": "node scripts/build-og.mjs",
-		"build": "node scripts/bake-data.mjs && node scripts/build-og.mjs && vite build",
+		"build": "node scripts/bake-data.mjs && node scripts/build-og.mjs && vite build && node scripts/inject-preloads.mjs",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
