@@ -191,7 +191,6 @@
 		document.documentElement.classList.toggle('night', night);
 		return () => document.documentElement.classList.remove('night');
 	});
-
 </script>
 
 <svelte:head>

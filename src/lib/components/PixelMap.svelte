@@ -9,6 +9,7 @@
 </script>
 
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import {
 		Application,
 		Container,
@@ -367,7 +368,6 @@
 		if (userMarker) userMarker.scale.set(1 / zoom);
 	}
 
-
 	function declutterPlaces() {
 		if (!placesLayer || !geo) return;
 
@@ -400,7 +400,6 @@
 			const gap2 = TIER_GAP2[p.tier];
 			let hit = false;
 			for (const q of placed) {
-
 				const dx = sx - q.ax;
 				const dy = sy - q.ay;
 				if (dx * dx + dy * dy < gap2 || (l < q.r && r > q.l && t < q.b && b > q.t)) {
@@ -506,9 +505,7 @@
 	// keeps first-paint binning + sprite pools ~4× smaller.
 	const FINE_LOD = LODS.length - 1;
 	function buildLods() {
-		lods = LODS.map(({ bin }, i) =>
-			i < FINE_LOD ? buildLod(bin) : (null as unknown as Lod)
-		);
+		lods = LODS.map(({ bin }, i) => (i < FINE_LOD ? buildLod(bin) : (null as unknown as Lod)));
 		maxBins = Math.max(...lods.slice(0, FINE_LOD).map((l) => l.bins.length));
 	}
 	function ensureFineLod() {
@@ -660,7 +657,10 @@
 		const atlas = buildMarkAtlas(MARK_CELL);
 		// Only the ground texture for the current sky mode gates first paint; the
 		// other mode's texture loads on idle and swaps in via updateGround.
-		const mode = skyMode(sky.timeIndex);
+		// untrack: this runs synchronously inside the mounting $effect, and a plain
+		// read would register sky.timeIndex as a dependency — the first scrub across
+		// it would then tear down and never rebuild the whole Pixi app.
+		const mode = untrack(() => skyMode(sky.timeIndex));
 		const [mask, groundNow] = await Promise.all([
 			loadGroundMask(groundMaskUrl).catch(() => undefined),
 			loadTex(mode === 'night' ? groundNightUrl : groundDayUrl)
@@ -1011,10 +1011,8 @@
 			const b = cx + h;
 			for (let x = a; x <= b; x++) {
 				let col = W1;
-				if (x === a || x === b)
-					col = W2;
-				else if (BALLOON_SEAMS.includes(x))
-					col = W2;
+				if (x === a || x === b) col = W2;
+				else if (BALLOON_SEAMS.includes(x)) col = W2;
 				else if (x > cx && ((x + y) & 1) === 0) col = W3;
 				ctx.fillStyle = col;
 				ctx.fillRect(x, y, 1, 1);
@@ -1033,7 +1031,6 @@
 		}
 		return mkTex(c);
 	}
-
 
 	function makeNoise(seed: number): (t: number) => number {
 		const rand = mulberry32(seed);
@@ -1353,7 +1350,6 @@
 				moved = false;
 				last = { x: e.clientX, y: e.clientY };
 			} else if (pointers.size === 2) {
-
 				dragging = false;
 				moved = true;
 				pinch = pinchGeom();
@@ -1397,7 +1393,6 @@
 			pointers.delete(e.pointerId);
 			if (pointers.size < 2) pinch = null;
 			if (pointers.size === 1) {
-
 				const [only] = pointers.values();
 				dragging = true;
 				moved = true;

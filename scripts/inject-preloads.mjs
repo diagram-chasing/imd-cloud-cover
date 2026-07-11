@@ -9,12 +9,12 @@
 // whole closure from the HTML head turns the waterfall into one parallel fetch.
 //
 // The chunk set is derived from the Vite manifest each build (hashes change
-// every build; nothing is hardcoded): start from the chunks the prerendered
-// HTML already preloads, walk their dynamicImports, and pull in each dynamic
-// entry's static-import closure, recursing into nested dynamicImports. The
-// WebGPU and Canvas renderer chunks are excluded — with `preference: 'webgl'`
-// pixi never requests them.
-import { readFileSync, writeFileSync } from 'node:fs';
+// every build; chunk names are never hardcoded): seed from the manifest entry
+// named "PixelMap", walk its static-import closure, and recurse into
+// dynamicImports (pixi's environment/renderer chunks). Chunks the HTML already
+// preloads are skipped, as are the WebGPU and Canvas renderer chunks — with
+// `preference: 'webgl'` pixi never requests them.
+import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
@@ -26,27 +26,36 @@ const EXCLUDE = /WebGPURenderer\.mjs$|CanvasRenderer\.mjs$/;
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 let html = readFileSync(htmlPath, 'utf8');
 
+// Idempotent: strip any previously injected block before re-injecting.
+const MARK_OPEN = '<!-- inject-preloads -->';
+const MARK_CLOSE = '<!-- /inject-preloads -->';
+html = html.replace(new RegExp(`\\s*${MARK_OPEN}[\\s\\S]*?${MARK_CLOSE}`), '');
+
 // Chunk files the page already loads (SvelteKit's own preload tags).
 const preloaded = new Set(
 	[...html.matchAll(/href="\.\/(_app\/immutable\/[^"]+\.js)"/g)].map((m) => m[1])
 );
 
-const byFile = new Map(Object.values(manifest).map((e) => [e.file, e]));
+const seed = Object.keys(manifest).find(
+	(k) => manifest[k].name === 'PixelMap' && k.endsWith('.js')
+);
+if (!seed) {
+	console.error('inject-preloads: no "PixelMap" chunk in the Vite manifest — walk is broken.');
+	process.exit(1);
+}
 
-// Walk: seed with the already-preloaded entries, follow static imports of any
-// chunk we decide to preload, and branch into dynamicImports (minus exclusions).
 const wanted = new Map(); // file -> manifest entry, in discovery order
 const visited = new Set();
-function visit(key, viaDynamic) {
+function visit(key) {
 	if (visited.has(key) || EXCLUDE.test(key)) return;
 	visited.add(key);
 	const e = manifest[key];
 	if (!e) return;
-	if (viaDynamic && !preloaded.has(e.file)) wanted.set(e.file, e);
-	for (const imp of e.imports ?? []) visit(imp, viaDynamic || !preloaded.has(manifest[imp]?.file));
-	for (const dyn of e.dynamicImports ?? []) visit(dyn, true);
+	if (!preloaded.has(e.file)) wanted.set(e.file, e);
+	for (const imp of e.imports ?? []) visit(imp);
+	for (const dyn of e.dynamicImports ?? []) visit(dyn);
 }
-for (const [key, e] of Object.entries(manifest)) if (preloaded.has(e.file)) visit(key, false);
+visit(seed);
 
 if (wanted.size === 0) {
 	console.error('inject-preloads: resolved zero chunks to preload — manifest walk is broken.');
@@ -62,7 +71,9 @@ for (const e of wanted.values()) {
 	for (const css of e.css ?? []) {
 		if (!seenExtra.has(css) && !html.includes(css)) {
 			seenExtra.add(css);
-			links.push(`<link href="./${css}" rel="preload" as="style">`);
+			// crossorigin matches Vite's dynamic-import CSS <link> credentials mode;
+			// without it the preload is discarded and the file fetched twice.
+			links.push(`<link href="./${css}" rel="preload" as="style" crossorigin>`);
 		}
 	}
 	for (const asset of e.assets ?? []) {
@@ -72,8 +83,22 @@ for (const e of wanted.values()) {
 		}
 	}
 }
+// The day/night ground PNGs sit in shared chunks of the static route graph, so
+// the walk above misses them — but MapShell only sets its <img> src at runtime
+// and PixelMap's ground texture gates first paint, so hint them explicitly.
+// (Which one is critical depends on the visitor's local time; both total ~58 KB.)
+for (const f of readdirSync(resolve(root, 'build/_app/immutable/assets'))) {
+	const asset = `_app/immutable/assets/${f}`;
+	if (/^ground-(day|night)\./.test(f) && !seenExtra.has(asset) && !html.includes(asset)) {
+		seenExtra.add(asset);
+		links.push(`<link href="./${asset}" rel="preload" as="image">`);
+	}
+}
 
-html = html.replace('</head>', `\t\t${links.join('\n\t\t')}\n\t</head>`);
+html = html.replace(
+	'</head>',
+	`\t\t${MARK_OPEN}\n\t\t${links.join('\n\t\t')}\n\t\t${MARK_CLOSE}\n\t</head>`
+);
 writeFileSync(htmlPath, html);
 console.log(`inject-preloads: added ${links.length} preload hints to build/index.html`);
 for (const l of links) console.log('  ' + l.match(/href="([^"]+)"/)[1]);
