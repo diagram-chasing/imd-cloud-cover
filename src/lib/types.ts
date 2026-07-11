@@ -32,9 +32,8 @@ export interface DatesIndex {
 	latest: string;
 }
 
-/** One {h, m, l, p} value (0-100) per station code for the current view.
- *  p = relative precip intensity (auto-scaled per station; not absolute mm). */
-export type BandValues = Record<string, { h: number; m: number; l: number; p: number }>;
+/** One {h, m, l} value (0-100) per station code for the current view. */
+export type BandValues = Record<string, { h: number; m: number; l: number }>;
 
 /** latest/all-stations.json — the day-0 slice per station, plus a short
  *  multi-day forecast tail so the client can render the visitor's *current*
@@ -58,7 +57,6 @@ export interface StationBands {
 	h: number[]; // length 8
 	m: number[];
 	l: number[];
-	p: number[]; // relative precip intensity 0-100
 }
 
 export interface NamedValue {
@@ -67,20 +65,12 @@ export interface NamedValue {
 	value: number;
 }
 
-export interface StreakEntry {
-	code: string;
-	name: string;
-	days: number;
-}
-
 /** latest/summary.json */
 export interface Summary {
 	date: string;
-	national_mean: { h: number; m: number; l: number; rain: number; total: number };
+	national_mean: { h: number; m: number; l: number; total: number };
 	cloudiest: NamedValue | null;
 	clearest: NamedValue | null;
-	wettest: NamedValue | null;
-	streaks: { sun: StreakEntry[]; cloud: StreakEntry[] };
 	station_count: number;
 	failed_count: number;
 }
@@ -90,7 +80,6 @@ export interface DailyMeans {
 	h: number;
 	m: number;
 	l: number;
-	p: number; // relative precip intensity 0-100
 	e: number; // effective = mean of per-step max
 	/** 8-step effective series (max of h/m/l per step). Absent on days written
 	 *  before the pipeline started recording it. */
@@ -113,7 +102,6 @@ export interface Rollup {
 			h: (number | null)[];
 			m: (number | null)[];
 			l: (number | null)[];
-			p: (number | null)[];
 			e: (number | null)[];
 		}
 	>;
@@ -121,7 +109,6 @@ export interface Rollup {
 		h: (number | null)[];
 		m: (number | null)[];
 		l: (number | null)[];
-		p: (number | null)[];
 		e: (number | null)[];
 	};
 }
@@ -150,8 +137,6 @@ export interface CityStats {
 	runs: { clear: CityRun | null; grey: CityRun | null };
 	/** Longest run without a clear day ("sun drought"). */
 	drought: CityRun | null;
-	/** Monsoon arrival date, or null if the clouds haven't settled in yet. */
-	onset: string | null;
 	/** Sky twins: `today` matches the latest day's 8-step profile (lowest RMSE),
 	 * `alltime` the best long-term anomaly correlation. Either can be null when no
 	 * far, different-state city qualifies. `km`/`r`/`rmse` are absent in rollups
@@ -188,7 +173,6 @@ export interface ForecastPoint {
 	high: number;
 	middle: number;
 	low: number;
-	rain: number; // relative precip intensity 0-100
 }
 
 export interface Forecast {

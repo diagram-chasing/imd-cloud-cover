@@ -7,8 +7,8 @@ consumes:
   meta/stations.json        station manifest (copied from repo)
   meta/dates.json           { dates: [...], latest: "YYYY-MM-DD" }
   latest/all-stations.json  today's 8-step day-0 slice per station
-  latest/summary.json       national means, cloudiest/clearest, streaks
-  history/{CODE}.json       per-day daily means (h,m,l,p,e) plus the 8-step
+  latest/summary.json       national means, cloudiest/clearest
+  history/{CODE}.json       per-day daily means (h,m,l,e) plus the 8-step
                             effective series `t`, capped at 400 days
   rollups/7d.json,30d.json  per-station daily-mean series over the window
   rollups/cities.json       long-term city explorer view
@@ -44,8 +44,8 @@ FORECAST_DAYS = 3
 HISTORY_CAP = 400
 
 # One key per band; RAW_FIELDS maps view keys to raw-JSON field names.
-BANDS = ("h", "m", "l", "p", "e")
-RAW_FIELDS = (("h", "high"), ("m", "middle"), ("l", "low"), ("p", "rain"))
+BANDS = ("h", "m", "l", "e")
+RAW_FIELDS = (("h", "high"), ("m", "middle"), ("l", "low"))
 
 DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})/([A-Za-z0-9_-]+)-meteogram\.json$")
 DATE_ONLY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -66,7 +66,6 @@ TWIN_R_SLACK = 0.05     # among far candidates near the best r, take the FURTHES
 TWIN_WINDOW = 10        # ± days for each city's own rolling baseline
 TWIN_MIN_STD = 5.0      # anomaly std below this = sky never changes; no alltime twin
 TWIN_TODAY_MAX_RMSE = 12.0  # today's 8-step profiles must be at least this close
-ONSET_FROM_MONTH = 4    # look for monsoon onset from Apr 1 (skips winter fog runs)
 
 
 # --------------------------------------------------------------------------
@@ -107,12 +106,11 @@ def mean_round(vals):
 # --------------------------------------------------------------------------
 
 def forecast_bands(raw, n_days=FORECAST_DAYS):
-    """{"h","m","l","p": up to n_days*8 ints each}, or None if unusable.
+    """{"h","m","l": up to n_days*8 ints each}, or None if unusable.
 
     Reads the leading `n_days` of the 3-hourly forecast (the raw meteogram holds
     ~10). A short forecast simply yields fewer steps; callers slice day-0 off the
-    front with `day0()`. Raw JSONs predating the rain field default to 0 via
-    clampint, keeping old dates backward-compatible.
+    front with `day0()`.
     """
     data = raw.get("data")
     if not data or len(data) < DAY0_SAMPLES:
@@ -141,8 +139,7 @@ def daily_means(b):
 def history_entry(b):
     """A station-history day: daily means plus `t`, the 8-step effective series.
 
-    `t` feeds the station page's time-of-day facts; rollups/streaks only read
-    the means.
+    `t` feeds the station page's time-of-day facts; rollups only read the means.
     """
     return {**daily_means(b), "t": effective(b)}
 
@@ -274,38 +271,6 @@ def build_rollups(histories, dates_window, manifest_codes):
             "stations": stations, "national": national}
 
 
-def run_back(days, latest, cond):
-    """Length of the calendar-consecutive run ending at `latest` where cond(e)."""
-    n, d = 0, latest
-    while True:
-        dm = days.get(d.isoformat())
-        if dm is None or not cond(dm["e"]):
-            return n
-        n += 1
-        d -= datetime.timedelta(days=1)
-
-
-def compute_streaks(histories, latest_date, manifest_codes, manifest):
-    """Current active streaks per station: {"sun": [...], "cloud": [...]} top-5."""
-    latest = datetime.date.fromisoformat(latest_date)
-    conds = {"sun": lambda e: e < SUN_THRESHOLD,
-             "cloud": lambda e: e >= CLOUD_THRESHOLD}
-    out = {k: [] for k in conds}
-    for code in sorted(manifest_codes):
-        hist = histories.get(code)
-        if not hist:
-            continue
-        days = hist.get("days", {})
-        name = manifest["stations"].get(code, {}).get("name", code)
-        for kind, cond in conds.items():
-            n = run_back(days, latest, cond)
-            if n:
-                out[kind].append({"code": code, "name": name, "days": n})
-    for lst in out.values():
-        lst.sort(key=lambda x: (-x["days"], x["code"]))
-    return {k: v[:5] for k, v in out.items()}
-
-
 # --------------------------------------------------------------------------
 # Cities view (the homepage's long-term city explorer)
 # --------------------------------------------------------------------------
@@ -376,19 +341,6 @@ def pearson(xs, ys):
     return sxy / (sxx * syy) ** 0.5
 
 
-def monsoon_onset(dates, es, latest_date):
-    """First date on/after Apr 1 (latest year) that is overcast with >=5 of the
-    following 7 days overcast too. Returns the ISO date or None."""
-    floor = f"{int(latest_date[:4]):04d}-{ONSET_FROM_MONTH:02d}-01"
-    for i, (d, e) in enumerate(zip(dates, es)):
-        if d < floor or e is None or e < CLOUD_THRESHOLD:
-            continue
-        follow = [x for x in es[i + 1:i + 8] if x is not None]
-        if sum(1 for x in follow if x >= CLOUD_THRESHOLD) >= 5:
-            return d
-    return None
-
-
 def calendar_window(histories, cities, latest_date):
     """Shared calendar window: earliest recorded day across the selected
     cities up to latest_date, capped like the histories are."""
@@ -403,7 +355,7 @@ def calendar_window(histories, cities, latest_date):
             for i in range((latest - start).days + 1)]
 
 
-def city_entry(place, days, dates, latest_date):
+def city_entry(place, days, dates):
     es = [days[d]["e"] if d in days else None for d in dates]
     vals = [e for e in es if e is not None]
     if not vals:
@@ -422,7 +374,6 @@ def city_entry(place, days, dates, latest_date):
         "runs": {"clear": longest_run(dates, es, lambda e: e < SUN_THRESHOLD),
                  "grey": longest_run(dates, es, lambda e: e >= CLOUD_THRESHOLD)},
         "drought": longest_run(dates, es, lambda e: e >= SUN_THRESHOLD),
-        "onset": monsoon_onset(dates, es, latest_date),
     }
 
 
@@ -546,7 +497,7 @@ def build_cities(histories, cities, latest_date, manifest):
     entries, profiles = {}, {}
     for code, place in cities.items():
         days = (histories.get(code) or {}).get("days", {})
-        entry = city_entry(place, days, dates, latest_date)
+        entry = city_entry(place, days, dates)
         if entry:
             entries[code] = entry
             t = days.get(latest_date, {}).get("t")
@@ -573,10 +524,10 @@ def build_cities(histories, cities, latest_date, manifest):
 # Summary / indexes
 # --------------------------------------------------------------------------
 
-NATIONAL_KEYS = (("h", "h"), ("m", "m"), ("l", "l"), ("rain", "p"), ("total", "e"))
+NATIONAL_KEYS = (("h", "h"), ("m", "m"), ("l", "l"), ("total", "e"))
 
 
-def build_summary(date, manifest, today_means, streaks, failed_count):
+def build_summary(date, manifest, today_means, failed_count):
     codes = list(today_means)
     names = manifest["stations"]
 
@@ -588,13 +539,13 @@ def build_summary(date, manifest, today_means, streaks, failed_count):
     if codes:
         nat = {out: mean_round([today_means[c].get(src, 0) for c in codes])
                for out, src in NATIONAL_KEYS}
-        cloudiest, clearest, wettest = extreme(max, "e"), extreme(min, "e"), extreme(max, "p")
+        cloudiest, clearest = extreme(max, "e"), extreme(min, "e")
     else:
         nat = {out: 0 for out, _ in NATIONAL_KEYS}
-        cloudiest = clearest = wettest = None
+        cloudiest = clearest = None
 
     return {"date": date, "national_mean": nat, "cloudiest": cloudiest,
-            "clearest": clearest, "wettest": wettest, "streaks": streaks,
+            "clearest": clearest,
             "station_count": len(codes), "failed_count": failed_count}
 
 
@@ -641,7 +592,7 @@ def aggregate_date(store, date, generated_at, report=None):
     histories = load_histories(store, manifest_codes)
     today_means = update_histories(store, date, slices, manifest_codes, histories)
 
-    print("Building rollups, streaks and summary...")
+    print("Building rollups and summary...")
     for n, name in ((7, "7d"), (30, "30d")):
         roll = build_rollups(histories, window_dates(date, n), manifest_codes)
         store.put_json(f"rollups/{name}.json", roll, cache_control=SHORT)
@@ -654,9 +605,8 @@ def aggregate_date(store, date, generated_at, report=None):
             print(f"Wrote cities view: {len(doc['cities'])} cities, "
                   f"{len(doc['dates'])} days.")
 
-    streaks = compute_streaks(histories, date, manifest_codes, manifest)
     failed_count = report.get("failed_count", 0) if report else 0
-    summary = build_summary(date, manifest, today_means, streaks, failed_count)
+    summary = build_summary(date, manifest, today_means, failed_count)
     store.put_json("latest/summary.json", summary, cache_control=SHORT)
 
     update_dates_index(store, date, list_dates(store))

@@ -18,8 +18,6 @@
 	import ViewTabs from '$lib/components/ViewTabs.svelte';
 	import BandToggle from '$lib/components/BandToggle.svelte';
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
-	import StreakBoard from '$lib/components/StreakBoard.svelte';
-	import StreakPanel from '$lib/components/StreakPanel.svelte';
 	import StationSearch from '$lib/components/StationSearch.svelte';
 	import StationDetails from '$lib/components/StationDetails.svelte';
 	import Minimap from '$lib/components/Minimap.svelte';
@@ -60,21 +58,19 @@
 	let tip = $state<HoverInfo | null>(null);
 
 	// Map instance API (the FIT link calls it) and the camera-derived layout info
-	// the streak inset + FIT link use: gutter width and zoom-vs-fit ratio.
+	// the FIT link uses: gutter width and zoom-vs-fit ratio.
 	let map = $state<{
 		zoomIn: () => void;
 		zoomOut: () => void;
 		zoomReset: () => void;
-		panAside: (on: boolean, clearPx?: number) => void;
 	}>();
 	let layout = $state({
 		gutter: 0,
 		zoomRatio: 1,
 		view: { x: 0, y: 0, w: 0, h: 0 },
-		world: { w: 1, h: 1 },
-		streak: { x: 0, y: 0 }
+		world: { w: 1, h: 1 }
 	});
-	// Phones get the pan-aside + minimap streak reveal; desktop keeps the gutter list.
+	// Desktop shows the minimap; phones don't.
 	let isPhone = $state(false);
 	$effect(() => {
 		const mq = window.matchMedia('(max-width: 767px)');
@@ -82,16 +78,6 @@
 		const on = () => (isPhone = mq.matches);
 		mq.addEventListener('change', on);
 		return () => mq.removeEventListener('change', on);
-	});
-	// Glide the map into open ocean while the phone streaks overlay is up, panning
-	// India's tip up by exactly the space the board needs (measured) + padding, so
-	// it clears the land without wasting sea.
-	const STREAK_PAD = 16; // gap between the landmass and the board
-	const CONTROLS_RESERVE = 140; // space the bottom control rail occupies
-	let boardH = $state(0); // measured height of the streak board
-	let streakClearPx = $derived(boardH + STREAK_PAD + CONTROLS_RESERVE);
-	$effect(() => {
-		map?.panAside(sky.showStreaks && isPhone, streakClearPx);
 	});
 	// Scroll/pinch does the zooming; chrome appears only when there's a way back.
 	let zoomed = $derived(layout.zoomRatio > 1.05);
@@ -168,7 +154,7 @@
 	let panelStation = $derived<Station | null>(
 		sky.selectedCode && core ? (core.manifest.stations[sky.selectedCode] ?? null) : null
 	);
-	// Screen point the desktop popover anchors to (the click); null for search/streak.
+	// Screen point the desktop popover anchors to (the click); null for search.
 	let anchorPoint = $state<{ x: number; y: number } | null>(null);
 	function openStation(code: string, at?: { x: number; y: number }) {
 		anchorPoint = at ?? null;
@@ -178,12 +164,8 @@
 		sky.selectedCode = null;
 	}
 
-	// Light "open" click for chrome that appears: the streaks reveal and a chosen
-	// search result. (Map taps get their own firmer click inside PixelMap.)
-	function toggleStreaks() {
-		click('open');
-		sky.showStreaks = !sky.showStreaks;
-	}
+	// Light "open" click for chrome that appears: a chosen search result. (Map taps
+	// get their own firmer click inside PixelMap.)
 	function selectFromSearch(code: string) {
 		click('open');
 		openStation(code);
@@ -287,28 +269,10 @@
 			</div>
 		{/if}
 
-		<!-- Streak leaderboard: collapsed tab / inset table in the right sea gutter. -->
-		{#if core}
-			<StreakPanel
-				summary={core.summary}
-				onselect={openStation}
-				gutter={layout.gutter}
-				zoomRatio={layout.zoomRatio}
-			/>
-		{/if}
-
-		<!-- Corner keys in the top-left sky, every layout: streaks toggle + search. -->
+		<!-- Corner keys in the top-left sky, every layout: search. -->
 		<div class="top-keys absolute top-0 left-0 z-10 flex px-3 py-2.5 md:px-3.5 md:py-3">
 			<div class="chips flex items-start gap-1.5">
 				{#if core}
-					<!-- Toggle voiced as hardware: the key sits sunk + gold while streaks show. -->
-					<PixelButton
-						size="sm"
-						cap={sky.showStreaks ? 'gold' : 'paper'}
-						class="text-xs tracking-wider uppercase"
-						aria-pressed={sky.showStreaks}
-						onclick={toggleStreaks}>Streaks</PixelButton
-					>
 					<StationSearch
 						manifest={core.manifest}
 						places={core.places}
@@ -327,7 +291,7 @@
 		<div
 			class="bar bottom pointer-events-none absolute inset-x-0 bottom-0 z-10 grid grid-cols-[1fr_auto_1fr] items-end gap-x-5 gap-y-3 px-4 py-3.5 **:pointer-events-auto max-md:grid-cols-1 max-md:justify-items-center md:max-lg:grid-cols-1 md:max-lg:justify-items-center md:max-lg:gap-2.5"
 		>
-			<!-- Empty first lane: streaks + search moved to the top-left corner keys;
+			<!-- Empty first lane: search moved to the top-left corner keys;
 				kept so the grid keeps the dock optically centred. -->
 			<div class="lane legend max-md:hidden md:max-lg:hidden"></div>
 			<div
@@ -355,57 +319,6 @@
 			Interactive pixel map of cloud cover over India.
 			{#if core}{core.summary.station_count} stations; use the station search to explore.{/if}
 		</p>
-
-		<!-- Streak leaderboard: collapsed tab / inset table in the right sea gutter.
-			Phone streaks: a scene bounded to the map area. The board is pinned to a
-			world anchor in the open sea and slides in with the camera pan; same white
-			sky-typography as the desktop gutter list. No scrim/panel — it reads as part
-			of the world. --ink flips the board text white. -->
-		{#if core && sky.showStreaks}
-			<div
-				class="streaks-scene absolute inset-0 z-20 hidden text-white [--ink:var(--color-ink-on-dark)] max-md:block"
-				role="dialog"
-				aria-modal="true"
-				aria-label="Station streaks"
-				tabindex="-1"
-				transition:fade={{ duration: 160 }}
-				onkeydown={(e) => {
-					if (e.key === 'Escape') sky.showStreaks = false;
-				}}
-			>
-				<!-- Transparent catch-all: tap the open sea to dismiss. -->
-				<button
-					class="sea-dismiss absolute inset-0 cursor-pointer border-0 bg-transparent"
-					aria-label="Close streaks"
-					onclick={() => (sky.showStreaks = false)}
-				></button>
-
-				<!-- Board seats just above the control rail; the map pans so the land sits a
-					pad above it (bottom must match CONTROLS_RESERVE in the script). -->
-				<div
-					class="streak-dock pointer-events-none absolute inset-x-0 bottom-[140px] flex justify-center px-3.5"
-				>
-					<div
-						class="streak-world pointer-events-none w-[min(88vw,340px)] text-shadow-sky"
-						bind:clientHeight={boardH}
-					>
-						<h2 class="streak-title m-0 text-xs tracking-[0.08em]">STATION STREAKS</h2>
-						<p class="streak-caption mx-0 mt-px mb-2 text-xs tracking-[0.06em] opacity-75">
-							CONSECUTIVE CLEAR / OVERCAST DAYS
-						</p>
-						<StreakBoard
-							summary={core.summary}
-							compact
-							limit={5}
-							onselect={(code) => {
-								sky.showStreaks = false;
-								openStation(code);
-							}}
-						/>
-					</div>
-				</div>
-			</div>
-		{/if}
 	</div>
 </section>
 
@@ -479,14 +392,5 @@
 	   image ink, not a CSS color token. */
 	.shore-waves {
 		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='8'%3E%3Cpath d='M1 7h10v1H1z M2 5h1v2H2z M3 4h1v1H3z M16 6h10v1H16z M16 4h1v2H16z M17 2h1v2H17z M18 0h1v2H18z M31 7h10v1H31z M31 5h1v2H31z M32 3h1v2H32z M33 1h1v2H33z M34 5h1v2H34z M35 4h1v1H35z M45 6h10v1H45z M45 4h1v2H45z M46 2h1v2H46z M47 0h1v2H47z M48 4h1v2H48z M49 2h1v2H49z M50 0h1v2H50z' fill='%230b1d3a'/%3E%3C/svg%3E");
-	}
-	/* StreakBoard internals bridge: the leaderboard rows are a child component's
-	   <li><button>; reach in to add the sky text-shadow and a hover wash. */
-	.streak-world :global(li button) {
-		pointer-events: auto;
-		text-shadow: 1px 1px 0 --alpha(var(--color-navy) / 90%);
-	}
-	.streak-world :global(li button:hover) {
-		background: --alpha(white / 14%);
 	}
 </style>

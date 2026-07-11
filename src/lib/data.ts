@@ -28,7 +28,7 @@ export function dayBands(latest: AllStations, code: string, index: number): Stat
 	if (!f) return day0;
 	const off = (index - 1) * DAY_STEPS;
 	const cut = (a?: number[]) => a?.slice(off, off + DAY_STEPS) ?? [];
-	const bands = { h: cut(f.h), m: cut(f.m), l: cut(f.l), p: cut(f.p) };
+	const bands = { h: cut(f.h), m: cut(f.m), l: cut(f.l) };
 	return bands.h.length === DAY_STEPS ? bands : day0;
 }
 
@@ -67,8 +67,7 @@ export function computeValues(
 			out[code] = {
 				h: b.h[timeIndex] ?? 0,
 				m: b.m[timeIndex] ?? 0,
-				l: b.l[timeIndex] ?? 0,
-				p: b.p?.[timeIndex] ?? 0
+				l: b.l[timeIndex] ?? 0
 			};
 		}
 		return out;
@@ -76,7 +75,7 @@ export function computeValues(
 	if (!rollup) return out;
 	const i = Math.min(windowDayIndex, rollup.dates.length - 1);
 	for (const [code, s] of Object.entries(rollup.stations)) {
-		out[code] = { h: s.h[i] ?? 0, m: s.m[i] ?? 0, l: s.l[i] ?? 0, p: s.p?.[i] ?? 0 };
+		out[code] = { h: s.h[i] ?? 0, m: s.m[i] ?? 0, l: s.l[i] ?? 0 };
 	}
 	return out;
 }

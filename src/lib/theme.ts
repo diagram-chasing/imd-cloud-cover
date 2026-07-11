@@ -68,27 +68,6 @@ export const CLOUD = {
 
 export type BandKey = 'high' | 'middle' | 'low';
 
-// Rain streaks hang below the cumulus — a saturated blue that reads as falling
-// water against the near-white low cloud. Two tints so heavier tiers deepen.
-export const RAIN = {
-	fill: '#3A7BD5',
-	deep: '#2456A6'
-} as const;
-
-// Precip is a per-station RELATIVE intensity (the meteogram's precip axis auto-
-// scales), so every station with any rain touches ~100 at its own peak. A high
-// floor keeps trace-drizzle stations dry and reserves streaks for genuinely wet
-// steps. Tune here.
-export const RAIN_FLOOR = 35;
-
-/** Relative precip intensity -> rain tier (1-3). Below RAIN_FLOOR -> 0 (no rain). */
-export function rainTier(intensity: number): 0 | 1 | 2 | 3 {
-	if (intensity < RAIN_FLOOR) return 0;
-	const t = (intensity - RAIN_FLOOR) / (100 - RAIN_FLOOR); // 0..1 in visible range
-	const tier = Math.ceil(t * 3);
-	return Math.min(3, Math.max(1, tier)) as 1 | 2 | 3;
-}
-
 // UI palette.
 export const UI = {
 	inkOnLight: '#0B1D3A',

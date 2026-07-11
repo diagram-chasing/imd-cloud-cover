@@ -3,13 +3,12 @@
 	// sky-condition read and altitude bars as StationTooltip, on a paper panel.
 	// `expanded` renders a hero-scale variant (bigger bars, finer resolution) for
 	// pages that give the card room to breathe.
-	import { rainTier } from '$lib/theme';
 	import { prettyDate } from '$lib/format';
 	import { skyCondition } from '$lib/summary';
 
 	interface Props {
-		/** {h,m,l,p} cover at the current step, or null if no reading arrived. */
-		values: { h: number; m: number; l: number; p?: number } | null;
+		/** {h,m,l} cover at the current step, or null if no reading arrived. */
+		values: { h: number; m: number; l: number } | null;
 		stationName: string;
 		/** Distance from the city centre to the reading station (km). */
 		km?: number | null;
@@ -30,15 +29,7 @@
 	const segCount = expanded ? 10 : 6;
 	const filled = (v: number) => Math.min(segCount, Math.round(v / 10));
 
-	let summary = $derived.by(() => {
-		if (!values) return '';
-		let s = skyCondition(values);
-		const rain = rainTier(values.p ?? 0);
-		if (rain === 1) s += ' · RAIN POSSIBLE';
-		else if (rain === 2) s += ' · RAIN LIKELY';
-		else if (rain === 3) s += ' · HEAVY RAIN';
-		return s;
-	});
+	let summary = $derived(values ? skyCondition(values) : '');
 </script>
 
 <div

@@ -1,12 +1,11 @@
 <script lang="ts">
 	import type { Station } from '$lib/types';
-	import { rainTier } from '$lib/theme';
 	import { prettyDate } from '$lib/format';
 	import { skyCondition } from '$lib/summary';
 
 	interface Props {
 		station: Station | null;
-		values: { h: number; m: number; l: number; p?: number } | null;
+		values: { h: number; m: number; l: number } | null;
 		clientX: number;
 		clientY: number;
 		members?: number;
@@ -36,15 +35,7 @@
 		return Math.round(v / 10);
 	}
 
-	let summary = $derived.by(() => {
-		if (!values) return '';
-		let s = skyCondition(values);
-		const rain = rainTier(values.p ?? 0);
-		if (rain === 1) s += ' · RAIN POSSIBLE';
-		else if (rain === 2) s += ' · RAIN LIKELY';
-		else if (rain === 3) s += ' · HEAVY RAIN';
-		return s;
-	});
+	let summary = $derived(values ? skyCondition(values) : '');
 </script>
 
 {#if station && values}

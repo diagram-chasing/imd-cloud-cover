@@ -4,7 +4,7 @@
 		clientX: number;
 		clientY: number;
 		members: number;
-		agg?: { h: number; m: number; l: number; p: number };
+		agg?: { h: number; m: number; l: number };
 	}
 </script>
 
@@ -47,7 +47,7 @@
 		india: FeatureCollection;
 		places?: FeatureCollection;
 		manifest: StationsManifest;
-		values: Record<string, { h: number; m: number; l: number; p: number }>;
+		values: Record<string, { h: number; m: number; l: number }>;
 		enableTooltip?: boolean;
 		date?: string;
 		onhover?: (info: HoverInfo | null) => void;
@@ -57,7 +57,6 @@
 			zoomRatio: number;
 			view: { x: number; y: number; w: number; h: number };
 			world: { w: number; h: number };
-			streak: { x: number; y: number };
 		}) => void;
 	}
 	let {
@@ -223,41 +222,6 @@
 	let panY = 0;
 	let userMoved = false;
 
-	let asideActive = false;
-	let interactionLocked = false;
-	let asideClearPx = 0;
-	let landBottomWorldY = 0;
-	let camAnim: {
-		fromX: number;
-		fromY: number;
-		fromZ: number;
-		toX: number;
-		toY: number;
-		toZ: number;
-		t: number;
-		dur: number;
-	} | null = null;
-
-	const STREAK_ANCHOR = { fx: 0.07, fy: 0.9 };
-
-	function easeInOut(x: number): number {
-		return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-	}
-	function streakAnchorWorld() {
-		const sv = startView();
-		return { x: sv.x + STREAK_ANCHOR.fx * sv.w, y: sv.y + STREAK_ANCHOR.fy * sv.h };
-	}
-	function computeLandBottom(): number {
-		const g = geo!;
-		for (let y = g.rows - 1; y >= 0; y--) {
-			let n = 0;
-			for (let x = 0; x < g.cols; x++) if (g.land[y * g.cols + x]) n++;
-			if (n >= 4) return (y + 1) * g.groundScale;
-		}
-		return g.worldH;
-	}
-
-
 	function computeLandBBox() {
 		const g = geo!;
 		let minX = g.cols,
@@ -341,52 +305,13 @@
 		if (!geo) return;
 		const b = worldBBox();
 		const g = geo;
-		const a = streakAnchorWorld();
 		onlayout?.({
 			gutter: (vw - (b.maxX - b.minX) * containZoom()) / 2,
 
 			zoomRatio: zoom / (containZoom() * startZoomFactor()),
 			view: { x: panX, y: panY, w: vw / zoom, h: vh / zoom },
-			world: { w: g.worldW, h: g.worldH },
-			streak: { x: (a.x - panX) * zoom, y: (a.y - panY) * zoom }
+			world: { w: g.worldW, h: g.worldH }
 		});
-	}
-
-	function asideTarget(on: boolean) {
-		const v = startView();
-		const z = containZoom() * startZoomFactor();
-		if (!on) return { x: v.x, y: v.y, z };
-		const tipScreenY = Math.max(0, vh - asideClearPx);
-		return { x: v.x, y: landBottomWorldY - tipScreenY / z, z };
-	}
-	export function panAside(on: boolean, clearPx = 0) {
-		if (!geo) return;
-		const wasActive = asideActive;
-		if (on) asideClearPx = clearPx;
-		asideActive = on;
-		interactionLocked = on;
-		if (!on) userMoved = false;
-		const t = asideTarget(on);
-
-		if (reduced || (wasActive && on)) {
-			camAnim = null;
-			panX = t.x;
-			panY = t.y;
-			zoom = t.z;
-			applyCamera();
-			return;
-		}
-		if (on === wasActive) return;
-		camAnim = {
-			fromX: panX,
-			fromY: panY,
-			fromZ: zoom,
-			toX: t.x,
-			toY: t.y,
-			toZ: t.z,
-			t: 0,
-			dur: 620
-		};
 	}
 
 	function updatePlacesScale() {
@@ -718,7 +643,6 @@
 		if (destroyed) return;
 		groundTex = { day: dayTex, night: nightTex };
 		geo = buildGeo(india, manifest, WORLD_W, CELL, places, mask);
-		landBottomWorldY = computeLandBottom();
 		buildLods();
 
 		app = new Application();
@@ -1201,7 +1125,7 @@
 		groundSprite.texture = groundTex[skyMode(sky.timeIndex)];
 	}
 
-	function binCover(b: Bin, key: 'h' | 'm' | 'l' | 'p'): number {
+	function binCover(b: Bin, key: 'h' | 'm' | 'l'): number {
 		let s = 0;
 		let n = 0;
 		for (const i of b.members) {
@@ -1227,8 +1151,7 @@
 					? {
 							h: Math.round(binCover(b, 'h')),
 							m: Math.round(binCover(b, 'm')),
-							l: Math.round(binCover(b, 'l')),
-							p: Math.round(binCover(b, 'p'))
+							l: Math.round(binCover(b, 'l'))
 						}
 					: undefined
 		};
@@ -1319,15 +1242,6 @@
 	let lastDrift = 0;
 	let reduced = false;
 	function tick(t: Ticker) {
-		if (camAnim) {
-			camAnim.t += t.deltaMS;
-			const e = easeInOut(Math.min(1, camAnim.t / camAnim.dur));
-			panX = camAnim.fromX + (camAnim.toX - camAnim.fromX) * e;
-			panY = camAnim.fromY + (camAnim.toY - camAnim.fromY) * e;
-			zoom = camAnim.fromZ + (camAnim.toZ - camAnim.fromZ) * e;
-			applyCamera();
-			if (camAnim.t >= camAnim.dur) camAnim = null;
-		}
 		if (layers) {
 			for (const band of BAND_KEYS) {
 				const layer = layers[band];
@@ -1396,7 +1310,6 @@
 	function bindPointer() {
 		const c = app!.canvas;
 		c.addEventListener('pointerdown', (e) => {
-			if (interactionLocked) return;
 			pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 			c.setPointerCapture(e.pointerId);
 			userMoved = true;
@@ -1412,7 +1325,6 @@
 			}
 		});
 		c.addEventListener('pointermove', (e) => {
-			if (interactionLocked) return;
 			if (showDebug) {
 				const w = clientToWorld(e.clientX, e.clientY);
 				dbg.wx = Math.round(w.ox);
@@ -1446,10 +1358,6 @@
 			if (enableTooltip) onhover?.(p ? hoverInfo(p.code, e.clientX, e.clientY) : null);
 		});
 		const endPointer = (e: PointerEvent) => {
-			if (interactionLocked) {
-				pointers.delete(e.pointerId);
-				return;
-			}
 			const wasTap = dragging && !moved && pointers.size === 1;
 			pointers.delete(e.pointerId);
 			if (pointers.size < 2) pinch = null;
@@ -1487,7 +1395,6 @@
 		c.addEventListener(
 			'wheel',
 			(e) => {
-				if (interactionLocked) return;
 				e.preventDefault();
 				userMoved = true;
 				zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.12 : 1 / 1.12);
@@ -1551,14 +1458,7 @@
 			vh = Math.round(r.height);
 			drawSky();
 			drawTitle();
-			if (asideActive) {
-				const t = asideTarget(true);
-				camAnim = null;
-				panX = t.x;
-				panY = t.y;
-				zoom = t.z;
-				applyCamera();
-			} else if (!userMoved) fitCamera();
+			if (!userMoved) fitCamera();
 			else emitLayout();
 		});
 		ro.observe(host);

@@ -12,8 +12,25 @@
 	}
 	let { night = false }: Props = $props();
 
+	let el = $state<HTMLDivElement>();
 	let w = $state(0);
 	let h = $state(0);
+
+	// Measure synchronously on mount rather than via bind:clientWidth — the latter's
+	// ResizeObserver fires async and gets starved by PIXI's synchronous init, so the
+	// silhouette wouldn't draw before the canvas takes over. Measuring here renders
+	// India in the shell's very first paint, during hydration.
+	$effect(() => {
+		if (!el) return;
+		const measure = () => {
+			w = el!.clientWidth;
+			h = el!.clientHeight;
+		};
+		measure();
+		const ro = new ResizeObserver(measure);
+		ro.observe(el);
+		return () => ro.disconnect();
+	});
 
 	// theme.ts SKY — the sky behind the ground (ground PNG has transparent sea).
 	let top = $derived(night ? '#081831' : '#2E7CC4');
@@ -23,11 +40,10 @@
 </script>
 
 <div
+	bind:this={el}
 	class="map-shell absolute inset-0 overflow-hidden"
 	style="--top:{top}; --bottom:{bottom}"
 	aria-label="Loading the map"
-	bind:clientWidth={w}
-	bind:clientHeight={h}
 >
 	{#if frame}
 		<svg class="absolute inset-0 h-full w-full" viewBox="0 0 {w} {h}" aria-hidden="true">
