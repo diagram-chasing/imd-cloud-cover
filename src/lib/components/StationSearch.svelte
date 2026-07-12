@@ -1,15 +1,9 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import type { StationsManifest, PlaceProps } from '$lib/types';
 	import type { FeatureCollection } from 'geojson';
+	import { Command as CommandPrimitive } from 'bits-ui';
 	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover';
-	import {
-		Command,
-		CommandInput,
-		CommandList,
-		CommandEmpty,
-		CommandItem
-	} from '$lib/components/ui/command';
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { SearchIcon } from '@hugeicons/core-free-icons';
@@ -47,6 +41,16 @@
 
 	let open = $state(false);
 	let query = $state('');
+	let inputEl = $state<HTMLInputElement | null>(null);
+
+	// The popover portals its content next to the trigger, but on open bits-ui
+	// focuses the field before Floating UI has positioned it — so the browser
+	// scrolls the still-at-origin input into view and the page jumps. Take focus
+	// ourselves, after a tick, with scrolling suppressed.
+	function focusInput(e: Event) {
+		e.preventDefault();
+		tick().then(() => inputEl?.focus({ preventScroll: true }));
+	}
 
 	const norm = (s: string) =>
 		s
@@ -71,12 +75,6 @@
 		stateN: string;
 	}
 
-	// One index over stations + cities. A city is folded into a station only when
-	// it's the *same place* — its own nearest station carries the same name (station
-	// "Mumbai" absorbs city "Mumbai" and inherits "Bombay"). A same-named place that
-	// is a *different* city (its nearest station is named otherwise) stays a distinct
-	// entry, so the two Aurangabads — Bihar (station AURANGABAD) and Maharashtra
-	// (nearest AGD) — don't collapse into one.
 	let index = $derived.by(() => {
 		// True when this place is the one the station already represents.
 		const isSamePlace = (p: PlaceProps) => {
@@ -199,37 +197,59 @@
 		{align}
 		collisionPadding={12}
 		sideOffset={6}
-		class="w-[300px] rounded-none border-2 border-ink bg-paper p-0 text-ink shadow-[3px_3px_0_0] ring-0 shadow-ink
-			[&_[data-slot=command-input-wrapper]]:p-0
-			[&_[data-slot=input-group]]:!h-9 [&_[data-slot=input-group]]:!rounded-none [&_[data-slot=input-group]]:!border-0 [&_[data-slot=input-group]]:!border-b-2 [&_[data-slot=input-group]]:!border-ink [&_[data-slot=input-group]]:!bg-paper [&_[data-slot=input-group]]:!shadow-none"
+		onOpenAutoFocus={focusInput}
+		class="w-[320px] max-w-[calc(100vw-1.5rem)] gap-0 rounded-none border-2 border-ink bg-paper p-0 text-ink shadow-[3px_3px_0_0] ring-0 shadow-ink"
 	>
-		<Command shouldFilter={false} class="rounded-none bg-transparent p-0">
-			<CommandInput bind:value={query} placeholder="Search a city or station…" />
-			<CommandList class="max-h-[280px] p-1">
-				<CommandEmpty class="py-4 text-center text-xs tracking-wider">No match.</CommandEmpty>
-				{#each results as e, i (`${e.kind}:${e.name}:${e.state ?? ''}:${i}`)}
-					<CommandItem
-						value={`${e.name}:${e.kind}:${i}`}
-						onSelect={() => pick(e)}
-						class="flex items-center gap-2 rounded-none px-2 py-1 data-selected:bg-cloud-block data-selected:text-ink"
-					>
-						<!-- Name + state truncate together as one label so the code column stays
-						     aligned on the right and names only clip when the row is genuinely full. -->
-						<span class="label min-w-0 flex-auto truncate text-sm">
-							<span class="name text-ink">{e.name}</span>
-							{#if e.state}<span class="state ml-1.5 text-xs opacity-50">{e.state}</span>{/if}
-						</span>
-						{#if e.kind === 'station'}
-							<span class="code flex-none text-xs tracking-wider opacity-55">{e.code}</span>
-						{:else}
-							<span
-								class="tag flex-none border border-ink/40 px-[3px] py-px text-xs tracking-[0.08em] uppercase opacity-50"
-								>city</span
-							>
-						{/if}
-					</CommandItem>
-				{/each}
-			</CommandList>
-		</Command>
+		<CommandPrimitive.Root shouldFilter={false} disableInitialScroll class="flex flex-col">
+			<!-- Search field, built to the house style: a single ink underline, no
+			     input-group chrome, no browser focus ring collision. -->
+			<div class="flex items-center gap-2 border-b-2 border-ink px-3">
+				<HugeiconsIcon icon={SearchIcon} strokeWidth={2} size={15} class="shrink-0 text-ink/45" />
+				<CommandPrimitive.Input
+					bind:ref={inputEl}
+					bind:value={query}
+					placeholder={cityFirst ? 'Search a city…' : 'Search a city or station…'}
+					class="station-search-input h-10 w-full min-w-0 bg-transparent text-[15px] text-ink outline-none placeholder:text-ink/40"
+				/>
+			</div>
+			<CommandPrimitive.List class="max-h-[300px] overflow-x-hidden overflow-y-auto p-1.5">
+				{#if results.length === 0}
+					<p class="py-6 text-center text-xs tracking-wider text-ink/55 uppercase">No match</p>
+				{:else}
+					{#if !norm(query)}
+						<p class="px-2 pt-1 pb-1.5 text-xs uppercase">
+							{cityFirst ? 'Biggest cities' : 'Popular places'}
+						</p>
+					{/if}
+					{#each results as e, i (`${e.kind}:${e.name}:${e.state ?? ''}:${i}`)}
+						<CommandPrimitive.Item
+							value={`${e.name}:${e.kind}:${i}`}
+							onSelect={() => pick(e)}
+							class="flex cursor-pointer items-center gap-2 rounded-none px-2 py-1.5 text-ink outline-none select-none data-selected:bg-cloud-block data-selected:text-ink"
+						>
+							<!-- Name + state truncate together as one label so the code column stays
+							     aligned on the right and names only clip when the row is genuinely full. -->
+							<span class="min-w-0 flex-auto truncate">
+								<span class="text-base uppercase text-ink">{e.name}</span>
+								{#if e.state}<span class="ml-1.5 text-xs text-ink/45">{e.state}</span>{/if}
+							</span>
+							<span class="flex-none text-xs text-ink/90 uppercase">
+								{e.kind === 'station' ? 'Station' : 'City'}
+							</span>
+						</CommandPrimitive.Item>
+					{/each}
+				{/if}
+			</CommandPrimitive.List>
+		</CommandPrimitive.Root>
 	</PopoverContent>
 </Popover>
+
+<style>
+	/* The field is auto-focused every time the palette opens, so the site-wide
+	   focus ring would sit around it permanently and clash with the paper card.
+	   The open popover is itself the focus affordance. (Scoped by the marker
+	   class since the input is rendered inside a child component.) */
+	:global(.station-search-input:focus-visible) {
+		outline: none;
+	}
+</style>

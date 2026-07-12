@@ -10,3 +10,7 @@
   # Public read-only data endpoint (Cloudflare Worker over the R2 bucket) —
   # not a secret; baked into the client bundle for on-demand station data.
   VITE_R2_PUBLIC_URL = "https://imd-meteograms-data.amanbhargava2001.workers.dev"
+  # Base URL of the licensed Ships Whistle webfonts in R2 (public read-only,
+  # not a secret). scripts/fetch-fonts.mjs appends /<file>.woff2 at build time.
+  # Point this at the bucket's custom domain/r2.dev + the Ships-Whistle prefix.
+  FONTS_URL = "https://pub-57f73e0399dd4d548042da0b0e925712.r2.dev/Ships-Whistle"

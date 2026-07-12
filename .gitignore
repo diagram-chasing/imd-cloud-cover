@@ -38,6 +38,10 @@ static/og/
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+# Ships Whistle webfonts — licensed, not part of this open-source repo.
+# Downloaded at build time by scripts/fetch-fonts.mjs from FONTS_URL (R2).
+src/lib/assets/fonts/
+
 # Raw Natural Earth sources for scripts/build-map-data.sh — not committed.
 # Re-download from https://www.naturalearthdata.com/downloads/ to rebuild
 # static/data/*.json; the generated JSON is what the app ships.

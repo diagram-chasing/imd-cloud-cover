@@ -172,7 +172,7 @@
 			class="mx-auto mb-7 grid max-w-2xl grid-cols-[minmax(0,1fr)_auto] items-stretch gap-x-6 gap-y-6 px-5 md:items-center md:gap-x-8"
 		>
 			<div class="flex min-h-[110px] flex-col items-start justify-start text-left">
-				<h2 class="m-0 font-bold" style="font-size: clamp(20px, 3.6vw, 38px); line-height: 1.3;">
+				<h2 class="m-0 min-w-0 font-bold" style="font-size: clamp(20px, 3.6vw, 38px); line-height: 1.3;">
 					How cloudy <br /> has it been in
 					<StationSearch
 						{manifest}
@@ -186,7 +186,7 @@
 						{#snippet trigger(props)}
 							<button
 								{...props}
-								class="block cursor-pointer border-b-4 border-sun-gold p-0 px-1 align-baseline font-bold whitespace-nowrap text-ink uppercase transition-colors duration-120 hover:text-focus"
+								class="block max-w-full cursor-pointer border-b-4 border-sun-gold p-0 px-1 text-left align-baseline font-bold text-ink uppercase transition-colors duration-120 [overflow-wrap:anywhere] hover:text-focus"
 							>
 								{city.name}
 								<svg

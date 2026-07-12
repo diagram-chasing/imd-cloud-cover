@@ -45,6 +45,9 @@ jobs:
           pnpm run build
         env:
           VITE_R2_PUBLIC_URL: ${{ secrets.VITE_R2_PUBLIC_URL }}
+          # Public read-only fonts bucket — scripts/fetch-fonts.mjs pulls the
+          # licensed webfonts into the bundle at build time (mirrors netlify.toml).
+          FONTS_URL: https://pub-57f73e0399dd4d548042da0b0e925712.r2.dev/Ships-Whistle
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0

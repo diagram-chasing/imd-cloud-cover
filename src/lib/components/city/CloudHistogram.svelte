@@ -525,6 +525,17 @@
 	let twinName = $derived(twin ? (data.cities[twin.code]?.name ?? null) : null);
 	let clampPad = $derived(narrow ? 54 : 70);
 
+	// Keep any absolutely-positioned tag fully inside the plot: clamp its center by
+	// its own half-width so a long city name (e.g. THIRUVANANTHAPURAM) can't spill
+	// past the edge — which otherwise forces horizontal page scroll on phones. Names
+	// wider than the plot itself get capped by `tagMax` + ellipsis in the markup.
+	const TAG_EDGE = 8;
+	function clampCenter(cx: number, w: number): number {
+		const half = Math.min(w, Math.max(0, width - 2 * TAG_EDGE)) / 2;
+		return Math.min(Math.max(cx, half + TAG_EDGE), width - half - TAG_EDGE);
+	}
+	let tagMax = $derived(Math.max(96, width - 2 * TAG_EDGE));
+
 	let ghostLabel = $derived(mode === 'today' ? 'overall' : 'today');
 
 	// All persistent labels share one layout pass so they never sit on top of one
@@ -569,11 +580,11 @@
 		// Chosen city — the hero. On wide screens it rests just above its own cloud;
 		// on narrow it rides the top row and points down with a stem.
 		if (selectedBox) {
-			const x = Math.min(Math.max(selectedBox.x, clampPad), width - clampPad);
+			const w = cw(selectedBox.name, 12) + 24;
 			const cloudTop = selectedBox.y - selectedBox.h / 2;
 			raw.push({
 				key: 'sel', kind: 'sel', prio: 0, name: selectedBox.name,
-				x, w: cw(selectedBox.name, 12) + 24, h: H_HERO,
+				x: clampCenter(selectedBox.x, w), w, h: H_HERO,
 				top: narrow ? TOP_ROW : cloudTop - cell - 8 - H_HERO,
 				anchorX: selectedBox.x, anchorY: cloudTop
 			});
@@ -583,11 +594,11 @@
 		// screens, or to the top row (with a stem) on narrow.
 		if (arc && twin && twinName) {
 			const tb = arc.twinBox;
-			const x = Math.min(Math.max(tb.x, clampPad + 30), width - clampPad - 30);
+			const w = Math.max(TWIN_CAP_W, cw(twinName, 9)) + 16;
 			const cloudTop = tb.y - tb.h / 2;
 			raw.push({
 				key: 'twin', kind: 'twin', prio: 1, name: twinName,
-				x, w: Math.max(TWIN_CAP_W, cw(twinName, 9)) + 16, h: H_TWIN,
+				x: clampCenter(tb.x, w), w, h: H_TWIN,
 				top: narrow ? TOP_ROW : cloudTop - cell - 8 - H_TWIN,
 				anchorX: tb.x, anchorY: cloudTop
 			});
@@ -597,11 +608,11 @@
 		const at = (arr: number[], t: number) => ({ x: MARGIN_X + t * innerW, y: yFor(curveAt(arr, t)) });
 		const live = at(lv, 0.42);
 		raw.push({ key: 'end-live', kind: 'end', prio: 2, label: mode, solid: true,
-			x: live.x, w: cw(mode, 9) + 4, h: H_END, top: Math.max(4, live.y - 36) });
+			x: clampCenter(live.x, cw(mode, 9) + 4), w: cw(mode, 9) + 4, h: H_END, top: Math.max(4, live.y - 36) });
 		if (gv.length > 1) {
 			const gh = at(gv, 0.6);
 			raw.push({ key: 'end-ghost', kind: 'end', prio: 3, label: ghostLabel, solid: false,
-				x: gh.x, w: cw(ghostLabel, 9) + 4, h: H_END, top: Math.max(4, gh.y - 36) });
+				x: clampCenter(gh.x, cw(ghostLabel, 9) + 4), w: cw(ghostLabel, 9) + 4, h: H_END, top: Math.max(4, gh.y - 36) });
 		}
 
 		const placed: LabelItem[] = [];
@@ -646,7 +657,7 @@
 				b.x = bx;
 			}
 			for (const it of row) {
-				it.x = Math.min(Math.max(it.x, lo), hi);
+				it.x = clampCenter(it.x, it.w);
 				placed.push(it);
 			}
 		}
@@ -712,11 +723,11 @@
 
 	{#if hovered && hovered.code !== selected}
 		<div
-			class="tag pointer-events-none absolute z-10 -translate-x-1/2 whitespace-nowrap text-white"
-			style="left: {Math.min(Math.max(hovered.x, clampPad), width - clampPad)}px; top: {Math.max(
+			class="tag pointer-events-none absolute z-10 -translate-x-1/2 truncate text-white"
+			style="left: {clampCenter(hovered.x, (hovered.name.length + 6) * 8 + 16)}px; top: {Math.max(
 				2,
 				hovered.y - hovered.h / 2 - 26
-			)}px;"
+			)}px; max-width: {tagMax}px;"
 		>
 			{hovered.name} · {Math.round(hovered.mean)}%
 		</div>
@@ -724,8 +735,8 @@
 
 	{#if heroLabel}
 		<div
-			class="tag city-tag pointer-events-none absolute z-10 -translate-x-1/2 whitespace-nowrap text-sun-gold"
-			style="left: {heroLabel.x}px; top: {heroLabel.top}px;"
+			class="tag city-tag pointer-events-none absolute z-10 -translate-x-1/2 truncate text-sun-gold"
+			style="left: {heroLabel.x}px; top: {heroLabel.top}px; max-width: {tagMax}px;"
 		>
 			{heroLabel.name}
 		</div>
@@ -734,13 +745,13 @@
 	{#if twinLabel && twin && !moving}
 		<button
 			class="tag twin-tag absolute z-10 -translate-x-1/2 cursor-pointer text-center whitespace-nowrap text-white transition-colors duration-120 hover:text-sun-gold"
-			style="left: {twinLabel.x}px; top: {twinLabel.top}px;"
+			style="left: {twinLabel.x}px; top: {twinLabel.top}px; max-width: {tagMax}px;"
 			onclick={() => onselect?.(twin.code)}
 		>
 			<span class="block text-[10px] leading-none tracking-[0.16em] uppercase opacity-60">
 				Most similar sky
 			</span>
-			<span class="mt-1 block text-xs leading-tight tracking-wide">
+			<span class="mt-1 block max-w-full truncate text-xs leading-tight tracking-wide">
 				<span class="border-b-2 border-white/50">{twinLabel.name}</span>
 			</span>
 		</button>

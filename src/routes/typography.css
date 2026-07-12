@@ -152,11 +152,13 @@
 	.methodology > :where(h2) {
 		margin: calc(2 * var(--leading)) 0 calc(0.5 * var(--leading));
 		font-size: calc(var(--ms-3) * 1em);
-		line-height: calc(1.5 * var(--leading));
+		font-weight: 900;
+		line-height: calc(1.1* var(--leading));
 		letter-spacing: 0.01em;
 	}
 	.methodology > :where(p) {
 		margin-bottom: var(--leading);
+		line-height: 1.6em;
 		text-wrap: pretty;
 	}
 	.methodology > :where(p:last-child) {

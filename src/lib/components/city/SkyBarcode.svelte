@@ -30,7 +30,6 @@
 	// the deep-blue track shows through.
 	const TIER_OPACITY = [0, 0.32, 0.56, 0.8, 1];
 	const TRACK = '#164a7c';
-	const HATCH = 'repeating-linear-gradient(45deg, #2b3a4d 0 3px, #55637b 3px 6px)';
 	const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
 	const ROW_H = 26; // px — tall enough to read clearly
@@ -85,12 +84,16 @@
 		<span class="pixel-chip text-navy" style="background:#ffffff">Overcast</span>
 	</div>
 
-	<div class="grid grid-cols-[minmax(0,7rem)_1fr] items-center gap-x-4 gap-y-2.5">
+	<div class="flex flex-col gap-y-3 sm:grid sm:grid-cols-[minmax(0,7rem)_1fr] sm:items-center sm:gap-x-4 sm:gap-y-2.5">
 		{#each rows as row (row.id)}
-			<span class="truncate text-sm font-bold tracking-wide uppercase sm:text-base">
-				{row.name}
-			</span>
-			<div class="w-full" bind:clientWidth={w}>
+			<!-- Label stacks above the strip on mobile so the chart gets full width; the
+				sm grid places it back beside the strip. `contents` lets both children join
+				the parent grid directly at sm. -->
+			<div class="flex flex-col gap-y-1 sm:contents">
+				<span class="truncate text-sm font-bold tracking-wide uppercase sm:text-base">
+					{row.name}
+				</span>
+				<div class="w-full" bind:clientWidth={w}>
 				<svg
 					width={w}
 					height={ROW_H}
@@ -132,12 +135,14 @@
 						{/if}
 					{/each}
 				</svg>
+				</div>
 			</div>
 		{/each}
 
 		{#if axis}
-			<!-- Empty label cell keeps the axis aligned under the strips. -->
-			<span aria-hidden="true"></span>
+			<!-- Empty label cell keeps the axis aligned under the strips (sm+ only;
+				on mobile there's no side label column to offset). -->
+			<span aria-hidden="true" class="hidden sm:block"></span>
 			<svg
 				width={w}
 				height={AXIS_H}
@@ -163,7 +168,7 @@
 
 	<!-- No-reading key, centered beneath the strips. -->
 	<div class="mt-4 flex items-center justify-center gap-2 text-sm opacity-90">
-		<span class="pixel-swatch" style="background:{HATCH}" aria-hidden="true"></span>
+		<span class="pixel-swatch" aria-hidden="true"></span>
 		No reading
 	</div>
 
@@ -185,7 +190,7 @@
 		swatches read as low-res chips rather than plain rectangles. */
 	.pixel-chip,
 	.pixel-swatch {
-		clip-path: polygon(
+		--pixel-clip: polygon(
 			0 4px,
 			2px 4px,
 			2px 2px,
@@ -207,13 +212,26 @@
 			2px calc(100% - 4px),
 			0 calc(100% - 4px)
 		);
+		clip-path: var(--pixel-clip);
 	}
 	.pixel-chip {
 		padding: 0.15em 0.6em;
 	}
+	/* The swatch element is the white outline; the hatch sits on top via ::before,
+		inset 1px, so a 1px white ring shows on every edge and notched corner. A plain
+		border can't do this — it gets sliced off at the clip-path notches. */
 	.pixel-swatch {
+		position: relative;
 		display: inline-block;
 		width: 1rem;
 		height: 1rem;
+		background: rgba(255, 255, 255, 0.65);
+	}
+	.pixel-swatch::before {
+		content: '';
+		position: absolute;
+		inset: 1px;
+		background: repeating-linear-gradient(45deg, #2b3a4d 0 3px, #55637b 3px 6px);
+		clip-path: var(--pixel-clip);
 	}
 </style>
