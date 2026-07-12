@@ -48,6 +48,30 @@
 		whole. The clamp shrinks it fluidly on narrow screens (phones sit it beside
 		the map) and settles at 16px from tablet up — mirroring the headline. */
 	.tabswitch {
+		/* Stepped pixel corners, echoing PixelButton's chunky bevel — the notches
+			are cut in 2px increments so the edges read as low-res at any scale. */
+		--corner: polygon(
+			0 4px,
+			2px 4px,
+			2px 2px,
+			4px 2px,
+			4px 0,
+			calc(100% - 4px) 0,
+			calc(100% - 4px) 2px,
+			calc(100% - 2px) 2px,
+			calc(100% - 2px) 4px,
+			100% 4px,
+			100% calc(100% - 4px),
+			calc(100% - 2px) calc(100% - 4px),
+			calc(100% - 2px) calc(100% - 2px),
+			calc(100% - 4px) calc(100% - 2px),
+			calc(100% - 4px) 100%,
+			4px 100%,
+			4px calc(100% - 2px),
+			2px calc(100% - 2px),
+			2px calc(100% - 4px),
+			0 calc(100% - 4px)
+		);
 		position: relative;
 		display: inline-grid;
 		grid-auto-flow: column;
@@ -56,6 +80,7 @@
 		font-size: clamp(10px, 2.1vw, 16px);
 		background: color-mix(in srgb, var(--color-navy) 84%, transparent);
 		box-shadow: 2px 2px 0 color-mix(in srgb, var(--color-navy) 35%, transparent);
+		clip-path: var(--corner);
 		user-select: none;
 	}
 	.tabswitch__pill {
@@ -65,6 +90,7 @@
 		left: 0.2em;
 		width: calc((100% - 0.4em) / var(--count));
 		background: var(--color-sun-gold);
+		clip-path: var(--corner);
 		transform: translateX(calc(var(--active) * 100%));
 		transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
 	}

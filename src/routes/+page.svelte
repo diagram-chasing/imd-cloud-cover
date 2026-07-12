@@ -28,27 +28,17 @@
 
 	let { data }: { data: CriticalData } = $props();
 
-	// Critical map data is present at hydration (the prerender serialized it), so the
-	// map can mount immediately. `india` is expanded from the raw topojson once. The
-	// heavy place labels + rollups fill in after first paint (ensureDeferred).
 	let india = $derived(topoToIndia(data.topo));
 	let places = $state<FeatureCollection>();
 	let rollup7 = $state<Rollup>();
 	let rollup30 = $state<Rollup>();
-	// PixelMap is imported dynamically (client-only): the shell + article paint
-	// before the PIXI engine chunk downloads, and it never runs during SSR. The
-	// import() fires at module eval — during hydration, not after it — so the chunk
-	// request overlaps the remaining hydration work (and the prerendered page's
-	// modulepreload hints, injected postbuild, usually have it in cache already).
+
 	const pixelMapImport = browser ? import('$lib/components/PixelMap.svelte') : null;
 	let PixelMap = $state<typeof import('$lib/components/PixelMap.svelte').default>();
-	// Flipped on the map's first layout emit (its first painted frame) to cross-fade
-	// the India loading shell out and reveal the live canvas underneath.
+
 	let mapPainted = $state(false);
 	let error = $state<string | null>(null);
 
-	// One object the template reads, assembled from the always-present critical data
-	// plus the late-arriving deferred views (places/rollups may be undefined early).
 	let core = $derived({
 		india,
 		places,
@@ -61,8 +51,6 @@
 
 	let tip = $state<HoverInfo | null>(null);
 
-	// Map instance API (the FIT link calls it) and the camera-derived layout info
-	// the FIT link uses: gutter width and zoom-vs-fit ratio.
 	let map = $state<{
 		zoomIn: () => void;
 		zoomOut: () => void;
@@ -111,15 +99,12 @@
 		else setTimeout(ensureDeferred, 200);
 	});
 
-	// If the visitor jumps to Week/Month before the idle prefetch fired, pull the
-	// rollups now so those views aren't briefly empty.
 	$effect(() => {
 		if (sky.view !== 'today') ensureDeferred();
 	});
 
 	let activeRollup = $derived(rollupForView(sky.view, core?.rollup7, core?.rollup30));
-	// In today view, which forecast day matches the visitor's current IST date.
-	// This lets the map read as "today" even before today's scrape has landed.
+
 	let activeDay = $derived(core ? resolveActiveDay(core.latest) : null);
 	let values = $derived(
 		computeValues(
@@ -132,10 +117,6 @@
 		)
 	);
 
-	// The single "when am I looking at" answer, derived from the scrub state so the
-	// cartouche, tooltip and station card all agree. In today view the date is fixed
-	// and the time steps; in week/month the date is the scrubbed window day and the
-	// reading is a daily mean.
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 	let activeDate = $derived.by(() => {
 		if (!core) return '';
@@ -150,8 +131,7 @@
 	let tipStation = $derived<Station | null>(
 		tip && core ? (core.manifest.stations[tip.code] ?? null) : null
 	);
-	// Aggregated marks carry their bin mean — show that, not the representative
-	// station's own values, so the tooltip matches what the mark encodes.
+
 	let tipValues = $derived(tip ? (tip.agg ?? values[tip.code] ?? null) : null);
 
 	let panelStation = $derived<Station | null>(
@@ -167,8 +147,6 @@
 		sky.selectedCode = null;
 	}
 
-	// Light "open" click for chrome that appears: a chosen search result. (Map taps
-	// get their own firmer click inside PixelMap.)
 	function selectFromSearch(code: string) {
 		click('open');
 		openStation(code);
@@ -176,7 +154,6 @@
 
 	let night = $derived(skyMode(sky.timeIndex) === 'night');
 
-	// Shoreline link under the map: scroll to the field notes article.
 	function scrollToNotes() {
 		click('open');
 		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -193,24 +170,11 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Reading The Clouds</title>
-	<meta
-		name="description"
-		content="A daily pixel map of cloud cover over India, read from IMD meteograms."
-	/>
-</svelte:head>
-
 <section
-	class="stage box-border bg-paper p-[clamp(8px,1.4vw,18px)] transition-[background-color] duration-[400ms] ease-[ease] md:h-[95svh]"
+	class="stage box-border bg-paper p-[clamp(8px,1.4vw,18px)] h-[98svh] transition-[background-color] duration-[400ms] ease-[ease] md:h-[98svh]"
 >
-	<!-- Framed map: a full-width bordered panel on a thin paper mat. Definite height so
-		the canvas fills the frame on mobile too, short of the full viewport so the
-		shoreline and article title peek above the fold. bg-navy = sky behind the canvas
-		while it loads. Edge scrim (::after) = eased deep-sky wash under the control rail,
-		z-9 (just under the z-10 bars), so the white chrome keeps a contrast floor. -->
 	<div
-		class="map-frame relative h-[max(88svh,440px)] overflow-hidden bg-navy after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-[9] after:h-[170px] after:bg-[linear-gradient(to_top,color-mix(in_srgb,var(--color-night-sky)_60%,transparent),color-mix(in_srgb,var(--color-night-sky)_42%,transparent)_35%,color-mix(in_srgb,var(--color-night-sky)_18%,transparent)_65%,transparent)] after:content-[''] md:h-full md:min-h-0"
+		class="map-frame relative h-[max(94svh,440px)] overflow-hidden bg-navy after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-[9] after:h-[170px] after:bg-[linear-gradient(to_top,color-mix(in_srgb,var(--color-night-sky)_60%,transparent),color-mix(in_srgb,var(--color-night-sky)_42%,transparent)_35%,color-mix(in_srgb,var(--color-night-sky)_18%,transparent)_65%,transparent)] after:content-[''] md:h-full md:min-h-0"
 	>
 		{#if browser && PixelMap}
 			<PixelMap
@@ -271,8 +235,7 @@
 			</div>
 		{/if}
 
-		<!-- Corner keys in the top-left sky, every layout: search. -->
-		<div class="top-keys absolute top-0 left-0 z-10 flex px-3 py-2.5 md:px-3.5 md:py-3">
+		<div class="top-keys absolute top-0 right-0 z-10 flex px-3 py-2.5 md:px-3.5 md:py-3">
 			<div class="chips flex items-start gap-1.5">
 				{#if core}
 					<StationSearch
@@ -287,9 +250,6 @@
 			</div>
 		</div>
 
-		<!-- Bottom rail: WHAT (legend) · WHEN (timeline) · WHERE (find + fit). One rail,
-			three lanes; grid keeps the dock optically centred. Tablets stack the lanes
-			(dock first); phones drop legend/where and let the dock span full width. -->
 		<div
 			class="bar bottom pointer-events-none absolute inset-x-0 bottom-0 z-10 grid grid-cols-[1fr_auto_1fr] items-end gap-x-5 gap-y-3 px-4 py-3.5 **:pointer-events-auto max-md:grid-cols-1 max-md:justify-items-center md:max-lg:grid-cols-1 md:max-lg:justify-items-center md:max-lg:gap-2.5"
 		>
@@ -324,12 +284,9 @@
 	</div>
 </section>
 
-<!-- Shoreline: pixel wind barbs either side of a quiet scroll link. The tile is a
-	staggered station-plot barb series (half barb → two full barbs) on wandering
-	baselines; the steps() animation nudges it sideways like a passing breeze. -->
-<div class="shore mx-auto flex max-w-[1080px] items-center gap-[18px] px-5">
+<div class="shore mx-auto flex max-w-[1080px] -mt-4 items-center gap-[18px] px-5">
 	<span
-		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[120px_16px] bg-repeat-x opacity-50 [image-rendering:pixelated] motion-reduce:animate-none"
+		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[100px_16px] bg-repeat-x opacity-20 [image-rendering:pixelated] motion-reduce:animate-none"
 		aria-hidden="true"
 	></span>
 	<button
@@ -345,15 +302,11 @@
 		/>
 	</button>
 	<span
-		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[120px_16px] bg-repeat-x opacity-50 [image-rendering:pixelated] motion-reduce:animate-none"
+		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[120px_16px] bg-repeat-x opacity-20 [image-rendering:pixelated] motion-reduce:animate-none"
 		aria-hidden="true"
 	></span>
 </div>
 
-<!-- The field notes article: mdsvex copy from $lib/content.md, set by
-	the Gutenberg-style baseline grid in typography.css (.article). In-content
-	components (the specimen atlas, the city explorer, the support band) are
-	imported inside the markdown itself; the explorer needs the core data. -->
 <article class="article scroll-mt-4" id="field-notes">
 	<FieldNotes manifest={core?.manifest} places={core?.places} india={core?.india} />
 </article>
@@ -386,13 +339,8 @@
 {/if}
 
 <style>
-	/* Shoreline wind-barb tile: a 60×8 station-plot barb series — half barb, full
-	   barb, barb-and-a-half, two barbs — with feathers stepping up-right and the
-	   baselines alternating a pixel so the repeat reads organic. Kept here because
-	   the data-URL carries internal single quotes AND spaces, so it can't survive
-	   a Tailwind bg-[url(...)] arbitrary value; the %230b1d3a in the fill is the
-	   image ink, not a CSS color token. */
+
 	.shore-waves {
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='8'%3E%3Cpath d='M1 7h10v1H1z M2 5h1v2H2z M3 4h1v1H3z M16 6h10v1H16z M16 4h1v2H16z M17 2h1v2H17z M18 0h1v2H18z M31 7h10v1H31z M31 5h1v2H31z M32 3h1v2H32z M33 1h1v2H33z M34 5h1v2H34z M35 4h1v1H35z M45 6h10v1H45z M45 4h1v2H45z M46 2h1v2H46z M47 0h1v2H47z M48 4h1v2H48z M49 2h1v2H49z M50 0h1v2H50z' fill='%230b1d3a'/%3E%3C/svg%3E");
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='10'%3E%3Cpath d='M1 7h10v1H1z M2 5h1v2H2z M3 4h1v1H3z M16 6h10v1H16z M16 4h1v2H16z M17 2h1v2H17z M18 0h1v2H18z M31 7h10v1H31z M31 5h1v2H31z M32 3h1v2H32z M33 1h1v2H33z M34 5h1v2H34z M35 4h1v1H35z M45 6h10v1H45z M45 4h1v2H45z M46 2h1v2H46z M47 0h1v2H47z M48 4h1v2H48z M49 2h1v2H49z M50 0h1v2H50z' fill='%230b1d3a'/%3E%3C/svg%3E");
 	}
 </style>

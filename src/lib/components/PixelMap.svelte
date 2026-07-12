@@ -324,9 +324,10 @@
 		for (const m of placeMarkers) m.scale.set(s);
 	}
 
-	// "You are here": a ringed dot at the visitor's coarse (IP) location. Built
-	// once; positioned/toggled whenever the resolved location changes. Hidden when
-	// the visitor is outside the projected India frame (e.g. abroad).
+	// "You are here": a pixel-square marker at the visitor's coarse (IP) location,
+	// matching the map's square place dots rather than a round pin. Built once;
+	// positioned/toggled whenever the resolved location changes. Hidden when the
+	// visitor is outside the projected India frame (e.g. abroad).
 	function buildUserMarker() {
 		if (!camera) return;
 		userLayer = new Container();
@@ -334,12 +335,12 @@
 		userLayer.visible = false;
 		const m = new Container();
 		const pulse = new Graphics();
-		pulse.circle(0, 0, 7).stroke({ width: 1.5, color: UI.accent, alignment: 0.5 });
+		pulse.rect(-6, -6, 12, 12).stroke({ width: 1.5, color: UI.accent, alignment: 0.5 });
 		m.addChild(pulse);
 		userPulse = pulse;
 		const dot = new Graphics();
-		dot.circle(0, 0, 4.5).fill({ color: 0xffffff });
-		dot.circle(0, 0, 3).fill({ color: UI.accent });
+		dot.rect(-4, -4, 8, 8).fill({ color: 0xffffff });
+		dot.rect(-2.5, -2.5, 5, 5).fill({ color: UI.accent });
 		m.addChild(dot);
 		userLayer.addChild(m);
 		userMarker = m;
@@ -792,12 +793,12 @@
 		titleText.style.fontWeight = '700';
 		titleText.style.letterSpacing = unit * 0.02;
 		titleSub.style.fontSize = unit * 0.7;
-		const metaFS = narrow ? unit * 0.46 : unit * 0.6;
+		const metaFS = narrow ? unit * 0.66 : unit * 0.6;
 		titleMeta.style.fontSize = metaFS;
 		titleMeta.style.letterSpacing = unit * 0.03;
 		for (const t of [titleText, titleSub, titleMeta]) t.style.fill = 0xffffff;
 		if (titleBrand) {
-			titleBrand.style.fontSize = unit * 0.5;
+			titleBrand.style.fontSize = unit * 0.6;
 			titleBrand.style.letterSpacing = unit * 0.08;
 			titleBrand.style.fill = 0xffffff;
 		}
@@ -872,10 +873,10 @@
 			);
 		} else {
 			const v = startView();
-			const s = Math.min((v.w * 0.5) / groupW, (v.h * 0.22) / groupH);
-			const mx = v.w * 0.05;
+			const s = Math.min((v.w * 0.6) / groupW, (v.h * 2) / groupH);
+			const mx = v.w * 0.02;
 			titleGroup.scale.set(s);
-			titleGroup.position.set(v.x + v.w - groupW * s - mx, v.y * 0.2 + mx);
+			titleGroup.position.set(v.x + v.w - groupW * s - mx, v.y * 4 + mx);
 		}
 		updateTitleMeta();
 		updateTitleFade();

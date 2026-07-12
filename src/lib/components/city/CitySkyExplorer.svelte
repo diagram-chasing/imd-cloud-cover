@@ -2,13 +2,14 @@
 	import type { StationsManifest, CitiesRollup } from '$lib/types';
 	import type { FeatureCollection } from 'geojson';
 	import { fetchCities } from '$lib/api/r2';
-	import { ordinal } from '$lib/format';
 	import { citySlugs } from '$lib/city/slug.js';
 	import { haversineKm } from '$lib/city/distance';
 	import { userGeo } from '$lib/state/geo.svelte';
+	import { citySky } from '$lib/state/citySky.svelte';
 	import { base as APP_BASE } from '$app/paths';
 	import { click } from '$lib/feedback';
 	import StationSearch from '$lib/components/StationSearch.svelte';
+	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { TabSwitch } from '$lib/components/ui/switch';
 	import CloudHistogram from './CloudHistogram.svelte';
 	import SkyTwin from './SkyTwin.svelte';
@@ -20,19 +21,15 @@
 	}
 	let { manifest, places, india }: Props = $props();
 
-	const STORE_KEY = 'csx:city';
-
 	// Max distance (km) from the visitor to their nearest city for us to default to
 	// it — beyond this (e.g. an overseas visitor) we fall back to the biggest city.
 	const NEAR_KM = 250;
 
 	let data = $state<CitiesRollup | null>(null);
 	let failed = $state(false);
-	let selected = $state<string | null>(null);
-	// True once a stored/clicked choice pins the selection; blocks the geo default
-	// from overriding a deliberate pick (but a tentative pop-default stays open so
-	// a late-arriving location can still win).
-	let pinned = $state(false);
+	// Focus lives in shared state so the intro barcode stays in sync; `selected` is
+	// a read-only alias to keep the template terse.
+	let selected = $derived(citySky.code);
 	let mode = $state<'today' | 'overall'>('overall');
 	let root = $state<HTMLElement>();
 
@@ -109,36 +106,31 @@
 		};
 	});
 
-	// Resolve the default city. Priority: a stored/clicked pick > the city nearest
-	// the visitor's location > the most-populous fallback. While the location is
-	// still resolving we show the populous default tentatively, then let a nearby
-	// location override it once it arrives (re-runs on userGeo.loc / .resolved).
 	$effect(() => {
-		if (!data || pinned) return;
-		const stored = localStorage.getItem(STORE_KEY);
+		if (!data || citySky.pinned) return;
+		const stored = citySky.stored();
 		if (stored && data.cities[stored]) {
-			selected = stored;
-			pinned = true;
+			citySky.pick(stored);
 			return;
 		}
 		const loc = userGeo.loc;
 		if (loc) {
 			const near = nearestCity(loc.lat, loc.lng);
 			if (near) {
-				selected = near;
+				citySky.suggest(near);
 				return;
 			}
 		}
-		// No usable location (yet, or ever): show the biggest city. Stays unpinned
-		// so a location arriving later can still take over.
-		if (!selected || userGeo.resolved) selected = mostPopulous();
+
+		if (!citySky.code || userGeo.resolved) {
+			const pop = mostPopulous();
+			if (pop) citySky.suggest(pop);
+		}
 	});
 
 	function select(code: string) {
 		click('open');
-		selected = code;
-		pinned = true;
-		localStorage.setItem(STORE_KEY, code);
+		citySky.pick(code);
 	}
 
 	let city = $derived(selected && data ? (data.cities[selected] ?? null) : null);
@@ -146,7 +138,6 @@
 	let activeTwin = $derived(
 		city ? (mode === 'today' ? (city.twin?.today ?? null) : (city.twin?.alltime ?? null)) : null
 	);
-	let total = $derived(data ? Object.keys(data.cities).length : 0);
 	let cityCodes = $derived(data ? new Set(Object.keys(data.cities)) : undefined);
 	let slugByCode = $derived(data ? citySlugs(data.cities).slugByCode : {});
 </script>
@@ -154,7 +145,7 @@
 <section
 	bind:this={root}
 	id="city-explorer"
-	class="scroll-mt-4 pt-16"
+	class="scroll-mt-4 pt-2"
 	aria-label="City sky explorer"
 >
 	{#if failed}
@@ -162,8 +153,6 @@
 			Couldn't load the city record — try again later.
 		</p>
 	{:else if !data || !city || !selected}
-		<!-- Instant skeleton matching the explorer's final shape (header + histogram)
-			so scrolling into view never reveals an empty box or a layout jump. -->
 		<div class="min-h-[560px] bg-day-sea px-5 pt-2" aria-hidden="true">
 			<div class="mx-auto max-w-2xl motion-safe:animate-pulse">
 				<div class="mb-6 h-9 w-2/3 rounded-xs bg-white/25"></div>
@@ -223,16 +212,17 @@
 						bind:value={mode}
 					/>
 				</div>
-				<p class="m-0 mt-6 text-xs tracking-[0.08em] uppercase opacity-70">
-					{ordinal(city.rank)} cloudiest of {total} cities
-					<span class="opacity-60">·</span>
-					<a
+
+				<div class="mt-4 gap-2 text-left">
+					<PixelButton
 						href={`${APP_BASE}/city/${slugByCode[selected] ?? ''}`}
-						class="font-bold text-ink underline decoration-ink/40 underline-offset-4 transition-colors duration-120 hover:text-focus"
+						cap="paper"
+						size="xs"
+						class="text-sm!"
 					>
-						City page →
-					</a>
-				</p>
+						Go to {city.name}'s' page →
+					</PixelButton>
+				</div>
 			</div>
 
 			<div class="flex md:block md:self-end">

@@ -1,19 +1,3 @@
-// Postbuild: inject <link rel="modulepreload"> hints for the PixelMap/pixi
-// dynamic-import closure into the prerendered homepage.
-//
-// Why: the homepage lazy-imports PixelMap.svelte (which bundles pixi.js), and
-// pixi's Application.init() lazy-imports two more levels (environment chunk →
-// WebGLRenderer chunk). SvelteKit only preloads the static route graph, so on
-// first visit those ~150 KB gz download as 3+ serialized round trips *after*
-// hydration — the 1–2 s "shape first, clouds later" gap on 4G. Preloading the
-// whole closure from the HTML head turns the waterfall into one parallel fetch.
-//
-// The chunk set is derived from the Vite manifest each build (hashes change
-// every build; chunk names are never hardcoded): seed from the manifest entry
-// named "PixelMap", walk its static-import closure, and recurse into
-// dynamicImports (pixi's environment/renderer chunks). Chunks the HTML already
-// preloads are skipped, as are the WebGPU and Canvas renderer chunks — with
-// `preference: 'webgl'` pixi never requests them.
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 

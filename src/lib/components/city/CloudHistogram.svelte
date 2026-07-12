@@ -485,17 +485,94 @@
 
 	let ghostLabel = $derived(mode === 'today' ? 'overall' : 'today');
 
+	// All persistent labels share one layout pass so they never sit on top of one
+	// another: the chosen city (the hero) and the "most similar sky" twin anchor to
+	// their own clouds, the mode captions float on their curves, and lower-priority
+	// labels get nudged upward until they clear anything already placed.
+	interface LabelItem {
+		key: string;
+		kind: 'sel' | 'twin' | 'end';
+		prio: number;
+		x: number;
+		top: number;
+		w: number;
+		h: number;
+		name?: string;
+		label?: string;
+		solid?: boolean;
+	}
 
-	let endLabels = $derived.by(() => {
+	let labels = $derived.by(() => {
 		const lv = layout.live;
 		const gv = layout.ghost;
-		if (lv.length < 2) return [] as { key: string; label: string; x: number; y: number; solid: boolean }[];
+		if (!width || lv.length < 2) return [] as LabelItem[];
 		const innerW = Math.max(1, width - MARGIN_X * 2);
+
+		const H_HERO = narrow ? 26 : 30;
+		const H_TWIN = narrow ? 30 : 34;
+		const H_END = 18;
+		const cw = (s: string, per: number) => s.length * per;
+
+		const raw: LabelItem[] = [];
+
+		// Chosen city — the hero, resting just above its own cloud.
+		if (selectedBox) {
+			const x = Math.min(Math.max(selectedBox.x, clampPad), width - clampPad);
+			const cloudTop = selectedBox.y - selectedBox.h / 2;
+			raw.push({
+				key: 'sel', kind: 'sel', prio: 0, name: selectedBox.name,
+				x, w: cw(selectedBox.name, narrow ? 8 : 10) + 24, h: H_HERO,
+				top: cloudTop - cell - 8 - H_HERO
+			});
+		}
+
+		// Twin — pinned to the far end of the arc (its own cloud), reading as the
+		// secondary "most similar sky".
+		if (arc && twin && twinName) {
+			const tb = arc.twinBox;
+			const x = Math.min(Math.max(tb.x, clampPad + 30), width - clampPad - 30);
+			const cloudTop = tb.y - tb.h / 2;
+			raw.push({
+				key: 'twin', kind: 'twin', prio: 1, name: twinName,
+				x, w: Math.max(narrow ? 82 : 104, cw(twinName, 8)) + 16, h: H_TWIN,
+				top: cloudTop - cell - 8 - H_TWIN
+			});
+		}
+
+		// Mode captions (today / overall) floating on their curves.
 		const at = (arr: number[], t: number) => ({ x: MARGIN_X + t * innerW, y: yFor(curveAt(arr, t)) });
-		const items = [{ key: 'live', label: mode, solid: true, ...at(lv, 0.42) }];
-		if (gv.length > 1) items.push({ key: 'ghost', label: ghostLabel, solid: false, ...at(gv, 0.6) });
-		return items;
+		const live = at(lv, 0.42);
+		raw.push({ key: 'end-live', kind: 'end', prio: 2, label: mode, solid: true,
+			x: live.x, w: cw(mode, 9) + 4, h: H_END, top: Math.max(4, live.y - 36) });
+		if (gv.length > 1) {
+			const gh = at(gv, 0.6);
+			raw.push({ key: 'end-ghost', kind: 'end', prio: 3, label: ghostLabel, solid: false,
+				x: gh.x, w: cw(ghostLabel, 9) + 4, h: H_END, top: Math.max(4, gh.y - 36) });
+		}
+
+		const placed: LabelItem[] = [];
+		const clash = (a: LabelItem, top: number) =>
+			placed.find(
+				(p) =>
+					Math.abs(p.x - a.x) < (p.w + a.w) / 2 + 6 &&
+					top < p.top + p.h + 4 &&
+					top + a.h + 4 > p.top
+			);
+		for (const it of raw.slice().sort((a, b) => a.prio - b.prio)) {
+			let top = it.top;
+			for (let i = 0; i < 8; i++) {
+				const c = clash(it, top);
+				if (!c) break;
+				top = c.top - it.h - 6;
+			}
+			placed.push({ ...it, top: Math.max(2, top) });
+		}
+		return placed;
 	});
+
+	let heroLabel = $derived(labels.find((l) => l.kind === 'sel') ?? null);
+	let twinLabel = $derived(labels.find((l) => l.kind === 'twin') ?? null);
+	let endLabels = $derived(labels.filter((l) => l.kind === 'end'));
 
 	let coverLabel = $derived(mode === 'today' ? "today's cloud cover" : 'long-term mean cloud cover');
 	let ariaLabel = $derived(
@@ -533,7 +610,7 @@
 			class="text-shadow-sky pointer-events-none absolute z-10 -translate-x-1/2 text-sm tracking-[0.14em] whitespace-nowrap text-white uppercase {l.solid
 				? 'font-bold'
 				: 'font-normal opacity-60'}"
-			style="left: {l.x}px; top: {Math.max(4, l.y - 36)}px;"
+			style="left: {l.x}px; top: {l.top}px;"
 		>
 			{l.label}
 		</span>
@@ -551,35 +628,26 @@
 		</div>
 	{/if}
 
-	{#if selectedBox}
+	{#if heroLabel}
 		<div
-			class="tag pointer-events-none absolute z-10 -translate-x-1/2 whitespace-nowrap text-sun-gold"
-			style="left: {Math.min(
-				Math.max(selectedBox.x, clampPad),
-				width - clampPad
-			)}px; top: {Math.max(2, selectedBox.y - selectedBox.h / 2 - cell - 28)}px;"
+			class="tag city-tag pointer-events-none absolute z-10 -translate-x-1/2 whitespace-nowrap text-sun-gold"
+			style="left: {heroLabel.x}px; top: {heroLabel.top}px;"
 		>
-			{selectedBox.name}
+			{heroLabel.name}
 		</div>
 	{/if}
 
-
-	{#if arc && twin && twinName && !moving}
+	{#if twinLabel && twin && !moving}
 		<button
-			class="tag twin-tag absolute z-10 -translate-x-1/2 cursor-pointer text-center whitespace-nowrap text-white transition-colors duration-120 hover:text-sun-gold {arc.under
-				? ''
-				: '-translate-y-full'}"
-			style="left: {Math.min(
-				Math.max(arc.apexX, clampPad + 30),
-				width - clampPad - 30
-			)}px; top: {arc.under
-				? Math.min(layout.baseY - 6, arc.apexY + 8)
-				: Math.max(narrow ? 34 : 40, arc.apexY - 10)}px;"
+			class="tag twin-tag absolute z-10 -translate-x-1/2 cursor-pointer text-center whitespace-nowrap text-white transition-colors duration-120 hover:text-sun-gold"
+			style="left: {twinLabel.x}px; top: {twinLabel.top}px;"
 			onclick={() => onselect?.(twin.code)}
 		>
-			<span class="block text-xs leading-none tracking-[0.16em] opacity-70">Most Like</span>
-			<span class="mt-0.5 block text-sm leading-tight">
-				<span class="border-b-2 border-sun-gold">{twinName}</span>
+			<span class="block text-[10px] leading-none tracking-[0.16em] uppercase opacity-60">
+				Most similar sky
+			</span>
+			<span class="mt-1 block text-xs leading-tight tracking-wide">
+				<span class="border-b-2 border-white/50">{twinLabel.name}</span>
 			</span>
 		</button>
 	{/if}
@@ -605,5 +673,14 @@
 		letter-spacing: 0.08em;
 		line-height: 1.15;
 		text-transform: uppercase;
+	}
+
+	/* The chosen city is the hero of the chart: bigger, chunkier box, brighter
+		shadow than the secondary "most similar sky" twin label. */
+	.city-tag {
+		padding: 6px 11px;
+		font-size: 16px;
+		letter-spacing: 0.1em;
+		box-shadow: 3px 3px 0 color-mix(in srgb, var(--color-navy) 45%, transparent);
 	}
 </style>

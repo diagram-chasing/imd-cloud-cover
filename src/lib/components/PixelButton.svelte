@@ -2,10 +2,10 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { HTMLAnchorAttributes, HTMLButtonAttributes } from 'svelte/elements';
-
+	
 	type Props = (HTMLAnchorAttributes & HTMLButtonAttributes) & {
 		href?: string;
-		size?: 'md' | 'sm';
+		size?: 'md' | 'sm' | 'xs';
 		cap?: 'gold' | 'paper' | 'sky';
 		flat?: boolean;
 		children: Snippet;
@@ -28,6 +28,7 @@
 		class={[
 			'pixel-btn',
 			size === 'sm' && 'sm',
+			size === 'xs' && 'xs',
 			cap === 'paper' && 'cap-paper',
 			cap === 'sky' && 'cap-sky',
 			flat && 'flat',
@@ -47,6 +48,7 @@
 		class={[
 			'pixel-btn',
 			size === 'sm' && 'sm',
+			size === 'xs' && 'xs',
 			cap === 'paper' && 'cap-paper',
 			cap === 'sky' && 'cap-sky',
 			flat && 'flat',
@@ -132,6 +134,42 @@
 		--band-lo: 3px;
 		--glint: linear-gradient(var(--cap-glint), var(--cap-glint)) 5px 2px / 8px 2px no-repeat;
 		--pad: 3px 10px 5px;
+		--corner: polygon(
+			0 4px,
+			2px 4px,
+			2px 2px,
+			4px 2px,
+			4px 0,
+			calc(100% - 4px) 0,
+			calc(100% - 4px) 2px,
+			calc(100% - 2px) 2px,
+			calc(100% - 2px) 4px,
+			100% 4px,
+			100% calc(100% - 4px),
+			calc(100% - 2px) calc(100% - 4px),
+			calc(100% - 2px) calc(100% - 2px),
+			calc(100% - 4px) calc(100% - 2px),
+			calc(100% - 4px) 100%,
+			4px 100%,
+			4px calc(100% - 2px),
+			2px calc(100% - 2px),
+			2px calc(100% - 4px),
+			0 calc(100% - 4px)
+		);
+	}
+
+	.pixel-btn.xs {
+		--travel: 2px;
+		--lip: 2px;
+		--press: 1px;
+		--base-top: 5px;
+		--base-ring: 4px;
+		--base-edge: 2px;
+		--band-hi: 3px;
+		--band-lo: 2px;
+		--glint: linear-gradient(var(--cap-glint), var(--cap-glint)) 4px 2px / 6px 2px no-repeat;
+		--pad: 2px 7px 3px;
+		font-size: 0.72rem;
 		--corner: polygon(
 			0 4px,
 			2px 4px,
