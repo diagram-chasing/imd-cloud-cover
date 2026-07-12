@@ -14,11 +14,9 @@ import type {
 	StationsManifest,
 	AllStations,
 	Summary,
-	Rollup,
 	CitiesRollup,
 	History,
-	Forecast,
-	DatesIndex
+	Forecast
 } from '$lib/types';
 
 const REMOTE = (import.meta.env.VITE_R2_PUBLIC_URL || '').replace(/\/$/, '');
@@ -27,21 +25,10 @@ const REMOTE = (import.meta.env.VITE_R2_PUBLIC_URL || '').replace(/\/$/, '');
 const BASE = REMOTE || `${base}/sample`;
 const CORE = REMOTE ? `${base}/baked` : `${base}/sample`;
 
-/** Cache-buster for the daily-changing views, stable within an hour. */
-function versionTag(): string {
-	const now = new Date();
-	return `${now.getUTCFullYear()}${now.getUTCMonth() + 1}${now.getUTCDate()}${now.getUTCHours()}`;
-}
-
 async function getJSON<T>(base: string, path: string, opts?: RequestInit): Promise<T> {
 	const res = await fetch(`${base}/${path}`, opts);
 	if (!res.ok) throw new Error(`Fetch failed: ${path} (${res.status})`);
 	return res.json() as Promise<T>;
-}
-
-/** Freshest-view fetch for remote daily-changing files: bust CDN cache and revalidate. */
-function getLatest<T>(path: string): Promise<T> {
-	return getJSON<T>(BASE, `${path}?v=${versionTag()}`, { cache: 'no-cache' });
 }
 
 /** Tail fetch: prefer the baked copy (/baked), fall back to the remote endpoint. */
@@ -59,8 +46,6 @@ async function getTail<T>(path: string): Promise<T> {
 export const fetchStations = () => getJSON<StationsManifest>(CORE, 'meta/stations.json');
 export const fetchLatest = () => getJSON<AllStations>(CORE, 'latest/all-stations.json');
 export const fetchSummary = () => getJSON<Summary>(CORE, 'latest/summary.json');
-export const fetchRollup = (window: '7d' | '30d') =>
-	getJSON<Rollup>(CORE, `rollups/${window}.json`);
 
 export const fetchCities = () => getJSON<CitiesRollup>(CORE, 'rollups/cities.json');
 
@@ -68,9 +53,6 @@ export const fetchCities = () => getJSON<CitiesRollup>(CORE, 'rollups/cities.jso
 export const fetchHistory = (code: string) => getTail<History>(`history/${code}.json`);
 export const fetchForecast = (date: string, code: string) =>
 	getTail<Forecast>(`${date}/${code}-meteogram.json`);
-
-// Remote, on-demand.
-export const fetchDates = () => getLatest<DatesIndex>('meta/dates.json');
 
 /** Coarse visitor location from the Worker's Cloudflare edge (`request.cf`).
  *  City-level, IP-based, no permission prompt. Null in sample mode (no Worker)

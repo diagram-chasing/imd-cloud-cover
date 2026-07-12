@@ -1,8 +1,7 @@
 """Extract cloud cover data from meteogram images in memory."""
 import numpy as np
 import cv2
-from datetime import datetime, timedelta
-from PIL import Image
+from datetime import timedelta
 from io import BytesIO
 
 # Crop of the cloud-cover panel within the (thumbnailed, width==1200) meteogram.

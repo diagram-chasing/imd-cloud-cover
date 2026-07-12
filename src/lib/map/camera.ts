@@ -4,34 +4,10 @@
 //
 // These mirror the constants and camera functions in PixelMap.svelte (WORLD_W, PAD,
 // worldBBox/containZoom/narrowLayout/startZoomFactor/fitCamera). Keep them in sync.
-import { geoConicConformal, geoPath } from 'd3-geo';
-import type { FeatureCollection, Feature, Geometry } from 'geojson';
-import { CELL } from '$lib/theme';
 
 export const WORLD_W = 1024;
 export const WORLD_H = WORLD_W * 1.06; // buildGeo: worldH = worldW * 1.06
 export const PAD = 4;
-
-/** The map's projection, fitting India into the 1024-wide world with a CELL margin
- *  — identical to buildGeo() so projected coordinates match the baked ground. */
-export function mapProjection(india: FeatureCollection) {
-	return geoConicConformal()
-		.parallels([12, 36])
-		.rotate([-82.5, 0])
-		.fitExtent(
-			[
-				[CELL, CELL],
-				[WORLD_W - CELL, WORLD_H - CELL]
-			],
-			india as unknown as Feature<Geometry>
-		);
-}
-
-/** India as an SVG path in WORLD coordinates (0..WORLD_W × 0..WORLD_H). Apply the
- *  startFrame transform to place it on screen. */
-export function indiaWorldPath(india: FeatureCollection): string {
-	return geoPath(mapProjection(india))(india as unknown as Feature<Geometry>) ?? '';
-}
 
 export interface StartFrame {
 	zoom: number;

@@ -3,7 +3,6 @@ import { WebHaptics } from 'web-haptics';
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let noise: AudioBuffer | null = null;
-let muted = false;
 
 function audio(): { ac: AudioContext; out: GainNode } | null {
 	if (typeof window === 'undefined') return null;
@@ -45,7 +44,6 @@ const PRESETS = {
 export type ClickPreset = keyof typeof PRESETS;
 
 export function click(preset: ClickPreset = 'select'): void {
-	if (muted) return;
 	const a = audio();
 	if (!a) return;
 	const { ac, out } = a;
@@ -88,10 +86,5 @@ function device(): WebHaptics | null {
 }
 
 export function tap(pattern: string = 'light'): void {
-	if (muted) return;
 	device()?.trigger(pattern);
-}
-
-export function setMuted(v: boolean): void {
-	muted = v;
 }

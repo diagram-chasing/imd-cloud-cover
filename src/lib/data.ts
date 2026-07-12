@@ -2,11 +2,11 @@ import type { AllStations, BandValues, Rollup, StationBands, ViewMode } from '$l
 
 const DAY_STEPS = 8;
 
-export function istDateString(now: number = Date.now()): string {
+function istDateString(now: number = Date.now()): string {
 	return new Date(now + 5.5 * 3600 * 1000).toISOString().slice(0, 10);
 }
 
-export function forecastDays(latest: AllStations): string[] {
+function forecastDays(latest: AllStations): string[] {
 	return [latest.date, ...(latest.fdays ?? [])];
 }
 
@@ -21,7 +21,7 @@ export function resolveActiveDay(
 	return { date: days[index], index };
 }
 
-export function dayBands(latest: AllStations, code: string, index: number): StationBands | null {
+function dayBands(latest: AllStations, code: string, index: number): StationBands | null {
 	const day0 = latest.stations[code] ?? null;
 	if (index <= 0) return day0;
 	const f = latest.forecast?.[code];
@@ -32,7 +32,7 @@ export function dayBands(latest: AllStations, code: string, index: number): Stat
 	return bands.h.length === DAY_STEPS ? bands : day0;
 }
 
-export function stationsForDay(latest: AllStations, index: number): Record<string, StationBands> {
+function stationsForDay(latest: AllStations, index: number): Record<string, StationBands> {
 	if (index <= 0 || !latest.forecast) return latest.stations;
 	const out: Record<string, StationBands> = {};
 	for (const code of Object.keys(latest.stations)) {

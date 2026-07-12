@@ -1,17 +1,7 @@
 // Design tokens for the pixel sky-map. All values are decisions from the spec.
 // Colors mirror the meteogram's own cloud panel: chunky white clouds on flat blue.
 
-export const CELL = 8; // logical px per grid cell (desktop). See cellForWidth().
-export const FRAME_W = 900; // logical px, desktop map frame width
-// Frame height derived from India's aspect (~1.06) rounded to whole cells.
-export const FRAME_H = Math.round((FRAME_W * 1.06) / CELL) * CELL;
-
-/** Responsive cell size: 8 desktop, 6 tablet (<1024), 5 mobile (<640). */
-export function cellForWidth(viewportWidth: number): number {
-	if (viewportWidth < 640) return 5;
-	if (viewportWidth < 1024) return 6;
-	return 8;
-}
+export const CELL = 8; // logical px per grid cell (desktop).
 
 export type SkyMode = 'day' | 'night';
 
@@ -33,13 +23,6 @@ export const SKY: Record<SkyMode, SkyPalette> = {
 	day: { top: '#2E7CC4', bottom: '#6FC4EF' },
 	night: { top: '#081831', bottom: '#16335C' }
 };
-
-export function skyFor(timeIndex: number): SkyPalette {
-	return SKY[skyMode(timeIndex)];
-}
-
-/** Quantize the sky gradient into N flat bands (banding is the aesthetic). */
-export const SKY_BANDS = 5;
 
 // Ground palette (land, urban, shallow water, coast outline, terrain relief,
 // night city lights) lives in scripts/bake-ground.mjs — the ground composite is
@@ -81,7 +64,7 @@ export const UI = {
 
 // Below this a station reads as clear — kills the sub-scale wisps that made
 // clear and lightly-clouded land look identical when all bands are on.
-export const COVER_FLOOR = 20;
+const COVER_FLOOR = 20;
 // Perceptual shaping of the visible range [FLOOR..100]. >1 reserves the top
 // tiers for genuinely heavy cover, so marks stay small/faint until cover is
 // real, then jump — dense regions visibly pop, sparse ones recede.
@@ -95,6 +78,5 @@ export function coverTier(cover: number): 0 | 1 | 2 | 3 | 4 {
 	return Math.min(4, Math.max(1, tier)) as 1 | 2 | 3 | 4;
 }
 
-// Effective-cover thresholds shared with the pipeline.
-export const CLOUDY_DAY = 60; // effective cover at/above this reads as a cloudy day
+// Effective-cover threshold shared with the pipeline.
 export const CLEAR_STARS = 25; // stars appear where max(h,m,l) < this
