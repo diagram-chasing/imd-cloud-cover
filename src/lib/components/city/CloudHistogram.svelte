@@ -345,6 +345,27 @@
 		ctx.fillRect(fx + fw - px, fy, px, fh);
 	}
 
+	// Dotted pixel leader from a top-row label down to its cloud. `pts` is an
+	// axis-aligned polyline (an elbow); each dot gets a navy backing for contrast.
+	function drawStem(ctx: CanvasRenderingContext2D, pts: [number, number][], color: string) {
+		let idx = 0;
+		for (let s = 0; s < pts.length - 1; s++) {
+			const [x0, y0] = pts[s];
+			const [x1, y1] = pts[s + 1];
+			const steps = Math.round(Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) / cell);
+			for (let k = 0; k <= steps; k++) {
+				if (idx++ % 2 !== 0) continue;
+				const t = steps ? k / steps : 0;
+				const gx = Math.round((x0 + (x1 - x0) * t) / cell);
+				const gy = Math.round((y0 + (y1 - y0) * t) / cell);
+				ctx.fillStyle = 'rgba(11,29,58,0.4)';
+				ctx.fillRect(gx * cell - 1, gy * cell - 1, cell + 2, cell + 2);
+				ctx.fillStyle = color;
+				ctx.fillRect(gx * cell, gy * cell, cell, cell);
+			}
+		}
+	}
+
 	function draw() {
 		if (!canvas || !width) return;
 		const { boxes, height } = layout;
@@ -435,7 +456,9 @@
 		}
 
 
-		if (arcCells.length) {
+		// Narrow: the top-row labels + their stems carry the twin link, so skip the
+		// cloud-to-cloud arc — two elbowed lines in one spot reads as clutter.
+		if (!narrow && arcCells.length) {
 			const n = Math.round(arcCells.length * arcP);
 			ctx.fillStyle = 'rgba(11,29,58,0.5)';
 			for (let i = 0; i < n; i++) {
@@ -451,6 +474,25 @@
 			}
 		}
 
+
+		// Narrow: connect each top-row label back down to its cloud with a leader.
+		if (narrow && !moving) {
+			for (const l of labels) {
+				if (l.anchorX == null || l.anchorY == null) continue;
+				const lyBot = l.top + l.h;
+				const rail = lyBot + cell * 2;
+				drawStem(
+					ctx,
+					[
+						[l.anchorX, l.anchorY - cell],
+						[l.anchorX, rail],
+						[l.x, rail],
+						[l.x, lyBot + 1]
+					],
+					l.kind === 'sel' ? UI.sunGold : 'rgba(255,255,255,0.9)'
+				);
+			}
+		}
 
 		if (arc && !moving) {
 			const p = renderPos.get(arc.twinBox.code) ?? arc.twinBox;
@@ -500,6 +542,9 @@
 		name?: string;
 		label?: string;
 		solid?: boolean;
+		// Cloud this label points at (narrow layout draws a stem to it).
+		anchorX?: number;
+		anchorY?: number;
 	}
 
 	let labels = $derived.by(() => {
@@ -512,30 +557,39 @@
 		const H_TWIN = narrow ? 30 : 34;
 		const H_END = 18;
 		const cw = (s: string, per: number) => s.length * per;
+		// The twin box is as wide as its "MOST SIMILAR SKY" caption, not the city
+		// name — size the box off whichever is wider so the collision math is honest.
+		const TWIN_CAP_W = 132;
+		// Narrow: hero + twin ride this fixed row in the top padding, clear of the
+		// distribution band, and connect down to their clouds with a drawn stem.
+		const TOP_ROW = 2;
 
 		const raw: LabelItem[] = [];
 
-		// Chosen city — the hero, resting just above its own cloud.
+		// Chosen city — the hero. On wide screens it rests just above its own cloud;
+		// on narrow it rides the top row and points down with a stem.
 		if (selectedBox) {
 			const x = Math.min(Math.max(selectedBox.x, clampPad), width - clampPad);
 			const cloudTop = selectedBox.y - selectedBox.h / 2;
 			raw.push({
 				key: 'sel', kind: 'sel', prio: 0, name: selectedBox.name,
-				x, w: cw(selectedBox.name, narrow ? 8 : 10) + 24, h: H_HERO,
-				top: cloudTop - cell - 8 - H_HERO
+				x, w: cw(selectedBox.name, 12) + 24, h: H_HERO,
+				top: narrow ? TOP_ROW : cloudTop - cell - 8 - H_HERO,
+				anchorX: selectedBox.x, anchorY: cloudTop
 			});
 		}
 
-		// Twin — pinned to the far end of the arc (its own cloud), reading as the
-		// secondary "most similar sky".
+		// Twin — the secondary "most similar sky". Pinned above its own cloud on wide
+		// screens, or to the top row (with a stem) on narrow.
 		if (arc && twin && twinName) {
 			const tb = arc.twinBox;
 			const x = Math.min(Math.max(tb.x, clampPad + 30), width - clampPad - 30);
 			const cloudTop = tb.y - tb.h / 2;
 			raw.push({
 				key: 'twin', kind: 'twin', prio: 1, name: twinName,
-				x, w: Math.max(narrow ? 82 : 104, cw(twinName, 8)) + 16, h: H_TWIN,
-				top: cloudTop - cell - 8 - H_TWIN
+				x, w: Math.max(TWIN_CAP_W, cw(twinName, 9)) + 16, h: H_TWIN,
+				top: narrow ? TOP_ROW : cloudTop - cell - 8 - H_TWIN,
+				anchorX: tb.x, anchorY: cloudTop
 			});
 		}
 
@@ -558,7 +612,47 @@
 					top < p.top + p.h + 4 &&
 					top + a.h + 4 > p.top
 			);
+
+		// Narrow: hero + twin share the top row, so resolve their overlap sideways
+		// (pushing them apart) rather than stacking them down into the band.
+		if (narrow) {
+			const row = raw
+				.filter((r) => r.kind === 'sel' || r.kind === 'twin')
+				.sort((a, b) => a.x - b.x);
+			const lo = clampPad;
+			const hi = width - clampPad;
+			if (row.length === 2) {
+				const [a, b] = row;
+				const minSep = (a.w + b.w) / 2 + 10;
+				let ax = a.x;
+				let bx = b.x;
+				// Only pry them apart when they'd actually collide.
+				if (bx - ax < minSep) {
+					const mid = (ax + bx) / 2;
+					ax = mid - minSep / 2;
+					bx = mid + minSep / 2;
+				}
+				// Slide the pair as a rigid unit to keep both inside the bounds
+				// without reintroducing overlap.
+				if (ax < lo) {
+					bx += lo - ax;
+					ax = lo;
+				}
+				if (bx > hi) {
+					ax -= bx - hi;
+					bx = hi;
+				}
+				a.x = Math.max(lo, ax);
+				b.x = bx;
+			}
+			for (const it of row) {
+				it.x = Math.min(Math.max(it.x, lo), hi);
+				placed.push(it);
+			}
+		}
+
 		for (const it of raw.slice().sort((a, b) => a.prio - b.prio)) {
+			if (placed.includes(it)) continue;
 			let top = it.top;
 			for (let i = 0; i < 8; i++) {
 				const c = clash(it, top);

@@ -89,7 +89,7 @@
 	{forecast}
 	metDate={data.date}
 	metCode={data.code}
-	metCaption="NEXT 10 DAYS · 3-HOURLY · READ FROM {data.stationName.toUpperCase()}"
+	metCaption="NEXT 10 DAYS,  3-HOURLY. READING FROM {data.stationName.toUpperCase()}"
 	perStation={values}
 	{india}
 	cityPoint={data.lat != null && data.lon != null

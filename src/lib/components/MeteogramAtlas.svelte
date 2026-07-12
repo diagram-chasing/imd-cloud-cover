@@ -35,7 +35,7 @@
 			side: 'left',
 			anchorY: 12,
 			title: 'UPPER AIR',
-			note: 'A vertical cross-section of the sky up to about 5 km. Barbs for wind direction, green shading for how moist the air is.',
+			note: 'A cross-section of the sky up to about 5 km. Barbs show wind direction; green shading shows how moist the air is at each height.',
 			rect: { x: PLOT_X, y: 6.36, w: PLOT_W, h: 33.64 },
 			mark: { x: 20, y: 19.5 }
 		},
@@ -45,7 +45,7 @@
 			side: 'right',
 			anchorY: 11,
 			title: 'PRESSURE & THICKNESS',
-			note: 'Air pressure at sea level, with a second line that tracks how warm the whole air column is.',
+			note: 'Air pressure at sea level. A second line tracks how warm the whole air column is.',
 			rect: { x: PLOT_X, y: 41, w: PLOT_W, h: 6.8 },
 			pad: [0.5, 0.12],
 			mark: { x: 85, y: 44.2 }
@@ -56,7 +56,7 @@
 			side: 'left',
 			anchorY: 43.5,
 			title: 'INSTABILITY',
-			note: 'How likely the atmosphere is to build storms, shown by the bars.',
+			note: 'How likely the atmosphere is to build storms. Taller bars mean more unstable air.',
 			rect: { x: PLOT_X, y: 48, w: PLOT_W, h: 7.3 },
 			pad: [0.28, 0.26],
 			mark: { x: 20, y: 51.8 }
@@ -67,7 +67,7 @@
 			side: 'right',
 			anchorY: 37.5,
 			title: 'SURFACE WIND',
-			note: 'Wind speed and direction 10m above the ground.',
+			note: 'Wind speed and direction 10 m above the ground.',
 			rect: { x: PLOT_X, y: 55.65, w: PLOT_W, h: 7.33 },
 			pad: [0.34, 0.3],
 			mark: { x: 85, y: 59.4 }
@@ -78,7 +78,7 @@
 			side: 'left',
 			anchorY: 68.5,
 			title: 'TEMPERATURE',
-			note: 'The day-night swing of air temperature, in celsius, with whiskers marking each 3-hour high and low.',
+			note: 'The day-night swing of air temperature in celsius. Whiskers mark the high and low within each 3-hour window.',
 			rect: { x: PLOT_X, y: 63.78, w: PLOT_W, h: 6.93 },
 			pad: [0.56, 0.12],
 			mark: { x: 20, y: 66.9 }
@@ -89,7 +89,7 @@
 			side: 'right',
 			anchorY: 63,
 			title: 'HUMIDITY',
-			note: 'How much moisture is in the air, calculated in percentage.',
+			note: 'How much moisture the air is holding, as a percentage of what it could hold.',
 			rect: { x: PLOT_X, y: 70.75, w: PLOT_W, h: 7.73 },
 			pad: [0, 0.22],
 			nudgeX: 1.2,
@@ -102,7 +102,7 @@
 			side: 'right',
 			anchorY: 91.5,
 			title: 'CLOUD COVER',
-			note: 'How much of the sky is covered, split into high, middle and low decks.',
+			note: 'How much of the sky is covered, split into low, middle and high decks.',
 			rect: { x: PLOT_X, y: 78.64, w: PLOT_W, h: 7.42 },
 			pad: [0, 0],
 			nudgeX: 1.2,
@@ -114,7 +114,7 @@
 			side: 'left',
 			anchorY: 92.5,
 			title: 'PRECIPITATION',
-			note: 'Rain expected in each 3-hour window. Green for the total, red for thunderstorms.',
+			note: 'Rain expected in each 3-hour window. Green is the total; red is the share from thunderstorms.',
 			rect: { x: PLOT_X, y: 86.46, w: PLOT_W, h: 10 },
 			nudgeX: 1.2,
 
@@ -257,7 +257,7 @@
 			swipeActive = REGIONS[api.selectedScrollSnap()]?.id ?? null;
 			deckDismissed = false;
 		};
-		onSelect(); 
+		onSelect();
 		api.on('select', onSelect);
 		return () => {
 			api.off('select', onSelect);

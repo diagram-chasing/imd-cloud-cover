@@ -49,7 +49,7 @@
 {#if isMobile}
 	<Drawer bind:open shouldScaleBackground={false}>
 		<DrawerContent
-			class="max-h-[85vh] gap-0 border-0 bg-paper p-4 pt-2 text-ink before:border-2 before:border-ink before:bg-paper"
+			class="max-h-[85vh] gap-0 border-2 border-ink bg-paper px-4 pt-1 pb-4 text-ink"
 		>
 			<div class="sheet-scroll max-h-[calc(85vh-40px)] overflow-y-auto">
 				<StationCard {code} {station} {current} {rollup} {date} {when} {onclose} />

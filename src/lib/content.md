@@ -64,15 +64,15 @@
 
 <p class="byline">by <a href="https://diagramchasing.fun" target="_blank" rel="noopener">Aman Bhargava</a></p>
 
-Every morning, the India Meteorological Department (IMD) publishes a GFS _meteogram_ for each of its roughly 1,200 observation stations. It's a dense, complex data product—overwhelming at first glance, but it packs an enormous amount of information into a single image, which makes it invaluable to forecasters, power-grid operators, and anyone tracking the weather.image.png
+Every morning, the India Meteorological Department publishes a meteogram for each of its ~1,200 weather stations. It is a 10-day forecast broken into three-hour intervals and stacked into vertical panels for temperature, humidity, pressure, wind, cloud and rain. At first it looks like a wall of lines. But start with one panel you can read, such as the daily rise and fall of temperature, and the others become easier to follow, since a change in one usually corresponds to a change in another.
 
-A meteogram is a visual 10-day forecast broken into three-hour intervals, stacked into vertical panels that each track a variable: temperature, humidity, atmospheric pressure, and more. With a station generating one of these graphics at hundreds of points across the country, the IMD can map India's weather at a remarkably granular level.
+Read together, the panels show both the weather you will feel that day and the atmospheric conditions behind it. Multiply that by all the stations and the IMD can map the country's weather at a remarkably granular level.
 
 <div class="breakout">
 	<MeteogramAtlas />
 </div>
 
-But what really caught my eye was how these graphics represent cloud cover. Look closely and you'll realize it's drawn to resemble a literal cloudy sky!
+What first drew me to these charts was the density of the visual organization, which you rarely see. But the detail that caught my eye was the cloud-cover panel. Look closely and you can see it is drawn to resemble an actual cloudy sky!
 
 <img
 	src={cloudsUrl}
@@ -82,14 +82,15 @@ But what really caught my eye was how these graphics represent cloud cover. Look
 />
 
 
-The cloud-cover panel is a stacked histogram split into three atmospheric tiers: low clouds (surface to 2 km), medium clouds (2–7 km), and high clouds (above 7 km). When a block of time is fully white, the station expects close to 100% coverage at that altitude. And since low clouds like cumulus are the ones that bring rain, a dense white block in the bottom tier usually lines up neatly with a spike in the precipitation bar just below it.
+The cloud-cover panel is a stacked histogram split into three tiers: low clouds (cumulus, surface to 2 km), medium clouds (altocumulus, 2 to 7 km), and high clouds (cirrus, above 7 km). When a block of time is fully white, the station expects close to 100% coverage at that altitude. Because rain generally comes from the lowest tier, a dense white block there usually lines up with a spike in the precipitation bar below it.
 
 <CloudTiers />
 
 
-I absolutely love this visualization. It’s charming that the original developer who wrote this software consciously chose to take complex meteorological data and render it in such a playful, cloudy pixel-art style. Since February 2026, I've been archiving these every day. I wrote a script to read the pixels, turning the histogram images back into structured data so I could plot the current slice of time onto a map. We now run that collection and analysis daily, mapping India's clouds at the top of this page.
+I love this visualization. Whoever wrote the software took complex meteorological data and rendered it in a playful, cloudy pixel-art style, and the result is charming.
+Since February 2026 I have been archiving these charts every day. I wrote a script that reads the pixels and turns the histogram images back into structured data, so I could plot a given slice of time onto a map. That collection and analysis now runs daily, mapping India's clouds at the top of this page.
 
-Having {monthsLabel} of data let's us look at some patterns too. For example, every city here has a **twin**, or a faraway city whose clouds gather and clear in the same ways on some days.
+With {monthsLabel} of data, some patterns start to show. Every city here has a twin, or a distant city whose skies cloud over and clear in similar ways.
 
 {#if skyPair}
 <p>Take <strong>{skyPair.city}</strong> and <strong>{skyPair.twin}</strong>, they are hundreds of kilometres apart, yet they move together as you can see in the day-by-day strips below show.</p>
@@ -106,7 +107,7 @@ Having {monthsLabel} of data let's us look at some patterns too. For example, ev
 </div>
 {/if}
 
-Below are all {cities ? Object.keys(cities.cities).length : 424} cities, from the clear to cloudy. You can look one up to see how cloudy it's been, over the long run and just today, and meet the distant city its sky most resembles.
+Below are all {cities ? Object.keys(cities.cities).length : 424} cities, ordered from clear to cloudy. Look one up to see how cloudy it has been, over the long run and today, and to meet the distant city its sky most resembles.
 
 {#if manifest && india}
 <div class="breakout full-bleed">

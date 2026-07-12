@@ -71,22 +71,28 @@
 		stateN: string;
 	}
 
-	// One index over stations + cities. A city whose name collides with a station
-	// is dropped — the station carries data, so it wins — but its aliases move onto
-	// the station so exonyms still resolve (station "Mumbai" inherits "Bombay").
+	// One index over stations + cities. A city is folded into a station only when
+	// it's the *same place* — its own nearest station carries the same name (station
+	// "Mumbai" absorbs city "Mumbai" and inherits "Bombay"). A same-named place that
+	// is a *different* city (its nearest station is named otherwise) stays a distinct
+	// entry, so the two Aurangabads — Bihar (station AURANGABAD) and Maharashtra
+	// (nearest AGD) — don't collapse into one.
 	let index = $derived.by(() => {
-		const cityAlias = new Map<string, string[]>();
+		// True when this place is the one the station already represents.
+		const isSamePlace = (p: PlaceProps) => {
+			const near = p.nearest ? manifest.stations[p.nearest] : null;
+			return !!near && norm(near.name) === norm(p.name);
+		};
+		// Aliases inherited by a station code from the city that shares its identity.
+		const stationAlias = new Map<string, string[]>();
 		for (const f of places?.features ?? []) {
 			const p = f.properties as unknown as PlaceProps;
-			if (!p?.name || !p.aliases?.length) continue;
-			const n = norm(p.name);
-			cityAlias.set(n, [...(cityAlias.get(n) ?? []), ...p.aliases]);
+			if (!p?.name || !p.aliases?.length || !p.nearest || !isSamePlace(p)) continue;
+			stationAlias.set(p.nearest, [...(stationAlias.get(p.nearest) ?? []), ...p.aliases]);
 		}
-		const stationNames = new Set<string>();
 		const out: Entry[] = [];
 		for (const [code, s] of Object.entries(manifest.stations)) {
 			const nn = norm(s.name);
-			stationNames.add(nn);
 			out.push({
 				kind: 'station',
 				name: s.name,
@@ -96,14 +102,14 @@
 				nkm: 0,
 				pop: 0,
 				nameN: nn,
-				aliasN: (cityAlias.get(nn) ?? []).map(norm),
+				aliasN: (stationAlias.get(code) ?? []).map(norm),
 				codeN: norm(code),
 				stateN: s.state ? norm(s.state) : ''
 			});
 		}
 		for (const f of places?.features ?? []) {
 			const p = f.properties as unknown as PlaceProps;
-			if (!p?.name || stationNames.has(norm(p.name))) continue;
+			if (!p?.name || isSamePlace(p)) continue;
 			out.push({
 				kind: 'city',
 				name: p.name,

@@ -213,14 +213,14 @@
 					/>
 				</div>
 
-				<div class="mt-4 gap-2 text-left">
+				<div class="mt-4 w-[180px] gap-2 text-left">
 					<PixelButton
 						href={`${APP_BASE}/city/${slugByCode[selected] ?? ''}`}
 						cap="paper"
 						size="xs"
 						class="text-sm!"
 					>
-						Go to {city.name}'s' page →
+						Go to {city.name}'s page →
 					</PixelButton>
 				</div>
 			</div>

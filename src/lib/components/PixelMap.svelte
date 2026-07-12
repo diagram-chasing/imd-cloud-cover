@@ -128,7 +128,7 @@
 	}
 
 	const STORY_TITLE = "MAPPING INDIA'S CLOUDS";
-	const STORY_SUB = 'A daily map of how cloudy it is today';
+	const STORY_SUB = "A daily map of where it's cloudy";
 	const MONTHS = [
 		'JAN',
 		'FEB',

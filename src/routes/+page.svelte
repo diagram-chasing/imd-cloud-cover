@@ -171,7 +171,7 @@
 </script>
 
 <section
-	class="stage box-border bg-paper p-[clamp(8px,1.4vw,18px)] h-[98svh] transition-[background-color] duration-[400ms] ease-[ease] md:h-[98svh]"
+	class="stage box-border h-[98svh] bg-paper p-[clamp(8px,1.4vw,18px)] transition-[background-color] duration-[400ms] ease-[ease] md:h-[98svh]"
 >
 	<div
 		class="map-frame relative h-[max(94svh,440px)] overflow-hidden bg-navy after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:z-[9] after:h-[170px] after:bg-[linear-gradient(to_top,color-mix(in_srgb,var(--color-night-sky)_60%,transparent),color-mix(in_srgb,var(--color-night-sky)_42%,transparent)_35%,color-mix(in_srgb,var(--color-night-sky)_18%,transparent)_65%,transparent)] after:content-[''] md:h-full md:min-h-0"
@@ -198,9 +198,6 @@
 			</div>
 		{/if}
 
-		<!-- While zoomed/panned: the way back lives in the top-right corner on every
-			layout — an icon-only pixel key, stacked under the desktop minimap (which
-			shows where the viewport sits over India; non-interactive). -->
 		{#if core && zoomed}
 			<div
 				class="minimap-corner absolute top-3.5 right-4 z-[11] flex flex-col items-end gap-2 max-md:top-2.5 max-md:right-3"
@@ -284,28 +281,28 @@
 	</div>
 </section>
 
-<div class="shore mx-auto flex max-w-[1080px] -mt-4 items-center gap-[18px] px-5">
+<button
+	onclick={scrollToNotes}
+	class="shore shore-link mx-auto -mt-4 flex w-full max-w-[1080px] cursor-pointer items-center gap-[18px] px-5 py-1.5 text-xs font-bold tracking-widest text-ink opacity-75 transition-[opacity,color] duration-120 hover:text-focus hover:opacity-100"
+>
 	<span
 		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[100px_16px] bg-repeat-x opacity-20 [image-rendering:pixelated] motion-reduce:animate-none"
 		aria-hidden="true"
 	></span>
-	<button
-		class="shore-link inline-flex cursor-pointer items-center gap-2 px-0.5 py-1.5 text-xs font-bold tracking-widest text-ink opacity-75 transition-[opacity,color] duration-120 hover:text-focus hover:opacity-100"
-		onclick={scrollToNotes}
-	>
-		<!-- NOTES -->
-		<ArrowDown
-			class="shore-arrow animate-shore-dip motion-reduce:animate-none"
-			size={20}
-			strokeWidth={2.5}
-			aria-hidden="true"
-		/>
-	</button>
+
+	<!-- NOTES -->
+	<ArrowDown
+		class="shore-arrow animate-shore-dip motion-reduce:animate-none"
+		size={20}
+		strokeWidth={2.5}
+		aria-hidden="true"
+	/>
+
 	<span
 		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[120px_16px] bg-repeat-x opacity-20 [image-rendering:pixelated] motion-reduce:animate-none"
 		aria-hidden="true"
 	></span>
-</div>
+</button>
 
 <article class="article scroll-mt-4" id="field-notes">
 	<FieldNotes manifest={core?.manifest} places={core?.places} india={core?.india} />
@@ -339,7 +336,6 @@
 {/if}
 
 <style>
-
 	.shore-waves {
 		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='10'%3E%3Cpath d='M1 7h10v1H1z M2 5h1v2H2z M3 4h1v1H3z M16 6h10v1H16z M16 4h1v2H16z M17 2h1v2H17z M18 0h1v2H18z M31 7h10v1H31z M31 5h1v2H31z M32 3h1v2H32z M33 1h1v2H33z M34 5h1v2H34z M35 4h1v1H35z M45 6h10v1H45z M45 4h1v2H45z M46 2h1v2H46z M47 0h1v2H47z M48 4h1v2H48z M49 2h1v2H49z M50 0h1v2H50z' fill='%230b1d3a'/%3E%3C/svg%3E");
 	}

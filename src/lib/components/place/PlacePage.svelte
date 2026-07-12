@@ -73,11 +73,6 @@
 	let tipStation = $derived<Station | null>(tip ? (stationLookup[tip.code] ?? null) : null);
 	let tipValues = $derived(tip ? (perStation[tip.code] ?? null) : null);
 
-	// Every station is a destination: its city if it backs one, its station page
-	// otherwise. The primary is the current reading source — no self-link.
-	// Every nearby station links to its station page; the station route redirects
-	// to a city when the station backs one. The primary is the current reading
-	// source — no self-link.
 	function href(s: NearbyStation): string | null {
 		return s.primary ? null : `/station/${s.code}`;
 	}
@@ -124,44 +119,6 @@
 			</div>
 		</section>
 
-		{#if mode === 'city' && stations.length}
-			<!-- Nearby stations: the map's clusters as a legible, linkable index. -->
-			<section>
-				<h2 class="mb-3 border-b border-ink pb-1 text-xl">NEARBY STATIONS</h2>
-				<ul class="grid grid-cols-2 gap-x-10 sm:grid-cols-3">
-					{#each stations as s (s.code)}
-						{@const link = href(s)}
-						<li>
-							<svelte:element
-								this={link ? 'a' : 'div'}
-								href={link ?? undefined}
-								class={[
-									'group flex items-center gap-2.5 py-0.5 no-underline',
-									link && 'cursor-pointer'
-								]}
-							>
-								<!-- Cloud/sun on a blue map-tile so the sprite reads on paper. -->
-								<span
-									class="grid h-9 w-10 shrink-0 place-items-center overflow-hidden bg-day-sea shadow-[0_0_0_1px] shadow-ink/40"
-								>
-									<CloudGlyph code={s.code} values={perStation[s.code]} cell={4} />
-								</span>
-								<span
-									class={[
-										'min-w-0 flex-1 truncate text-xs tracking-wide',
-										s.primary
-											? '-ml-1 bg-focus pl-1 font-bold text-black'
-											: 'group-hover:text-focus'
-									]}>{s.name.toUpperCase()}</span
-								>
-								<span class="shrink-0 text-xs tabular-nums opacity-45">{s.km} KM</span>
-							</svelte:element>
-						</li>
-					{/each}
-				</ul>
-			</section>
-		{/if}
-
 		<section>
 			<h2 class="mb-3 border-b border-ink pb-1 text-xl">CLOUD COVER</h2>
 			<StationMeteogram {forecast} today={date} />
@@ -181,6 +138,41 @@
 			<p class="mt-2 text-xs opacity-60">SOURCE: IMD</p>
 		</section>
 	</article>
+	{#if mode === 'city' && stations.length}
+		<!-- Nearby stations: the map's clusters as a legible, linkable index. -->
+		<section>
+			<h2 class="mb-3 mt-6 border-b border-ink pb-1 text-xl">NEARBY STATIONS</h2>
+			<ul class="grid grid-cols-2 gap-x-10 sm:grid-cols-3">
+				{#each stations as s (s.code)}
+					{@const link = href(s)}
+					<li>
+						<svelte:element
+							this={link ? 'a' : 'div'}
+							href={link ?? undefined}
+							class={[
+								'group flex items-center gap-2.5 py-0.5 no-underline',
+								link && 'cursor-pointer'
+							]}
+						>
+							<!-- Cloud/sun on a blue map-tile so the sprite reads on paper. -->
+							<span
+								class="grid h-9 w-10 shrink-0 place-items-center overflow-hidden bg-day-sea shadow-[0_0_0_1px] shadow-ink/40"
+							>
+								<CloudGlyph code={s.code} values={perStation[s.code]} cell={4} />
+							</span>
+							<span
+								class={[
+									'min-w-0 flex-1 truncate text-xs tracking-wide',
+									s.primary ? '-ml-1 bg-focus pl-1 font-bold text-black' : 'group-hover:text-focus'
+								]}>{s.name.toUpperCase()}</span
+							>
+							<span class="shrink-0 text-xs tabular-nums opacity-45">{s.km} KM</span>
+						</svelte:element>
+					</li>
+				{/each}
+			</ul>
+		</section>
+	{/if}
 
 	<footer
 		class="mt-[calc(var(--leading)*2)] flex flex-wrap items-center justify-between gap-4 border-t-2 border-ink pt-4"
