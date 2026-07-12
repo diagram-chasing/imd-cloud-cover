@@ -1,14 +1,15 @@
 {
-  "name": "Reading The Clouds",
+  "name": "Mapping India's Clouds",
   "short_name": "Clouds",
   "description": "A daily pixel map of cloud cover over India, read from IMD meteograms.",
-  "start_url": "/",
+  "start_url": "/2026/mapping-clouds/",
+  "scope": "/2026/mapping-clouds/",
   "display": "standalone",
   "background_color": "#FDFBF4",
   "theme_color": "#0B1D3A",
   "icons": [
-    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/2026/mapping-clouds/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "/2026/mapping-clouds/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/2026/mapping-clouds/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }

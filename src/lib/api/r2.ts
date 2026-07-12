@@ -9,6 +9,7 @@
 // (dev --core-only builds, older dates). Only meta/dates.json and the raw meteogram
 // .webp click-through links stay remote. With no endpoint configured, everything
 // falls back to the committed /sample fixtures so a fresh clone still runs.
+import { base } from '$app/paths';
 import type {
 	StationsManifest,
 	AllStations,
@@ -21,8 +22,10 @@ import type {
 } from '$lib/types';
 
 const REMOTE = (import.meta.env.VITE_R2_PUBLIC_URL || '').replace(/\/$/, '');
-const BASE = REMOTE || '/sample';
-const CORE = REMOTE ? '/baked' : '/sample';
+// Same-origin local views are served under the app's base path (the site lives at
+// a subpath on the studio domain), so they must carry `base`. REMOTE is absolute.
+const BASE = REMOTE || `${base}/sample`;
+const CORE = REMOTE ? `${base}/baked` : `${base}/sample`;
 
 /** Cache-buster for the daily-changing views, stable within an hour. */
 function versionTag(): string {

@@ -11,6 +11,8 @@
 	import { skyMode } from '$lib/theme';
 	import { computeValues, rollupForView, resolveActiveDay } from '$lib/data';
 	import { click } from '$lib/feedback';
+	import { SITE_BASE } from '$lib/site';
+	import SEO from '$lib/components/SEO.svelte';
 
 	import type { HoverInfo } from '$lib/components/PixelMap.svelte';
 	import MapShell from '$lib/components/MapShell.svelte';
@@ -170,6 +172,15 @@
 	});
 </script>
 
+<SEO
+	seoTitle="Mapping India's Clouds — a daily pixel map of India's cloud cover"
+	seoDescription="A daily pixel map of cloud cover over India, read from IMD meteograms."
+	shareTitle="Mapping India's Clouds"
+	canonicalUrl={SITE_BASE}
+	shareImgPath="{SITE_BASE}/og/home.png"
+	shareImgAlt="A pixel map of cloud cover over India"
+/>
+
 <section
 	class="stage box-border h-[98svh] bg-paper p-[clamp(8px,1.4vw,18px)] transition-[background-color] duration-[400ms] ease-[ease] md:h-[98svh]"
 >
@@ -279,18 +290,14 @@
 </section>
 
 <div
-	class="shore mx-auto -mt-6 md:-mt-5 flex w-full max-w-[1080px] items-center gap-[18px] px-5 py-1.5"
+	class="shore mx-auto -mt-6 flex w-full max-w-[1080px] items-center gap-[18px] px-5 py-1.5 md:-mt-5"
 >
 	<span
 		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[100px_16px] bg-repeat-x opacity-20 [image-rendering:pixelated] motion-reduce:animate-none"
 		aria-hidden="true"
 	></span>
 
-	<PixelButton
-		size="sm"
-		aria-label="Scroll to the field notes"
-		onclick={scrollToNotes}
-	>
+	<PixelButton size="sm" aria-label="Scroll to the field notes" onclick={scrollToNotes}>
 		<span class="flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
 			Field notes
 			<ArrowDown

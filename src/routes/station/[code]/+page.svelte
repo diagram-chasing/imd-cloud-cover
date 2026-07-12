@@ -4,6 +4,7 @@
 	// /city/[slug] at build time (see +page.server.ts), so there's no client redirect
 	// dance here — only today's readings + the forecast load client-side.
 	import { onMount } from 'svelte';
+	import { base } from '$app/paths';
 	import type { PageData } from './$types';
 	import type { FeatureCollection } from 'geojson';
 	import type { Topology } from 'topojson-specification';
@@ -11,6 +12,8 @@
 	import type { AllStations, Forecast, StationsManifest, History } from '$lib/types';
 	import { topoToIndia } from '$lib/map/projection';
 	import { resolveActiveDay, computeValues } from '$lib/data';
+	import { SITE_BASE } from '$lib/site';
+	import SEO from '$lib/components/SEO.svelte';
 	import PlacePage from '$lib/components/place/PlacePage.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -37,7 +40,9 @@
 			.then((r) => (record = r))
 			.catch(() => {});
 		try {
-			india = topoToIndia((await fetch('/data/india.json').then((r) => r.json())) as Topology);
+			india = topoToIndia(
+				(await fetch(`${base}/data/india.json`).then((r) => r.json())) as Topology
+			);
 		} catch {}
 	});
 
@@ -77,19 +82,18 @@
 	});
 
 	let dateline = $derived(
-		[
-			data.state?.toUpperCase() ?? null,
-			`${data.lat.toFixed(2)}°N ${data.lon.toFixed(2)}°E`
-		]
+		[data.state?.toUpperCase() ?? null, `${data.lat.toFixed(2)}°N ${data.lon.toFixed(2)}°E`]
 			.filter(Boolean)
 			.join(' · ')
 	);
 </script>
 
-<svelte:head>
-	<title>{data.name} — Reading the Clouds</title>
-	<meta name="description" content="Daily cloud-cover reading for an IMD station." />
-</svelte:head>
+<SEO
+	seoTitle="{data.name} — Mapping India's Clouds"
+	seoDescription="Daily cloud-cover reading for the {data.name} IMD station."
+	canonicalUrl="{SITE_BASE}/station/{data.code}"
+	shareImgPath="{SITE_BASE}/og/home.png"
+/>
 
 <PlacePage
 	mode="station"

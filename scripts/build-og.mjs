@@ -61,7 +61,6 @@ const summary = readView('latest/summary.json');
 const date = process.env.OG_DATE || summary?.date || cities.dates?.[cities.dates.length - 1] || '';
 
 GlobalFonts.registerFromPath(resolve(FONTS, 'ShipsWhistle-Bold.otf'), 'Ships Whistle');
-GlobalFonts.registerFromPath(resolve(FONTS, 'ShipsWhistle-BoldRough.otf'), 'Ships Whistle Rough');
 
 const logo = await loadImage(LOGO).catch(() => null);
 
@@ -247,7 +246,7 @@ function render(city, forecast) {
 	const name = city.name.toUpperCase();
 	let nameSize = 100;
 	do {
-		ctx.font = `${nameSize}px "Ships Whistle Rough"`;
+		ctx.font = `${nameSize}px "Ships Whistle"`;
 		if (ctx.measureText(name).width <= W - 2 * LEFT) break;
 		nameSize -= 4;
 	} while (nameSize > 44);
@@ -284,3 +283,16 @@ for (const [code, city] of Object.entries(cities.cities)) {
 	}
 }
 console.log(`build-og: wrote ${ok} images to static/og (${empty} with no forecast for ${date}).`);
+
+// Default share card (og/home.png): used by the homepage and by station pages,
+// which have no per-place card of their own. Titled "India" over a representative
+// meteogram, so the fallback still looks like the product. Never fails the build.
+try {
+	const heroCode = Object.keys(cities.cities)[0];
+	const heroForecast = date && heroCode ? readView(`${date}/${heroCode}-meteogram.json`) : null;
+	const canvas = render({ name: 'India', state: null }, heroForecast);
+	writeFileSync(resolve(OUT, 'home.png'), canvas.toBuffer('image/png'));
+	console.log('build-og: wrote home.png (default share card).');
+} catch (err) {
+	console.warn(`  build-og: home.png failed (${err.message})`);
+}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import type { FeatureCollection } from 'geojson';
 	import type { Forecast, Station } from '$lib/types';
 	import { meteogramImageUrl } from '$lib/api/r2';
@@ -83,13 +84,13 @@
 	let tipValues = $derived(tip ? (perStation[tip.code] ?? null) : null);
 
 	function href(s: NearbyStation): string | null {
-		return s.primary ? null : `/station/${s.code}`;
+		return s.primary ? null : `${base}/station/${s.code}`;
 	}
 </script>
 
 <main class="mx-auto max-w-[860px] px-5 pt-6 pb-18">
 	<div class="my-8">
-		<PixelButton size="sm" href="/">BACK TO MAP</PixelButton>
+		<PixelButton size="sm" href="{base}/">BACK TO MAP</PixelButton>
 	</div>
 
 	<article class="flex flex-col gap-6">

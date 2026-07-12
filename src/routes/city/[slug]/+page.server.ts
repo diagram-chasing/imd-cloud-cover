@@ -92,7 +92,7 @@ export const load: PageServerLoad = ({ params }) => {
 
 	const stateLabel = city.state ? `, ${city.state}` : '';
 	const og = {
-		title: `${city.name}${stateLabel} — Reading the Clouds`,
+		title: `${city.name}${stateLabel} — Mapping India's Clouds`,
 		description: `${city.name}${stateLabel}: daily cloud cover read from IMD meteograms, across ${stationCount} station${stationCount === 1 ? '' : 's'} nearby.`
 	};
 

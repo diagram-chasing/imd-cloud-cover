@@ -7,8 +7,10 @@
 	import { fetchStations, fetchLatest, fetchSummary, fetchForecast, fetchCities } from '$lib/api/r2';
 	import { topoToIndia } from '$lib/map/projection';
 	import { resolveActiveDay, computeValues } from '$lib/data';
+	import { base } from '$app/paths';
 	import { citySlugs } from '$lib/city/slug.js';
 	import { SITE_BASE } from '$lib/site';
+	import SEO from '$lib/components/SEO.svelte';
 	import PlacePage from '$lib/components/place/PlacePage.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -30,7 +32,9 @@
 				fetchLatest(),
 				fetchSummary()
 			]);
-			india = topoToIndia((await fetch('/data/india.json').then((r) => r.json())) as Topology);
+			india = topoToIndia(
+				(await fetch(`${base}/data/india.json`).then((r) => r.json())) as Topology
+			);
 			fetchCities()
 				.then((c) => {
 					cities = c;
@@ -76,17 +80,12 @@
 	);
 </script>
 
-<svelte:head>
-	<title>{data.og.title}</title>
-	<meta name="description" content={data.og.description} />
-	<meta property="og:title" content={data.og.title} />
-	<meta property="og:description" content={data.og.description} />
-	<meta property="og:image" content="{SITE_BASE}/og/{data.slug}.png" />
-	<meta property="og:url" content="{SITE_BASE}/city/{data.slug}" />
-	<meta property="og:type" content="website" />
-	<meta name="twitter:card" content="summary_large_image" />
-	<link rel="canonical" href="{SITE_BASE}/city/{data.slug}" />
-</svelte:head>
+<SEO
+	seoTitle={data.og.title}
+	seoDescription={data.og.description}
+	canonicalUrl="{SITE_BASE}/city/{data.slug}"
+	shareImgPath="{SITE_BASE}/og/{data.slug}.png"
+/>
 
 <PlacePage
 	mode="city"

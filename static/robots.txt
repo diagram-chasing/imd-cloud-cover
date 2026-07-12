@@ -1,3 +1,5 @@
 # allow crawling everything by default
 User-agent: *
 Disallow:
+
+Sitemap: https://diagramchasing.fun/2026/mapping-clouds/sitemap.xml

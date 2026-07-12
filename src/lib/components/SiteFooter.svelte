@@ -1,19 +1,9 @@
 <script lang="ts">
-	// Site footer in the map's pixel-boxed style: a "More from Us" grid of other
-	// Diagram Chasing projects (from a committed RSS snapshot), the wordmark, page
-	// links, social icons, and a copyright line. Adapted from
-	// portrait-of-population's Footer into this project's ink/paper aesthetic.
 	import rssFeedData from '$lib/data/rss-feed.json';
 	import logo from '$lib/assets/images/log.png';
 	import islandUrl from '$lib/assets/cards/world-map.png';
 	import islandPortraitUrl from '$lib/assets/cards/world-map-portrait.png';
 
-	// The "More From Us" section is a top-down RPG island (PixelMap palette).
-	// Each project is a "city" pinned to a spot on the island — its card (with the
-	// original thumbnail) sits above the pin, whose tip marks the exact location.
-	// Desktop uses a wide island (one project per landmass, either side of the
-	// river); mobile swaps to a tall portrait island with the projects stacked.
-	// Each spot's %s MUST match the matching bake() call in tmp-bake-map.mjs.
 	const citySpots = [
 		{ x: 24, y: 80, mx: 42, my: 38 },
 		{ x: 76, y: 64, mx: 58, my: 80 }
@@ -60,8 +50,7 @@
 		})
 	}));
 
-	// On touch devices (no hover) the desktop hover-to-expand can't work, so a
-	// pin's card expands on the first tap and the link opens on the second.
+
 	let openIndex = $state(-1);
 
 	function onCityClick(e: MouseEvent, i: number) {
@@ -84,11 +73,7 @@
 		<h2 class="more-title text-center text-base font-normal tracking-[0.08em] uppercase">
 			~ More From Us ~
 		</h2>
-		<!-- Top-down island the projects are pinned onto. The PNG has a transparent
-		     background, so paper shows through around the coast. Extra vertical margin
-		     gives the plaques (which rise above their pins) room to overflow / clear the
-		     section title. On phones the wide island doesn't fit, so we swap to the tall
-		     portrait island (≤560px) with its own aspect ratio. -->
+
 		<div
 			class="island relative mx-auto mt-20 aspect-[384/128] max-w-[560px] bg-[image:var(--island-wide)] bg-contain bg-center bg-no-repeat [image-rendering:pixelated] max-[560px]:mt-5 max-[560px]:aspect-[128/224] max-[560px]:max-w-[280px] max-[560px]:bg-[image:var(--island-tall)]"
 			style="--island-wide: url({islandUrl}); --island-tall: url({islandPortraitUrl})"
@@ -97,10 +82,7 @@
 		>
 			{#each feedItems as item, i (item.link)}
 				{@const spot = citySpots[i % citySpots.length]}
-				<!-- A pinned city: the anchor point (left/top) is the pin's tip on the
-				     ground; the plaque sits just above it, centred on the same spot.
-				     Since touch has no hover, tapping a pin expands it in place
-				     (data-open) and a second tap follows the link. -->
+
 				<a
 					class="city group absolute top-[var(--y)] left-[var(--x)] text-ink no-underline hover:z-20 focus-visible:z-20 focus-visible:outline-none max-[560px]:top-[var(--my)] max-[560px]:left-[var(--mx)] data-open:z-20"
 					data-open={openIndex === i ? '' : undefined}
@@ -110,9 +92,7 @@
 					onclick={(e) => onCityClick(e, i)}
 					style="--x: {spot.x}%; --y: {spot.y}%; --mx: {spot.mx}%; --my: {spot.my}%"
 				>
-					<!-- Collapsed, the card is a compact marker (a thumbnail sliver + the
-					     title); hovering/focusing/opening expands it to the full xs (20rem)
-					     card. The `bottom` offset leaves clear air between pin and card. -->
+
 					<div
 						class="plaque absolute bottom-[34px] left-0 w-[208px] -translate-x-1/2 border-2 border-ink bg-paper shadow-[3px_3px_0] shadow-ink/28 transition-[width,box-shadow,transform] duration-160 ease-[ease] group-hover:w-[min(20rem,calc(100vw-32px))] group-hover:translate-x-[calc(-50%-1px)] group-hover:-translate-y-[3px] group-hover:shadow-[6px_6px_0] group-hover:shadow-ink group-focus-visible:w-[min(20rem,calc(100vw-32px))] group-focus-visible:translate-x-[calc(-50%-1px)] group-focus-visible:-translate-y-[3px] group-focus-visible:shadow-[6px_6px_0] group-focus-visible:shadow-ink group-data-open:w-[min(20rem,calc(100vw-32px))] group-data-open:translate-x-[calc(-50%-1px)] group-data-open:-translate-y-[3px] group-data-open:shadow-[6px_6px_0] group-data-open:shadow-ink"
 					>

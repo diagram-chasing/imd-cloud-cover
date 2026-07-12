@@ -6,6 +6,7 @@
 		annotationCalloutCurve,
 		annotationXYThreshold
 	} from 'd3-svg-annotation';
+	import { base } from '$app/paths';
 	import * as Carousel from '$lib/components/ui/carousel/index.js';
 	import type { CarouselAPI } from '$lib/components/ui/carousel/context.js';
 
@@ -23,7 +24,7 @@
 		anchorY: number;
 	};
 
-	const SRC = '/method-meteogram.webp';
+	const SRC = `${base}/method-meteogram.webp`;
 
 	const PLOT_X = 10.91;
 	const PLOT_W = 88.18;

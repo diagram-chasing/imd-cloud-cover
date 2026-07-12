@@ -10,6 +10,7 @@
 import type { Topology } from 'topojson-specification';
 import type { FeatureCollection } from 'geojson';
 import type { StationsManifest, AllStations, Summary, Rollup } from '$lib/types';
+import { base } from '$app/paths';
 import { CORE_BASE } from './r2';
 
 type Fetch = typeof fetch;
@@ -32,7 +33,7 @@ export interface CriticalData {
 
 export function loadCritical(f: Fetch = fetch): Promise<CriticalData> {
 	return Promise.all([
-		json<Topology>(f, '/data/india.json'),
+		json<Topology>(f, `${base}/data/india.json`),
 		json<StationsManifest>(f, `${CORE_BASE}/meta/stations.json`),
 		json<AllStations>(f, `${CORE_BASE}/latest/all-stations.json`),
 		json<Summary>(f, `${CORE_BASE}/latest/summary.json`)
@@ -49,7 +50,7 @@ export interface DeferredData {
 
 export function loadDeferred(f: Fetch = fetch): Promise<DeferredData> {
 	return Promise.all([
-		json<FeatureCollection>(f, '/data/india-places.json'),
+		json<FeatureCollection>(f, `${base}/data/india-places.json`),
 		json<Rollup>(f, `${CORE_BASE}/rollups/7d.json`),
 		json<Rollup>(f, `${CORE_BASE}/rollups/30d.json`)
 	]).then(([places, rollup7, rollup30]) => ({ places, rollup7, rollup30 }));

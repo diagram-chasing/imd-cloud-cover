@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { base } from '$app/paths';
 	import type { Station, Rollup, Forecast } from '$lib/types';
 	import { fetchForecast } from '$lib/api/r2';
 	import { prettyDate } from '$lib/format';
@@ -127,7 +128,7 @@
 		<Button
 			variant="default"
 			size="sm"
-			href="/station/{code}"
+			href="{base}/station/{code}"
 			class="more w-full bg-ink tracking-[0.06em] text-paper uppercase hover:bg-focus hover:text-ink"
 			>More details →</Button
 		>

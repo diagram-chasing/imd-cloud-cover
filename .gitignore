@@ -46,3 +46,4 @@ src/lib/assets/fonts/
 # Re-download from https://www.naturalearthdata.com/downloads/ to rebuild
 # static/data/*.json; the generated JSON is what the app ships.
 src/lib/assets/ne_*
+.claude/
