@@ -9,7 +9,12 @@ const config = {
 		// (diagramchasing.fun/2026/mapping-clouds) via a Netlify 200-rewrite proxy.
 		// paths.base makes the client router, prerendered links, and the SPA
 		// fallback all carry that prefix. Keep in sync with SITE_BASE in src/lib/site.ts.
-		paths: { base: '/2026/mapping-clouds' }
+		//
+		// relative:false -> ABSOLUTE asset URLs (/2026/mapping-clouds/_app/...). Required
+		// because the entry URL is visited without a trailing slash (/2026/mapping-clouds),
+		// and relative "./_app/..." would resolve against the parent (/2026/), dropping the
+		// prefix. Absolute paths are trailing-slash-independent.
+		paths: { base: '/2026/mapping-clouds', relative: false }
 	},
 	preprocess: [mdsvex({ extensions: ['.svx', '.md'] })],
 	extensions: ['.svelte', '.svx', '.md']

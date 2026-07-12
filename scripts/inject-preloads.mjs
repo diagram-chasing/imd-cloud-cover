@@ -5,6 +5,10 @@ const root = resolve(import.meta.dirname, '..');
 const manifestPath = resolve(root, '.svelte-kit/output/client/.vite/manifest.json');
 const htmlPath = resolve(root, 'build/index.html');
 
+// Must match kit.paths.base in svelte.config.js: asset URLs are absolute
+// (relative:false), so injected preload hints must carry the same prefix.
+const BASE = '/2026/mapping-clouds';
+
 const EXCLUDE = /WebGPURenderer\.mjs$|CanvasRenderer\.mjs$/;
 
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
@@ -17,7 +21,7 @@ html = html.replace(new RegExp(`\\s*${MARK_OPEN}[\\s\\S]*?${MARK_CLOSE}`), '');
 
 // Chunk files the page already loads (SvelteKit's own preload tags).
 const preloaded = new Set(
-	[...html.matchAll(/href="\.\/(_app\/immutable\/[^"]+\.js)"/g)].map((m) => m[1])
+	[...html.matchAll(/href="[^"]*\/(_app\/immutable\/[^"]+\.js)"/g)].map((m) => m[1])
 );
 
 const seed = Object.keys(manifest).find(
@@ -47,7 +51,7 @@ if (wanted.size === 0) {
 }
 
 const links = [];
-for (const file of wanted.keys()) links.push(`<link href="./${file}" rel="modulepreload">`);
+for (const file of wanted.keys()) links.push(`<link href="${BASE}/${file}" rel="modulepreload">`);
 // Stylesheets and assets (ground PNGs) referenced by the preloaded chunks:
 // fetched with the chunks instead of at first render inside the map.
 const seenExtra = new Set();
@@ -57,13 +61,13 @@ for (const e of wanted.values()) {
 			seenExtra.add(css);
 			// crossorigin matches Vite's dynamic-import CSS <link> credentials mode;
 			// without it the preload is discarded and the file fetched twice.
-			links.push(`<link href="./${css}" rel="preload" as="style" crossorigin>`);
+			links.push(`<link href="${BASE}/${css}" rel="preload" as="style" crossorigin>`);
 		}
 	}
 	for (const asset of e.assets ?? []) {
 		if (/\.png$/.test(asset) && !seenExtra.has(asset) && !html.includes(asset)) {
 			seenExtra.add(asset);
-			links.push(`<link href="./${asset}" rel="preload" as="image">`);
+			links.push(`<link href="${BASE}/${asset}" rel="preload" as="image">`);
 		}
 	}
 }
@@ -75,7 +79,7 @@ for (const f of readdirSync(resolve(root, 'build/_app/immutable/assets'))) {
 	const asset = `_app/immutable/assets/${f}`;
 	if (/^ground-(day|night)\./.test(f) && !seenExtra.has(asset) && !html.includes(asset)) {
 		seenExtra.add(asset);
-		links.push(`<link href="./${asset}" rel="preload" as="image">`);
+		links.push(`<link href="${BASE}/${asset}" rel="preload" as="image">`);
 	}
 }
 
