@@ -7,6 +7,7 @@
 	import CloudGlyph from '$lib/components/city/CloudGlyph.svelte';
 	import StationMeteogram from '$lib/components/StationMeteogram.svelte';
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
+	import SkyBarcode from '$lib/components/city/SkyBarcode.svelte';
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import Wordmark from '$lib/components/Wordmark.svelte';
 
@@ -45,6 +46,13 @@
 		cities?: { name: string; lat: number; lon: number }[];
 		slugByCode?: Record<string, string>;
 		stationLookup?: Record<string, Station>;
+		/** This place's day-by-day cover over the archived window, for the barcode
+		 * strip. Omitted until the record loads. */
+		history?: {
+			dates: string[];
+			name: string;
+			e: (number | null)[];
+		} | null;
 	}
 
 	let {
@@ -66,7 +74,8 @@
 		stations = [],
 		cities = [],
 		slugByCode = {},
-		stationLookup = {}
+		stationLookup = {},
+		history = null
 	}: Props = $props();
 
 	let tip = $state<{ code: string; clientX: number; clientY: number } | null>(null);
@@ -87,7 +96,7 @@
 		<!-- Masthead -->
 		<header class="border-b-2 border-ink pb-3">
 			<h1
-				class="font-rough text-[length:clamp(2rem,7vw,calc(var(--ms-6)*1rem))] leading-[1.05] tracking-[0.02em] uppercase"
+				class=" text-[length:clamp(2rem,7vw,calc(var(--ms-6)*1rem))] leading-[1.05]  uppercase"
 			>
 				{name}{#if mode === 'station'}<span class="ml-3 inline-block text-sm font-bold text-ink"
 						>[WEATHER STATION]</span
@@ -120,11 +129,19 @@
 		</section>
 
 		<section>
-			<h2 class="mb-3 border-b border-ink pb-1 text-xl">CLOUD COVER</h2>
+			<h2 class="mb-3 border-b border-ink pb-1 text-xl">CLOUD COVER FORECAST</h2>
 			<StationMeteogram {forecast} today={date} />
 			<p class="mt-2 text-sm">{metCaption ?? 'NEXT 10 DAYS · 3-HOURLY'}</p>
 		</section>
+		{#if history}
+			<!-- This place's whole archived record as one barcode: a stripe per day, with a
+		month axis to place the wet and dry spells. -->
+			<section>
+				<h2 class=" mb-3 border-b border-ink pb-1 text-xl">HISTORY</h2>
 
+				<SkyBarcode dates={history.dates} aName={history.name} aE={history.e} axis />
+			</section>
+		{/if}
 		<section>
 			<h2 class="mb-3 border-b border-ink pb-1 text-xl">METEOGRAM</h2>
 			<div class="bg-paper leading-[0] shadow-[0_0_0_2px] shadow-ink">
@@ -138,10 +155,11 @@
 			<p class="mt-2 text-xs opacity-60">SOURCE: IMD</p>
 		</section>
 	</article>
+
 	{#if mode === 'city' && stations.length}
 		<!-- Nearby stations: the map's clusters as a legible, linkable index. -->
 		<section>
-			<h2 class="mb-3 mt-6 border-b border-ink pb-1 text-xl">NEARBY STATIONS</h2>
+			<h2 class="mt-6 mb-3 border-b border-ink pb-1 text-xl">NEARBY STATIONS</h2>
 			<ul class="grid grid-cols-2 gap-x-10 sm:grid-cols-3">
 				{#each stations as s (s.code)}
 					{@const link = href(s)}

@@ -362,7 +362,7 @@
 
 <svelte:window onkeydown={onWindowKeydown} onpointerdown={onWindowPointerdown} />
 
-<figure class={['specimen mx-auto mt-6 mb-20', dimming && 'dimming']} bind:this={root}>
+<figure class={['specimen mx-auto mt-6 mb-0 md:mb-20', dimming && 'dimming']} bind:this={root}>
 	<div
 		class="atlas relative left-1/2 grid w-[min(100vw-48px,1380px)] -translate-x-1/2 [grid-template-columns:19.5%_56%_19.5%] [column-gap:2.5%] max-[1099px]:left-auto max-[1099px]:mx-auto max-[1099px]:block max-[1099px]:w-full max-[1099px]:max-w-[640px] max-[1099px]:translate-x-0"
 		bind:clientWidth={aw}

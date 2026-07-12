@@ -142,6 +142,27 @@
 		margin-top: 0;
 	}
 
+	/* Methodology note: set a touch smaller than body copy. Scaling the wrapper's
+	   font-size shrinks the em-based heading + copy together; the inner h2/p rules
+	   re-establish the article's heading/paragraph treatment they'd otherwise lose
+	   by no longer being direct children of .article. */
+	.article > :where(.methodology) {
+		font-size: 0.9em;
+	}
+	.methodology > :where(h2) {
+		margin: calc(2 * var(--leading)) 0 calc(0.5 * var(--leading));
+		font-size: calc(var(--ms-3) * 1em);
+		line-height: calc(1.5 * var(--leading));
+		letter-spacing: 0.01em;
+	}
+	.methodology > :where(p) {
+		margin-bottom: var(--leading);
+		text-wrap: pretty;
+	}
+	.methodology > :where(p:last-child) {
+		margin-bottom: 0;
+	}
+
 	.article > :where(p) {
 		text-wrap: pretty;
 	}

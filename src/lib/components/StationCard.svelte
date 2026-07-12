@@ -63,18 +63,18 @@
 <div class="card flex w-full flex-col gap-3 text-ink">
 	<header class="flex items-start justify-between gap-2.5">
 		<div class="title">
-			<h2 class="m-0 text-base leading-tight tracking-[0.03em] uppercase">{station.name}</h2>
+			<h2 class="m-0 flex items-center gap-2 text-base leading-tight tracking-[0.03em] uppercase">
+				{station.name}
+				<span class="summary m-0 w-fit bg-day-sea px-1 py-0.5 text-xs tracking-wider text-paper"
+					>{summary}</span
+				>
+			</h2>
 			{#if station.state}<p class="state m-0 mt-0.5 text-xs opacity-70">{station.state}</p>{/if}
 			<p class="when m-0 mt-[3px] text-xs tracking-wider opacity-60">
 				{prettyDate(date)} · {when}
 			</p>
 		</div>
 		<div class="head-right flex shrink-0 items-center gap-2">
-			{#if clearStreak > 0}
-				<Badge variant="outline" class="streak border-record-gold text-xs text-record-gold"
-					>☀ {clearStreak}d clear</Badge
-				>
-			{/if}
 			{#if onclose}
 				<Button
 					variant="ghost"
@@ -88,11 +88,9 @@
 	</header>
 
 	<section class="readout flex flex-col gap-2">
-		<p class="summary m-0 text-xs tracking-wider">{summary}</p>
 		{#if current}
 			<div class="bands flex flex-col gap-[3px]" aria-label="Percent of sky covered, by altitude">
-
-				<p class="caption m-0 mb-[3px] text-xs tracking-wider text-ink/55">
+				<p class="caption m-0 mb-[3px] border-t border-border pt-2 text-xs">
 					% OF SKY COVERED <span class="now bg-sun-gold px-[3px] py-px font-bold text-ink"
 						>{when}</span
 					>, BY ALTITUDE
@@ -102,7 +100,6 @@
 						<span class="blabel w-[104px] text-xs tracking-[0.03em] opacity-80">{row.label}</span>
 						<span class="bar flex flex-1 gap-px" aria-hidden="true">
 							{#each Array(10) as _, i (i)}
-
 								<span
 									class={[
 										'seg h-2 flex-1',

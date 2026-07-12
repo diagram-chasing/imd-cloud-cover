@@ -42,7 +42,7 @@
 		{:else if twin}
 			Over the last year, this sky's matched <span class="text-sun-gold">{twin.name}</span>.
 		{:else if mode === 'today'}
-			No city shares {city.name}'s sky today.
+			No city matches {city.name}'s sky today.
 		{:else}
 			No sky twin for {city.name}.
 		{/if}

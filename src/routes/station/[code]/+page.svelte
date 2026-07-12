@@ -7,8 +7,8 @@
 	import type { PageData } from './$types';
 	import type { FeatureCollection } from 'geojson';
 	import type { Topology } from 'topojson-specification';
-	import { fetchLatest, fetchForecast, fetchStations } from '$lib/api/r2';
-	import type { AllStations, Forecast, StationsManifest } from '$lib/types';
+	import { fetchLatest, fetchForecast, fetchStations, fetchHistory } from '$lib/api/r2';
+	import type { AllStations, Forecast, StationsManifest, History } from '$lib/types';
 	import { topoToIndia } from '$lib/map/projection';
 	import { resolveActiveDay, computeValues } from '$lib/data';
 	import PlacePage from '$lib/components/place/PlacePage.svelte';
@@ -19,6 +19,7 @@
 	let forecast = $state<Forecast | null>(null);
 	let india = $state<FeatureCollection>();
 	let manifest = $state<StationsManifest>();
+	let record = $state<History>();
 
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 
@@ -31,6 +32,9 @@
 			.catch(() => {});
 		fetchStations()
 			.then((m) => (manifest = m))
+			.catch(() => {});
+		fetchHistory(data.code)
+			.then((r) => (record = r))
 			.catch(() => {});
 		try {
 			india = topoToIndia((await fetch('/data/india.json').then((r) => r.json())) as Topology);
@@ -52,6 +56,25 @@
 	let stations = $derived([
 		{ code: data.code, name: data.name, lat: data.lat, lon: data.lon, km: 0, primary: true }
 	]);
+
+	// The station's full archived record as a date-aligned strip for the barcode.
+	// `days` is sparse, so we walk a continuous calendar from the first reading to the
+	// last and leave gaps null (they render as "no reading"). Null until it loads.
+	let history = $derived.by(() => {
+		const days = record?.days;
+		if (!days) return null;
+		const keys = Object.keys(days).sort();
+		if (!keys.length) return null;
+		const dates: string[] = [];
+		const e: (number | null)[] = [];
+		const end = new Date(keys[keys.length - 1] + 'T00:00:00Z').getTime();
+		for (let t = new Date(keys[0] + 'T00:00:00Z').getTime(); t <= end; t += 86_400_000) {
+			const iso = new Date(t).toISOString().slice(0, 10);
+			dates.push(iso);
+			e.push(days[iso]?.e ?? null);
+		}
+		return { dates, name: data.name, e };
+	});
 
 	let dateline = $derived(
 		[
@@ -85,4 +108,5 @@
 	cities={data.cities}
 	perStation={values}
 	stationLookup={manifest?.stations}
+	{history}
 />

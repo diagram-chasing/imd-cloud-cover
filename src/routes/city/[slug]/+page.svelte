@@ -3,7 +3,7 @@
 	import type { PageData } from './$types';
 	import type { FeatureCollection } from 'geojson';
 	import type { Topology } from 'topojson-specification';
-	import type { StationsManifest, AllStations, Summary, Forecast } from '$lib/types';
+	import type { StationsManifest, AllStations, Summary, Forecast, CitiesRollup } from '$lib/types';
 	import { fetchStations, fetchLatest, fetchSummary, fetchForecast, fetchCities } from '$lib/api/r2';
 	import { topoToIndia } from '$lib/map/projection';
 	import { resolveActiveDay, computeValues } from '$lib/data';
@@ -19,6 +19,7 @@
 	let forecast = $state<Forecast | null>(null);
 	let india = $state<FeatureCollection>();
 	let slugByCode = $state<Record<string, string>>({});
+	let cities = $state<CitiesRollup>();
 
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 
@@ -31,7 +32,10 @@
 			]);
 			india = topoToIndia((await fetch('/data/india.json').then((r) => r.json())) as Topology);
 			fetchCities()
-				.then((c) => (slugByCode = citySlugs(c.cities).slugByCode))
+				.then((c) => {
+					cities = c;
+					slugByCode = citySlugs(c.cities).slugByCode;
+				})
 				.catch(() => {});
 			fetchForecast(data.date, data.code)
 				.then((f) => (forecast = f))
@@ -49,6 +53,13 @@
 		computeValues('today', latest, undefined, timeIndex, 0, activeDay?.index ?? 0)
 	);
 	let todayValues = $derived(values[data.code] ?? null);
+
+	// This city's day-by-day cover over the archived window, shaped for the SkyBarcode.
+	// Null until the rollup lands or if this city isn't in it.
+	let history = $derived.by(() => {
+		const city = cities?.cities[data.code];
+		return cities && city ? { dates: cities.dates, name: city.name, e: city.e } : null;
+	});
 
 	let dateline = $derived(
 		[
@@ -98,4 +109,5 @@
 	stations={data.stations}
 	{slugByCode}
 	stationLookup={manifest?.stations}
+	{history}
 />

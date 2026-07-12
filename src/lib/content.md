@@ -68,7 +68,7 @@ Every morning, the India Meteorological Department publishes a meteogram for eac
 
 Read together, the panels show both the weather you will feel that day and the atmospheric conditions behind it. Multiply that by all the stations and the IMD can map the country's weather at a remarkably granular level.
 
-<div class="breakout">
+<div class="breakout mb-4!">
 	<MeteogramAtlas />
 </div>
 
@@ -103,6 +103,7 @@ With {monthsLabel} of data, some patterns start to show. Every city here has a t
 		aE={skyPair.cityE}
 		bE={skyPair.twinE}
 		onShuffle={shuffleTwin}
+		axis
 	/>
 </div>
 {/if}
@@ -114,6 +115,12 @@ Below are all {cities ? Object.keys(cities.cities).length : 424} cities, ordered
 	<CitySkyExplorer {manifest} {places} {india} />
 </div>
 {/if}
+
+<section class="methodology">
+	<h2>How we analyze meteograms</h2>
+	<p>We extract daily cloud coverage data by analysing meteograms for each weather station. Because the charts use a standard layout, we could isolate the cloud-cover section and sample 80 evenly spaced intervals across the timeline. The chart divides the sky into high, middle, and low altitude layers, representing cloud density with the height of white shading. By measuring how high this shading reaches in each band, we calculate the percentage of cloud cover. To an observer on the ground, the sky looks overcast if even one layer is full, so we define a city’s overall cloudiness using the highest percentage among the three layers recorded at its nearest station. Due to the nature of this data collection and also the meteogram itself, these figures represent a forecasted expectation rather than exact satellite imagery.</p>
+	<p>Finally, to match distant cities with similar weather trends, we tracked how each city’s daily cloud cover shifted compared to its average, pairing locations at least 400 kilometres apart and in different states whose skies cleared and clouded similarly.</p>
+</section>
 
 <div class="support-band">
 	<SupportCTA />

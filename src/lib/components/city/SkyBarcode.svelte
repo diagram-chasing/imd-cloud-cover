@@ -1,9 +1,10 @@
 <script lang="ts">
-	// Two aligned "barcode" strips — one per city — where each vertical stripe is a
-	// day and its brightness is that day's effective cloud cover (deep blue = clear,
-	// solid white = overcast; a diagonal-hatched grey stripe = no reading). Stacking
-	// the focused city over its sky twin makes the shared rhythm visible: the bright
-	// and dark columns line up.
+	// A "barcode" strip where each vertical stripe is a day and its brightness is that
+	// day's effective cloud cover (deep blue = clear, solid white = overcast; a
+	// diagonal-hatched grey stripe = no reading). Pass a second city (`bName`/`bE`) to
+	// stack a sky twin beneath it and reveal the shared rhythm — bright and dark
+	// columns line up. Omit it for a single city's own record, and turn on `axis` for
+	// a month scale beneath the strips.
 	import { coverTier } from '$lib/theme';
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
@@ -12,14 +13,17 @@
 		/** Calendar dates, one per column (the rollup's `dates`). */
 		dates: string[];
 		aName: string;
-		bName: string;
 		/** Daily effective cover aligned to `dates`; null = no reading that day. */
 		aE: (number | null)[];
-		bE: (number | null)[];
+		/** Optional second (sky-twin) strip. Both omitted = single-city strip. */
+		bName?: string;
+		bE?: (number | null)[];
+		/** Draw a month time axis beneath the strips. */
+		axis?: boolean;
 		/** Jump to a new random city + twin. Hides the control when omitted. */
 		onShuffle?: () => void;
 	}
-	let { dates, aName, bName, aE, bE, onShuffle }: Props = $props();
+	let { dates, aName, aE, bName, bE, axis = false, onShuffle }: Props = $props();
 
 	// Quantize present-day cover into the map's four cloud tiers so the strip reads
 	// as chunky bands rather than a smooth gradient. Tier 0 (clear) draws nothing —
@@ -27,8 +31,10 @@
 	const TIER_OPACITY = [0, 0.32, 0.56, 0.8, 1];
 	const TRACK = '#164a7c';
 	const HATCH = 'repeating-linear-gradient(45deg, #2b3a4d 0 3px, #55637b 3px 6px)';
+	const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
 	const ROW_H = 26; // px — tall enough to read clearly
+	const AXIS_H = 18; // px — tick + month label
 	let w = $state(0); // measured strip width in px
 
 	const N = $derived(dates.length);
@@ -36,10 +42,29 @@
 	// Integer left edge per column so crisp bars tile with no sub-pixel seams.
 	const edge = (i: number) => Math.round(i * bw);
 
-	let rows = $derived([
-		{ id: 'a', name: aName, e: aE },
-		{ id: 'b', name: bName, e: bE }
-	]);
+	let rows = $derived(
+		bName != null && bE
+			? [
+					{ id: 'a', name: aName, e: aE },
+					{ id: 'b', name: bName, e: bE }
+				]
+			: [{ id: 'a', name: aName, e: aE }]
+	);
+
+	// First column of each calendar month → a tick + label on the axis. Drop a label
+	// when it would crowd the previous one (< 22px apart) so short windows stay legible.
+	let ticks = $derived.by(() => {
+		const out: { i: number; label: string }[] = [];
+		let lastMonth = -1;
+		for (let i = 0; i < dates.length; i++) {
+			const m = new Date(dates[i]).getMonth();
+			if (m !== lastMonth) {
+				lastMonth = m;
+				out.push({ i, label: MONTHS[m] });
+			}
+		}
+		return out;
+	});
 </script>
 
 <figure class="relative m-0 bg-day-sea p-4 text-white shadow-[4px_4px_0_rgba(11,29,58,0.4)] sm:p-6">
@@ -109,6 +134,31 @@
 				</svg>
 			</div>
 		{/each}
+
+		{#if axis}
+			<!-- Empty label cell keeps the axis aligned under the strips. -->
+			<span aria-hidden="true"></span>
+			<svg
+				width={w}
+				height={AXIS_H}
+				viewBox="0 0 {w} {AXIS_H}"
+				class="block [shape-rendering:crispEdges]"
+				aria-hidden="true"
+			>
+				{#each ticks as t (t.i)}
+					<line x1={edge(t.i)} y1="0" x2={edge(t.i)} y2="4" stroke="#ffffff" stroke-opacity="0.5" />
+					<text
+						x={edge(t.i) + 3}
+						y="13"
+						fill="#ffffff"
+						fill-opacity="0.75"
+						class="text-[10px] font-bold tracking-wide [shape-rendering:auto]"
+					>
+						{t.label}
+					</text>
+				{/each}
+			</svg>
+		{/if}
 	</div>
 
 	<!-- No-reading key, centered beneath the strips. -->
@@ -118,10 +168,15 @@
 	</div>
 
 	<p class="sr-only">
-		Two barcode strips, one stripe per day, aligned by date. Deep-blue stripes are clear days, white
-		stripes are overcast days, and hatched grey stripes are days with no reading. The top strip is {aName};
-		the bottom is its sky twin {bName}. Their bright and dark columns tend to line up, showing the
-		two skies clear and cloud over on the same days.
+		{#if bName != null && bE}
+			Two barcode strips, one stripe per day, aligned by date. Deep-blue stripes are clear days,
+			white stripes are overcast days, and hatched grey stripes are days with no reading. The top
+			strip is {aName}; the bottom is its sky twin {bName}. Their bright and dark columns tend to
+			line up, showing the two skies clear and cloud over on the same days.
+		{:else}
+			A barcode strip for {aName}, one stripe per day. Deep-blue stripes are clear days, white
+			stripes are overcast days, and hatched grey stripes are days with no reading.
+		{/if}
 	</p>
 </figure>
 

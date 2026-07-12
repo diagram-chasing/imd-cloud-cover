@@ -40,48 +40,40 @@
 
 {#if station && values}
 	<div
-		class="tooltip pointer-events-none fixed z-40 min-w-[190px] bg-paper px-2.5 py-2 text-ink shadow-[0_0_0_2px] shadow-ink"
+		class="tooltip pointer-events-none fixed z-40 min-w-[210px] bg-paper px-2.5 py-2 text-ink shadow-[0_0_0_2px] shadow-ink"
 		{style}
 		role="tooltip"
 	>
-		<div class="name text-xs leading-relaxed tracking-wider uppercase">{station.name}</div>
-		{#if station.state}<div class="state text-xs opacity-70">{station.state}</div>{/if}
-		{#if when}<div class="when mt-[3px] text-xs tracking-wider opacity-55">
+		<div class="m-0 flex items-center gap-2 text-base leading-tight tracking-[0.03em] uppercase">
+			{station.name}
+			<span class="summary m-0 w-fit bg-day-sea px-1 py-0.5 text-xs tracking-wider text-paper"
+				>{summary}</span
+			>
+		</div>
+		{#if station.state}<div class="state mt-0.5 text-xs opacity-70">{station.state}</div>{/if}
+		{#if when}<div class="when mt-[3px] text-xs">
 				{[prettyDate(date), when].filter(Boolean).join(' · ')}
 			</div>{/if}
-		<div class="summary mt-1 text-xs leading-relaxed tracking-wider">{summary}</div>
-		<div class="caption mt-1.5 mb-1 text-xs leading-relaxed tracking-wider opacity-55">
+		<div class="caption mt-1.5 mb-1 border-t border-border/60 pt-1 text-xs text-ink">
 			% OF SKY COVERED, BY ALTITUDE
 		</div>
 		<div class="rows flex flex-col gap-[3px]">
 			{#each ROWS as row (row.key)}
 				<div class="row flex items-center gap-1.5">
-					<span class="rlabel w-[74px] text-xs tracking-[0.03em]">{row.label}</span>
+					<span class="rlabel w-[104px] text-xs tracking-[0.03em] opacity-80">{row.label}</span>
 					<span class="bar flex gap-px" aria-hidden="true">
 						{#each Array(6) as _, i (i)}
 							<span
 								class={[
 									'seg h-2 w-[9px]',
-									i < filled(values[row.key]) ? 'bg-accent' : 'bg-cloud-block'
+									i < filled(values[row.key]) ? 'bg-day-sea' : 'bg-mist-300'
 								]}
 							></span>
 						{/each}
 					</span>
-					<span class="num w-[22px] text-right text-xs">{values[row.key]}</span>
+					<span class="num w-[26px] text-right text-xs">{values[row.key]}%</span>
 				</div>
 			{/each}
 		</div>
-		{#if members > 1}
-			<div class="agg mt-1.5 text-xs leading-relaxed tracking-wider text-accent">
-				◆ MEAN OF {members} STATIONS — ZOOM TO SPLIT
-			</div>
-			<div class="hint mt-1 text-xs leading-relaxed tracking-wider opacity-60">
-				CLICK FOR NEAREST: {station.name} →
-			</div>
-		{:else}
-			<div class="hint mt-1 text-xs leading-relaxed tracking-wider opacity-60">
-				CLICK FOR STATION DETAIL →
-			</div>
-		{/if}
 	</div>
 {/if}

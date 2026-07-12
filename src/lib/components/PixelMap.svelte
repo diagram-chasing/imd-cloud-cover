@@ -875,8 +875,12 @@
 			const v = startView();
 			const s = Math.min((v.w * 0.6) / groupW, (v.h * 2) / groupH);
 			const mx = v.w * 0.02;
+			// Anchor the title a fixed fraction below the top of the landing view rather
+			// than scaling v.y (which is negative and aspect-dependent) — the old `v.y * 4`
+			// pushed the title off the top of tall/narrow phones.
+			const TITLE_TOP_FRAC = 0.11;
 			titleGroup.scale.set(s);
-			titleGroup.position.set(v.x + v.w - groupW * s - mx, v.y * 4 + mx);
+			titleGroup.position.set(v.x + v.w - groupW * s - mx, v.y + v.h * TITLE_TOP_FRAC);
 		}
 		updateTitleMeta();
 		updateTitleFade();
@@ -899,7 +903,12 @@
 			return;
 		}
 		const zr = zoom / (containZoom() * startZoomFactor());
-		const fade = Math.max(0, Math.min(1, (1.55 - zr) / (1.55 - 1.05)));
+		// Fade the title out both as you zoom in past the landing view (zr > 1.05) and
+		// as you pull the map back below it (zr < 1) — it's anchored in the map world,
+		// so without the zoom-out fade it drifts upward instead of disappearing.
+		const fadeIn = (1.55 - zr) / (1.55 - 1.05);
+		const fadeOut = (zr - 0.8) / (1 - 0.8);
+		const fade = Math.max(0, Math.min(1, fadeIn, fadeOut));
 		const night = skyMode(sky.timeIndex) === 'night';
 		titleGroup.alpha = (night ? 0.72 : 0.6) * fade;
 		titleGroup.visible = fade > 0.01;
@@ -1440,8 +1449,13 @@
 		const ox = panX + sx / zoom;
 		const oy = panY + sy / zoom;
 		const fit = containZoom();
-		const minZoom = fit * (narrowLayout() ? 0.4 : 0.9);
-		zoom = Math.max(minZoom, Math.min(fit * 7, zoom * factor));
+		const narrow = narrowLayout();
+		// On mobile/narrow layouts don't let the map shrink below its contain size
+		// (previously fit * 0.4 zoomed way out into empty gutters), and give extra
+		// zoom-in headroom so the finest city-label tiers are actually reachable.
+		const minZoom = fit * (narrow ? 1 : 0.9);
+		const maxZoom = fit * (narrow ? 10 : 7);
+		zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));
 		panX = ox - sx / zoom;
 		panY = oy - sy / zoom;
 		clampPan();

@@ -198,16 +198,12 @@
 			</div>
 		{/if}
 
-		{#if core && zoomed}
-			<div
-				class="minimap-corner absolute top-3.5 right-4 z-[11] flex flex-col items-end gap-2 max-md:top-2.5 max-md:right-3"
-				transition:fade={{ duration: 160 }}
-			>
-				{#if !isPhone}
-					<div class="pointer-events-none">
-						<Minimap view={layout.view} world={layout.world} {night} />
-					</div>
-				{/if}
+		<div
+			class="top-keys absolute top-0 right-0 z-[11] flex flex-col items-end gap-2 px-3 py-2.5 md:px-3.5 md:py-3"
+		>
+			<!-- Fit-to-screen + search always sit together in the top-right corner. The
+				fit key is a no-op when already framed but stays visible for discoverability. -->
+			<div class="chips flex items-start gap-1.5">
 				<PixelButton
 					size="sm"
 					cap="paper"
@@ -229,11 +225,6 @@
 						/>
 					</svg>
 				</PixelButton>
-			</div>
-		{/if}
-
-		<div class="top-keys absolute top-0 right-0 z-10 flex px-3 py-2.5 md:px-3.5 md:py-3">
-			<div class="chips flex items-start gap-1.5">
 				{#if core}
 					<StationSearch
 						manifest={core.manifest}
@@ -241,10 +232,16 @@
 						onselect={selectFromSearch}
 						compact
 						side="bottom"
-						align="start"
+						align="end"
 					/>
 				{/if}
 			</div>
+
+			{#if core && zoomed && !isPhone}
+				<div class="pointer-events-none" transition:fade={{ duration: 160 }}>
+					<Minimap view={layout.view} world={layout.world} {night} />
+				</div>
+			{/if}
 		</div>
 
 		<div
@@ -281,28 +278,35 @@
 	</div>
 </section>
 
-<button
-	onclick={scrollToNotes}
-	class="shore shore-link mx-auto -mt-4 flex w-full max-w-[1080px] cursor-pointer items-center gap-[18px] px-5 py-1.5 text-xs font-bold tracking-widest text-ink opacity-75 transition-[opacity,color] duration-120 hover:text-focus hover:opacity-100"
+<div
+	class="shore mx-auto -mt-6 md:-mt-5 flex w-full max-w-[1080px] items-center gap-[18px] px-5 py-1.5"
 >
 	<span
 		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[100px_16px] bg-repeat-x opacity-20 [image-rendering:pixelated] motion-reduce:animate-none"
 		aria-hidden="true"
 	></span>
 
-	<!-- NOTES -->
-	<ArrowDown
-		class="shore-arrow animate-shore-dip motion-reduce:animate-none"
-		size={20}
-		strokeWidth={2.5}
-		aria-hidden="true"
-	/>
+	<PixelButton
+		size="sm"
+		aria-label="Scroll to the field notes"
+		onclick={scrollToNotes}
+	>
+		<span class="flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
+			Field notes
+			<ArrowDown
+				class="animate-shore-dip motion-reduce:animate-none"
+				size={15}
+				strokeWidth={2.5}
+				aria-hidden="true"
+			/>
+		</span>
+	</PixelButton>
 
 	<span
 		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[120px_16px] bg-repeat-x opacity-20 [image-rendering:pixelated] motion-reduce:animate-none"
 		aria-hidden="true"
 	></span>
-</button>
+</div>
 
 <article class="article scroll-mt-4" id="field-notes">
 	<FieldNotes manifest={core?.manifest} places={core?.places} india={core?.india} />
