@@ -5,6 +5,13 @@ on:
     - cron: '30 5 * * *'  # Runs at 11:00 AM IST daily (5:30 AM UTC)
   workflow_dispatch:  # Allows manual triggering
 
+# Grant the token the permissions the reusable deploy workflow requires. A
+# reusable workflow can never request more than its caller, so the caller must
+# declare `deployments: write` here (the repo default is `deployments: none`).
+permissions:
+  contents: read
+  deployments: write
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
@@ -49,5 +56,5 @@ jobs:
   # manual production deploys go through the same single code path.
   deploy:
     needs: scrape
-    uses: ./.github/workflows/netlify-pages-publish.yaml
+    uses: ./.github/workflows/netlify-pages-preview.yaml
     secrets: inherit
