@@ -5,7 +5,7 @@
 	import type { Station, Rollup } from '$lib/types';
 	import type { FeatureCollection } from 'geojson';
 	import { loadDeferred, type CriticalData } from '$lib/api/load';
-	import { topoToIndia } from '$lib/map/projection';
+	import { topoToFeatures } from '$lib/map/geo';
 	import { sky } from '$lib/state/sky.svelte';
 	import { userGeo } from '$lib/state/geo.svelte';
 	import { skyMode } from '$lib/theme';
@@ -30,7 +30,7 @@
 
 	let { data }: { data: CriticalData } = $props();
 
-	let india = $derived(topoToIndia(data.topo));
+	let india = $derived(topoToFeatures(data.topo));
 	let places = $state<FeatureCollection>();
 	let rollup7 = $state<Rollup>();
 	let rollup30 = $state<Rollup>();

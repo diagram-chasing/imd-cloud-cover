@@ -31,7 +31,7 @@ function loadData() {
 	const summary = readView<Summary>('latest/summary.json');
 	const manifest = readView<StationsManifest>('meta/stations.json');
 	const places = JSON.parse(
-		readFileSync(resolve('static/data/india-places.json'), 'utf8')
+		readFileSync(resolve('src/lib/assets/geo/india-places.json'), 'utf8')
 	) as FeatureCollection;
 	return { cities, summary, manifest, places };
 }

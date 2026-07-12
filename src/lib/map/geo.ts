@@ -7,9 +7,17 @@
 // mask; at runtime we only decode the mask for the land/shallow grids (waves
 // live over open sea) and blit the baked images.
 import { geoConicConformal, type GeoProjection } from 'd3-geo';
+import { feature } from 'topojson-client';
+import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { FeatureCollection, Feature, Geometry } from 'geojson';
 import { jitter } from './hash';
 import type { StationsManifest } from '$lib/types';
+
+/** Expand a topojson's first object (India's states) into a GeoJSON FeatureCollection. */
+export function topoToFeatures(topo: Topology): FeatureCollection {
+	const objName = Object.keys(topo.objects)[0];
+	return feature(topo, topo.objects[objName] as GeometryCollection) as FeatureCollection;
+}
 
 export interface GeoStation {
 	code: string;

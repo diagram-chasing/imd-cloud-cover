@@ -10,7 +10,7 @@
 set -euo pipefail
 
 ASSETS="src/lib/assets"
-OUT="static/data"
+OUT="src/lib/assets/geo"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$OUT"

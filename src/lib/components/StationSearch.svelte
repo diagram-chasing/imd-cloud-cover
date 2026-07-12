@@ -10,7 +10,7 @@
 
 	interface Props {
 		manifest: StationsManifest;
-		/** Baked cities/towns (static/data/india-places.json). Optional so the map
+		/** Baked cities/towns (src/lib/assets/geo/india-places.json). Optional so the map
 		    still renders if the file is missing. */
 		places?: FeatureCollection;
 		onselect?: (code: string) => void;

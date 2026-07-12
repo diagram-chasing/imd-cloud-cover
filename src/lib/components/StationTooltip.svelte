@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Station } from '$lib/types';
-	import { prettyDate } from '$lib/format';
-	import { skyCondition } from '$lib/summary';
+	import { prettyDate, skyCondition } from '$lib/format';
 
 	interface Props {
 		station: Station | null;

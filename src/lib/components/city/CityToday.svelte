@@ -3,8 +3,7 @@
 	// sky-condition read and altitude bars as StationTooltip, on a paper panel.
 	// `expanded` renders a hero-scale variant (bigger bars, finer resolution) for
 	// pages that give the card room to breathe.
-	import { prettyDate } from '$lib/format';
-	import { skyCondition } from '$lib/summary';
+	import { prettyDate, skyCondition } from '$lib/format';
 
 	interface Props {
 		/** {h,m,l} cover at the current step, or null if no reading arrived. */

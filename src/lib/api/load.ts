@@ -10,8 +10,12 @@
 import type { Topology } from 'topojson-specification';
 import type { FeatureCollection } from 'geojson';
 import type { StationsManifest, AllStations, Summary, Rollup } from '$lib/types';
-import { base } from '$app/paths';
 import { CORE_BASE } from './r2';
+// Basemap outline + place labels never change between basemap rebuilds, so import
+// them as content-hashed assets (served `immutable`, cached forever) rather than
+// from static/ (revalidated every visit). The URL is base-aware automatically.
+import indiaUrl from '$lib/assets/geo/india.json?url';
+import placesUrl from '$lib/assets/geo/india-places.json?url';
 
 type Fetch = typeof fetch;
 
@@ -23,7 +27,7 @@ async function json<T>(f: Fetch, url: string): Promise<T> {
 
 /** The minimum the "today" map needs. `topo` is the raw topojson (smaller to
  *  serialize into the prerendered page than the expanded FeatureCollection);
- *  the page turns it into `india` via topoToIndia once, on the client. */
+ *  the page turns it into `india` via topoToFeatures once, on the client. */
 export interface CriticalData {
 	topo: Topology;
 	manifest: StationsManifest;
@@ -33,7 +37,7 @@ export interface CriticalData {
 
 export function loadCritical(f: Fetch = fetch): Promise<CriticalData> {
 	return Promise.all([
-		json<Topology>(f, `${base}/data/india.json`),
+		json<Topology>(f, indiaUrl),
 		json<StationsManifest>(f, `${CORE_BASE}/meta/stations.json`),
 		json<AllStations>(f, `${CORE_BASE}/latest/all-stations.json`),
 		json<Summary>(f, `${CORE_BASE}/latest/summary.json`)
@@ -50,7 +54,7 @@ export interface DeferredData {
 
 export function loadDeferred(f: Fetch = fetch): Promise<DeferredData> {
 	return Promise.all([
-		json<FeatureCollection>(f, `${base}/data/india-places.json`),
+		json<FeatureCollection>(f, placesUrl),
 		json<Rollup>(f, `${CORE_BASE}/rollups/7d.json`),
 		json<Rollup>(f, `${CORE_BASE}/rollups/30d.json`)
 	]).then(([places, rollup7, rollup30]) => ({ places, rollup7, rollup30 }));

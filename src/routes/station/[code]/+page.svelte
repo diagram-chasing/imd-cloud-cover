@@ -4,13 +4,13 @@
 	// /city/[slug] at build time (see +page.server.ts), so there's no client redirect
 	// dance here — only today's readings + the forecast load client-side.
 	import { onMount } from 'svelte';
-	import { base } from '$app/paths';
+	import indiaUrl from '$lib/assets/geo/india.json?url';
 	import type { PageData } from './$types';
 	import type { FeatureCollection } from 'geojson';
 	import type { Topology } from 'topojson-specification';
 	import { fetchLatest, fetchForecast, fetchStations, fetchHistory } from '$lib/api/r2';
 	import type { AllStations, Forecast, StationsManifest, History } from '$lib/types';
-	import { topoToIndia } from '$lib/map/projection';
+	import { topoToFeatures } from '$lib/map/geo';
 	import { resolveActiveDay, computeValues } from '$lib/data';
 	import { SITE_BASE } from '$lib/site';
 	import SEO from '$lib/components/SEO.svelte';
@@ -40,8 +40,8 @@
 			.then((r) => (record = r))
 			.catch(() => {});
 		try {
-			india = topoToIndia(
-				(await fetch(`${base}/data/india.json`).then((r) => r.json())) as Topology
+			india = topoToFeatures(
+				(await fetch(indiaUrl).then((r) => r.json())) as Topology
 			);
 		} catch {}
 	});

@@ -5,9 +5,9 @@
 	import type { Topology } from 'topojson-specification';
 	import type { StationsManifest, AllStations, Summary, Forecast, CitiesRollup } from '$lib/types';
 	import { fetchStations, fetchLatest, fetchSummary, fetchForecast, fetchCities } from '$lib/api/r2';
-	import { topoToIndia } from '$lib/map/projection';
+	import { topoToFeatures } from '$lib/map/geo';
 	import { resolveActiveDay, computeValues } from '$lib/data';
-	import { base } from '$app/paths';
+	import indiaUrl from '$lib/assets/geo/india.json?url';
 	import { citySlugs } from '$lib/city/slug.js';
 	import { SITE_BASE } from '$lib/site';
 	import SEO from '$lib/components/SEO.svelte';
@@ -32,8 +32,8 @@
 				fetchLatest(),
 				fetchSummary()
 			]);
-			india = topoToIndia(
-				(await fetch(`${base}/data/india.json`).then((r) => r.json())) as Topology
+			india = topoToFeatures(
+				(await fetch(indiaUrl).then((r) => r.json())) as Topology
 			);
 			fetchCities()
 				.then((c) => {

@@ -1,4 +1,5 @@
-// Build the labelled-places dataset served at /data/india-places.json.
+// Build the labelled-places dataset at src/lib/assets/geo/india-places.json
+// (imported as a content-hashed asset by the app).
 //
 // Source: GeoNames dump for India, vendored as src/lib/assets/IN.zip (contains
 // IN.txt, ~660k tab-separated rows). We stream it straight out of the zip with
@@ -21,7 +22,7 @@ import { dirname, resolve } from 'node:path';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ZIP = resolve(ROOT, 'src/lib/assets/IN.zip');
 const STATIONS = resolve(ROOT, 'scraper/stations.json');
-const OUT = resolve(ROOT, 'static/data/india-places.json');
+const OUT = resolve(ROOT, 'src/lib/assets/geo/india-places.json');
 
 // Population floor for plain populated places (PPL). Capitals/admin seats below
 // this are kept anyway (they anchor the map and are common search targets).

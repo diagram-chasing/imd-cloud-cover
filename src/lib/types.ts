@@ -13,7 +13,7 @@ export interface StationsManifest {
 	stations: Record<string, Station>;
 }
 
-/** GeoJSON `properties` of a baked place (static/data/india-places.json).
+/** GeoJSON `properties` of a baked place (src/lib/assets/geo/india-places.json).
  *  Feeds both the map label layer and the unified search. */
 export interface PlaceProps {
 	name: string;

@@ -8,8 +8,8 @@
 // relief raster.
 //
 // Inputs (all committed):
-//   static/data/india.json          topojson, land outline
-//   static/data/india-urban.json    topojson, built-up polygons (clipped)
+//   src/lib/assets/geo/india.json          topojson, land outline
+//   src/lib/assets/geo/india-urban.json    topojson, built-up polygons (clipped)
 //   src/lib/assets/images/hyp-india.png       Natural Earth HYP_50M_SR crop
 //                                             (lon 66..100 E, lat 4..38 N)
 //   src/lib/assets/images/medievalTile_57/58.png   grass texture tiles
@@ -146,8 +146,8 @@ function cellHash(x, y) {
 	return ((h ^ (h >> 16)) >>> 0) / 4294967295;
 }
 
-const india = await loadTopo('static/data/india.json');
-const urbanFC = await loadTopo('static/data/india-urban.json');
+const india = await loadTopo('src/lib/assets/geo/india.json');
+const urbanFC = await loadTopo('src/lib/assets/geo/india-urban.json');
 const hyp = await loadPng('src/lib/assets/images/hyp-india.png');
 const tilePngs = await Promise.all([
 	loadPng('src/lib/assets/images/medievalTile_57.png'),
