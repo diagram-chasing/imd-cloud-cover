@@ -7,29 +7,23 @@ the static JSON views the frontend consumes. Runs daily via GitHub Actions.
 
 ```bash
 pip install -r requirements.txt
-cp .env.example .env   # add R2 credentials (production only)
-```
-
-## Environment
-
-```
-R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME
-LOCAL_MODE=1        # write to ./weather_data instead of R2 (dev)
-LOCAL_DIR           # override local output dir (default weather_data)
+cp .env.example .env   # R2 credentials (production); set LOCAL_MODE=1 for dev
 ```
 
 ## Daily run
 
 ```bash
-python main.py --out /tmp/run-results.json     # scrape + extract + upload
-python aggregate.py --results /tmp/run-results.json   # build derived views
+python main.py --out /tmp/run-results.json          # scrape + extract + upload
+python aggregate.py --results /tmp/run-results.json # build derived views
+python export.py                                    # write public dataset to ../data
 ```
 
-`main.py` downloads every station's meteogram, validates geometry, extracts the
-day-0 slice, and uploads `{date}/{CODE}-meteogram.{webp,json}`. It writes a
-run-results report and exits non-zero if the success rate falls below 80%.
-
-`aggregate.py` reads the day-0 slices and writes the frontend views (see below).
+- `main.py` downloads every station's meteogram, validates geometry, extracts
+  the day-0 slice, and uploads `{date}/{CODE}-meteogram.{webp,json}`. Exits
+  non-zero if the success rate falls below 80%.
+- `aggregate.py` reads the day-0 slices and writes the frontend views (below).
+- `export.py` flattens the histories into the public CSV/Parquet dataset in
+  [`../data`](../data) (see its [DATA.md](../data/DATA.md)).
 
 ## Tools
 

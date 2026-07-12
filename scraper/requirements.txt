@@ -10,3 +10,6 @@ numpy==1.26.4
 
 # Utilities
 tqdm==4.66.5
+
+# Public dataset export (export.py)
+pyarrow==24.0.0
