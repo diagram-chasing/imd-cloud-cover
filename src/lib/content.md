@@ -91,7 +91,7 @@ Read together, the panels show both the weather you will feel that day and the a
 	<MeteogramAtlas />
 </div>
 
-What first drew me to these charts was the density of the visual organization, which you rarely see. But the detail that caught my eye was the cloud-cover panel. Look closely and you can see it is drawn to resemble an actual cloudy sky!
+What first drew me to these charts was the density of the visual organization, which you rarely see in the data visualization we usually come across. But the detail that caught my eye was the cloud-cover panel. Look closely, and you can see it is drawn to resemble an actual cloudy sky!
 
 <img
 	src={cloudsUrl}
@@ -106,13 +106,12 @@ The cloud-cover panel is a stacked histogram split into three tiers: low clouds 
 <CloudTiers />
 
 
-I love this visualization. Whoever wrote the software took complex meteorological data and rendered it in a playful, cloudy pixel-art style, and the result is charming.
-Since February 2026 I have been archiving these charts every day. I wrote a script that reads the pixels and turns the histogram images back into structured data, so I could plot a given slice of time onto a map. That collection and analysis now runs daily, mapping India's clouds at the top of this page.
+I love this visualization. It's charming that the person who wrote the software took complicated weather data and made it look like cloudy, fun pixel art. Every day since February 2026, I have been archiving these charts. I wrote a script that reads the pixels and turns the histogram images back into structured data, so I could plot a given slice of time onto a map. The mapping of India's clouds at the top of this page is the result of that daily collection and analysis.
 
 With {monthsLabel} of data, some patterns start to show. Every city here has a twin, or a distant city whose skies cloud over and clear in similar ways.
 
 {#if skyPair}
-<p>Take <strong>{skyPair.city}</strong> and <strong>{skyPair.twin}</strong>, they are hundreds of kilometres apart, yet they move together as you can see in the day-by-day strips below show.</p>
+<p>For example, <strong>{skyPair.city}</strong> and <strong>{skyPair.twin}</strong> are hundreds of kilometers apart, but the daily cloud strips below show that they move in sync.</p>
 
 <div class="breakout">
 	<SkyBarcode
@@ -127,7 +126,7 @@ With {monthsLabel} of data, some patterns start to show. Every city here has a t
 </div>
 {/if}
 
-Below are all {cities ? Object.keys(cities.cities).length : 424} cities, ordered from clear to cloudy. Look one up to see how cloudy it has been, over the long run and today, and to meet the distant city its sky most resembles.
+Below are all {cities ? Object.keys(cities.cities).length : 424} cities, ordered from clear to cloudy. You can look up a city to see how cloudy it has been over time and today, and to see which faraway city the sky looks most like.
 
 {#if manifest && india}
 <div class="breakout full-bleed">
