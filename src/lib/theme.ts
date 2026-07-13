@@ -1,4 +1,3 @@
-// Design tokens for the pixel sky-map. All values are decisions from the spec.
 // Colors mirror the meteogram's own cloud panel: chunky white clouds on flat blue.
 
 export const CELL = 8; // logical px per grid cell (desktop).

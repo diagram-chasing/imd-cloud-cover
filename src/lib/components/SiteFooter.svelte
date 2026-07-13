@@ -67,7 +67,6 @@
 	}
 </script>
 
-<!-- (The 48px 20px 56px padding was commented out in the original CSS, so none is applied.) -->
 <footer class="site-footer">
 	<div class="more mx-auto max-w-[640px]">
 		<h2 class="more-title text-center text-base font-normal tracking-[0.08em] uppercase">

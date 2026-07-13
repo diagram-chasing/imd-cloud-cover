@@ -50,8 +50,7 @@
 			: [{ id: 'a', name: aName, e: aE }]
 	);
 
-	// First column of each calendar month → a tick + label on the axis. Drop a label
-	// when it would crowd the previous one (< 22px apart) so short windows stay legible.
+	// First column of each calendar month → a tick + label on the axis.
 	let ticks = $derived.by(() => {
 		const out: { i: number; label: string }[] = [];
 		let lastMonth = -1;
@@ -75,7 +74,6 @@
 		</div>
 	{/if}
 
-	<!-- Legend centered up top: two chunky pixel chips reading clear → overcast. -->
 	<div
 		class="mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm font-bold tracking-wide uppercase"
 	>
@@ -166,7 +164,6 @@
 		{/if}
 	</div>
 
-	<!-- No-reading key, centered beneath the strips. -->
 	<div class="mt-4 flex items-center justify-center gap-2 text-sm opacity-90">
 		<span class="pixel-swatch" aria-hidden="true"></span>
 		No reading

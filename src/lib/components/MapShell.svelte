@@ -64,8 +64,6 @@
 		</svg>
 	{/if}
 
-	<!-- Pixel glyphs forming: three squares breathing in sequence, echoing the cloud
-		marks about to appear. -->
 	<div class="glyphs motion-reduce:hidden" aria-hidden="true">
 		<span></span>
 		<span></span>

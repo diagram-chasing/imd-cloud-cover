@@ -94,7 +94,6 @@
 	</div>
 
 	<article class="flex flex-col gap-6">
-		<!-- Masthead -->
 		<header class="border-b-2 border-ink pb-3">
 			<h1
 				class=" text-[length:clamp(2rem,7vw,calc(var(--ms-6)*1rem))] leading-[1.05]  uppercase"

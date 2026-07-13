@@ -1296,7 +1296,7 @@
 			titleBalloon.y = titleBalloonBaseY + Math.sin(performance.now() / 650) * 2;
 		}
 		if (userPulse && userOnMap && !reduced) {
-			const g = (Math.sin(performance.now() / 500) + 1) * 0.5; // 0..1
+			const g = (Math.sin(performance.now() / 500) + 1) * 0.5;
 			userPulse.scale.set(1 + g * 0.7);
 			userPulse.alpha = 1 - g;
 		}

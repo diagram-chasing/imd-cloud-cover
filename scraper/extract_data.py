@@ -83,15 +83,12 @@ def extract_cloud_data(pil_image, start_date):
             ]
         }
     """
-    # Convert PIL to OpenCV format
     img_array = np.array(pil_image.convert('RGB'))
     img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
 
-    # Crop to cloud cover section
     cropped = img_bgr[CROP_Y0:CROP_Y1, CROP_X0:CROP_X1]
     h, w = cropped.shape[:2]
 
-    # Sample 80 points across the width
     samples = 80
     x_indices = np.linspace(80, w - 5, samples).astype(int)
     sampled_img = cropped[:, x_indices, :]
@@ -110,10 +107,8 @@ def extract_cloud_data(pil_image, start_date):
         percentage = ((band_h - first_white_idx) / band_h) * 100
         cloud_data.append(percentage.tolist())
 
-    # Generate timestamps (3-hour intervals)
     times = [start_date + timedelta(hours=i*3) for i in range(samples)]
 
-    # Build output structure
     result = {
         "start_date": start_date.isoformat(),
         "samples": samples,

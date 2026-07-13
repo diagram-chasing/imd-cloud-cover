@@ -21,7 +21,6 @@ load_dotenv()
 BASE_URL = "https://nwp.imd.gov.in/gfs_meteograms_mausam.php"
 DOMAIN = "https://nwp.imd.gov.in"
 
-# Global Session for connection pooling (Speed improvement)
 sess = requests.Session()
 adapter = HTTPAdapter(pool_connections=10, pool_maxsize=10)
 sess.mount("https://", adapter)

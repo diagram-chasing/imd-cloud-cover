@@ -30,9 +30,9 @@ function noiseBuffer(ac: AudioContext): AudioBuffer {
 
 interface ClickSpec {
 	freq: number; // bandpass centre — the tick's pitch
-	q: number; // filter sharpness
-	decay: number; // seconds
-	gain: number; // peak
+	q: number;
+	decay: number;
+	gain: number;
 	tone: number; // tonal-body level (0 = pure noise tick)
 }
 

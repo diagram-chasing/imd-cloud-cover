@@ -96,7 +96,7 @@
 		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 		ctx.imageSmoothingEnabled = false;
 
-		ctx.fillStyle = UI.accent; // flat sky behind the clouds
+		ctx.fillStyle = UI.accent;
 		ctx.fillRect(0, 0, W, H);
 		if (!fc || !fc.data.length) return;
 

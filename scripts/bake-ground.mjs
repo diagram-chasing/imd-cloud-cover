@@ -69,7 +69,7 @@ const HYP_BBOX = { lon0: 66, lon1: 100, lat0: 4, lat1: 38 };
 const CITY_LIGHT = '#F2C14E';
 const CITY_LIGHT_DENSITY = 0.16;
 const CITY_LIGHT_MIX = 0.6;
-// Grass-raster px one tile spans before repeating (see renderGround history).
+// Grass-raster px one tile spans before repeating.
 const TILE_PX = 10;
 
 const OUT_DIR = 'src/lib/assets/ground';
@@ -137,8 +137,7 @@ function rasterize(fc, project, W, H, scale) {
 	return mask;
 }
 
-// Small deterministic per-cell hash for the night city-light scatter — must
-// stay in sync with nothing: it only exists here now.
+// Deterministic per-cell hash for the night city-light scatter.
 function cellHash(x, y) {
 	let h = (x * 374761393 + y * 668265263) >>> 0;
 	h = (h ^ (h >> 13)) >>> 0;
@@ -302,7 +301,7 @@ if (n > 0) {
 	}
 }
 
-// Grass tiles: raw RGBA + mean of opaque pixels (mirrors old loadGroundTiles).
+// Grass tiles: raw RGBA + mean of opaque pixels.
 const tiles = tilePngs.map((p) => {
 	let r = 0;
 	let g = 0;

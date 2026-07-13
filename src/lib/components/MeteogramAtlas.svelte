@@ -481,7 +481,6 @@
 	.specimen.dimming .leads :global(g.ink g.annotation:not(.hot):not(.span) path) {
 		stroke: var(--color-steel-300);
 	}
-	/* Time-span annotation under the plate */
 	.leads :global(g.ink g.annotation.span path) {
 		stroke: var(--ink);
 		opacity: 0.55;

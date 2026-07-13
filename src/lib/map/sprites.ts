@@ -41,7 +41,7 @@ function puffProfile(rand: () => number, w: number, maxH: number, rough: number)
 	for (let x = 0; x < w; x++) {
 		const t = w > 1 ? x / (w - 1) : 0.5;
 		const d = Math.abs(t - peak) / Math.max(peak, 1 - peak); // 0 at peak → 1 at far edge
-		const arch = Math.cos((d * Math.PI) / 2); // smooth dome
+		const arch = Math.cos((d * Math.PI) / 2);
 		h.push(Math.round(arch * maxH + (rand() - 0.5) * rough));
 	}
 
@@ -67,7 +67,7 @@ function cirrusPattern(rand: () => number, w: number): Pattern {
 	while (x < w) {
 		if (rand() < 0.62) {
 			const len = 1 + Math.floor(rand() * 2); // 1-2 cell dash — shorter wisps
-			const y = rand() < 0.5 ? 0 : 1; // which row it drifts along
+			const y = rand() < 0.5 ? 0 : 1;
 			for (let i = 0; i < len && x + i < w; i++) grid[y][x + i] = 1;
 			drew = true;
 			x += len + 2 + Math.floor(rand() * 2); // wider gap before the next wisp
@@ -110,7 +110,6 @@ function drawMark(pattern: Pattern, band: BandKey, tier: number, cell: number): 
 		}
 	}
 
-	// shade the bottom-most filled cell of each column
 	if (band === 'low' && rows >= 3) {
 		ctx.fillStyle = CLOUD.low.shadow;
 		for (let x = 0; x < cols; x++) {

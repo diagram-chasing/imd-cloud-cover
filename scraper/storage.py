@@ -12,7 +12,7 @@ import json
 import os
 from io import BytesIO
 
-# Cache-Control policy by key prefix (C4). Dated snapshots never change;
+# Cache-Control policy by key prefix. Dated snapshots never change;
 # rolling/latest views change daily and are served with a short TTL.
 IMMUTABLE = "public, max-age=31536000, immutable"
 SHORT = "public, max-age=300"

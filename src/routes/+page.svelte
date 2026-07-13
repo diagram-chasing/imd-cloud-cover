@@ -64,7 +64,6 @@
 		view: { x: 0, y: 0, w: 0, h: 0 },
 		world: { w: 1, h: 1 }
 	});
-	// Desktop shows the minimap; phones don't.
 	let isPhone = $state(false);
 	$effect(() => {
 		const mq = window.matchMedia('(max-width: 767px)');

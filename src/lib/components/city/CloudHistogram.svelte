@@ -637,7 +637,6 @@
 				const minSep = (a.w + b.w) / 2 + 10;
 				let ax = a.x;
 				let bx = b.x;
-				// Only pry them apart when they'd actually collide.
 				if (bx - ax < minSep) {
 					const mid = (ax + bx) / 2;
 					ax = mid - minSep / 2;

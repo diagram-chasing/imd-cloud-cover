@@ -37,7 +37,6 @@
 </svelte:head>
 
 <main>
-	<!-- Question map: the pixel India, with a big drifting "?" over the sea. -->
 	<div class="qmap" style="aspect-ratio: 1024 / {Math.round(1085 * V_SPAN)};" aria-hidden="true">
 		<img
 			class="land"
