@@ -15,8 +15,8 @@
 		shareDescription?: string;
 		/** Absolute URL of the 1200×630 share image. */
 		shareImgPath: string;
-		/** Optional animated GIF variant, listed as the preferred og:image;
-		 * scrapers that don't animate fall back to the static shareImgPath. */
+		/** Optional animated GIF variant; replaces og:image when set (one tag only —
+		 * Discord galleries multiple og:images). twitter:image stays on shareImgPath. */
 		shareImgAnimatedPath?: string;
 		shareImgAlt?: string;
 		/** og:type — 'website' for tools/index pages, 'article' for stories. */
@@ -110,12 +110,11 @@
 	<meta property="og:site_name" content={siteName} />
 	<meta property="og:title" content={ogTitle} />
 	<meta property="og:description" content={ogDescription} />
-	{#if shareImgAnimatedPath}
-		<meta property="og:image" content={shareImgAnimatedPath} />
-		<meta property="og:image:type" content="image/gif" />
-		{#if shareImgAlt}<meta property="og:image:alt" content={shareImgAlt} />{/if}
-	{/if}
-	<meta property="og:image" content={shareImgPath} />
+	<!-- single og:image only: Discord galleries multiple og:image tags. Scrapers
+	     that don't animate the GIF fall back to its first frame; Twitter gets the
+	     static JPG via twitter:image below. -->
+	<meta property="og:image" content={shareImgAnimatedPath || shareImgPath} />
+	{#if shareImgAnimatedPath}<meta property="og:image:type" content="image/gif" />{/if}
 	{#if shareImgAlt}<meta property="og:image:alt" content={shareImgAlt} />{/if}
 
 	<meta name="twitter:card" content="summary_large_image" />
