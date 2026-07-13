@@ -27,8 +27,8 @@
 	let pins = $derived.by(() => {
 		const me = city && code ? stations[code] : null;
 		if (!me || !city) return [];
-		const out = [{ label: city.name, lat: me.lat, lon: me.lon, accent: true }];
-		if (twin) out.push({ label: twin.name, lat: twin.lat, lon: twin.lon, accent: false });
+		const out = [{ code: code!, label: city.name, lat: me.lat, lon: me.lon, accent: true }];
+		if (twin) out.push({ code: twin.code, label: twin.name, lat: twin.lat, lon: twin.lon, accent: false });
 		return out;
 	});
 </script>

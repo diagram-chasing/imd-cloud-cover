@@ -63,6 +63,11 @@
 	let mapW = $state(320);
 	let mapH = $derived(mapW / ASPECT);
 
+	// label width estimate — declared before the point deriveds that use it so
+	// SSR (which evaluates deriveds eagerly) doesn't hit its temporal dead zone.
+	const CHAR_W = 7.4;
+	const labelWidth = (t: string) => t.length * CHAR_W;
+
 	// world px, no crop offset yet
 	interface RawPoint {
 		id: string;
@@ -170,8 +175,6 @@
 	const MARK_HY = MARK_H / 2;
 
 	const LABEL_H = 12;
-	const CHAR_W = 7.4;
-	const labelWidth = (t: string) => t.length * CHAR_W;
 	const CANDIDATES = [
 		{ ox: 0, oy: MARK_HY + 2, align: 'center' },
 		{ ox: 0, oy: -MARK_HY - 2 - LABEL_H, align: 'center' },

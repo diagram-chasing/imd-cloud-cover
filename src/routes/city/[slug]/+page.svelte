@@ -1,68 +1,26 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
-	import type { FeatureCollection } from 'geojson';
-	import type { Topology } from 'topojson-specification';
-	import type { StationsManifest, AllStations, Summary, Forecast, CitiesRollup } from '$lib/types';
-	import { fetchStations, fetchLatest, fetchSummary, fetchForecast, fetchCities } from '$lib/api/r2';
-	import { topoToFeatures } from '$lib/map/geo';
+	import { indiaFeatures } from '$lib/map/india';
 	import { resolveActiveDay, computeValues } from '$lib/data';
-	import indiaUrl from '$lib/assets/geo/india.json?url';
-	import { citySlugs } from '$lib/city/slug.js';
 	import { SITE_BASE } from '$lib/site';
 	import SEO from '$lib/components/SEO.svelte';
 	import PlacePage from '$lib/components/place/PlacePage.svelte';
 
 	let { data }: { data: PageData } = $props();
 
-	let manifest = $state<StationsManifest>();
-	let latest = $state<AllStations>();
-	let summary = $state<Summary>();
-	let forecast = $state<Forecast | null>(null);
-	let india = $state<FeatureCollection>();
-	let slugByCode = $state<Record<string, string>>({});
-	let cities = $state<CitiesRollup>();
-
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 
-	onMount(async () => {
-		try {
-			[manifest, latest, summary] = await Promise.all([
-				fetchStations(),
-				fetchLatest(),
-				fetchSummary()
-			]);
-			india = topoToFeatures(
-				(await fetch(indiaUrl).then((r) => r.json())) as Topology
-			);
-			fetchCities()
-				.then((c) => {
-					cities = c;
-					slugByCode = citySlugs(c.cities).slugByCode;
-				})
-				.catch(() => {});
-			fetchForecast(data.date, data.code)
-				.then((f) => (forecast = f))
-				.catch(() => {});
-		} catch {}
-	});
-
-	let activeDay = $derived(latest ? resolveActiveDay(latest) : null);
-	let viewDate = $derived(activeDay?.date ?? data.date);
+	// everything below is baked into the prerender; only the *current* 3-hour
+	// column is picked client-side from the visitor's clock.
+	let latest = $derived(data.latest);
+	let activeDay = $derived(resolveActiveDay(latest));
+	let viewDate = $derived(activeDay.date);
 	let timeIndex = $derived(
 		Math.min(7, Math.floor((((Date.now() + 5.5 * 3600 * 1000) / 3600000) % 24) / 3))
 	);
 	let whenLabel = $derived(`${HOUR_LABELS[timeIndex]}:00 IST`);
-	let values = $derived(
-		computeValues('today', latest, undefined, timeIndex, 0, activeDay?.index ?? 0)
-	);
+	let values = $derived(computeValues('today', latest, undefined, timeIndex, 0, activeDay.index));
 	let todayValues = $derived(values[data.code] ?? null);
-
-	// day-by-day cover for SkyBarcode; null until rollup lands
-	let history = $derived.by(() => {
-		const city = cities?.cities[data.code];
-		return cities && city ? { dates: cities.dates, name: city.name, e: city.e } : null;
-	});
 
 	let dateline = $derived(
 		[
@@ -95,17 +53,17 @@
 	km={data.primaryKm}
 	date={viewDate}
 	when={whenLabel}
-	{forecast}
+	forecast={data.forecast}
 	metDate={data.date}
 	metCode={data.code}
 	metCaption="NEXT 10 DAYS,  3-HOURLY. READING FROM {data.stationName.toUpperCase()}"
 	perStation={values}
-	{india}
+	india={indiaFeatures}
 	cityPoint={data.lat != null && data.lon != null
 		? { name: data.name, lat: data.lat, lon: data.lon }
 		: null}
 	stations={data.stations}
-	{slugByCode}
-	stationLookup={manifest?.stations}
-	{history}
+	slugByCode={data.slugByCode}
+	stationLookup={data.stationLookup}
+	history={data.history}
 />

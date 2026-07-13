@@ -196,6 +196,10 @@
 	let finestBuilt = false;
 	// guards against callbacks firing after teardown
 	let destroyed = false;
+	// Pixi rasterizes each Text into a texture using whatever font is available at
+	// build time — so text built before 'Ships Whistle' loads bakes the fallback
+	// glyphs and keeps them until a reload warms the cache. Gate all text on this.
+	let fontsReady = false;
 	const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
 	const onIdle = (cb: () => void) => {
 		const w = window as unknown as { requestIdleCallback?: (cb: () => void) => void };
@@ -614,17 +618,39 @@
 		}
 	}
 
+	// Build place labels once — only after fonts land, so their textures (and the
+	// plate widths derived from them) are measured with the real typeface. Called
+	// from both the idle prefetch and the font-ready handler; whichever wins builds.
+	function buildPlaces() {
+		if (destroyed || !app || !fontsReady || placeMarkers.length) return;
+		fillPlaces();
+		updatePlacesScale();
+		declutterPlaces();
+	}
+
+	function markFontsReady() {
+		if (fontsReady || destroyed) return;
+		fontsReady = true;
+		// re-rasterize the title (drawTitle re-sets style, dirtying the texture) and
+		// build the deferred place labels now that the real glyphs are available.
+		if (app) {
+			drawTitle();
+			buildPlaces();
+		}
+	}
+
 	async function init() {
 		if (!host) return;
-		// font off critical path; re-lay title when ready (both hidden at start view)
-		document.fonts
-			.load("10px 'Ships Whistle'")
-			.then(() => {
-				if (destroyed) return;
-				drawTitle();
-				if (placeMarkers.length) declutterPlaces();
-			})
-			.catch(() => {});
+		// font off critical path; text waits for it (all hidden at the start view).
+		// Await BOTH weights — 400 for labels, 700 for the title/brand/meta — and cap
+		// the wait so a slow or failed font never keeps the map's text from rendering.
+		Promise.race([
+			Promise.allSettled([
+				document.fonts.load("400 10px 'Ships Whistle'"),
+				document.fonts.load("700 10px 'Ships Whistle'")
+			]),
+			new Promise((r) => setTimeout(r, 2500))
+		]).then(markFontsReady);
 
 		// spin up WebGL immediately un-awaited; `webgl` preference skips async WebGPU probe
 		const application = new Application();
@@ -746,9 +772,7 @@
 		styleAmbient();
 		onIdle(() => {
 			if (destroyed) return;
-			fillPlaces();
-			updatePlacesScale();
-			declutterPlaces();
+			buildPlaces();
 		});
 	}
 

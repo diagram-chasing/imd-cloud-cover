@@ -1,35 +1,29 @@
-// city pages prerendered: og tags + header baked; interactive sections hydrate client-side
+// city pages fully prerendered: header, reading, map and forecast all baked so
+// there is no client fetch (and no "NO READING" flash) on hydration.
 import type { EntryGenerator, PageServerLoad } from './$types';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { error } from '@sveltejs/kit';
 import type { FeatureCollection, Point } from 'geojson';
-import type { CitiesRollup, StationsManifest, Summary } from '$lib/types';
+import type { AllStations, CitiesRollup, Forecast, StationsManifest, Summary } from '$lib/types';
 import { citySlugs } from '$lib/city/slug.js';
 import { haversineKm } from '$lib/city/distance';
+import { readView, readViewOpt, miniLatest } from '$lib/server/views';
 
 export const prerender = true;
 
 const RADIUS_KM = 100;
 const MAP_CAP = 12;
 
-// prefer baked view, fall back to sample fixture
-function readView<T>(rel: string): T {
-	for (const dir of ['static/baked', 'static/sample']) {
-		const p = resolve(dir, rel);
-		if (existsSync(p)) return JSON.parse(readFileSync(p, 'utf8')) as T;
-	}
-	throw new Error(`city page: missing data view ${rel} (baked & sample)`);
-}
-
 function loadData() {
 	const cities = readView<CitiesRollup>('rollups/cities.json');
 	const summary = readView<Summary>('latest/summary.json');
 	const manifest = readView<StationsManifest>('meta/stations.json');
+	const all = readView<AllStations>('latest/all-stations.json');
 	const places = JSON.parse(
 		readFileSync(resolve('src/lib/assets/geo/india-places.json'), 'utf8')
 	) as FeatureCollection;
-	return { cities, summary, manifest, places };
+	return { cities, summary, manifest, all, places };
 }
 
 export const entries: EntryGenerator = () => {
@@ -39,8 +33,8 @@ export const entries: EntryGenerator = () => {
 };
 
 export const load: PageServerLoad = ({ params }) => {
-	const { cities, summary, manifest, places } = loadData();
-	const { codeBySlug } = citySlugs(cities.cities);
+	const { cities, summary, manifest, all, places } = loadData();
+	const { slugByCode, codeBySlug } = citySlugs(cities.cities);
 	const code = codeBySlug[params.slug];
 	if (!code) throw error(404, 'Unknown city');
 	const city = cities.cities[code];
@@ -88,6 +82,19 @@ export const load: PageServerLoad = ({ params }) => {
 		description: `${city.name}${stateLabel}: daily cloud cover read from IMD meteograms, across ${stationCount} station${stationCount === 1 ? '' : 's'} nearby.`
 	};
 
+	// bake only what this page plots: the nearby-station bands (reading + map),
+	// their lookup/slug entries (tooltip + links) and the primary forecast.
+	const codes = stations.map((s) => s.code);
+	const latest = miniLatest(all, codes);
+	const forecast = readViewOpt<Forecast>(`${summary.date}/${code}-meteogram.json`);
+	const stationLookup = Object.fromEntries(
+		codes.filter((c) => manifest.stations[c]).map((c) => [c, manifest.stations[c]])
+	);
+	const nearbySlugs = Object.fromEntries(
+		codes.filter((c) => slugByCode[c]).map((c) => [c, slugByCode[c]])
+	);
+	const history = { dates: cities.dates, name: city.name, e: city.e };
+
 	return {
 		slug: params.slug,
 		code,
@@ -102,6 +109,11 @@ export const load: PageServerLoad = ({ params }) => {
 		primaryKm,
 		stationCount,
 		stations,
-		og
+		og,
+		latest,
+		forecast,
+		stationLookup,
+		slugByCode: nearbySlugs,
+		history
 	};
 };

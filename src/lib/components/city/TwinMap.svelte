@@ -5,6 +5,9 @@
 	import groundDayUrl from '$lib/assets/ground/ground-day.png';
 
 	interface Pin {
+		// unique station code — keys the each; two cities can share a display label
+		// (e.g. the two Aurangabads), so the label is not safe as a key.
+		code: string;
 		label: string;
 		lat: number;
 		lon: number;
@@ -184,7 +187,7 @@
 		src={groundDayUrl}
 		alt=""
 	/>
-	{#each placed as p (p.label)}
+	{#each placed as p (p.code)}
 		<div class="absolute" style="left: {p.left}%; top: {p.top}%;">
 
 			<svg
