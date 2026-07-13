@@ -4,8 +4,9 @@
 	import TwinMap from './TwinMap.svelte';
 
 	interface Props {
-		city: CityStats;
-		code: string;
+		/** null when no city is focused — the map still renders as a dimmed empty state. */
+		city: CityStats | null;
+		code: string | null;
 		data: CitiesRollup;
 		india: FeatureCollection;
 		stations: Record<string, Station>;
@@ -19,11 +20,13 @@
 		const st = stations[ref.code];
 		return c && st ? { code: ref.code, name: c.name, lat: st.lat, lon: st.lon } : null;
 	}
-	let twin = $derived(resolve(mode === 'today' ? city.twin?.today : city.twin?.alltime));
+	let twin = $derived(
+		city ? resolve(mode === 'today' ? city.twin?.today : city.twin?.alltime) : null
+	);
 
 	let pins = $derived.by(() => {
-		const me = stations[code];
-		if (!me) return [];
+		const me = city && code ? stations[code] : null;
+		if (!me || !city) return [];
 		const out = [{ label: city.name, lat: me.lat, lon: me.lon, accent: true }];
 		if (twin) out.push({ label: twin.name, lat: twin.lat, lon: twin.lon, accent: false });
 		return out;
@@ -37,7 +40,9 @@
 	<p
 		class="m-0 mt-2 min-h-[3.5em] text-[11px] leading-snug font-bold uppercase text-shadow-sky md:text-sm md:leading-relaxed"
 	>
-		{#if twin && mode === 'today'}
+		{#if !city}
+			Pick a city to find its match.
+		{:else if twin && mode === 'today'}
 			Today, this sky matches <span class="text-sun-gold">{twin.name}</span>.
 		{:else if twin}
 			Over the last year, this sky's matched <span class="text-sun-gold">{twin.name}</span>.

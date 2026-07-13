@@ -11,6 +11,8 @@
 	import StationSearch from '$lib/components/StationSearch.svelte';
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { TabSwitch } from '$lib/components/ui/switch';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { Cancel01Icon } from '@hugeicons/core-free-icons';
 	import CloudHistogram from './CloudHistogram.svelte';
 	import SkyTwin from './SkyTwin.svelte';
 
@@ -108,11 +110,6 @@
 
 	$effect(() => {
 		if (!data || citySky.pinned) return;
-		const stored = citySky.stored();
-		if (stored && data.cities[stored]) {
-			citySky.pick(stored);
-			return;
-		}
 		const loc = userGeo.loc;
 		if (loc) {
 			const near = nearestCity(loc.lat, loc.lng);
@@ -131,6 +128,13 @@
 	function select(code: string) {
 		click('open');
 		citySky.pick(code);
+	}
+
+	// Drop the highlighted city so the reader sees the whole front on its own; the
+	// graph still plots every city and a cloud-click (or the search) re-selects one.
+	function clearCity() {
+		click('select');
+		citySky.clear();
 	}
 
 	let city = $derived(selected && data ? (data.cities[selected] ?? null) : null);
@@ -152,7 +156,7 @@
 		<p class="px-5 text-center text-xs tracking-wider text-error-tint uppercase">
 			Couldn't load the city record — try again later.
 		</p>
-	{:else if !data || !city || !selected}
+	{:else if !data}
 		<div class="min-h-[560px] bg-day-sea px-5 pt-2" aria-hidden="true">
 			<div class="mx-auto max-w-2xl motion-safe:animate-pulse">
 				<div class="mb-6 h-9 w-2/3 rounded-xs bg-white/25"></div>
@@ -173,34 +177,38 @@
 		>
 			<div class="flex min-h-[110px] flex-col items-start justify-start text-left">
 				<h2 class="m-0 min-w-0 font-bold" style="font-size: clamp(20px, 3.6vw, 38px); line-height: 1.3;">
-					How cloudy <br /> has it been in
-					<StationSearch
-						{manifest}
-						{places}
-						codes={cityCodes}
-						cityFirst
-						side="bottom"
-						align="start"
-						onselect={select}
-					>
-						{#snippet trigger(props)}
-							<button
-								{...props}
-								class="block max-w-full cursor-pointer border-b-4 border-sun-gold p-0 px-1 text-left align-baseline font-bold text-ink uppercase transition-colors duration-120 [overflow-wrap:anywhere] hover:text-focus"
-							>
-								{city.name}
-								<svg
-									class="ml-0.5 inline-block [shape-rendering:crispEdges]"
-									viewBox="0 0 7 4"
-									width="13"
-									height="8"
-									aria-hidden="true"
+					{#if city}
+						How cloudy <br /> has it been in
+						<StationSearch
+							{manifest}
+							{places}
+							codes={cityCodes}
+							cityFirst
+							side="bottom"
+							align="start"
+							onselect={select}
+						>
+							{#snippet trigger(props)}
+								<button
+									{...props}
+									class="block max-w-full cursor-pointer border-b-4 border-sun-gold p-0 px-1 text-left align-baseline font-bold text-ink uppercase transition-colors duration-120 [overflow-wrap:anywhere] hover:text-focus"
 								>
-									<path d="M0 0h7v1H6v1H5v1H4v1H3V3H2V2H1V1H0z" fill="currentColor" />
-								</svg>
-							</button>
-						{/snippet}
-					</StationSearch>
+									{city.name}
+									<svg
+										class="ml-0.5 inline-block [shape-rendering:crispEdges]"
+										viewBox="0 0 7 4"
+										width="13"
+										height="8"
+										aria-hidden="true"
+									>
+										<path d="M0 0h7v1H6v1H5v1H4v1H3V3H2V2H1V1H0z" fill="currentColor" />
+									</svg>
+								</button>
+							{/snippet}
+						</StationSearch>
+					{:else}
+						How cloudy <br /> has it been across India?
+					{/if}
 				</h2>
 
 				<div class="mt-5 flex justify-start">
@@ -213,15 +221,36 @@
 					/>
 				</div>
 
-				<div class="mt-4 w-[180px] gap-2 text-left">
-					<PixelButton
-						href={`${APP_BASE}/city/${slugByCode[selected] ?? ''}`}
-						cap="paper"
-						size="xs"
-						class="text-sm!"
-					>
-						Go to {city.name}'s page →
-					</PixelButton>
+				<div class="mt-4 flex flex-wrap items-center gap-2 text-left">
+					{#if city}
+						<PixelButton
+							href={`${APP_BASE}/city/${slugByCode[selected!] ?? ''}`}
+							cap="paper"
+							size="xs"
+							class="text-sm!"
+						>
+							Go to {city.name}'s page →
+						</PixelButton>
+						<PixelButton cap="paper" size="xs" class="text-sm!" onclick={clearCity} aria-label="Clear the selected city">
+							<span class="flex items-center gap-1">
+								<HugeiconsIcon icon={Cancel01Icon} strokeWidth={2.4} size={13} />
+								Clear
+							</span>
+						</PixelButton>
+					{:else}
+						<StationSearch
+							{manifest}
+							{places}
+							codes={cityCodes}
+							cityFirst
+							side="bottom"
+							align="start"
+							onselect={select}
+						/>
+						<span class="text-xs tracking-wider text-ink/55 uppercase">
+							or tap any cloud below
+						</span>
+					{/if}
 				</div>
 			</div>
 
@@ -234,6 +263,6 @@
 			</div>
 		</header>
 
-		<CloudHistogram {data} {selected} {mode} twin={activeTwin} onselect={select} />
+		<CloudHistogram {data} selected={selected ?? ''} {mode} twin={activeTwin} onselect={select} />
 	{/if}
 </section>

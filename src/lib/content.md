@@ -18,8 +18,26 @@
 	});
 
 
+	// The intro barcode runs independently of the explorer's selection: it latches the
+	// last focused city so it stays in sync while one is picked, but keeps showing that
+	// city (or a default) when the explorer is cleared — the strip is always visible.
+	let barcodeCode = $state(null);
+	$effect(() => {
+		if (citySky.code) barcodeCode = citySky.code;
+	});
+
+	function defaultCode() {
+		if (!cities) return null;
+		let best = null;
+		for (const [code, c] of Object.entries(cities.cities)) {
+			if (!c.twin?.alltime?.code) continue;
+			if (!best || (c.pop ?? 0) > (cities.cities[best].pop ?? 0)) best = code;
+		}
+		return best;
+	}
+
 	let skyPair = $derived.by(() => {
-		const code = citySky.code;
+		const code = barcodeCode ?? defaultCode();
 		if (!code || !cities) return null;
 		const city = cities.cities[code];
 		const twinCode = city?.twin?.alltime?.code;
@@ -31,10 +49,11 @@
 
 	function shuffleTwin() {
 		if (!cities) return;
+		const cur = barcodeCode ?? defaultCode();
 		const pool = Object.keys(cities.cities).filter(
-			(c) => c !== citySky.code && cities.cities[c].twin?.alltime?.code
+			(c) => c !== cur && cities.cities[c].twin?.alltime?.code
 		);
-		if (pool.length) citySky.pick(pool[Math.floor(Math.random() * pool.length)]);
+		if (pool.length) barcodeCode = pool[Math.floor(Math.random() * pool.length)];
 	}
 
 	// Whole months spanned by the archived record, computed from the first and last
