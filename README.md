@@ -1,41 +1,26 @@
 # imd-cloud-cover
 
-Data pipeline and visualization for 'Mapping India's Clouds', a daily interactive map
-of cloud cover over India, read from the India Meteorological Department's GFS
-meteograms.
+Code and data behind 'Mapping India's Clouds', a daily interactive map of cloud cover over India. The India Meteorological Department publishes per-station GFS forecast charts (meteograms) as PNGs, and we read the cloud-cover panel back out of the pixels.
 
-## Getting Started
+## Running it
 
-The scraper in the `scraper` directory downloads the IMD meteograms daily,
-pixel-extracts the cloud-cover panel, and publishes the open dataset to the
-`data` directory. See [`scraper/README.md`](scraper/README.md).
+The frontend SvelteKit app can be run by:
 
-Frontend visualization components are in the `src` directory.
+```sh
+pnpm install
+pnpm dev
+```
 
-1. Install dependencies:
-
-   ```sh
-   pnpm install
-   ```
-
-2. Run the dev server:
-
-   ```sh
-   pnpm dev
-   ```
+The scraper that feeds it is in [`scraper/`](scraper). It runs daily on GitHub Actions, downloads every station's meteogram, extracts the cloud-cover values, and publishes the dataset.
 
 ## Dataset
 
-Daily station-wise cloud cover for ~1,245 IMD stations, published to
-[`data/`](data) as Parquet and CSV. It is model **day-0 forecast**, not
-observation. For column definitions, coverage and caveats, see
-[`data/DATA.md`](data/DATA.md).
+Daily cloud cover for ~1,245 IMD stations, in [`data/`](data) as Parquet and CSV. These are day-0 *forecast* values from the model, not observations. [`data/DATA.md`](data/DATA.md) has column definitions and the rest of the fine print.
 
 ## License
 
-The code is licensed under MIT. The data is available under ODbL.
+Code is MIT. Data is ODbL.
 
 ## AI Declaration
 
-Components of this repository, including code and documentation, were written
-with assistance from Claude AI.
+Parts of this repo (code and docs) were written with help from Claude.
