@@ -26,6 +26,8 @@
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import ArrowDown from '@lucide/svelte/icons/arrow-down';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { InformationCircleIcon } from '@hugeicons/core-free-icons';
 	import FieldNotes from '$lib/content.md';
 
 	let { data }: { data: CriticalData } = $props();
@@ -231,6 +233,7 @@
 						/>
 					</svg>
 				</PixelButton>
+
 				{#if core}
 					<StationSearch
 						manifest={core.manifest}
@@ -241,6 +244,15 @@
 						align="end"
 					/>
 				{/if}
+				<PixelButton
+					size="sm"
+					href="#field-notes"
+					aria-label="About this map"
+					style="--pad: 5px 6px"
+					onclick={() => click('open')}
+				>
+					<HugeiconsIcon icon={InformationCircleIcon} size={16} strokeWidth={2} />
+				</PixelButton>
 			</div>
 
 			{#if core && zoomed && !isPhone}

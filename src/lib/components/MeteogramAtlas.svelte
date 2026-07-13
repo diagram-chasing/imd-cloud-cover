@@ -9,6 +9,8 @@
 	import methodImg from '$lib/assets/method-meteogram.webp';
 	import * as Carousel from '$lib/components/ui/carousel/index.js';
 	import type { CarouselAPI } from '$lib/components/ui/carousel/context.js';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { Cancel01Icon } from '@hugeicons/core-free-icons';
 
 	type Rect = { x: number; y: number; w: number; h: number };
 	type Region = {
@@ -451,12 +453,13 @@
 		<button
 			type="button"
 			class={[
-				'plate-exit mx-auto mt-1 block cursor-pointer appearance-none border-0 bg-ink px-2.5 py-1.5 text-xs leading-none font-bold tracking-[0.08em] text-paper',
+				'plate-exit mx-auto mt-1 flex items-center gap-1.5 cursor-pointer appearance-none border-0 bg-ink px-2.5 py-1.5 text-xs leading-none font-bold tracking-[0.08em] text-paper',
 				!dimming && 'invisible'
 			]}
 			onclick={exitSpotlight}
 		>
-			✕ SHOW ALL
+			<HugeiconsIcon icon={Cancel01Icon} size={13} strokeWidth={2.5} aria-hidden="true" />
+			SHOW ALL
 		</button>
 	</div>
 </figure>

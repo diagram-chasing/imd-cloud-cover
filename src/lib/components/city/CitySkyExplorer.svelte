@@ -12,7 +12,7 @@
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { TabSwitch } from '$lib/components/ui/switch';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { Cancel01Icon } from '@hugeicons/core-free-icons';
+	import { Cancel01Icon, ArrowRight01Icon, ArrowDown01Icon } from '@hugeicons/core-free-icons';
 	import CloudHistogram from './CloudHistogram.svelte';
 	import SkyTwin from './SkyTwin.svelte';
 
@@ -194,15 +194,13 @@
 									class="block max-w-full cursor-pointer border-b-4 border-sun-gold p-0 px-1 text-left align-baseline font-bold text-ink uppercase transition-colors duration-120 [overflow-wrap:anywhere] hover:text-focus"
 								>
 									{city.name}
-									<svg
-										class="ml-0.5 inline-block [shape-rendering:crispEdges]"
-										viewBox="0 0 7 4"
-										width="13"
-										height="8"
+									<HugeiconsIcon
+										icon={ArrowDown01Icon}
+										size={16}
+										strokeWidth={2.5}
+										class="ml-0.5 inline-block align-middle"
 										aria-hidden="true"
-									>
-										<path d="M0 0h7v1H6v1H5v1H4v1H3V3H2V2H1V1H0z" fill="currentColor" />
-									</svg>
+									/>
 								</button>
 							{/snippet}
 						</StationSearch>
@@ -229,7 +227,10 @@
 							size="xs"
 							class="text-sm!"
 						>
-							Go to {city.name}'s page →
+							<span class="flex items-center gap-1">
+								Go to {city.name}'s page
+								<HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2.4} size={14} />
+							</span>
 						</PixelButton>
 						<PixelButton cap="paper" size="xs" class="text-sm!" onclick={clearCity} aria-label="Clear the selected city">
 							<span class="flex items-center gap-1">

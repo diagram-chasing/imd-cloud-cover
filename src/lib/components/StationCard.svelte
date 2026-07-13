@@ -7,6 +7,8 @@
 	import StationMeteogram from './StationMeteogram.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { Cancel01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons';
 
 	interface Props {
 		code: string;
@@ -81,8 +83,10 @@
 					size="icon-sm"
 					aria-label="Close"
 					class="close"
-					onclick={() => onclose?.()}>✕</Button
+					onclick={() => onclose?.()}
 				>
+					<HugeiconsIcon icon={Cancel01Icon} size={15} strokeWidth={2.5} aria-hidden="true" />
+				</Button>
 			{/if}
 		</div>
 	</header>
@@ -129,8 +133,12 @@
 			size="sm"
 			href="{base}/station/{code}"
 			class="more w-full bg-ink tracking-[0.06em] text-paper uppercase hover:bg-focus hover:text-ink"
-			>More details →</Button
 		>
+			<span class="flex items-center justify-center gap-1.5">
+				More details
+				<HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={2.5} aria-hidden="true" />
+			</span>
+		</Button>
 	</footer>
 </div>
 

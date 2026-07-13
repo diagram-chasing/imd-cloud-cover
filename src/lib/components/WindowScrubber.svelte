@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { sky } from '$lib/state/sky.svelte';
+	import PlayToggle from '$lib/components/PlayToggle.svelte';
 
 	interface Props {
 		dates: string[];
@@ -9,6 +10,24 @@
 	$effect(() => {
 		if (sky.windowDayIndex > dates.length - 1) sky.windowDayIndex = dates.length - 1;
 		if (sky.windowDayIndex < 0) sky.windowDayIndex = 0;
+	});
+
+	let reduced = $state(false);
+	$effect(() => {
+		const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+		reduced = mq.matches;
+		const on = () => (reduced = mq.matches);
+		mq.addEventListener('change', on);
+		return () => mq.removeEventListener('change', on);
+	});
+
+	// autoplay steps one day per tick, looping at the end of the window
+	$effect(() => {
+		if (!sky.playing || reduced || dates.length < 2) return;
+		const id = setInterval(() => {
+			sky.windowDayIndex = (sky.windowDayIndex + 1) % dates.length;
+		}, 900);
+		return () => clearInterval(id);
 	});
 
 	const WEEKDAY = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -29,6 +48,7 @@
 	}
 	function scrubTo(clientX: number) {
 		sky.windowDayIndex = stepFromX(clientX);
+		sky.playing = false;
 	}
 	function onpointerdown(e: PointerEvent) {
 		dragging = true;
@@ -47,9 +67,11 @@
 	function onkeydown(e: KeyboardEvent) {
 		if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
 			sky.windowDayIndex = Math.max(0, sky.windowDayIndex - 1);
+			sky.playing = false;
 			e.preventDefault();
 		} else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
 			sky.windowDayIndex = Math.min(dates.length - 1, sky.windowDayIndex + 1);
+			sky.playing = false;
 			e.preventDefault();
 		}
 	}
@@ -57,7 +79,7 @@
 	let handleX = $derived(dates.length > 1 ? (sky.windowDayIndex / (dates.length - 1)) * 100 : 0);
 </script>
 
-<div class="win flex items-center max-md:w-full">
+<div class="win flex items-center gap-2.5 max-md:w-full">
 	<div
 		class="timeline relative h-[34px] w-[min(300px,62vw)] cursor-pointer touch-none focus-visible:outline-offset-4 max-md:w-auto max-md:min-w-0 max-md:flex-auto"
 		bind:this={track}
@@ -91,4 +113,10 @@
 			style="left:{handleX}%">{current ? label(current) : ''}</span
 		>
 	</div>
+	<PlayToggle
+		playing={sky.playing}
+		disabled={reduced}
+		label="Play through the window"
+		ontoggle={() => (sky.playing = !sky.playing)}
+	/>
 </div>

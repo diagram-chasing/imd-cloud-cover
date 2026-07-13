@@ -6,6 +6,8 @@
 	import { buildMarkAtlas, MARK_VARIANTS, type Sprite } from '$lib/map/sprites';
 	import { fnv1a } from '$lib/map/hash';
 	import { coverTier, SKY, UI } from '$lib/theme';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { ArrowLeft01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons';
 
 	interface Props {
 		data: CitiesRollup;
@@ -741,9 +743,15 @@
 		class="pointer-events-none absolute inset-x-0 bottom-2 flex items-center justify-between text-xs font-bold tracking-[0.14em] text-white uppercase text-shadow-sky"
 		style="padding-inline: {MARGIN_X}px;"
 	>
-		<span>← Clear</span>
+		<span class="flex items-center gap-1">
+			<HugeiconsIcon icon={ArrowLeft01Icon} size={14} strokeWidth={2.5} aria-hidden="true" />
+			Clear
+		</span>
 		<span class="opacity-70 max-sm:hidden">{mode === 'today' ? "today's cloud cover" : 'mean cloud cover'}</span>
-		<span>Overcast →</span>
+		<span class="flex items-center gap-1">
+			Overcast
+			<HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={2.5} aria-hidden="true" />
+		</span>
 	</div>
 </div>
 

@@ -6,6 +6,8 @@
 	import groundDayUrl from '$lib/assets/ground/ground-day.png';
 	import { fetchCities } from '$lib/api/r2';
 	import { citySlugs } from '$lib/city/slug.js';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { ArrowLeft01Icon, ArrowDown01Icon } from '@hugeicons/core-free-icons';
 
 	// Sea framing above/below the land raster — mirrors TwinMap / Minimap.
 	const V_SPAN = 1.1;
@@ -50,8 +52,14 @@
 	<p class="lead">This page drifted off the map.</p>
 
 	<nav class="primary">
-		<a class="key" href="{base}/">← BACK TO THE MAP</a>
-		<a class="quiet" href="{base}/#field-notes">READ THE STORY ↓</a>
+		<a class="key" href="{base}/">
+			<HugeiconsIcon icon={ArrowLeft01Icon} size={16} strokeWidth={2.5} aria-hidden="true" />
+			BACK TO THE MAP
+		</a>
+		<a class="quiet" href="{base}/#field-notes">
+			READ THE STORY
+			<HugeiconsIcon icon={ArrowDown01Icon} size={15} strokeWidth={2.5} aria-hidden="true" />
+		</a>
 	</nav>
 
 	{#if featured.length}
@@ -133,6 +141,9 @@
 		margin: 28px 0 0;
 	}
 	.key {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
 		font-family: var(--font-display);
 		font-size: 12px;
 		letter-spacing: 0.06em;
@@ -147,6 +158,9 @@
 		color: var(--ink);
 	}
 	.quiet {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
 		font-family: var(--font-display);
 		font-size: 12px;
 		letter-spacing: 0.06em;

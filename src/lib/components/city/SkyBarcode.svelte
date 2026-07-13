@@ -3,7 +3,7 @@
 	import { coverTier } from '$lib/theme';
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { ShuffleIcon } from '@hugeicons/core-free-icons';
+	import { ShuffleIcon, ArrowRight01Icon } from '@hugeicons/core-free-icons';
 	interface Props {
 		/** Calendar dates, one per column (the rollup's `dates`). */
 		dates: string[];
@@ -71,7 +71,7 @@
 		class="mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm font-bold tracking-wide uppercase"
 	>
 		<span class="pixel-chip" style="background:{TRACK}">Clear</span>
-		<span aria-hidden="true" class="opacity-70">→</span>
+		<HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2.5} class="opacity-70" aria-hidden="true" />
 		<span class="pixel-chip text-navy" style="background:#ffffff">Overcast</span>
 	</div>
 

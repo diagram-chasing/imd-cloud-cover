@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { sky } from '$lib/state/sky.svelte';
 	import { NIGHT_STEPS } from '$lib/theme';
+	import PlayToggle from '$lib/components/PlayToggle.svelte';
 
 	const LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 	const STEPS = LABELS.length;
@@ -106,13 +107,10 @@
 			style="left:{handleX}%"
 		></span>
 	</div>
-	<button
-		class="play mt-px cursor-pointer self-start px-0.5 text-xs leading-4 tracking-[-0.1em] text-white opacity-85 text-shadow-sky hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-30"
-		aria-label={sky.playing ? 'Pause' : 'Play through the day'}
-		aria-pressed={sky.playing}
+	<PlayToggle
+		playing={sky.playing}
 		disabled={reduced}
-		onclick={() => (sky.playing = !sky.playing)}
-	>
-		{sky.playing ? '❚❚' : '▶'}
-	</button>
+		label="Play through the day"
+		ontoggle={() => (sky.playing = !sky.playing)}
+	/>
 </div>
