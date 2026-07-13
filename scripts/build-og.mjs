@@ -60,7 +60,8 @@ const summary = readView('latest/summary.json');
 // otherwise use the latest summary date.
 const date = process.env.OG_DATE || summary?.date || cities.dates?.[cities.dates.length - 1] || '';
 
-GlobalFonts.registerFromPath(resolve(FONTS, 'ShipsWhistle-Bold.otf'), 'Ships Whistle');
+// The font ships as woff/woff2 only (no otf) — register the Bold woff2.
+GlobalFonts.registerFromPath(resolve(FONTS, 'ShipsWhistle-Bold.woff2'), 'Ships Whistle');
 
 const logo = await loadImage(LOGO).catch(() => null);
 
@@ -242,7 +243,7 @@ function render(city, forecast) {
 	ctx.fillStyle = '#ffffff';
 	ctx.fillText(badge, LEFT + 14, 70);
 
-	// City name (Rough), auto-shrunk to fit the width.
+	// City name, auto-shrunk to fit the width.
 	const name = city.name.toUpperCase();
 	let nameSize = 100;
 	do {

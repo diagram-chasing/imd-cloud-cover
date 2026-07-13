@@ -177,7 +177,7 @@
 	seoDescription="A daily pixel map of cloud cover over India, read from IMD meteograms."
 	shareTitle="Mapping India's Clouds"
 	canonicalUrl={SITE_BASE}
-	shareImgPath="{SITE_BASE}/og/home.png"
+	shareImgPath="{SITE_BASE}/sharecard.jpg"
 	shareImgAlt="A pixel map of cloud cover over India"
 />
 
