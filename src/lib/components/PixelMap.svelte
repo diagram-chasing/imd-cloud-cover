@@ -39,6 +39,7 @@
 	import groundMaskUrl from '$lib/assets/ground/ground-mask.png';
 	import { buildMarkAtlas, MARK_VARIANTS } from '$lib/map/sprites';
 	import { buildQuadtree, nearest, type StationPoint } from '$lib/map/hit';
+	import { createFlights, type FlightEngine } from '$lib/map/flights';
 	import { fnv1a, jitter, mulberry32 } from '$lib/map/hash';
 	import { sky } from '$lib/state/sky.svelte';
 	import { userGeo } from '$lib/state/geo.svelte';
@@ -216,6 +217,8 @@
 	let waveLayer: Container | null = null;
 	let waveTex: Texture[] = [];
 	let waves: { s: Sprite; phase: number }[] = [];
+	let flightLayer: Container | null = null;
+	let flights: FlightEngine | null = null;
 	let quad: ReturnType<typeof buildQuadtree> | null = null;
 
 	let zoom = 1;
@@ -699,6 +702,7 @@
 		}
 		layers = layerMap;
 
+		createFlightLayer();
 		createBalloonLayer();
 		createPlacesLayer();
 
@@ -737,6 +741,7 @@
 		if (destroyed) return;
 		fillWaves();
 		fillBalloon();
+		fillFlights();
 		drawTitle(); // re-seat the title balloon in the brand row
 		styleAmbient();
 		onIdle(() => {
@@ -1116,9 +1121,28 @@
 		}
 	}
 
+	// reserve z-order slot above the cloud bands; fillFlights populates after first frame
+	function createFlightLayer() {
+		if (!camera) return;
+		flightLayer = new Container();
+		flightLayer.eventMode = 'none';
+		camera.addChild(flightLayer);
+	}
+	function fillFlights() {
+		if (!geo || !flightLayer) return;
+		flights = createFlights({
+			parent: flightLayer,
+			project: (lon, lat) => geo!.project(lon, lat),
+			worldW: geo.worldW,
+			worldH: geo.worldH,
+			reduced
+		});
+	}
+
 	function styleAmbient() {
 		const mode = skyMode(sky.timeIndex);
 		const night = mode === 'night';
+		flights?.style(night);
 		if (balloon) (balloon.c.children[0] as Sprite).tint = night ? 0x9fb0cc : 0xffffff;
 		if (shadowLayer) shadowLayer.alpha = SHADOW_ALPHA[mode];
 		const wavePal = WAVE[mode];
@@ -1268,6 +1292,7 @@
 			userPulse.alpha = 1 - g;
 		}
 		if (reduced || sky.view !== 'today') return;
+		flights?.tick(t.deltaMS);
 		const now = performance.now();
 		if (now - lastDrift > 1200) {
 			lastDrift = now;
@@ -1494,6 +1519,8 @@
 			mq.removeEventListener('change', onmq);
 			ro.disconnect();
 			window.removeEventListener('keydown', onkey);
+			flights?.destroy();
+			flights = null;
 			app?.destroy(true);
 			app = null;
 		};
