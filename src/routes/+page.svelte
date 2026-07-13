@@ -174,6 +174,7 @@
 	shareTitle="Mapping India's Clouds"
 	canonicalUrl={SITE_BASE}
 	shareImgPath="{SITE_BASE}/sharecard.jpg"
+	shareImgAnimatedPath="{SITE_BASE}/sharecard.gif"
 	shareImgAlt="A pixel map of cloud cover over India"
 />
 
@@ -217,7 +218,7 @@
 					style="--pad: 5px 6px"
 					onclick={() => map?.zoomReset()}
 				>
-							<svg
+					<svg
 						class="block [shape-rendering:crispEdges]"
 						viewBox="0 0 8 8"
 						width="16"

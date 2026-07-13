@@ -15,6 +15,9 @@
 		shareDescription?: string;
 		/** Absolute URL of the 1200×630 share image. */
 		shareImgPath: string;
+		/** Optional animated GIF variant, listed as the preferred og:image;
+		 * scrapers that don't animate fall back to the static shareImgPath. */
+		shareImgAnimatedPath?: string;
 		shareImgAlt?: string;
 		/** og:type — 'website' for tools/index pages, 'article' for stories. */
 		ogType?: 'website' | 'article';
@@ -32,6 +35,7 @@
 		shareTitle,
 		shareDescription,
 		shareImgPath,
+		shareImgAnimatedPath = '',
 		shareImgAlt = '',
 		ogType = 'website',
 		siteName = 'Diagram Chasing',
@@ -43,7 +47,15 @@
 	let ogTitle = $derived(shareTitle ?? seoTitle);
 	let ogDescription = $derived(shareDescription ?? seoDescription);
 
-	const KEYWORDS = ['India', 'clouds', 'cloud cover', 'weather', 'IMD', 'meteogram', 'data visualization'];
+	const KEYWORDS = [
+		'India',
+		'clouds',
+		'cloud cover',
+		'weather',
+		'IMD',
+		'meteogram',
+		'data visualization'
+	];
 
 	const orgLdJson = {
 		'@context': 'https://schema.org',
@@ -98,6 +110,11 @@
 	<meta property="og:site_name" content={siteName} />
 	<meta property="og:title" content={ogTitle} />
 	<meta property="og:description" content={ogDescription} />
+	{#if shareImgAnimatedPath}
+		<meta property="og:image" content={shareImgAnimatedPath} />
+		<meta property="og:image:type" content="image/gif" />
+		{#if shareImgAlt}<meta property="og:image:alt" content={shareImgAlt} />{/if}
+	{/if}
 	<meta property="og:image" content={shareImgPath} />
 	{#if shareImgAlt}<meta property="og:image:alt" content={shareImgAlt} />{/if}
 
