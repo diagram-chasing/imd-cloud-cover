@@ -57,6 +57,7 @@
 		zoomIn: () => void;
 		zoomOut: () => void;
 		zoomReset: () => void;
+		focusStation: (code: string) => { x: number; y: number } | null;
 	}>();
 	let layout = $state({
 		gutter: 0,
@@ -148,7 +149,9 @@
 
 	function selectFromSearch(code: string) {
 		click('open');
-		openStation(code);
+		// fly the map to the place and highlight it; anchor the popover over it
+		const at = map?.focusStation(code) ?? undefined;
+		openStation(code, at);
 	}
 
 	let night = $derived(skyMode(sky.timeIndex) === 'night');

@@ -1392,6 +1392,19 @@
 	let lastDrift = 0;
 	let reduced = false;
 	function tick(t: Ticker) {
+		if (camTween) {
+			camTween.t += t.deltaMS;
+			const k = Math.min(1, camTween.t / camTween.dur);
+			const e = easeInOutCubic(k);
+			const { from, to } = camTween;
+			// zoom in log space so the fly-to feels even across the scale change
+			applyCameraState({
+				zoom: from.zoom * Math.pow(to.zoom / from.zoom, e),
+				panX: from.panX + (to.panX - from.panX) * e,
+				panY: from.panY + (to.panY - from.panY) * e
+			});
+			if (k >= 1) camTween = null;
+		}
 		if (layers) {
 			for (const band of BAND_KEYS) {
 				const layer = layers[band];
@@ -1464,6 +1477,7 @@
 			pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 			c.setPointerCapture(e.pointerId);
 			userMoved = true;
+			camTween = null;
 			if (pointers.size === 1) {
 				dragging = true;
 				moved = false;
@@ -1552,6 +1566,7 @@
 		);
 	}
 	function zoomAt(clientX: number, clientY: number, factor: number) {
+		camTween = null;
 		const rect = app!.canvas.getBoundingClientRect();
 		const sx = clientX - rect.left;
 		const sy = clientY - rect.top;
@@ -1569,7 +1584,9 @@
 		applyCamera();
 		if (sky.selectedCode) sky.selectedCode = null;
 	}
-	function clampPan() {
+	// clamp a pan target for a given zoom (pure) so both the live drag and the
+	// fly-to helper share one bounds rule
+	function clampPanFor(px: number, py: number, z: number) {
 		const b = worldBBox();
 		const slack = 100;
 		const ax = (min: number, size: number, viewWorld: number, v: number) => {
@@ -1579,8 +1596,67 @@
 			}
 			return Math.min(min + size - viewWorld + slack, Math.max(min - slack, v));
 		};
-		panX = ax(b.minX, b.maxX - b.minX, vw / zoom, panX);
-		panY = ax(b.minY, b.maxY - b.minY, vh / zoom, panY);
+		return {
+			panX: ax(b.minX, b.maxX - b.minX, vw / z, px),
+			panY: ax(b.minY, b.maxY - b.minY, vh / z, py)
+		};
+	}
+	function clampPan() {
+		const c = clampPanFor(panX, panY, zoom);
+		panX = c.panX;
+		panY = c.panY;
+	}
+	function zoomBounds() {
+		const fit = containZoom();
+		const narrow = narrowLayout();
+		return { min: fit * (narrow ? 1 : 0.9), max: fit * (narrow ? 10 : 7) };
+	}
+	// world point (wx,wy) centred in the view at targetZoom, clamped to bounds
+	function cameraToCenter(wx: number, wy: number, targetZoom: number) {
+		const { min, max } = zoomBounds();
+		const z = Math.max(min, Math.min(max, targetZoom));
+		const c = clampPanFor(wx - vw / 2 / z, wy - vh / 2 / z, z);
+		return { zoom: z, panX: c.panX, panY: c.panY };
+	}
+
+	// Fly-to used by search: enough zoom to reach the finest LOD so the exact
+	// station (not a cluster bin) is the one highlighted.
+	const FOCUS_ZOOM_RATIO = 5;
+	let camTween: {
+		from: { panX: number; panY: number; zoom: number };
+		to: { panX: number; panY: number; zoom: number };
+		t: number;
+		dur: number;
+	} | null = null;
+	const easeInOutCubic = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+
+	function applyCameraState(s: { panX: number; panY: number; zoom: number }) {
+		zoom = s.zoom;
+		panX = s.panX;
+		panY = s.panY;
+		applyCamera();
+	}
+
+	// Pan/zoom the map so `code`'s station sits centred, highlight it, and return the
+	// on-screen anchor (canvas center) so the caller can seat a popover over it.
+	export function focusStation(code: string): { x: number; y: number } | null {
+		if (!geo || !app) return null;
+		const st = geo.stations.find((s) => s.code === code);
+		if (!st) return null;
+		userMoved = true;
+		sky.selectedCode = code;
+		const target = cameraToCenter(st.rpx, st.rpy, containZoom() * FOCUS_ZOOM_RATIO);
+		if (reduced) {
+			camTween = null;
+			applyCameraState(target);
+		} else {
+			camTween = { from: { panX, panY, zoom }, to: target, t: 0, dur: 620 };
+		}
+		const rect = app.canvas.getBoundingClientRect();
+		return {
+			x: rect.left + (st.rpx - target.panX) * target.zoom,
+			y: rect.top + (st.rpy - target.panY) * target.zoom
+		};
 	}
 	function zoomButton(dir: 1 | -1) {
 		userMoved = true;
