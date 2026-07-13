@@ -563,7 +563,7 @@
 		// size off whichever is wider: twin caption or city name
 		const TWIN_CAP_W = 132;
 		// narrow: both ride the top row, connect down to clouds with stems
-		const TOP_ROW = 2;
+		const TOP_ROW = 12;
 
 		const raw: LabelItem[] = [];
 

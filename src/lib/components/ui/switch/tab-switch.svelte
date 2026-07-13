@@ -72,7 +72,7 @@
 		grid-auto-flow: column;
 		grid-auto-columns: 1fr;
 		padding: 0.55em;
-		font-size: clamp(10px, 2.1vw, 16px);
+		font-size: clamp(13px, 2.1vw, 16px);
 		background: color-mix(in srgb, var(--color-navy) 84%, transparent);
 		box-shadow: 2px 2px 0 color-mix(in srgb, var(--color-navy) 35%, transparent);
 		clip-path: var(--corner);

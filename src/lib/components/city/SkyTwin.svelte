@@ -38,7 +38,7 @@
 		<TwinMap {india} {pins} />
 	</div>
 	<p
-		class="m-0 mt-2 min-h-[3.5em] text-[11px] leading-snug font-bold uppercase text-shadow-sky md:text-sm md:leading-relaxed"
+		class="m-0 mt-2 min-h-[3.5em] text-sm leading-snug font-bold uppercase text-shadow-sky md:text-sm md:leading-relaxed"
 	>
 		{#if !city}
 			Pick a city to find its match.

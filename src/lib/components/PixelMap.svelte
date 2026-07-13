@@ -85,7 +85,7 @@
 		{ bin: null, enter: 4.6 }
 	];
 	const LOD_DOWN_FACTOR = 0.9;
-	const GHOST_ALPHA = 0.1;
+	const GHOST_ALPHA = 0.4;
 	const TIER_ZOOM = [1.6, 3.2, 3.6, Infinity];
 	const BAND_OFFSET: Record<BandKey, number> = {
 		high: -TOWER_GAP,
@@ -157,7 +157,6 @@
 	let geo: Geo | null = null;
 	let camera: Container | null = null;
 	let groundSprite: Sprite | null = null;
-	// other mode loads on idle - key may be briefly absent
 	let groundTex: Partial<Record<'day' | 'night', Texture>> | null = null;
 	let skyGfx: Graphics | null = null;
 
@@ -192,17 +191,12 @@
 	let lods: Lod[] = [];
 	let lodIndex = -1;
 	let maxBins = 0;
-	// finest LOD (~1245 marks) built lazily on first zoom-in
 	let finestBuilt = false;
-	// guards against callbacks firing after teardown
 	let destroyed = false;
-	// Pixi rasterizes each Text into a texture using whatever font is available at
-	// build time — so text built before 'Ships Whistle' loads bakes the fallback
-	// glyphs and keeps them until a reload warms the cache. Gate all text on this.
+
 	let fontsReady = false;
 	const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
-	// The Pixi ticker runs every frame, so the page may never go idle — always pass a
-	// timeout so deferred work (place labels, off-mode ground) can't be starved forever.
+
 	const onIdle = (cb: () => void, timeout = 2000) => {
 		const w = window as unknown as {
 			requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void;
@@ -256,8 +250,7 @@
 		return { minX: minX * gc, maxX: (maxX + 1) * gc, minY: minY * gc, maxY: (maxY + 1) * gc };
 	}
 
-	// Integral image of "opaque" cells (land or shallow coast ring) so any rectangle's
-	// land coverage is an O(1) lookup — used to place the title where it hides the least map.
+
 	let landSAT: Uint32Array | null = null;
 	function buildLandSAT() {
 		if (!geo) return;
@@ -273,7 +266,6 @@
 		}
 		landSAT = sat;
 	}
-	// fraction of the world-space rect covered by land; off-grid area counts as open (0)
 	function landFracInRect(x0: number, y0: number, x1: number, y1: number): number {
 		if (!landSAT || !geo) return 1;
 		const { cols, rows, groundScale: gc } = geo;
@@ -700,7 +692,6 @@
 		camera.addChild(titleGroup);
 	}
 
-	// grow pools to target; coarse count at first paint, per-station count on zoom-in
 	function growPools(target: number) {
 		if (!layers || !shadowLayer) return;
 		for (let k = shadowPool.length; k < target; k++) {
@@ -724,9 +715,7 @@
 		}
 	}
 
-	// Build place labels once — only after fonts land, so their textures (and the
-	// plate widths derived from them) are measured with the real typeface. Called
-	// from both the idle prefetch and the font-ready handler; whichever wins builds.
+
 	function buildPlaces() {
 		if (destroyed || !app || !fontsReady || placeMarkers.length) return;
 		fillPlaces();
@@ -737,8 +726,7 @@
 	function markFontsReady() {
 		if (fontsReady || destroyed) return;
 		fontsReady = true;
-		// re-rasterize the title (drawTitle re-sets style, dirtying the texture) and
-		// build the deferred place labels now that the real glyphs are available.
+
 		if (app) {
 			drawTitle();
 			buildPlaces();
@@ -747,9 +735,7 @@
 
 	async function init() {
 		if (!host) return;
-		// font off critical path; text waits for it (all hidden at the start view).
-		// Await BOTH weights — 400 for labels, 700 for the title/brand/meta — and cap
-		// the wait so a slow or failed font never keeps the map's text from rendering.
+
 		Promise.race([
 			Promise.allSettled([
 				document.fonts.load("400 10px 'Ships Whistle'"),
@@ -758,7 +744,6 @@
 			new Promise((r) => setTimeout(r, 2500))
 		]).then(markFontsReady);
 
-		// spin up WebGL immediately un-awaited; `webgl` preference skips async WebGPU probe
 		const application = new Application();
 		const appReady = application
 			.init({
@@ -775,7 +760,6 @@
 			);
 
 		const atlas = buildMarkAtlas(MARK_CELL);
-		// untrack: plain read would register sky.timeIndex as dep and tear down the Pixi app on first scrub
 		const mode = untrack(() => skyMode(sky.timeIndex));
 		const [mask, groundNow] = await Promise.all([
 			loadGroundMask(groundMaskUrl).catch(() => undefined),
@@ -869,7 +853,6 @@
 			if (!destroyed && !userMoved) fitCamera();
 		});
 
-		// yield after first frame; places wait for idle (hidden until zoom-in)
 		await nextFrame();
 		if (destroyed) return;
 		fillWaves();
@@ -1011,7 +994,6 @@
 		return [19, 16, 13, 11][tier] ?? 11;
 	}
 
-	// reserve z-order slot; fillPlaces builds markers on idle
 	function createPlacesLayer() {
 		if (!camera) return;
 		placesLayer = new Container();
@@ -1619,8 +1601,7 @@
 		return { zoom: z, panX: c.panX, panY: c.panY };
 	}
 
-	// Fly-to used by search: enough zoom to reach the finest LOD so the exact
-	// station (not a cluster bin) is the one highlighted.
+	// Fly-to used by search
 	const FOCUS_ZOOM_RATIO = 5;
 	let camTween: {
 		from: { panX: number; panY: number; zoom: number };
@@ -1637,8 +1618,6 @@
 		applyCamera();
 	}
 
-	// Pan/zoom the map so `code`'s station sits centred, highlight it, and return the
-	// on-screen anchor (canvas center) so the caller can seat a popover over it.
 	export function focusStation(code: string): { x: number; y: number } | null {
 		if (!geo || !app) return null;
 		const st = geo.stations.find((s) => s.code === code);

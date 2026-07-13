@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Forecast } from '$lib/types';
 	import { UI, CLOUD, type BandKey } from '$lib/theme';
+	import { fade } from 'svelte/transition';
 
 	interface Props {
 		forecast: Forecast | null;
@@ -58,6 +59,8 @@
 		return out;
 	});
 
+	let loading = $derived(!forecast || !forecast.data.length);
+
 	let currentIso = $derived.by<string | null>(() => {
 		if (!today || !ticks.length) return null;
 		const hit = ticks.find((t) => t.iso >= today);
@@ -96,13 +99,29 @@
 		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 		ctx.imageSmoothingEnabled = false;
 
+		const bandH = H / 3;
+
 		ctx.fillStyle = UI.accent;
 		ctx.fillRect(0, 0, W, H);
-		if (!fc || !fc.data.length) return;
+
+		// Band separators — drawn in every state so the empty skeleton already reads as
+		// the three-band chart and the fill just paints in when the forecast arrives.
+		ctx.fillStyle = 'rgba(255,255,255,0.5)';
+		ctx.fillRect(0, Math.round(bandH), W, 1);
+		ctx.fillRect(0, Math.round(bandH * 2), W, 1);
+
+		if (!fc || !fc.data.length) {
+			// Faint dotted baseline in each band as a placeholder footprint.
+			ctx.fillStyle = 'rgba(255,255,255,0.09)';
+			for (let band = 0; band < 3; band++) {
+				const y = Math.round((band + 1) * bandH - CELL);
+				for (let x = 0; x < W; x += CELL * 2) ctx.fillRect(x, y, CELL, CELL);
+			}
+			return;
+		}
 
 		const cols = Math.max(1, Math.round(W / CELL));
 		const cw = W / cols;
-		const bandH = H / 3;
 
 		const GUTTER = CELL;
 		const effH = bandH - GUTTER;
@@ -160,6 +179,19 @@
 			aria-label="10-day cloud-cover forecast for this station"
 			class="block h-[70px] w-full shadow-[0_0_0_2px] shadow-ink [image-rendering:pixelated]"
 		></canvas>
+		{#if loading}
+			<div
+				class="pointer-events-none absolute inset-0 flex flex-col motion-safe:animate-pulse"
+				aria-hidden="true"
+				out:fade={{ duration: 260 }}
+			>
+				{#each KEYS as k (k)}
+					<div class="flex flex-1 items-end px-px pb-px">
+						<span class="h-1/3 w-full bg-white/12"></span>
+					</div>
+				{/each}
+			</div>
+		{/if}
 		<div class="band-tags pointer-events-none absolute inset-0 flex flex-col" aria-hidden="true">
 			<div class="flex flex-1 items-start justify-end pt-[3px] pr-[5px]">
 				<span class="bg-paper/78 px-1 py-px text-xs leading-none tracking-[0.06em] text-ink"
@@ -178,8 +210,9 @@
 			</div>
 		</div>
 	</div>
-	{#if ticks.length}
-		<div class="axis relative mt-[5px] h-5" aria-hidden="true">
+	<!-- Axis height is always reserved so the row never appears late and shifts the layout. -->
+	<div class="axis relative mt-[5px] h-5" aria-hidden="true">
+		{#if ticks.length}
 			{#each ticks as t (t.pct)}
 				<div
 					class="tick absolute top-0 flex -translate-x-1/2 flex-col items-center gap-0.5 first:translate-x-0 first:items-start"
@@ -199,6 +232,15 @@
 					>
 				</div>
 			{/each}
-		</div>
-	{/if}
+		{:else if loading}
+			<div class="flex justify-between motion-safe:animate-pulse" out:fade={{ duration: 260 }}>
+				{#each Array(11) as _, i (i)}
+					<div class="flex flex-col items-center gap-0.5">
+						<span class="h-[3px] w-px bg-ink opacity-25"></span>
+						<span class="h-3 w-3.5 bg-ink/10"></span>
+					</div>
+				{/each}
+			</div>
+		{/if}
+	</div>
 </div>

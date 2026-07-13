@@ -11,6 +11,7 @@
 	import StationSearch from '$lib/components/StationSearch.svelte';
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { TabSwitch } from '$lib/components/ui/switch';
+	import { fade } from 'svelte/transition';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Cancel01Icon, ArrowRight01Icon, ArrowDown01Icon } from '@hugeicons/core-free-icons';
 	import CloudHistogram from './CloudHistogram.svelte';
@@ -157,113 +158,146 @@
 			Couldn't load the city record — try again later.
 		</p>
 	{:else if !data}
-		<div class="min-h-[560px] bg-day-sea px-5 pt-2" aria-hidden="true">
-			<div class="mx-auto max-w-2xl motion-safe:animate-pulse">
-				<div class="mb-6 h-9 w-2/3 rounded-xs bg-white/25"></div>
-				<div class="mb-8 h-8 w-40 rounded-xs bg-white/15"></div>
-				<div class="flex items-end gap-1.5">
-					{#each Array(28) as _, i (i)}
-						<div
-							class="flex-1 rounded-xs bg-white/12"
-							style="height: {40 + ((i * 37) % 120)}px"
-						></div>
-					{/each}
+		<!-- Skeleton mirrors the loaded layout box-for-box. The twin-map box (right) drives
+		     the header height via the same aspect ratio, and the histogram uses the same
+		     fixed height, so swapping in the real content causes zero layout shift. -->
+		<div class="motion-safe:animate-pulse" aria-hidden="true">
+			<header
+				class="mx-auto mb-7 grid max-w-2xl grid-cols-[minmax(0,1fr)_auto] items-stretch gap-x-6 gap-y-6 px-5 md:items-center md:gap-x-8"
+			>
+				<div class="flex min-h-[110px] flex-col items-start justify-start">
+					<div class="w-full space-y-2.5">
+						<div class="h-6 w-4/5 rounded-xs bg-ink/10 md:h-8"></div>
+						<div class="h-6 w-3/5 rounded-xs bg-ink/10 md:h-8"></div>
+					</div>
+					<div class="mt-5 h-9 w-40 rounded-xs bg-ink/10"></div>
+					<div class="mt-4 flex gap-2">
+						<div class="h-8 w-28 rounded-xs bg-ink/10"></div>
+						<div class="h-8 w-20 rounded-xs bg-ink/10"></div>
+					</div>
 				</div>
-			</div>
+
+				<div class="flex md:block md:self-end">
+					<div
+						class="flex bg-day-sea p-2.5 shadow-[3px_3px_0_rgba(11,29,58,0.35)] md:block md:px-4 md:pt-4 md:pb-3 md:shadow-[4px_4px_0_rgba(11,29,58,0.35)]"
+					>
+						<div class="w-[132px] md:w-[180px]">
+							<div class="w-full bg-white/10" style="aspect-ratio: 1024 / 1194;"></div>
+							<div class="mt-2 min-h-[3.5em] space-y-1.5 text-[11px] md:text-sm">
+								<div class="h-3 w-full rounded-xs bg-white/15"></div>
+								<div class="h-3 w-2/3 rounded-xs bg-white/15"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</header>
+
+			<div class="h-[320px] w-full bg-day-sea sm:h-[400px]"></div>
 		</div>
 	{:else}
-		<header
-			class="mx-auto mb-7 grid max-w-2xl grid-cols-[minmax(0,1fr)_auto] items-stretch gap-x-6 gap-y-6 px-5 md:items-center md:gap-x-8"
-		>
-			<div class="flex min-h-[110px] flex-col items-start justify-start text-left">
-				<h2 class="m-0 min-w-0 font-bold" style="font-size: clamp(20px, 3.6vw, 38px); line-height: 1.3;">
-					{#if city}
-						How cloudy <br /> has it been in
-						<StationSearch
-							{manifest}
-							{places}
-							codes={cityCodes}
-							cityFirst
-							side="bottom"
-							align="start"
-							onselect={select}
-						>
-							{#snippet trigger(props)}
-								<button
-									{...props}
-									class="block max-w-full cursor-pointer border-b-4 border-sun-gold p-0 px-1 text-left align-baseline font-bold text-ink uppercase transition-colors duration-120 [overflow-wrap:anywhere] hover:text-focus"
-								>
-									{city.name}
-									<HugeiconsIcon
-										icon={ArrowDown01Icon}
-										size={16}
-										strokeWidth={2.5}
-										class="ml-0.5 inline-block align-middle"
-										aria-hidden="true"
-									/>
-								</button>
-							{/snippet}
-						</StationSearch>
-					{:else}
-						How cloudy <br /> has it been across India?
-					{/if}
-				</h2>
+		<div in:fade={{ duration: 220 }}>
+			<header
+				class="mx-auto mb-7 grid max-w-2xl grid-cols-[minmax(0,1fr)_auto] items-stretch gap-x-6 gap-y-6 px-5 md:items-center md:gap-x-8"
+			>
+				<div class="flex min-h-[110px] flex-col items-start justify-start text-left">
+					<h2
+						class="m-0 min-w-0 font-bold"
+						style="font-size: clamp(24px, 3.6vw, 38px); line-height: 1.3;"
+					>
+						{#if city}
+							How cloudy <br /> has it been in
+							<StationSearch
+								{manifest}
+								{places}
+								codes={cityCodes}
+								cityFirst
+								side="bottom"
+								align="start"
+								onselect={select}
+							>
+								{#snippet trigger(props)}
+									<button
+										{...props}
+										class="block max-w-40 cursor-pointer truncate overflow-x-clip border-b-4 border-sun-gold p-0 px-1 text-left align-baseline font-bold text-ink uppercase transition-colors duration-120 hover:text-focus md:max-w-full"
+									>
+										{city.name}
+										<HugeiconsIcon
+											icon={ArrowDown01Icon}
+											size={16}
+											strokeWidth={2.5}
+											class="ml-0.5 inline-block align-middle"
+											aria-hidden="true"
+										/>
+									</button>
+								{/snippet}
+							</StationSearch>
+						{:else}
+							How cloudy <br /> has it been across India?
+						{/if}
+					</h2>
 
-				<div class="mt-5 flex justify-start">
-					<TabSwitch
-						options={[
-							{ value: 'overall', label: 'Overall' },
-							{ value: 'today', label: 'Today' }
-						]}
-						bind:value={mode}
-					/>
-				</div>
-
-				<div class="mt-4 flex flex-wrap items-center gap-2 text-left">
-					{#if city}
-						<PixelButton
-							href={`${APP_BASE}/city/${slugByCode[selected!] ?? ''}`}
-							cap="paper"
-							size="xs"
-							class="text-sm!"
-						>
-							<span class="flex items-center gap-1">
-								Go to {city.name}'s page
-								<HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2.4} size={14} />
-							</span>
-						</PixelButton>
-						<PixelButton cap="paper" size="xs" class="text-sm!" onclick={clearCity} aria-label="Clear the selected city">
-							<span class="flex items-center gap-1">
-								<HugeiconsIcon icon={Cancel01Icon} strokeWidth={2.4} size={13} />
-								Clear
-							</span>
-						</PixelButton>
-					{:else}
-						<StationSearch
-							{manifest}
-							{places}
-							codes={cityCodes}
-							cityFirst
-							side="bottom"
-							align="start"
-							onselect={select}
+					<div class="mt-5 flex justify-start">
+						<TabSwitch
+							options={[
+								{ value: 'overall', label: 'Overall' },
+								{ value: 'today', label: 'Today' }
+							]}
+							bind:value={mode}
 						/>
-						<span class="text-xs tracking-wider text-ink/55 uppercase">
-							or tap any cloud below
-						</span>
-					{/if}
-				</div>
-			</div>
+					</div>
 
-			<div class="flex md:block md:self-end">
-				<div
-					class="flex bg-day-sea p-2.5 shadow-[3px_3px_0_rgba(11,29,58,0.35)] md:block md:px-4 md:pt-4 md:pb-3 md:shadow-[4px_4px_0_rgba(11,29,58,0.35)]"
-				>
-					<SkyTwin {city} code={selected} {mode} {data} {india} stations={manifest.stations} />
+					<div class="mt-4 flex flex-wrap items-center gap-2 text-left">
+						{#if city}
+							<PixelButton
+								href={`${APP_BASE}/city/${slugByCode[selected!] ?? ''}`}
+								cap="paper"
+								size="xs"
+								class="text-sm!"
+							>
+								<span class="flex items-center gap-1">
+									{city.name} page
+									<HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2.4} size={14} />
+								</span>
+							</PixelButton>
+							<PixelButton
+								cap="paper"
+								size="xs"
+								class="text-sm!"
+								onclick={clearCity}
+								aria-label="Clear the selected city"
+							>
+								<span class="flex items-center gap-1">
+									<HugeiconsIcon icon={Cancel01Icon} strokeWidth={2.4} size={13} />
+									Clear
+								</span>
+							</PixelButton>
+						{:else}
+							<StationSearch
+								{manifest}
+								{places}
+								codes={cityCodes}
+								cityFirst
+								side="bottom"
+								align="start"
+								onselect={select}
+							/>
+							<span class="text-xs tracking-wider text-ink/55 uppercase">
+								or tap any cloud below
+							</span>
+						{/if}
+					</div>
 				</div>
-			</div>
-		</header>
 
-		<CloudHistogram {data} selected={selected ?? ''} {mode} twin={activeTwin} onselect={select} />
+				<div class="flex md:block md:self-end">
+					<div
+						class="flex bg-day-sea p-2.5 shadow-[3px_3px_0_rgba(11,29,58,0.35)] md:block md:px-4 md:pt-4 md:pb-3 md:shadow-[4px_4px_0_rgba(11,29,58,0.35)]"
+					>
+						<SkyTwin {city} code={selected} {mode} {data} {india} stations={manifest.stations} />
+					</div>
+				</div>
+			</header>
+
+			<CloudHistogram {data} selected={selected ?? ''} {mode} twin={activeTwin} onselect={select} />
+		</div>
 	{/if}
 </section>
