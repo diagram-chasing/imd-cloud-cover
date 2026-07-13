@@ -345,8 +345,7 @@
 		ctx.fillRect(fx + fw - px, fy, px, fh);
 	}
 
-	// Dotted pixel leader from a top-row label down to its cloud. `pts` is an
-	// axis-aligned polyline (an elbow); each dot gets a navy backing for contrast.
+	// dotted stem from label to cloud; each dot gets a navy backing
 	function drawStem(ctx: CanvasRenderingContext2D, pts: [number, number][], color: string) {
 		let idx = 0;
 		for (let s = 0; s < pts.length - 1; s++) {
@@ -376,7 +375,6 @@
 		ctx.scale(dpr, dpr);
 		ctx.imageSmoothingEnabled = false;
 
-		// Flat daylight blue — the map's own day sky.
 		ctx.fillStyle = SKY.day.top;
 		ctx.fillRect(0, 0, width, height);
 
@@ -456,8 +454,7 @@
 		}
 
 
-		// Narrow: the top-row labels + their stems carry the twin link, so skip the
-		// cloud-to-cloud arc — two elbowed lines in one spot reads as clutter.
+		// narrow: stems carry the twin link; arc skipped (two elbowed lines reads as clutter)
 		if (!narrow && arcCells.length) {
 			const n = Math.round(arcCells.length * arcP);
 			ctx.fillStyle = 'rgba(11,29,58,0.5)';
@@ -475,7 +472,6 @@
 		}
 
 
-		// Narrow: connect each top-row label back down to its cloud with a leader.
 		if (narrow && !moving) {
 			for (const l of labels) {
 				if (l.anchorX == null || l.anchorY == null) continue;
@@ -525,10 +521,7 @@
 	let twinName = $derived(twin ? (data.cities[twin.code]?.name ?? null) : null);
 	let clampPad = $derived(narrow ? 54 : 70);
 
-	// Keep any absolutely-positioned tag fully inside the plot: clamp its center by
-	// its own half-width so a long city name (e.g. THIRUVANANTHAPURAM) can't spill
-	// past the edge — which otherwise forces horizontal page scroll on phones. Names
-	// wider than the plot itself get capped by `tagMax` + ellipsis in the markup.
+	// clamp tag center so long names (THIRUVANANTHAPURAM) don't cause horizontal scroll
 	const TAG_EDGE = 8;
 	function clampCenter(cx: number, w: number): number {
 		const half = Math.min(w, Math.max(0, width - 2 * TAG_EDGE)) / 2;
@@ -538,10 +531,7 @@
 
 	let ghostLabel = $derived(mode === 'today' ? 'overall' : 'today');
 
-	// All persistent labels share one layout pass so they never sit on top of one
-	// another: the chosen city (the hero) and the "most similar sky" twin anchor to
-	// their own clouds, the mode captions float on their curves, and lower-priority
-	// labels get nudged upward until they clear anything already placed.
+	// single layout pass; hero + twin anchor to clouds, others nudge upward until clear
 	interface LabelItem {
 		key: string;
 		kind: 'sel' | 'twin' | 'end';
@@ -568,17 +558,13 @@
 		const H_TWIN = narrow ? 30 : 34;
 		const H_END = 18;
 		const cw = (s: string, per: number) => s.length * per;
-		// The twin box is as wide as its "MOST SIMILAR SKY" caption, not the city
-		// name — size the box off whichever is wider so the collision math is honest.
+		// size off whichever is wider: twin caption or city name
 		const TWIN_CAP_W = 132;
-		// Narrow: hero + twin ride this fixed row in the top padding, clear of the
-		// distribution band, and connect down to their clouds with a drawn stem.
+		// narrow: both ride the top row, connect down to clouds with stems
 		const TOP_ROW = 2;
 
 		const raw: LabelItem[] = [];
 
-		// Chosen city — the hero. On wide screens it rests just above its own cloud;
-		// on narrow it rides the top row and points down with a stem.
 		if (selectedBox) {
 			const w = cw(selectedBox.name, 12) + 24;
 			const cloudTop = selectedBox.y - selectedBox.h / 2;
@@ -590,8 +576,6 @@
 			});
 		}
 
-		// Twin — the secondary "most similar sky". Pinned above its own cloud on wide
-		// screens, or to the top row (with a stem) on narrow.
 		if (arc && twin && twinName) {
 			const tb = arc.twinBox;
 			const w = Math.max(TWIN_CAP_W, cw(twinName, 9)) + 16;
@@ -604,7 +588,6 @@
 			});
 		}
 
-		// Mode captions (today / overall) floating on their curves.
 		const at = (arr: number[], t: number) => ({ x: MARGIN_X + t * innerW, y: yFor(curveAt(arr, t)) });
 		const live = at(lv, 0.42);
 		raw.push({ key: 'end-live', kind: 'end', prio: 2, label: mode, solid: true,
@@ -624,8 +607,7 @@
 					top + a.h + 4 > p.top
 			);
 
-		// Narrow: hero + twin share the top row, so resolve their overlap sideways
-		// (pushing them apart) rather than stacking them down into the band.
+		// narrow: resolve hero/twin overlap sideways, not downward into the band
 		if (narrow) {
 			const row = raw
 				.filter((r) => r.kind === 'sel' || r.kind === 'twin')
@@ -642,8 +624,7 @@
 					ax = mid - minSep / 2;
 					bx = mid + minSep / 2;
 				}
-				// Slide the pair as a rigid unit to keep both inside the bounds
-				// without reintroducing overlap.
+				// slide as a rigid unit to keep both in bounds
 				if (ax < lo) {
 					bx += lo - ax;
 					ax = lo;
@@ -779,8 +760,6 @@
 		text-transform: uppercase;
 	}
 
-	/* The chosen city is the hero of the chart: bigger, chunkier box, brighter
-		shadow than the secondary "most similar sky" twin label. */
 	.city-tag {
 		padding: 6px 11px;
 		font-size: 16px;

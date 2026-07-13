@@ -66,11 +66,11 @@ function cirrusPattern(rand: () => number, w: number): Pattern {
 	let drew = false;
 	while (x < w) {
 		if (rand() < 0.62) {
-			const len = 1 + Math.floor(rand() * 2); // 1-2 cell dash — shorter wisps
+			const len = 1 + Math.floor(rand() * 2); // 1-2 cell dash
 			const y = rand() < 0.5 ? 0 : 1;
 			for (let i = 0; i < len && x + i < w; i++) grid[y][x + i] = 1;
 			drew = true;
-			x += len + 2 + Math.floor(rand() * 2); // wider gap before the next wisp
+			x += len + 2 + Math.floor(rand() * 2);
 		} else {
 			x += 1 + Math.floor(rand() * 2);
 		}
@@ -83,7 +83,7 @@ export function makePattern(band: BandKey, tier: number, variant: number): Patte
 	const rand = mulberry32(fnv1a(`${band}:${tier}:${variant}`));
 	if (band === 'high') return cirrusPattern(rand, HIGH_W[tier - 1]);
 	const [w, maxH] = SIZES[band][tier - 1];
-	const rough = band === 'low' ? 1.5 : 0.9; // cumulus is lumpier than the alto sheet
+	const rough = band === 'low' ? 1.5 : 0.9; // cumulus lumpier than the alto sheet
 	return profileToPattern(puffProfile(rand, w, maxH, rough), maxH);
 }
 

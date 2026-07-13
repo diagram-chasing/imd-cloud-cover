@@ -1,14 +1,4 @@
-// Build one 1200×630 OG share image per city into static/og/{slug}.png.
-//
-// Runs in the daily build after bake-data (see package.json "build"), so the
-// images are exactly as fresh as the data. Each card is the city name + date over
-// a recreated meteogram panel — the same chunky cloud chart StationMeteogram.svelte
-// draws in the browser, ported here to node canvas. Minimal by design: it's a
-// share thumbnail, not the page.
-//
-// Missing/unreadable data degrades gracefully (empty flat-sky panel, or a full
-// skip when there's no cities view at all) — it must never fail the build.
-//
+// Build one 1200x630 OG image per city. Runs after bake-data; degrades gracefully on missing data.
 // Usage: node scripts/build-og.mjs
 
 import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -22,8 +12,7 @@ const OUT = resolve(ROOT, 'static/og');
 const FONTS = resolve(ROOT, 'src/lib/assets/fonts');
 const LOGO = resolve(ROOT, 'src/lib/assets/images/log.png');
 
-// Palette — duplicated from src/lib/theme.ts / layout.css (importing TS from node
-// isn't worth a loader; the repo already duplicates constants for bake scripts).
+// palette duplicated from theme.ts (no TS loader in node scripts)
 const INK = '#0B1D3A';
 const PAPER = '#FDFBF4';
 const UI_ACCENT = '#399DE1'; // flat sky behind the clouds
@@ -56,18 +45,17 @@ if (!cities?.cities) {
 	process.exit(0);
 }
 const summary = readView('latest/summary.json');
-// OG_DATE overrides the forecast date (handy for regenerating an older day locally);
-// otherwise use the latest summary date.
+// OG_DATE overrides forecast date for local regeneration
 const date = process.env.OG_DATE || summary?.date || cities.dates?.[cities.dates.length - 1] || '';
 
-// The font ships as woff/woff2 only (no otf) — register the Bold woff2.
+// font ships as woff2 only (no otf)
 GlobalFonts.registerFromPath(resolve(FONTS, 'ShipsWhistle-Bold.woff2'), 'Ships Whistle');
 
 const logo = await loadImage(LOGO).catch(() => null);
 
 mkdirSync(OUT, { recursive: true });
 
-// --- meteogram draw (ported from StationMeteogram.svelte) --------------------
+// --- meteogram draw (ported from StationMeteogram.svelte) ---
 function hexRgb(hex) {
 	const h = hex.replace('#', '');
 	return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
@@ -90,7 +78,6 @@ function colValue(fc, key, c, cols) {
 	}
 	return k ? s / k / 100 : 0;
 }
-// Day-boundary ticks, as in the component.
 function dayTicks(fc) {
 	const n = fc.data.length;
 	const out = [];
@@ -113,18 +100,16 @@ function dayTicks(fc) {
 	return out;
 }
 
-// Draw the meteogram into (px,py,pw,ph): flat sky, the three cloud bands, day
-// gridlines with the current day marked, a top divider, and HIGH/MID/LOW tags.
-// It fills its rect flush — the card border frames it on three sides.
+// draws sky, three cloud bands, day gridlines, and HIGH/MID/LOW tags into (px,py,pw,ph)
 function drawMeteogram(ctx, fc, px, py, pw, ph, today) {
 	ctx.save();
-	ctx.fillStyle = UI_ACCENT; // flat sky
+	ctx.fillStyle = UI_ACCENT;
 	ctx.fillRect(px, py, pw, ph);
 
 	const ticks = fc && fc.data?.length ? dayTicks(fc) : [];
 
 	if (fc && fc.data?.length) {
-		const CELL = 18; // chunky cells, scaled up for the big panel
+		const CELL = 18;
 		const cols = Math.max(1, Math.round(pw / CELL));
 		const cw = pw / cols;
 		const bandH = ph / 3;
@@ -154,23 +139,19 @@ function drawMeteogram(ctx, fc, px, py, pw, ph, today) {
 			}
 		});
 
-		// Day gridlines.
 		ctx.fillStyle = 'rgba(255,255,255,0.18)';
 		for (const t of ticks) {
 			if (t.pct <= 0) continue;
 			ctx.fillRect(px + Math.round((t.pct / 100) * pw), py, 1, ph);
 		}
-		// Band dividers at 1/3 and 2/3.
 		ctx.fillStyle = 'rgba(255,255,255,0.5)';
 		ctx.fillRect(px, py + Math.round(bandH), pw, 1);
 		ctx.fillRect(px, py + Math.round(bandH * 2), pw, 1);
 	}
 
-	// Top divider (the halfway line) meeting the card border on both ends.
 	ctx.fillStyle = INK;
 	ctx.fillRect(px, py - 1, pw, 2);
 
-	// HIGH/MID/LOW tags, pinned top-right of each third.
 	ctx.font = '20px "Ships Whistle"';
 	ctx.textAlign = 'right';
 	ctx.textBaseline = 'top';
@@ -208,8 +189,7 @@ function render(city, forecast) {
 	const LEFT = 54;
 	const RIGHT = W - 54;
 
-	// Date at the top of the right column; the wordmark pushed to its foot, so the
-	// two bookend the header rather than sitting stuck together.
+	// date top-right, wordmark bottom-right: bookend the header
 	ctx.font = '25px "Ships Whistle"';
 	ctx.textAlign = 'right';
 	ctx.textBaseline = 'alphabetic';
@@ -232,7 +212,6 @@ function render(city, forecast) {
 		ctx.drawImage(logo, boxX + padX, boxY + padY, lw, lh);
 	}
 
-	// Badge above the name: the story title on a sky-blue chip, white bold.
 	const badge = "MAPPING INDIA'S CLOUDS";
 	ctx.font = '24px "Ships Whistle"';
 	ctx.textAlign = 'left';
@@ -243,7 +222,6 @@ function render(city, forecast) {
 	ctx.fillStyle = '#ffffff';
 	ctx.fillText(badge, LEFT + 14, 70);
 
-	// City name, auto-shrunk to fit the width.
 	const name = city.name.toUpperCase();
 	let nameSize = 100;
 	do {
@@ -254,14 +232,13 @@ function render(city, forecast) {
 	ctx.fillStyle = INK;
 	ctx.fillText(name, LEFT, 208);
 
-	// State, with breathing room under the name.
 	if (city.state) {
 		ctx.font = '31px "Ships Whistle"';
 		ctx.fillStyle = 'rgba(11,29,58,0.65)';
 		ctx.fillText(city.state.toUpperCase(), LEFT, 252);
 	}
 
-	// Meteogram fills the bottom half, flush inside the border (no side/bottom pad).
+	// meteogram fills the bottom half
 	drawMeteogram(ctx, forecast, 20, H / 2, W - 40, H / 2 - 20, date);
 
 	return canvas;
@@ -285,9 +262,7 @@ for (const [code, city] of Object.entries(cities.cities)) {
 }
 console.log(`build-og: wrote ${ok} images to static/og (${empty} with no forecast for ${date}).`);
 
-// Default share card (og/home.png): used by the homepage and by station pages,
-// which have no per-place card of their own. Titled "India" over a representative
-// meteogram, so the fallback still looks like the product. Never fails the build.
+// home.png: fallback card for homepage and station pages
 try {
 	const heroCode = Object.keys(cities.cities)[0];
 	const heroForecast = date && heroCode ? readView(`${date}/${heroCode}-meteogram.json`) : null;

@@ -1,14 +1,6 @@
-// Fetch helpers for the pipeline's static JSON.
-//
-// Core views (manifest, latest, summary, rollups) AND the per-station tail
-// (history/{code}.json plus the latest date's forecast) are baked into the deploy
-// by scripts/bake-data.mjs and served same-origin from /baked — the daily workflow
-// rebuilds the site after each scrape, so they're exactly as fresh as the data and
-// a station page renders without touching the Worker. The tail fetches fall back to
-// the remote endpoint (VITE_R2_PUBLIC_URL, a Worker over R2) for anything unbaked
-// (dev --core-only builds, older dates). Only meta/dates.json and the raw meteogram
-// .webp click-through links stay remote. With no endpoint configured, everything
-// falls back to the committed /sample fixtures so a fresh clone still runs.
+// Core views are baked into /baked (same-origin, fresh after each scrape).
+// Tail fetches (history, forecast) fall back to the remote Worker for anything unbaked.
+// No endpoint configured -> /sample fixtures so a fresh clone still runs.
 import { base } from '$app/paths';
 import type {
 	StationsManifest,
@@ -20,8 +12,7 @@ import type {
 } from '$lib/types';
 
 const REMOTE = (import.meta.env.VITE_R2_PUBLIC_URL || '').replace(/\/$/, '');
-// Same-origin local views are served under the app's base path (the site lives at
-// a subpath on the studio domain), so they must carry `base`. REMOTE is absolute.
+// local views live under `base` (site is a subpath); REMOTE is absolute
 const BASE = REMOTE || `${base}/sample`;
 const CORE = REMOTE ? `${base}/baked` : `${base}/sample`;
 
@@ -31,7 +22,7 @@ async function getJSON<T>(base: string, path: string, opts?: RequestInit): Promi
 	return res.json() as Promise<T>;
 }
 
-/** Tail fetch: prefer the baked copy (/baked), fall back to the remote endpoint. */
+/** prefer baked copy, fall back to remote */
 async function getTail<T>(path: string): Promise<T> {
 	try {
 		return await getJSON<T>(CORE, path);
@@ -41,22 +32,19 @@ async function getTail<T>(path: string): Promise<T> {
 	}
 }
 
-// Baked views: deployed with the site, so plain same-origin fetches (the
-// homepage preloads these exact URLs — keep them query-free).
+// homepage preloads these exact URLs - keep them query-free
 export const fetchStations = () => getJSON<StationsManifest>(CORE, 'meta/stations.json');
 export const fetchLatest = () => getJSON<AllStations>(CORE, 'latest/all-stations.json');
 export const fetchSummary = () => getJSON<Summary>(CORE, 'latest/summary.json');
 
 export const fetchCities = () => getJSON<CitiesRollup>(CORE, 'rollups/cities.json');
 
-// Per-station tail: baked into /baked, remote fallback for anything unbaked.
+// per-station tail: baked, remote fallback for anything unbaked
 export const fetchHistory = (code: string) => getTail<History>(`history/${code}.json`);
 export const fetchForecast = (date: string, code: string) =>
 	getTail<Forecast>(`${date}/${code}-meteogram.json`);
 
-/** Coarse visitor location from the Worker's Cloudflare edge (`request.cf`).
- *  City-level, IP-based, no permission prompt. Null in sample mode (no Worker)
- *  or when the edge can't resolve a location. */
+/** IP-based city-level location from Cloudflare edge. Null in sample mode or when unresolvable. */
 export interface GeoHint {
 	city: string | null;
 	region: string | null;
@@ -79,7 +67,7 @@ export async function fetchGeo(): Promise<GeoHint | null> {
 	};
 }
 
-/** URL of a raw meteogram image (for the method note / station links). */
+/** URL of a raw meteogram image. */
 export const meteogramImageUrl = (date: string, code: string) =>
 	`${BASE}/${date}/${code}-meteogram.webp`;
 

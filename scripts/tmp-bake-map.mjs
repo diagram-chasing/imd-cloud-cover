@@ -1,6 +1,6 @@
 // THROWAWAY generator for the "More From Us" islands:
-//   src/lib/assets/cards/world-map.png           (landscape — desktop)
-//   src/lib/assets/cards/world-map-portrait.png  (vertical  — mobile)
+//   src/lib/assets/cards/world-map.png           (landscape - desktop)
+//   src/lib/assets/cards/world-map-portrait.png  (vertical  - mobile)
 // The islands are hand-drawn as ASCII grids (X = land, ~ = river, space = open
 // sea/transparent). We rasterize each verbatim: land becomes dithered grass with
 // a crisp coastal sand ring where it meets the sea, the ~ path becomes water
@@ -47,9 +47,8 @@ function bake(grid, cities, outPath) {
 
 	const cellAt = (cx, cy) =>
 		cx < 0 || cy < 0 || cx >= COLS || cy >= ROWS ? ' ' : grid[cy][cx] || ' ';
-	// Math.floor (not |0) so off-canvas pixels at x/y < 0 map to a NEGATIVE cell
-	// (open sea) instead of being truncated back to cell 0 — otherwise land flush
-	// to the top/left canvas edge never registers as coastline.
+	// Math.floor (not |0): x/y < 0 must map to negative cell, not cell 0
+	// (otherwise land flush to canvas edge never registers as coastline)
 	const kindAtPx = (px, py) => cellAt(Math.floor(px / SCALE), Math.floor(py / SCALE));
 	const isLand = (px, py) => kindAtPx(px, py) === 'X';
 	const isRiver = (px, py) => kindAtPx(px, py) === '~';
@@ -72,9 +71,7 @@ function bake(grid, cities, outPath) {
 	};
 	const nearSea = (px, py, r) => near(px, py, r, isSea);
 	const nearLand = (px, py, r) => near(px, py, r, isLand);
-	// A land pixel directly touching the sea (8-neighbourhood) — the waterline.
-	// Explicit so the dark coast ring wraps EVERY side evenly, including long
-	// straight edges that a distance band alone renders too thin to notice.
+	// explicit waterline so dark coast ring wraps every side (distance band alone is too thin)
 	const isWaterline = (px, py) =>
 		isLand(px, py) &&
 		(isSea(px - 1, py) ||

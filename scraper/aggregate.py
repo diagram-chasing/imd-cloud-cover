@@ -1,24 +1,8 @@
-"""Aggregate day-0 cloud slices into the frontend's static JSON views.
+"""Aggregate day-0 meteogram slices into the frontend's static JSON views.
 
-Reads the per-station raw meteogram JSONs (written by main.py to
-`{date}/{CODE}-meteogram.json`) and produces the derived views the frontend
-consumes:
-
-  meta/stations.json        station manifest (copied from repo)
-  meta/dates.json           { dates: [...], latest: "YYYY-MM-DD" }
-  latest/all-stations.json  today's 8-step day-0 slice per station
-  latest/summary.json       national means, cloudiest/clearest
-  history/{CODE}.json       per-day daily means (h,m,l,e) plus the 8-step
-                            effective series `t`, capped at 400 days
-  rollups/7d.json,30d.json  per-station daily-mean series over the window
-  rollups/cities.json       long-term city explorer view
-  reports/{date}.json       run report
-
-"Observed" = the day-0 slice = first 8 of each 10-day forecast (00:00..21:00 IST).
-Effective cover `e` = mean over steps of max(h, m, l).
-
-Idempotent: running twice for the same date yields identical output. `--rebuild`
-re-reads every dated raw file in the store and regenerates all derived views.
+Outputs: meta/stations.json, meta/dates.json, latest/all-stations.json,
+latest/summary.json, history/{CODE}.json, rollups/{7d,30d,cities}.json,
+reports/{date}.json. Idempotent; --rebuild regenerates all views from stored raws.
 """
 
 import argparse
@@ -106,12 +90,7 @@ def mean_round(vals):
 # --------------------------------------------------------------------------
 
 def forecast_bands(raw, n_days=FORECAST_DAYS):
-    """{"h","m","l": up to n_days*8 ints each}, or None if unusable.
-
-    Reads the leading `n_days` of the 3-hourly forecast (the raw meteogram holds
-    ~10). A short forecast simply yields fewer steps; callers slice day-0 off the
-    front with `day0()`.
-    """
+    """{"h","m","l": up to n_days*8 ints each}, or None if unusable. slice day-0 with day0()."""
     data = raw.get("data")
     if not data or len(data) < DAY0_SAMPLES:
         return None
@@ -137,10 +116,7 @@ def daily_means(b):
 
 
 def history_entry(b):
-    """A station-history day: daily means plus `t`, the 8-step effective series.
-
-    `t` feeds the station page's time-of-day facts; rollups only read the means.
-    """
+    """daily means plus t: the 8-step effective series (used by the station page)."""
     return {**daily_means(b), "t": effective(b)}
 
 
@@ -150,8 +126,7 @@ def read_slice(store, date, code):
 
 
 def read_slices(store, date, codes):
-    """{code: multi-day bands} for every readable raw file of `date`, fetched
-    concurrently. Values span up to FORECAST_DAYS; slice day-0 with `day0()`."""
+    """{code: multi-day bands} for every readable raw file of date, fetched concurrently."""
     bands = pmap(lambda c: read_slice(store, date, c), codes)
     return {c: b for c, b in zip(codes, bands) if b is not None}
 
@@ -172,8 +147,7 @@ def codes_for_date(store, date):
 # --------------------------------------------------------------------------
 
 def load_histories(store, manifest_codes):
-    """{code: hist-or-None}, fetched once, concurrently. All downstream views
-    read from this single in-memory copy."""
+    """{code: hist-or-None}, fetched concurrently into a single in-memory copy."""
     codes = sorted(manifest_codes)
     return dict(zip(codes, pmap(lambda c: store.get_json(f"history/{c}.json"), codes)))
 
@@ -189,10 +163,7 @@ def put_histories(store, histories, codes):
 
 
 def update_histories(store, date, slices, manifest_codes, histories):
-    """Merge today's daily means into the in-memory histories, persist the
-    changed files. Mutates `histories` so downstream views see today's data.
-    Idempotent by date key. Returns {code: daily_means}.
-    """
+    """merge today's daily means into histories and persist changed files. idempotent by date key."""
     today_means, changed = {}, []
     for code, b in slices.items():
         if code not in manifest_codes:
@@ -214,20 +185,11 @@ def update_histories(store, date, slices, manifest_codes, histories):
 # --------------------------------------------------------------------------
 
 def build_latest(date, generated_at, manifest_codes, slices):
-    """latest/all-stations.json — the day-0 slice per mapped station, plus a
-    short multi-day forecast tail.
-
-    `date`/`stations` are day-0 (8 steps), exactly as before. `fdays`/`forecast`
-    carry the next few calendar days (day-major, 8 steps each) so the client can
-    render the visitor's *current* IST day even before that day's scrape runs.
-    Both are omitted when no station has a usable tail (old single-day raws).
-    """
+    """latest/all-stations.json: day-0 slice per station plus multi-day forecast tail."""
     mapped = {c: b for c, b in slices.items() if c in manifest_codes}
     stations = {c: day0(b) for c, b in mapped.items()}
 
-    # Every raw forecast starts at the same midnight, so one shared fdays list
-    # covers all stations. n_future is bounded by FORECAST_DAYS and by the data
-    # actually present.
+    # one shared fdays list covers all stations; n_future bounded by data present
     max_steps = max((len(b["h"]) for b in mapped.values()), default=DAY0_SAMPLES)
     n_future = min(FORECAST_DAYS - 1, max_steps // DAY0_SAMPLES - 1)
     d0 = datetime.date.fromisoformat(date)
@@ -252,8 +214,7 @@ def build_latest(date, generated_at, manifest_codes, slices):
 
 
 def build_rollups(histories, dates_window, manifest_codes):
-    """Per-station daily-mean series over an ascending date window.
-    Missing days are null-filled; national means ignore nulls."""
+    """per-station daily-mean series over dates_window; null-fill missing days."""
     stations = {}
     for code in sorted(manifest_codes):
         days = (histories.get(code) or {}).get("days", {})
@@ -276,8 +237,7 @@ def build_rollups(histories, dates_window, manifest_codes):
 # --------------------------------------------------------------------------
 
 def load_places():
-    """The frontend's place gazetteer (city -> nearest station), or None if
-    absent. Missing/corrupt file skips the cities view rather than failing."""
+    """place gazetteer (city -> nearest station); returns None if file absent/corrupt."""
     try:
         with open(here("..", "static", "data", "india-places.json")) as f:
             return json.load(f)["features"]
@@ -287,9 +247,7 @@ def load_places():
 
 
 def select_cities(features, manifest_codes):
-    """Cities (tier<=2 or pop>=100k) with a mapped station, deduped to the
-    biggest city per station (a city's series IS its station's history).
-    Returns {station code: place properties}."""
+    """cities (tier<=2 or pop>=100k) with a mapped station; one per station (biggest)."""
     best = {}
     for feat in features:
         p = feat.get("properties", {})
@@ -312,8 +270,7 @@ def haversine_km(lat1, lon1, lat2, lon2):
 
 
 def longest_run(dates, es, cond):
-    """Longest run of consecutive calendar days matching cond; nulls break it.
-    Returns {"len","start","end"} or None if no day matches."""
+    """longest run of consecutive calendar days matching cond; nulls break it."""
     best_len, best_start, best_end = 0, None, None
     run_len, run_start = 0, None
     for d, e in zip(dates, es):
@@ -342,8 +299,7 @@ def pearson(xs, ys):
 
 
 def calendar_window(histories, cities, latest_date):
-    """Shared calendar window: earliest recorded day across the selected
-    cities up to latest_date, capped like the histories are."""
+    """shared date range from earliest city record to latest_date."""
     firsts = [min(days) for code in cities
               if (days := (histories.get(code) or {}).get("days", {}))]
     if not firsts:
@@ -378,14 +334,8 @@ def city_entry(place, days, dates):
 
 
 def own_anomalies(es):
-    """Deviation from the city's OWN centered rolling mean (null-aware).
-
-    Anomalies vs the national day-mean backfire for low-variance cities: an
-    always-overcast hill town and an always-clear desert both reduce to
-    (constant - day_mean), and those correlate perfectly — the exact
-    "cloudiest twinned with clearest" bug. Deseasonalising each series
-    against itself measures real day-to-day co-fluctuation instead.
-    """
+    """deviation from each city's own rolling mean (not the national day mean).
+    avoids the "always-overcast hill town correlates with always-clear desert" bug."""
     n = len(es)
     out = [None] * n
     for i, e in enumerate(es):
@@ -408,22 +358,9 @@ def rmse(xs, ys):
 
 
 def assign_twins(entries, stations, profiles):
-    """Two twins per city, both far away (>= TWIN_MIN_KM, different state):
-
-      alltime — best own-climatology anomaly correlation over the shared
-                history; among candidates within TWIN_R_SLACK of the best r,
-                the furthest wins. Flat-sky cities (anomaly std < TWIN_MIN_STD)
-                sit this one out — nothing to co-fluctuate.
-      today   — the city whose 8-step effective profile for the latest day is
-                closest (lowest RMSE), ties broken by higher historical r,
-                then distance. Daily mean `e` is too coarse (dozens of cities
-                share e=80); the shape of the day is what distinguishes.
-                Flat-sky cities DO participate here: sharing today's overcast
-                is legitimate even if your sky never varies.
-
-    Ships as twin: {"today": {code, rmse, km} | null,
-                    "alltime": {code, r, km} | null}.
-    """
+    """alltime twin = best anomaly-correlation over shared history (furthest wins on tie).
+    today twin = city with most similar 8-step effective profile (lowest RMSE).
+    writes twin: {"today": {code, rmse, km}|null, "alltime": {code, r, km}|null} per entry."""
     codes = sorted(entries)
     anom, eligible = {}, set()
     for c in codes:
@@ -656,8 +593,7 @@ def rebuild(store, generated_at):
     manifest = upload_manifest(store)
     manifest_codes = set(manifest["stations"])
 
-    # Reads within a date run concurrently; dates stay ordered so each
-    # history's `days` keys insert chronologically.
+    # dates stay ordered so history days keys insert chronologically
     histories = {}
     for date in all_dates:
         codes = [c for c in codes_for_date(store, date) if c in manifest_codes]

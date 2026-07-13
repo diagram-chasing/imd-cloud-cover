@@ -1,8 +1,5 @@
 <script lang="ts">
-	// The station's identity (name, state, coords) is prerendered into this page, so
-	// the header renders instantly. City-backed stations were already redirected to
-	// /city/[slug] at build time (see +page.server.ts), so there's no client redirect
-	// dance here — only today's readings + the forecast load client-side.
+	// identity prerendered (header instant); only latest + forecast load client-side
 	import { onMount } from 'svelte';
 	import indiaUrl from '$lib/assets/geo/india.json?url';
 	import type { PageData } from './$types';
@@ -57,14 +54,12 @@
 	);
 	let todayValues = $derived(values[data.code] ?? null);
 
-	// The station itself is the map's primary marker (gold dot + its own clouds).
+	// primary marker: the station itself
 	let stations = $derived([
 		{ code: data.code, name: data.name, lat: data.lat, lon: data.lon, km: 0, primary: true }
 	]);
 
-	// The station's full archived record as a date-aligned strip for the barcode.
-	// `days` is sparse, so we walk a continuous calendar from the first reading to the
-	// last and leave gaps null (they render as "no reading"). Null until it loads.
+	// walk continuous calendar from first to last reading; leave gaps null
 	let history = $derived.by(() => {
 		const days = record?.days;
 		if (!days) return null;

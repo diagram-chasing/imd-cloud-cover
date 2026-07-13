@@ -47,11 +47,7 @@ def code_from_url(url):
 
 
 def process_gif(url, date):
-    """Download, extract, and upload one station. Returns a result dict.
-
-    On failure returns {"code", "stage", "reason"} so the caller can report it
-    instead of silently dropping the station.
-    """
+    """download, extract, and store one station. errors return {code, stage, reason}."""
     code = code_from_url(url)
     try:
         time.sleep(random.uniform(0.1, 0.3))

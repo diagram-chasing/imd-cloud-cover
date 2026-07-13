@@ -1,25 +1,7 @@
-"""Export the public cloud-cover dataset into the repo-root `data/` folder.
-
-Reads the per-station day-0 forecast histories (`history/{CODE}.json`) and the
-station manifest that `aggregate.py` maintains, and flattens them into tidy
-tables for public release. Precipitation is intentionally excluded — this is a
-cloud-cover dataset.
-
-Each table is written as Parquet (primary) plus CSV; the two large cloud tables
-have their CSV zipped. See data/DATA.md for the dictionary.
-
-    data/stations.{parquet,csv}              code -> name, state, lat, lon
-    data/cloud-cover-daily.{parquet,csv.zip}   one row per station per day
-    data/cloud-cover-3hourly.{parquet,csv.zip} one row per station per 3h step
-
-Run it after `aggregate.py` has refreshed the histories:
-
-    python export.py                  # read the configured store, write ../data
-    LOCAL_MODE=1 python export.py      # read ./weather_data instead of R2
-
-Values are integer percentages (0-100). `high`/`middle`/`low` are the daily-mean
-cloud fractions of each band; `effective` is the daily mean of the per-step
-maximum across bands (how overcast the sky reads overall).
+"""Export per-station cloud-cover histories to Parquet + CSV in repo-root data/.
+Output: data/stations.{parquet,csv}, data/cloud-cover-daily.{parquet,csv.zip},
+        data/cloud-cover-3hourly.{parquet,csv.zip}
+Run after aggregate.py: python export.py  (LOCAL_MODE=1 reads ./weather_data)
 """
 
 import argparse

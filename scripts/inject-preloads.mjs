@@ -5,8 +5,7 @@ const root = resolve(import.meta.dirname, '..');
 const manifestPath = resolve(root, '.svelte-kit/output/client/.vite/manifest.json');
 const htmlPath = resolve(root, 'build/index.html');
 
-// Must match kit.paths.base in svelte.config.js: asset URLs are absolute
-// (relative:false), so injected preload hints must carry the same prefix.
+// must match kit.paths.base: asset URLs are absolute (relative:false)
 const BASE = '/2026/mapping-clouds';
 
 const EXCLUDE = /WebGPURenderer\.mjs$|CanvasRenderer\.mjs$/;
@@ -19,7 +18,7 @@ const MARK_OPEN = '<!-- inject-preloads -->';
 const MARK_CLOSE = '<!-- /inject-preloads -->';
 html = html.replace(new RegExp(`\\s*${MARK_OPEN}[\\s\\S]*?${MARK_CLOSE}`), '');
 
-// Chunk files the page already loads (SvelteKit's own preload tags).
+// skip chunks already in SvelteKit's own preload tags
 const preloaded = new Set(
 	[...html.matchAll(/href="[^"]*\/(_app\/immutable\/[^"]+\.js)"/g)].map((m) => m[1])
 );
@@ -52,8 +51,7 @@ if (wanted.size === 0) {
 
 const links = [];
 for (const file of wanted.keys()) links.push(`<link href="${BASE}/${file}" rel="modulepreload">`);
-// Stylesheets and assets (ground PNGs) referenced by the preloaded chunks:
-// fetched with the chunks instead of at first render inside the map.
+// CSS and PNG assets referenced by the preloaded chunks
 const seenExtra = new Set();
 for (const e of wanted.values()) {
 	for (const css of e.css ?? []) {
@@ -71,10 +69,7 @@ for (const e of wanted.values()) {
 		}
 	}
 }
-// The day/night ground PNGs sit in shared chunks of the static route graph, so
-// the walk above misses them — but MapShell only sets its <img> src at runtime
-// and PixelMap's ground texture gates first paint, so hint them explicitly.
-// (Which one is critical depends on the visitor's local time; both total ~58 KB.)
+// ground PNGs sit in shared chunks (missed by walk); critical for first paint
 for (const f of readdirSync(resolve(root, 'build/_app/immutable/assets'))) {
 	const asset = `_app/immutable/assets/${f}`;
 	if (/^ground-(day|night)\./.test(f) && !seenExtra.has(asset) && !html.includes(asset)) {

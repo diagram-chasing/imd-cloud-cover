@@ -1,7 +1,4 @@
 <script lang="ts">
-	// A segmented, tabbed switch: two-plus labelled options with a gold pill that
-	// slides under the active one. Pixel-native navy chip, matching the floating
-	// tags in the sky (see CloudHistogram's .tag).
 	interface Option {
 		value: string;
 		label: string;
@@ -48,8 +45,6 @@
 		whole. The clamp shrinks it fluidly on narrow screens (phones sit it beside
 		the map) and settles at 16px from tablet up — mirroring the headline. */
 	.tabswitch {
-		/* Stepped pixel corners, echoing PixelButton's chunky bevel — the notches
-			are cut in 2px increments so the edges read as low-res at any scale. */
 		--corner: polygon(
 			0 4px,
 			2px 4px,

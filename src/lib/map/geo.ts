@@ -1,11 +1,4 @@
-// Geographic geometry for the Pixi map: project India and list station/place
-// positions in projected (px, py) space. The oblique "from the side" tilt +
-// cloud altitudes are applied in the Pixi layer.
-//
-// The ground itself (land + relief + coast + shallow ring + urban + night
-// lights) is pre-baked by scripts/bake-ground.mjs into day/night PNGs plus a
-// mask; at runtime we only decode the mask for the land/shallow grids (waves
-// live over open sea) and blit the baked images.
+// project India and list stations in world px. ground is pre-baked; only the mask is decoded at runtime
 import { geoConicConformal, type GeoProjection } from 'd3-geo';
 import { feature } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
@@ -23,17 +16,17 @@ export interface GeoStation {
 	code: string;
 	px: number; // projected world px (unsquashed), snapped to the CELL grid
 	py: number;
-	rpx: number; // raw projected world px (unsnapped) — LOD binning uses these so
-	rpy: number; // aggregation is driven by the bin grid, not the legacy CELL snap
+	rpx: number; // unsnapped - LOD binning uses these, not the legacy CELL snap
+	rpy: number;
 }
 
 export interface GeoPlace {
 	name: string;
 	pop: number;
-	/** Population bucket from the baker: 0 megacity … 3 town. Drives label LOD. */
+	/** Population bucket: 0 megacity .. 3 town. Drives label LOD. */
 	tier: number;
 	state: string | null;
-	/** Nearest IMD station code + rounded distance (km), precomputed at build. */
+	/** Nearest IMD station code + distance (km), precomputed at build. */
 	nearest: string | null;
 	nkm: number;
 	px: number; // projected world px (unsquashed)
@@ -50,7 +43,7 @@ export interface GroundMask {
 
 export interface Geo {
 	cell: number;
-	/** World px per ground raster pixel — the sprite scale for the baked ground. */
+	/** World px per ground raster pixel. */
 	groundScale: number;
 	cols: number;
 	rows: number;
@@ -61,7 +54,7 @@ export interface Geo {
 	shallow: Uint8Array;
 	stations: GeoStation[];
 	places: GeoPlace[];
-	/** Project a lon/lat into world px with the map's projection (may be off-map). */
+	/** Project lon/lat into world px (may be off-map). */
 	project(lon: number, lat: number): [number, number] | null;
 }
 
@@ -102,8 +95,7 @@ export function buildGeo(
 	mask?: GroundMask
 ): Geo {
 	const worldH = worldW * 1.06;
-	// Must mirror scripts/bake-ground.mjs: the baked ground raster is DETAIL
-	// sub-cells per cloud cell.
+	// must mirror bake-ground.mjs: DETAIL sub-cells per cloud cell
 	const DETAIL = 2;
 	const gcell = cell / DETAIL;
 	const cols = mask?.cols ?? Math.floor(worldW / gcell);
@@ -133,7 +125,6 @@ export function buildGeo(
 		stations.push({ code, px: cx * cell + cell / 2, py: cy * cell + cell / 2, rpx, rpy });
 	}
 
-	// Project the limited city set into world px. Coordinates are [lon, lat].
 	const places: GeoPlace[] = [];
 	if (placesFC) {
 		for (const f of placesFC.features) {

@@ -1,25 +1,7 @@
 """Seed scraper/stations.json from the IMD meteograms page.
-
-The IMD page embeds one Leaflet marker per station, of the form:
-
-    var point = new L.LatLng(11.41,93.04);
-    var marker = createMarker(point, '<div ...><b>ANDAMAN</b>...LAT : 11.41 ... LONG :93.04 ...',
-                              '...pin.png')
-    function loadN() { var load = window.open ('./gfs/.../ANDAMAN-meteogram.gif', ...); }
-
-Each marker gives us code (from the gif path), display name (the <b>...</b>), and
-lat/lon (the L.LatLng call). We stitch those together in document order.
-
-State is not present on the page; when a states TopoJSON is available we assign
-state via point-in-polygon (see --states), otherwise it is left null and can be
-filled later.
-
-Usage:
-    python scraper/tools/seed_stations.py [--url URL] [--html FILE]
-        [--states static/data/india.json] [--out scraper/stations.json] [--merge]
-
---merge keeps hand-edited lat/lon/state already present in the existing manifest,
-only adding newly discovered codes and never clobbering non-null curated fields.
+Parses Leaflet markers (code, name, lat/lon) from the page HTML.
+--merge preserves hand-edited fields in an existing manifest.
+Usage: python scraper/tools/seed_stations.py [--url URL] [--states india.json] [--out PATH] [--merge]
 """
 
 import argparse
@@ -72,11 +54,7 @@ def prettify_name(raw):
 
 
 def load_states(path):
-    """Load a TopoJSON/GeoJSON of India states for point-in-polygon state assignment.
-
-    Returns a list of (state_name, list_of_rings) or None if unavailable.
-    Only used when --states is passed and shapely-free ray casting is enough.
-    """
+    """load TopoJSON/GeoJSON of India states for point-in-polygon assignment; None if unavailable."""
     if not path or not os.path.exists(path):
         return None
     with open(path) as f:

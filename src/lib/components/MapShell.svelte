@@ -1,8 +1,5 @@
 <script lang="ts">
-	// The map's loading state. It shows the exact baked ground raster the PIXI map
-	// renders (same PNG), placed with the same start camera (map/camera.ts) — so it's
-	// a solid, pixelated India in the precise spot the canvas will occupy. When the
-	// live canvas fades in over it, only the clouds appear; the land doesn't move.
+	// loading shell: same ground PNG at same camera as PixelMap so the crossfade has no jump
 	import { startFrame, WORLD_W, WORLD_H } from '$lib/map/camera';
 	import groundDayUrl from '$lib/assets/ground/ground-day.png';
 	import groundNightUrl from '$lib/assets/ground/ground-night.png';
@@ -16,10 +13,7 @@
 	let w = $state(0);
 	let h = $state(0);
 
-	// Measure synchronously on mount rather than via bind:clientWidth — the latter's
-	// ResizeObserver fires async and gets starved by PIXI's synchronous init, so the
-	// silhouette wouldn't draw before the canvas takes over. Measuring here renders
-	// India in the shell's very first paint, during hydration.
+	// measure sync on mount - ResizeObserver fires after PIXI init and misses first paint
 	$effect(() => {
 		if (!el) return;
 		const measure = () => {
@@ -32,7 +26,6 @@
 		return () => ro.disconnect();
 	});
 
-	// theme.ts SKY — the sky behind the ground (ground PNG has transparent sea).
 	let top = $derived(night ? '#081831' : '#2E7CC4');
 	let bottom = $derived(night ? '#16335C' : '#6FC4EF');
 	let ground = $derived(night ? groundNightUrl : groundDayUrl);

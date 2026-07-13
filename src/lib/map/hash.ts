@@ -1,5 +1,4 @@
-// Deterministic hashing/PRNG so the map renders identically across loads.
-// No Math.random anywhere in the render path.
+// deterministic hash/PRNG - no Math.random in the render path
 
 /** FNV-1a 32-bit hash of a string. */
 export function fnv1a(str: string): number {

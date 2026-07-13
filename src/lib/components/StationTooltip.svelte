@@ -14,7 +14,6 @@
 
 	let { station, values, clientX, clientY, members = 1, date, when }: Props = $props();
 
-	// Flip near the right/bottom edges of the viewport.
 	let style = $derived.by(() => {
 		const flipX = clientX > window.innerWidth - 230;
 		const flipY = clientY > window.innerHeight - 190;

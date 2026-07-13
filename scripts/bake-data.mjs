@@ -1,16 +1,6 @@
-// Bake the data views into the build.
-//
-// Downloads the homepage/station-shared JSON views from the data endpoint
-// (VITE_R2_PUBLIC_URL) into static/baked/ so production serves them same-origin
-// and the prerendered homepage can <link rel="preload"> them. It also bakes the
-// per-station tail JSON — history/{code}.json and the latest date's
-// {date}/{code}-meteogram.json — so a station page renders fully self-contained
-// from /baked and never needs the Worker to draw. Only the raw meteogram .webp
-// images (external click-through links, never rendered) stay on the remote endpoint.
-//
+// Download JSON views from VITE_R2_PUBLIC_URL into static/baked/ (same-origin, preloadable).
+// Also bakes per-station tail so station pages render without a Worker call.
 // Usage: node scripts/bake-data.mjs [--if-stale] [--core-only]
-//   --if-stale   skip if the newest baked core file is under an hour old (dev)
-//   --core-only  bake only the core views, skip the ~2,500-file tail (dev)
 
 import { mkdir, writeFile, stat, readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -71,10 +61,7 @@ if (!process.argv.includes('--core-only')) {
 }
 console.log('bake-data: done.');
 
-// Bake the per-station tail: history/{code}.json for every station plus the
-// latest date's {date}/{code}-meteogram.json. Best-effort — a station missing a
-// history or forecast file is warned and skipped, not fatal (the app falls back
-// to the remote endpoint for anything unbaked).
+// per-station tail: history + latest forecast. best-effort; missing files are skipped
 async function bakeTail() {
 	const stations = JSON.parse(await readFile(path.join(OUT, 'meta/stations.json'), 'utf8'));
 	const summary = JSON.parse(await readFile(path.join(OUT, 'latest/summary.json'), 'utf8'));

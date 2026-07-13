@@ -1,14 +1,6 @@
-// Fetch the Ships Whistle webfonts into src/lib/assets/fonts/ at build time.
-//
-// The typeface is licensed and NOT part of this open-source repo, so the font
-// files are gitignored. This script pulls the woff2/woff cuts referenced by
-// src/routes/layout.css from the R2 bucket (FONTS_URL) into src/lib/assets/fonts/
-// so Vite bundles + fingerprints them exactly as if they were committed — the
-// production output is byte-identical to self-hosting.
-//
+// Pull licensed Ships Whistle fonts (gitignored) from FONTS_URL into assets/fonts/.
+// Vite then bundles+fingerprints them as if committed.
 // Usage: node scripts/fetch-fonts.mjs [--force]
-//   (default)  download only files that are missing locally
-//   --force    re-download every file (use when the fonts change upstream)
 
 import { mkdir, writeFile, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -19,7 +11,7 @@ try {
 	// no .env (CI passes FONTS_URL directly)
 }
 
-// The exact cuts referenced by @font-face in src/routes/layout.css.
+// cuts referenced by @font-face in layout.css
 const FONTS = [
 	'ShipsWhistle-Regular',
 	'ShipsWhistle-Italic',

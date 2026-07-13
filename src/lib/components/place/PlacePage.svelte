@@ -134,8 +134,6 @@
 			<p class="mt-2 text-sm">{metCaption ?? 'NEXT 10 DAYS · 3-HOURLY'}</p>
 		</section>
 		{#if history}
-			<!-- This place's whole archived record as one barcode: a stripe per day, with a
-		month axis to place the wet and dry spells. -->
 			<section>
 				<h2 class=" mb-3 border-b border-ink pb-1 text-xl">HISTORY</h2>
 
@@ -157,7 +155,6 @@
 	</article>
 
 	{#if mode === 'city' && stations.length}
-		<!-- Nearby stations: the map's clusters as a legible, linkable index. -->
 		<section>
 			<h2 class="mt-6 mb-3 border-b border-ink pb-1 text-xl">NEARBY STATIONS</h2>
 			<ul class="grid grid-cols-2 gap-x-10 sm:grid-cols-3">
@@ -172,7 +169,6 @@
 								link && 'cursor-pointer'
 							]}
 						>
-							<!-- Cloud/sun on a blue map-tile so the sprite reads on paper. -->
 							<span
 								class="grid h-9 w-10 shrink-0 place-items-center overflow-hidden bg-day-sea shadow-[0_0_0_1px] shadow-ink/40"
 							>

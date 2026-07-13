@@ -43,10 +43,7 @@
 	let query = $state('');
 	let inputEl = $state<HTMLInputElement | null>(null);
 
-	// The popover portals its content next to the trigger, but on open bits-ui
-	// focuses the field before Floating UI has positioned it — so the browser
-	// scrolls the still-at-origin input into view and the page jumps. Take focus
-	// ourselves, after a tick, with scrolling suppressed.
+	// bits-ui focuses before Floating UI positions - browser scrolls to origin. take focus after a tick
 	function focusInput(e: Event) {
 		e.preventDefault();
 		tick().then(() => inputEl?.focus({ preventScroll: true }));
@@ -76,12 +73,12 @@
 	}
 
 	let index = $derived.by(() => {
-		// True when this place is the one the station already represents.
+		// true when the place IS the station (skip as duplicate)
 		const isSamePlace = (p: PlaceProps) => {
 			const near = p.nearest ? manifest.stations[p.nearest] : null;
 			return !!near && norm(near.name) === norm(p.name);
 		};
-		// Aliases inherited by a station code from the city that shares its identity.
+		// aliases from the city sharing the station's identity
 		const stationAlias = new Map<string, string[]>();
 		for (const f of places?.features ?? []) {
 			const p = f.properties as unknown as PlaceProps;
@@ -125,8 +122,7 @@
 		return codes ? out.filter((e) => e.code && codes.has(e.code)) : out;
 	});
 
-	// Lower score = better. Prefix hits beat word-boundary beats substring; name
-	// beats alias beats state/code. Returns Infinity for a non-match.
+	// lower = better: prefix > word-boundary > substring; name > alias > state/code
 	function score(e: Entry, q: string): number {
 		if (e.nameN.startsWith(q)) return 0;
 		if (new RegExp('\\b' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(e.nameN)) return 1;
@@ -141,7 +137,7 @@
 	let results = $derived.by(() => {
 		const q = norm(query);
 		if (!q) {
-			// Default: the biggest cities as jumping-off points.
+			// no query: show biggest cities as defaults
 			return [...index]
 				.filter((e) => e.kind === 'city')
 				.sort((a, b) => b.pop - a.pop)
@@ -152,8 +148,7 @@
 			const s = score(e, q);
 			if (s !== Infinity) scored.push({ e, s });
 		}
-		// Stations first on ties (they carry data) — unless the caller is city-
-		// centric, where the place name is the identity people search for.
+		// stations first on ties; city-first mode flips this
 		const lead = (e: Entry) => (e.kind === (cityFirst ? 'city' : 'station') ? 0 : 1);
 		scored.sort(
 			(a, b) =>
@@ -175,7 +170,6 @@
 			{#if trigger}
 				{@render trigger(props)}
 			{:else}
-				<!-- Paper pixel key; compact drops the text and squares the cap padding. -->
 				<PixelButton
 					{...props}
 					size="sm"
@@ -201,8 +195,6 @@
 		class="w-[320px] max-w-[calc(100vw-1.5rem)] gap-0 rounded-none border-2 border-ink bg-paper p-0 text-ink shadow-[3px_3px_0_0] ring-0 shadow-ink"
 	>
 		<CommandPrimitive.Root shouldFilter={false} disableInitialScroll class="flex flex-col">
-			<!-- Search field, built to the house style: a single ink underline, no
-			     input-group chrome, no browser focus ring collision. -->
 			<div class="flex items-center gap-2 border-b-2 border-ink px-3">
 				<HugeiconsIcon icon={SearchIcon} strokeWidth={2} size={15} class="shrink-0 text-ink/45" />
 				<CommandPrimitive.Input
@@ -227,8 +219,6 @@
 							onSelect={() => pick(e)}
 							class="flex cursor-pointer items-center gap-2 rounded-none px-2 py-1.5 text-ink outline-none select-none data-selected:bg-cloud-block data-selected:text-ink"
 						>
-							<!-- Name + state truncate together as one label so the code column stays
-							     aligned on the right and names only clip when the row is genuinely full. -->
 							<span class="min-w-0 flex-auto truncate">
 								<span class="text-base uppercase text-ink">{e.name}</span>
 								{#if e.state}<span class="ml-1.5 text-xs text-ink/45">{e.state}</span>{/if}

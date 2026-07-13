@@ -1,9 +1,4 @@
-// Shared world geometry + start-camera math so the loading shell can render India
-// at the EXACT zoom/pan the PIXI map opens on — the two states overlay pixel-for-
-// pixel, so the cross-fade from shell to canvas has no jump.
-//
-// These mirror the constants and camera functions in PixelMap.svelte (WORLD_W, PAD,
-// worldBBox/containZoom/narrowLayout/startZoomFactor/fitCamera). Keep them in sync.
+// mirrors PixelMap.svelte constants so the loading shell overlays pixel-for-pixel. keep in sync
 
 export const WORLD_W = 1024;
 export const WORLD_H = WORLD_W * 1.06; // buildGeo: worldH = worldW * 1.06
@@ -15,8 +10,7 @@ export interface StartFrame {
 	panY: number;
 }
 
-/** The map's opening camera for a given frame size — mirrors fitCamera() at start.
- *  Screen = (world - pan) * zoom. */
+/** Screen = (world - pan) * zoom */
 export function startFrame(vw: number, vh: number): StartFrame {
 	const minX = -PAD;
 	const maxX = WORLD_W + PAD;

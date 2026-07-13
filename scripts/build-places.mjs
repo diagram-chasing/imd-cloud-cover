@@ -1,18 +1,7 @@
-// Build the labelled-places dataset at src/lib/assets/geo/india-places.json
-// (imported as a content-hashed asset by the app).
-//
-// Source: GeoNames dump for India, vendored as src/lib/assets/IN.zip (contains
-// IN.txt, ~660k tab-separated rows). We stream it straight out of the zip with
-// `unzip -p` — no temp file, no npm zip dependency.
-//
-// We keep populated places (feature class P) above a population floor, plus all
-// capitals/admin seats regardless of population, and for each one precompute the
-// nearest IMD station (from scraper/stations.json) so the UI can route a city
-// search to the station that actually has data. Output is a GeoJSON
-// FeatureCollection whose properties feed BOTH the map label layer and search:
-//   { name, pop, state, tier, nearest, nkm, aliases }
-//
-// Run from repo root:  node scripts/build-places.mjs
+// Build india-places.json from GeoNames IN.zip (streamed via unzip -p, no temp file).
+// Keeps places above POP_FLOOR + all capitals; precomputes nearest IMD station per place.
+// Output: { name, pop, state, tier, nearest, nkm, aliases } per feature.
+// Run from repo root: node scripts/build-places.mjs
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -24,8 +13,7 @@ const ZIP = resolve(ROOT, 'src/lib/assets/IN.zip');
 const STATIONS = resolve(ROOT, 'scraper/stations.json');
 const OUT = resolve(ROOT, 'src/lib/assets/geo/india-places.json');
 
-// Population floor for plain populated places (PPL). Capitals/admin seats below
-// this are kept anyway (they anchor the map and are common search targets).
+// capitals kept regardless of population
 const POP_FLOOR = 15_000;
 const KEEP_ALWAYS = new Set(['PPLC', 'PPLA', 'PPLA2']);
 
@@ -71,9 +59,7 @@ const FIPS_STATE = {
 	40: 'Telangana'
 };
 
-// Famous renamings/exonyms. GeoNames' alt-names column carries these but
-// unranked and buried under transliteration noise, so the generic extractor
-// below often misses them past its cap. Curate the classics by canonical name.
+// curated exonyms: GeoNames alt-names miss these past the per-city cap
 const ALIAS_EXTRA = {
 	Mumbai: ['Bombay'],
 	Chennai: ['Madras'],
@@ -106,16 +92,12 @@ function tierFor(pop) {
 	return 3; // town
 }
 
-/** Strip diacritics (macrons, accents) to plain ASCII. GeoNames' `name` column
- *  carries romanised marks like ū/ā that the label font ('Ships Whistle') lacks,
- *  so the browser swaps in a fallback glyph mid-word. Labels are English names,
- *  so fold them down to ASCII once, here at build time. */
+/** fold diacritics (ū/ā) to ASCII - Ships Whistle font lacks them */
 function asciiName(name) {
 	return name.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
 }
 
-/** ASCII exonyms/spellings from the alt-names column, distinct from the name.
- *  Curated ALIAS_EXTRA names go first so the classics survive the cap. */
+/** ASCII aliases from alt-names; curated ALIAS_EXTRA go first to survive the cap */
 function aliasesFor(name, altField) {
 	const nn = name.toLowerCase();
 	const out = [];

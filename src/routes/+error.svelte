@@ -1,7 +1,5 @@
 <script lang="ts">
-	// The catch-all error page — shown by the static fallback for any URL that
-	// isn't a real route (and for load errors). A "question map": the India raster
-	// with a lost marker adrift over it, plus routes back into the site.
+	// catch-all error page and static 404 fallback
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { base } from '$app/paths';
@@ -24,7 +22,7 @@
 				.slice(0, 6)
 				.map(([code, city]) => ({ name: city.name, slug: slugByCode[code] }));
 		} catch {
-			// Offline / no data: the map + primary links still stand on their own.
+			// offline / no data: primary links still work without city list
 		}
 	});
 

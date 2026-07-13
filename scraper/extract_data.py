@@ -20,12 +20,8 @@ class ExtractionError(Exception):
 
 
 def validate_crop(pil_image):
-    """Ensure the image geometry matches what the fixed crop expects.
-
-    IMD occasionally changes chart geometry; this turns silent corruption into a
-    reported failure. Checks post-thumbnail width and that the cloud panel crop
-    actually contains the panel's blue background near its edges.
-    """
+    """raise ExtractionError if image geometry doesn't match the fixed crop.
+    catches IMD chart geometry changes before they cause silent corruption."""
     if pil_image.width != EXPECTED_WIDTH:
         raise ExtractionError("validate_crop", f"width {pil_image.width} != {EXPECTED_WIDTH}")
     if pil_image.height < CROP_Y1:
@@ -60,29 +56,7 @@ def validate_values(cloud_data):
 
 
 def extract_cloud_data(pil_image, start_date):
-    """
-    Extract cloud cover data from a meteogram image.
-
-    Args:
-        pil_image: PIL Image object
-        start_date: datetime object for the forecast start date
-
-    Returns:
-        dict with structure:
-        {
-            "start_date": "2026-02-15",
-            "samples": 80,
-            "data": [
-                {
-                    "datetime": "2026-02-15T00:00:00",
-                    "high": 45.2,
-                    "middle": 23.1,
-                    "low": 67.8
-                },
-                ...
-            ]
-        }
-    """
+    """extract 80-sample h/m/l cloud percentages from the meteogram panel."""
     img_array = np.array(pil_image.convert('RGB'))
     img_bgr = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
 
@@ -127,18 +101,7 @@ def extract_cloud_data(pil_image, start_date):
 
 
 def extract_to_json_buffer(pil_image, start_date, validate=True):
-    """
-    Extract cloud data and return (buffer, warnings).
-
-    Args:
-        pil_image: PIL Image object
-        start_date: datetime object
-        validate: run geometry + value validators (raises ExtractionError on
-            geometry failure; value issues are returned as warnings)
-
-    Returns:
-        (BytesIO buffer containing JSON data, list[str] warnings)
-    """
+    """extract cloud data into a JSON BytesIO buffer. returns (buffer, warnings)."""
     import json
 
     if validate:

@@ -55,9 +55,7 @@
 
 	const LABEL_H = 11;
 
-	// Roughly the rendered advance of the label font at 10px — kept close to the real
-	// value so the fit-scale and collision/bounds math below don't over- or
-	// under-estimate a label's footprint.
+	// approx advance at 10px - keeps collision math accurate
 	const CHAR_W = 5.6;
 	const labelWidth = (text: string) => text.length * CHAR_W;
 
@@ -81,9 +79,7 @@
 
 	let placed = $derived.by(() => {
 		const mapH = mapW / ASPECT;
-		// Shrink a label's type just enough that it fits the map's width — a long
-		// name like THIRUVANANTHAPURAM overruns the ~132px mobile map at full size
-		// and gets sliced by the map's overflow clip. Floored so it never turns tiny.
+		// shrink font to fit map width (THIRUVANANTHAPURAM overruns at full size)
 		const fitScale = (w: number) => Math.max(0.62, Math.min(1, (mapW - 8) / w));
 		const base = pins
 			.map((p) => {
@@ -126,9 +122,7 @@
 		for (const i of order) {
 			const p = base[i];
 			let chosen: { ox: number; oy: number; align: string; box: Box } | null = null;
-			// First pass prefers a slot that both clears other labels and stays inside
-			// the map; the fallback keeps the first collision-free slot even if it spills
-			// (e.g. a pin right at the coastline) so we don't regress to overlaps.
+			// prefer in-bounds slot; fallback to collision-free even if it spills (coastline pins)
 			let fallback: { ox: number; oy: number; align: string; box: Box } | null = null;
 			for (const c of CANDIDATES) {
 				const b = boxFor(p, c.ox, c.oy, c.align);
@@ -153,9 +147,7 @@
 				chosen = { ox: 0, oy, align: 'center', box: b };
 				taken.push(b);
 			}
-			// Final nudge: slide the label horizontally so it can't poke past either map
-			// edge (the map clips its overflow). Marks near the coast sit off-centre, so
-			// a wide name centred on them would otherwise clip even after fit-scaling.
+			// nudge horizontally so label doesn't clip past map edge
 			const dx =
 				chosen.box.l < 2
 					? 2 - chosen.box.l

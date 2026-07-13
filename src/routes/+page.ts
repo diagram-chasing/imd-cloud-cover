@@ -1,6 +1,4 @@
-// The homepage is prerendered, so the critical map data returned here is
-// serialized into the shipped HTML — it's present at hydration with no client
-// fetch. The heavy place labels + rollups load in the background (see +page.svelte).
+// prerendered - data serialized into HTML, no client fetch on hydration
 import type { PageLoad } from './$types';
 import { loadCritical } from '$lib/api/load';
 

@@ -41,12 +41,11 @@
 		onhover
 	}: Props = $props();
 
-	// The home map's world geometry (PixelMap WORLD_W / bake-ground.mjs), so the
-	// ground raster and projected points agree on where India is.
+	// must match PixelMap/bake-ground.mjs so the raster and projected points align
 	const WORLD_W = 1024;
 	const WORLD_H = WORLD_W * 1.06;
 	const CELL = 8;
-	const ASPECT = 1.2; // rendered width / height — landscape: stations cluster wide, not tall
+	const ASPECT = 1.2; // rendered width / height - landscape crops wider, not taller
 
 	let projection = $derived(
 		geoConicConformal()
@@ -64,7 +63,7 @@
 	let mapW = $state(320);
 	let mapH = $derived(mapW / ASPECT);
 
-	// City + station points in world px (no crop offset yet).
+	// world px, no crop offset yet
 	interface RawPoint {
 		id: string;
 		label: string;
@@ -107,8 +106,7 @@
 		return out;
 	});
 
-	// Adjoining cities in world px. Kept out of the crop bbox below (the frame is
-	// set by the station cluster); they surface only when they fall inside it.
+	// adjoining cities; excluded from crop bbox, shown only if they fall inside it
 	let placePoints = $derived.by<RawPoint[]>(() => {
 		const out: RawPoint[] = [];
 		for (const pl of places) {
@@ -128,12 +126,8 @@
 		return out;
 	});
 
-	// Crop window (world px): frame the pins' bounding box with padding, with a
-	// generous minimum span so a tight cluster still shows regional context.
-	const PAD = 1.6; // extra breathing room around the pin bbox
-	// Zoom floor: enough regional context for a lone station, but small enough
-	// that a dense metro cluster (Delhi) zooms in and spreads apart instead of
-	// collapsing onto one pixel. Overlap that remains is handled by thinning below.
+	// crop window: bbox + padding; floor prevents dense clusters (Delhi) collapsing to one pixel
+	const PAD = 1.6;
 	let MIN_S = $derived(WORLD_W * minSpanFactor);
 	let win = $derived.by(() => {
 		const pts = rawPoints;
@@ -159,7 +153,7 @@
 	});
 	let k = $derived(win ? mapW / win.S : 1);
 
-	const CLOUD_PX = 7; // px per sprite cell — clouds are the content, so make them big
+	const CLOUD_PX = 7; // px per sprite cell
 	const DOT = 5; // locator dot diameter (px)
 	const CLOUD_GAP = 5; // gap between the tower's base and the dot (px)
 
@@ -169,7 +163,7 @@
 		return out;
 	});
 
-	// Nominal mark box for the label declutter (labels hug the dot, below-first).
+	// mark bbox for declutter; labels prefer below-first
 	const MARK_W = 16;
 	const MARK_H = 12;
 	const MARK_HX = MARK_W / 2;
@@ -244,7 +238,7 @@
 
 	let placed = $derived.by(() => {
 		const items = visible;
-		// City locator first, then accents, then top-to-bottom.
+		// city first, then accents, then top-to-bottom
 		const order = [...items.keys()].sort((i, j) => {
 			const a = items[i];
 			const b = items[j];
@@ -293,7 +287,7 @@
 	const labelTransform = (align: string) =>
 		align === 'center' ? 'translateX(-50%)' : align === 'right' ? 'translateX(-100%)' : 'none';
 
-	// Every station is a destination: its city if it backs one, else its station page.
+	// navigate to city page if backed by one, else station page
 	function open(code: string) {
 		clickFx('open');
 		onhover?.(null);
@@ -308,8 +302,7 @@
 	style="aspect-ratio: {ASPECT};"
 >
 	{#if win}
-		<!-- max-w-none/max-h-none: Tailwind preflight caps img at 100% width, which
-			would shrink this oversized (zoomed) raster and push it off-screen. -->
+		<!-- max-w-none/max-h-none: Tailwind preflight caps img to 100% width, breaking the zoomed raster -->
 		<img
 			class="absolute max-h-none max-w-none [image-rendering:pixelated] opacity-90"
 			src={groundDayUrl}
@@ -323,7 +316,6 @@
 				style="left: {(p.sx / mapW) * 100}%; top: {(p.sy / mapH) * 100}%;"
 			>
 				{#if p.kind === 'city'}
-					<!-- City locator: gold diamond, "you are here". -->
 					<svg
 						class="absolute text-sun-gold [shape-rendering:crispEdges]"
 						style="width: 13px; height: 13px; left: -6.5px; top: -6.5px; filter: drop-shadow(0 1px 0 rgba(11,29,58,0.85));"
@@ -333,7 +325,6 @@
 						<path d="M3 0h1v1h1v1h1v1h1v1h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-1h1v-1h1v-1h1z" fill="currentColor" />
 					</svg>
 				{:else if p.kind === 'place'}
-					<!-- Adjoining city: a small hollow ring; the name is the point. -->
 					<span
 						class="absolute rounded-full border border-white/85 bg-day-sea/50 shadow-[0_0_0_1px] shadow-ink/50"
 						style="width: 6px; height: 6px; left: -3px; top: -3px;"
@@ -344,8 +335,7 @@
 					{@const cw = tw.w * CLOUD_PX}
 					{@const ch = tw.h * CLOUD_PX}
 					{@const hitW = Math.max(cw, MARK_W)}
-					<!-- Hit area spans the drifting cloud tower down to the locator dot. -->
-					<button
+								<button
 						type="button"
 						class="marker absolute block cursor-pointer bg-transparent p-0"
 						style="width: {hitW}px; height: {ch + CLOUD_GAP + DOT}px; left: {-hitW /
@@ -370,7 +360,6 @@
 								{/each}
 							</svg>
 						{/if}
-						<!-- Station locator: a crisp dot at the exact point (gold if primary). -->
 						<span
 							class={[
 								'absolute rounded-full shadow-[0_0_0_1px] shadow-ink/80',

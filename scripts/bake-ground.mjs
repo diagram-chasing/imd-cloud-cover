@@ -1,34 +1,13 @@
-// Bake the static ground layers into PNGs at build time.
-//
-// The ground composite (land raster + grass-tile texture + hypsometric relief +
-// coast outline + shallow-water ring + built-up patches + night city lights)
-// never changes at runtime except for the day/night palette swap — so it is
-// pre-rendered here into two ready-to-blit images plus a mask, and the client
-// ships none of the per-pixel code, the 192 KB urban topojson, or the 388 KB
-// relief raster.
-//
-// Inputs (all committed):
-//   src/lib/assets/geo/india.json          topojson, land outline
-//   src/lib/assets/geo/india-urban.json    topojson, built-up polygons (clipped)
-//   src/lib/assets/images/hyp-india.png       Natural Earth HYP_50M_SR crop
-//                                             (lon 66..100 E, lat 4..38 N)
-//   src/lib/assets/images/medievalTile_57/58.png   grass texture tiles
-//
-// Outputs (committed, imported by PixelMap):
-//   src/lib/assets/ground/ground-day.png    RGBA ground composite, day palette
-//   src/lib/assets/ground/ground-night.png  same, night palette
-//   src/lib/assets/ground/ground-mask.png   R = land, G = shallow ring, B = urban
-//
-// Rerun (pnpm bake:ground) whenever the inputs or the palette below change.
-// The raster must match the runtime geometry: WORLD_W/CELL/DETAIL mirror
-// PixelMap.svelte + theme.ts, and the projection mirrors src/lib/map/geo.ts.
+// Bake ground composites (day + night PNGs + mask) from topojson, hypsometric, and texture inputs.
+// Rerun (pnpm bake:ground) when inputs or palette change.
+// WORLD_W/CELL/DETAIL/projection must mirror PixelMap.svelte + theme.ts + geo.ts.
 
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { PNG } from 'pngjs';
 import { geoConicConformal } from 'd3-geo';
 import { feature } from 'topojson-client';
 
-// ---- geometry (mirrors theme.ts CELL + PixelMap WORLD_W + geo.ts DETAIL) ----
+// ---- geometry ----
 const WORLD_W = 1024;
 const CELL = 8;
 const DETAIL = 2; // ground sub-cells per cloud cell
@@ -37,39 +16,35 @@ const GCELL = CELL / DETAIL;
 const COLS = Math.floor(WORLD_W / GCELL);
 const ROWS = Math.floor(WORLD_H / GCELL);
 
-// ---- ground palette (single source of truth — used only at bake time) ----
+// ---- ground palette ----
 const LAND = {
 	day: { fill: '#5B8C6E', dither: '#568768' },
 	night: { fill: '#3E6B54', dither: '#3A664F' }
 };
-// Built-up areas read as a subtle, blended-in darkening of the land — a muted
-// dark green-grey, just deeper than the land tone, not a black hole.
+// built-up: subtle darkening, not a black hole
 const URBAN = {
 	day: { fill: '#556353', dither: '#4E5C4C' },
 	night: { fill: '#33402F', dither: '#2E3A2A' }
 };
-// One flat, light shallow band hugging the coast; partial alpha lets the flat
-// sky-sea tone through so it blends with the background (no gradient).
+// shallow band: partial alpha blends with sky-sea background
 const SEA = {
 	day: { shallow: '#8FCBEF', dither: '#83C2E9' },
 	night: { shallow: '#2E5A86', dither: '#29527C' }
 };
 const SEA_RING_WIDTH = 1; // ground cells of shallow band
 const SEA_RING_ALPHA = 0.45;
-// Coast cells darken toward an inked shoreline; kept gentle.
+// coast: gentle darkening toward an inked shoreline
 const SHORE_DARKEN = 0.86;
-// Hypsometric relief: strength of the pull away from the flat theme green,
-// posterized into TERRAIN_STEP bands; blurred so steep zones (Himalaya) read
-// as broad elevation bands, not per-cell speckle.
+// hypsometric: posterized into bands; blurred so Himalaya reads as broad zones
 const TERRAIN_STRENGTH = 0.38;
 const TERRAIN_STEP = 0.08;
 const TERRAIN_BLUR_PASSES = 2;
 const HYP_BBOX = { lon0: 66, lon1: 100, lat0: 4, lat1: 38 };
-// Night city lights: sparse seeded warm pixels inside built-up cells.
+// night city lights: sparse warm pixels inside built-up cells
 const CITY_LIGHT = '#F2C14E';
 const CITY_LIGHT_DENSITY = 0.16;
 const CITY_LIGHT_MIX = 0.6;
-// Grass-raster px one tile spans before repeating.
+// grass tile width in px
 const TILE_PX = 10;
 
 const OUT_DIR = 'src/lib/assets/ground';
@@ -89,9 +64,7 @@ async function loadTopo(path) {
 	return feature(topo, topo.objects[objName]);
 }
 
-// Even-odd scanline rasterizer: fills `mask` (W x H) for every polygon of every
-// feature, sampling at cell centers. Rings are projected with `project` and
-// scaled into grid units; holes are handled by the even-odd rule per polygon.
+// even-odd scanline rasterizer; holes handled by even-odd rule
 function rasterize(fc, project, W, H, scale) {
 	const mask = new Uint8Array(W * H);
 	for (const f of fc.features) {
@@ -164,8 +137,7 @@ const projection = geoConicConformal()
 		india
 	);
 
-// Land at ground resolution; urban supersampled 2x per axis then reduced (many
-// Indian towns are smaller than a ground cell), kept only where there is land.
+// urban supersampled 2x (many towns < 1 ground cell), masked to land only
 const land = rasterize(india, projection, COLS, ROWS, 1 / GCELL);
 const SS = 2;
 const urbanSS = rasterize(urbanFC, projection, COLS * SS, ROWS * SS, SS / GCELL);
@@ -225,8 +197,7 @@ for (let pass = 0; pass < SEA_RING_WIDTH; pass++) {
 	front = next;
 }
 
-// Terrain relief factors: sample the hypso raster per land cell, blur, then
-// normalize against the India-wide mean, soften and posterize.
+// terrain: sample hyp raster, blur, normalize, posterize
 function sampleHyp(lon, lat) {
 	const { lon0, lon1, lat0, lat1 } = HYP_BBOX;
 	if (lon < lon0 || lon >= lon1 || lat <= lat0 || lat > lat1) return null;

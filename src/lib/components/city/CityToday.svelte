@@ -1,8 +1,5 @@
 <script lang="ts">
-	// The "today / now" card: the map tooltip's vocabulary at card scale. Same
-	// sky-condition read and altitude bars as StationTooltip, on a paper panel.
-	// `expanded` renders a hero-scale variant (bigger bars, finer resolution) for
-	// pages that give the card room to breathe.
+	// today card: same sky-condition read and altitude bars as StationTooltip
 	import { prettyDate, skyCondition } from '$lib/format';
 
 	interface Props {
@@ -23,8 +20,7 @@
 		{ key: 'm', label: 'MID · ALTO' },
 		{ key: 'l', label: 'LOW · CUMULUS' }
 	];
-	// Compact truncates to 6 blocks; expanded uses 10 so each block reads as a
-	// clean 10% step (0–100 → 0–10 filled).
+	// expanded: 10 blocks so each = 10%; compact: 6
 	const segCount = expanded ? 10 : 6;
 	const filled = (v: number) => Math.min(segCount, Math.round(v / 10));
 

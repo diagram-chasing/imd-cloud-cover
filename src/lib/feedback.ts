@@ -14,7 +14,7 @@ function audio(): { ac: AudioContext; out: GainNode } | null {
 		master.gain.value = 0.9;
 		master.connect(ctx.destination);
 	}
-	// Browsers start the context suspended until a user gesture; every click is one.
+	// AudioContext starts suspended; first click resumes it
 	if (ctx.state === 'suspended') ctx.resume().catch(() => {});
 	return { ac: ctx, out: master! };
 }

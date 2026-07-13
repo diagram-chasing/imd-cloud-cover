@@ -1,10 +1,5 @@
 <script lang="ts">
-	// A "barcode" strip where each vertical stripe is a day and its brightness is that
-	// day's effective cloud cover (deep blue = clear, solid white = overcast; a
-	// diagonal-hatched grey stripe = no reading). Pass a second city (`bName`/`bE`) to
-	// stack a sky twin beneath it and reveal the shared rhythm — bright and dark
-	// columns line up. Omit it for a single city's own record, and turn on `axis` for
-	// a month scale beneath the strips.
+	// barcode: one column per day, brightness = cloud cover. pass bName/bE for twin comparison
 	import { coverTier } from '$lib/theme';
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
@@ -25,20 +20,18 @@
 	}
 	let { dates, aName, aE, bName, bE, axis = false, onShuffle }: Props = $props();
 
-	// Quantize present-day cover into the map's four cloud tiers so the strip reads
-	// as chunky bands rather than a smooth gradient. Tier 0 (clear) draws nothing —
-	// the deep-blue track shows through.
+	// quantize into 4 tiers; tier 0 (clear) draws nothing, track shows through
 	const TIER_OPACITY = [0, 0.32, 0.56, 0.8, 1];
 	const TRACK = '#164a7c';
 	const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
-	const ROW_H = 26; // px — tall enough to read clearly
+	const ROW_H = 26;
 	const AXIS_H = 18; // px — tick + month label
-	let w = $state(0); // measured strip width in px
+	let w = $state(0);
 
 	const N = $derived(dates.length);
 	const bw = $derived(N ? w / N : 0);
-	// Integer left edge per column so crisp bars tile with no sub-pixel seams.
+	// integer left edge so crisp bars tile with no sub-pixel seams
 	const edge = (i: number) => Math.round(i * bw);
 
 	let rows = $derived(
@@ -50,7 +43,7 @@
 			: [{ id: 'a', name: aName, e: aE }]
 	);
 
-	// First column of each calendar month → a tick + label on the axis.
+	// first column of each month gets a tick + label
 	let ticks = $derived.by(() => {
 		const out: { i: number; label: string }[] = [];
 		let lastMonth = -1;
@@ -183,8 +176,6 @@
 </figure>
 
 <style>
-	/* Chunky pixel corners echoing PixelButton's bevel — cut in 2px steps so the
-		swatches read as low-res chips rather than plain rectangles. */
 	.pixel-chip,
 	.pixel-swatch {
 		--pixel-clip: polygon(

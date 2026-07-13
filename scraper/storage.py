@@ -1,11 +1,5 @@
-"""Storage abstraction for the meteogram pipeline.
-
-Two backends behind one interface:
-  * R2Store   — Cloudflare R2 via boto3 (production)
-  * LocalStore — a directory on disk (LOCAL_MODE=1, for dev / tests)
-
-Pick one with get_store(). Everything the scraper and aggregator write goes
-through here so the two paths never drift.
+"""Storage abstraction: R2Store (production via boto3) and LocalStore (LOCAL_MODE=1).
+Pick one with get_store().
 """
 
 import json
@@ -39,11 +33,7 @@ class Store:
         raise NotImplementedError
 
     def list_prefixes(self, prefix="", delimiter="/"):
-        """Immediate "folders" under `prefix` (e.g. date dirs at the root).
-
-        Cheap alternative to list_keys() when you only need the top-level
-        groupings and not every object beneath them.
-        """
+        """immediate subdirectory names under prefix; cheaper than list_keys for date dirs."""
         raise NotImplementedError
 
     def exists(self, key):

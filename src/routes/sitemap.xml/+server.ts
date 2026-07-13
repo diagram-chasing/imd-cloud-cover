@@ -1,8 +1,4 @@
-// Prerendered sitemap listing the homepage, every city page, and every station
-// page that isn't 308-redirected to a city (see station/[code]/+page.server.ts).
-// URLs are absolute against SITE_BASE (the public studio-domain subpath), not the
-// raw Netlify origin. Reads the build-baked views, falling back to the sample
-// fixtures, mirroring the CORE/BASE split in the page loaders.
+// prerendered sitemap; URLs against SITE_BASE (site lives at a subpath)
 import type { RequestHandler } from './$types';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';

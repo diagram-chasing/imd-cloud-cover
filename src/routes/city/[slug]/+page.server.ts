@@ -1,7 +1,4 @@
-// City pages are prerendered so crawlers get per-city <meta> og: tags and the
-// header ships as real HTML. The interactive sections (today card, map, forecast)
-// hydrate client-side like the rest of the app. Data is read from the build-baked
-// JSON (static/baked), falling back to the committed sample fixtures.
+// city pages prerendered: og tags + header baked; interactive sections hydrate client-side
 import type { EntryGenerator, PageServerLoad } from './$types';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -16,8 +13,7 @@ export const prerender = true;
 const RADIUS_KM = 100;
 const MAP_CAP = 12;
 
-// Prefer the build-baked view, fall back to the sample fixture — mirrors the
-// CORE/BASE split in src/lib/api/r2.ts so dev/`pnpm check` work without a data endpoint.
+// prefer baked view, fall back to sample fixture
 function readView<T>(rel: string): T {
 	for (const dir of ['static/baked', 'static/sample']) {
 		const p = resolve(dir, rel);
@@ -49,9 +45,7 @@ export const load: PageServerLoad = ({ params }) => {
 	if (!code) throw error(404, 'Unknown city');
 	const city = cities.cities[code];
 
-	// City coordinates: the india-places feature that names this city and points
-	// at this station wins; else the biggest place pointing here; else the
-	// station's own coordinates.
+	// city coords: named place wins, then biggest place pointing here, then station's own
 	let lat: number | null = null;
 	let lon: number | null = null;
 	let bestScore = -1;
@@ -70,8 +64,7 @@ export const load: PageServerLoad = ({ params }) => {
 		lon = own.lon;
 	}
 
-	// Stations near the city: the city's own station is always included (flagged
-	// primary), the rest within RADIUS_KM, nearest first.
+	// own station always included (flagged primary); others within RADIUS_KM, nearest first
 	const scored = Object.entries(manifest.stations).map(([c, s]) => ({
 		code: c,
 		name: s.name,
@@ -84,8 +77,7 @@ export const load: PageServerLoad = ({ params }) => {
 	const nearby = scored
 		.filter((s) => s.primary || s.km <= RADIUS_KM)
 		.sort((a, b) => a.km - b.km);
-	// Plot the nearest MAP_CAP; the header count reports exactly what's plotted so
-	// the two never disagree.
+	// cap at MAP_CAP so header count matches what's plotted
 	const stations = nearby.slice(0, MAP_CAP);
 	const stationCount = stations.length;
 	const primaryKm = stations.find((s) => s.primary)?.km ?? null;

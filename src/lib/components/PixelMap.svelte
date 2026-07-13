@@ -156,8 +156,7 @@
 	let geo: Geo | null = null;
 	let camera: Container | null = null;
 	let groundSprite: Sprite | null = null;
-	// Only the texture for the sky mode visible at init is loaded critically; the
-	// other mode fills in on idle, so either key can be briefly absent.
+	// other mode loads on idle - key may be briefly absent
 	let groundTex: Partial<Record<'day' | 'night', Texture>> | null = null;
 	let skyGfx: Graphics | null = null;
 
@@ -192,10 +191,9 @@
 	let lods: Lod[] = [];
 	let lodIndex = -1;
 	let maxBins = 0;
-	// The finest (per-station) LOD and its larger sprite pools are built lazily the
-	// first time the user zooms all the way in — not on the critical first-paint path.
+	// finest LOD (~1245 marks) built lazily on first zoom-in
 	let finestBuilt = false;
-	// Set in the $effect cleanup so late font/idle callbacks don't touch a torn-down app.
+	// guards against callbacks firing after teardown
 	let destroyed = false;
 	const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
 	const onIdle = (cb: () => void) => {
@@ -324,10 +322,7 @@
 		for (const m of placeMarkers) m.scale.set(s);
 	}
 
-	// "You are here": a pixel-square marker at the visitor's coarse (IP) location,
-	// matching the map's square place dots rather than a round pin. Built once;
-	// positioned/toggled whenever the resolved location changes. Hidden when the
-	// visitor is outside the projected India frame (e.g. abroad).
+	// "you are here" pixel marker at IP location; hidden when off-map
 	function buildUserMarker() {
 		if (!camera) return;
 		userLayer = new Container();
@@ -501,9 +496,7 @@
 			}))
 		};
 	}
-	// Build only the coarse LODs (bin 24/16/11 ≈ 52/117/273 bins) up front. The
-	// finest per-station LOD (~1245 marks) is a lazy placeholder until zoom-in, which
-	// keeps first-paint binning + sprite pools ~4× smaller.
+	// coarse LODs only up front; finest LOD is a lazy placeholder until zoom-in
 	const FINE_LOD = LODS.length - 1;
 	function buildLods() {
 		lods = LODS.map(({ bin }, i) => (i < FINE_LOD ? buildLod(bin) : (null as unknown as Lod)));
@@ -594,9 +587,7 @@
 		camera.addChild(titleGroup);
 	}
 
-	// Grow the shadow + cloud-band sprite pools up to `target` entries, appending
-	// into the (already z-ordered) layer containers. Called with the coarse count at
-	// first paint, then with the per-station count when the finest LOD is entered.
+	// grow pools to target; coarse count at first paint, per-station count on zoom-in
 	function growPools(target: number) {
 		if (!layers || !shadowLayer) return;
 		for (let k = shadowPool.length; k < target; k++) {
@@ -622,9 +613,7 @@
 
 	async function init() {
 		if (!host) return;
-		// Kick the font load off the critical path. When it resolves, re-lay the title
-		// (and place labels) — both are hidden/faded at the start view, so swapping in
-		// the real font metrics is invisible.
+		// font off critical path; re-lay title when ready (both hidden at start view)
 		document.fonts
 			.load("10px 'Ships Whistle'")
 			.then(() => {
@@ -634,12 +623,7 @@
 			})
 			.catch(() => {});
 
-		// Spin up the WebGL context immediately, un-awaited, so it initialises while
-		// the mask + ground texture download/decode. `preference: 'webgl'` keeps the
-		// renderer choice deterministic — it matches the renderer chunk the
-		// prerendered page modulepreloads, and skips the async WebGPU adapter probe.
-		// `app` is only assigned once init resolves, so the $effect teardown's
-		// app?.destroy() can't race a half-initialised Application.
+		// spin up WebGL immediately un-awaited; `webgl` preference skips async WebGPU probe
 		const application = new Application();
 		const appReady = application
 			.init({
@@ -656,11 +640,7 @@
 			);
 
 		const atlas = buildMarkAtlas(MARK_CELL);
-		// Only the ground texture for the current sky mode gates first paint; the
-		// other mode's texture loads on idle and swaps in via updateGround.
-		// untrack: this runs synchronously inside the mounting $effect, and a plain
-		// read would register sky.timeIndex as a dependency — the first scrub across
-		// it would then tear down and never rebuild the whole Pixi app.
+		// untrack: plain read would register sky.timeIndex as dep and tear down the Pixi app on first scrub
 		const mode = untrack(() => skyMode(sky.timeIndex));
 		const [mask, groundNow] = await Promise.all([
 			loadGroundMask(groundMaskUrl).catch(() => undefined),
@@ -704,9 +684,7 @@
 		groundSprite.scale.set(geo.groundScale);
 		camera.addChild(groundSprite);
 
-		// Reserve every layer container in its final z-order now. Ambient layers
-		// (waves, balloon, places) are created empty here and populated after the
-		// first frame, so nothing changes stacking when they fill in later.
+		// reserve z-order now; ambient layers populated after first frame
 		shadowLayer = new Container();
 		shadowLayer.eventMode = 'none';
 		camera.addChild(shadowLayer);
@@ -730,7 +708,6 @@
 		camera.addChild(hoverGfx);
 		buildUserMarker();
 
-		// Cloud textures + coarse sprite pools (shadow + 3 bands).
 		cloudTex = { low: [], middle: [], high: [] };
 		for (const band of BAND_KEYS) {
 			for (let tier = 1; tier <= 4; tier++) {
@@ -755,9 +732,7 @@
 			if (!destroyed && !userMoved) fitCamera();
 		});
 
-		// First meaningful frame (coarse clouds over India) is ready. Yield, then fill
-		// the ambient decoration; places (heaviest) wait for idle since they're hidden
-		// until the user zooms in.
+		// yield after first frame; places wait for idle (hidden until zoom-in)
 		await nextFrame();
 		if (destroyed) return;
 		fillWaves();
@@ -875,9 +850,7 @@
 			const v = startView();
 			const s = Math.min((v.w * 0.6) / groupW, (v.h * 2) / groupH);
 			const mx = v.w * 0.02;
-			// Anchor the title a fixed fraction below the top of the landing view rather
-			// than scaling v.y (which is negative and aspect-dependent) — the old `v.y * 4`
-			// pushed the title off the top of tall/narrow phones.
+			// fixed fraction below top: v.y * 4 pushed the title off tall/narrow phones
 			const TITLE_TOP_FRAC = 0.11;
 			titleGroup.scale.set(s);
 			titleGroup.position.set(v.x + v.w - groupW * s - mx, v.y + v.h * TITLE_TOP_FRAC);
@@ -903,9 +876,7 @@
 			return;
 		}
 		const zr = zoom / (containZoom() * startZoomFactor());
-		// Fade the title out both as you zoom in past the landing view (zr > 1.05) and
-		// as you pull the map back below it (zr < 1) — it's anchored in the map world,
-		// so without the zoom-out fade it drifts upward instead of disappearing.
+		// fade on zoom-in AND zoom-out: anchored in world coords, drifts up if not faded
 		const fadeIn = (1.55 - zr) / (1.55 - 1.05);
 		const fadeOut = (zr - 0.8) / (1 - 0.8);
 		const fade = Math.max(0, Math.min(1, fadeIn, fadeOut));
@@ -918,8 +889,7 @@
 		return [19, 16, 13, 11][tier] ?? 11;
 	}
 
-	// Reserve the (empty) places container in z-order during first paint; the markers
-	// are built afterwards in fillPlaces (they're hidden until zoomed in anyway).
+	// reserve z-order slot; fillPlaces builds markers on idle
 	function createPlacesLayer() {
 		if (!camera) return;
 		placesLayer = new Container();
@@ -1055,7 +1025,7 @@
 		};
 	}
 
-	// Reserve the (empty) balloon container in z-order during first paint.
+	// reserve z-order slot; fillBalloon populates after first frame
 	function createBalloonLayer() {
 		if (!camera) return;
 		balloonLayer = new Container();
@@ -1105,8 +1075,7 @@
 		});
 	}
 
-	// Reserve the (empty) wave container in z-order during first paint; the sprites
-	// themselves are generated afterwards in fillWaves.
+	// reserve z-order slot; fillWaves builds sprites after first frame
 	function createWaveLayer() {
 		if (!camera) return;
 		waveLayer = new Container();
@@ -1161,8 +1130,7 @@
 
 	function updateGround() {
 		if (!groundSprite || !groundTex) return;
-		// The off-mode texture may still be loading; keep the stale one until the
-		// idle load lands and calls back in here.
+		// off-mode texture may still be loading - keep stale until idle load lands
 		const t = groundTex[skyMode(sky.timeIndex)];
 		if (t) groundSprite.texture = t;
 	}
@@ -1216,8 +1184,7 @@
 				sp.texture = cloudTex[band][tier][bins[i].variant];
 			}
 		}
-		// Ground shadow per bin: driven by effective cover across the tower, with
-		// higher bands contributing less (thin cirrus casts almost nothing).
+		// shadow driven by effective cover; higher bands contribute less
 		for (let i = 0; i < bins.length; i++) {
 			const sp = shadowPool[i];
 			if (!sp) break;
@@ -1450,9 +1417,7 @@
 		const oy = panY + sy / zoom;
 		const fit = containZoom();
 		const narrow = narrowLayout();
-		// On mobile/narrow layouts don't let the map shrink below its contain size
-		// (previously fit * 0.4 zoomed way out into empty gutters), and give extra
-		// zoom-in headroom so the finest city-label tiers are actually reachable.
+		// narrow: floor at contain size (fit * 0.4 zoomed into empty gutters)
 		const minZoom = fit * (narrow ? 1 : 0.9);
 		const maxZoom = fit * (narrow ? 10 : 7);
 		zoom = Math.max(minZoom, Math.min(maxZoom, zoom * factor));

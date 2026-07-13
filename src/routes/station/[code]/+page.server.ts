@@ -1,7 +1,4 @@
-// Station pages are prerendered. City-backed stations redirect to their canonical
-// /city/[slug] page at build time (no client round-trip); the rest ship as real
-// HTML with the station's identity baked in, so the header renders instantly. Only
-// today's readings (latest) and the forecast load client-side.
+// prerendered; city-backed stations 308-redirect to /city/[slug] at build time
 import type { EntryGenerator, PageServerLoad } from './$types';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -13,13 +10,11 @@ import { haversineKm } from '$lib/city/distance';
 
 export const prerender = true;
 
-// Adjoining cities within this radius are handed to the map, which labels only
-// the ones that actually land inside the (regional) crop window.
+// map labels only cities that land inside the crop window
 const CITY_RADIUS_KM = 220;
 const CITY_CAP = 12;
 
-// Prefer the build-baked view, fall back to the sample fixture — mirrors the
-// CORE/BASE split in src/lib/api/r2.ts and the city page's loader.
+// prefer baked view, fall back to sample fixture
 function readView<T>(rel: string): T {
 	for (const dir of ['static/baked', 'static/sample']) {
 		const p = resolve(dir, rel);
@@ -43,19 +38,17 @@ export const entries: EntryGenerator = () => {
 
 export const load: PageServerLoad = ({ params }) => {
 	const { cities, summary, manifest } = loadData();
-	// Tolerate either exact or upper-cased code in the URL.
+	// tolerate exact or upper-cased code in URL
 	const code = manifest.stations[params.code] ? params.code : params.code.toUpperCase();
 
-	// If this station backs a city, its canonical home is the city page.
+	// city-backed station: redirect to canonical city page
 	const slug = citySlugs(cities.cities).slugByCode[code];
 	if (slug) throw redirect(308, `${base}/city/${slug}`);
 
 	const station = manifest.stations[code];
 	if (!station) throw error(404, `Unknown station ${code}`);
 
-	// Adjoining cities: each city is backed by a station, so its coordinates are
-	// that station's. Keep the nearest handful within radius (self excluded); the
-	// map decides which ones fall inside the frame.
+	// adjoining cities: nearest within radius; map decides which land inside the frame
 	const nearbyCities = Object.entries(cities.cities)
 		.filter(([c]) => c !== code && manifest.stations[c])
 		.map(([c, city]) => {

@@ -75,7 +75,6 @@
 	// Scroll/pinch does the zooming; chrome appears only when there's a way back.
 	let zoomed = $derived(layout.zoomRatio > 1.05);
 
-	// Pull the heavy place labels + rollups exactly once, off the critical path.
 	let deferredStarted = false;
 	function ensureDeferred() {
 		if (deferredStarted) return;
@@ -94,7 +93,6 @@
 		pixelMapImport
 			?.then((m) => (PixelMap = m.default))
 			.catch((e) => (error = e instanceof Error ? e.message : 'Failed to load map'));
-		// Prefetch deferred views once the browser is idle (after the first frame).
 		const w = window as unknown as { requestIdleCallback?: (cb: () => void) => void };
 		if (w.requestIdleCallback) w.requestIdleCallback(ensureDeferred);
 		else setTimeout(ensureDeferred, 200);
@@ -138,7 +136,7 @@
 	let panelStation = $derived<Station | null>(
 		sky.selectedCode && core ? (core.manifest.stations[sky.selectedCode] ?? null) : null
 	);
-	// Screen point the desktop popover anchors to (the click); null for search.
+	// desktop popover anchor point (click pos); null = search
 	let anchorPoint = $state<{ x: number; y: number } | null>(null);
 	function openStation(code: string, at?: { x: number; y: number }) {
 		anchorPoint = at ?? null;
@@ -163,8 +161,7 @@
 			?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' });
 	}
 
-	// Follow the map's sky: at night the whole page (paper mat + content below) goes
-	// dark to match the navy canvas, by overriding the paper/ink tokens on the root.
+	// night: override paper/ink tokens on root to match navy canvas
 	$effect(() => {
 		document.documentElement.classList.toggle('night', night);
 		return () => document.documentElement.classList.remove('night');
@@ -211,8 +208,7 @@
 		<div
 			class="top-keys absolute top-0 right-0 z-[11] flex flex-col items-end gap-2 px-3 py-2.5 md:px-3.5 md:py-3"
 		>
-			<!-- Fit-to-screen + search always sit together in the top-right corner. The
-				fit key is a no-op when already framed but stays visible for discoverability. -->
+			<!-- fit key is a no-op when already framed but stays visible for discoverability -->
 			<div class="chips flex items-start gap-1.5">
 				<PixelButton
 					size="sm"
@@ -221,8 +217,7 @@
 					style="--pad: 5px 6px"
 					onclick={() => map?.zoomReset()}
 				>
-					<!-- Pixel "fit" glyph: four corner brackets. -->
-					<svg
+							<svg
 						class="block [shape-rendering:crispEdges]"
 						viewBox="0 0 8 8"
 						width="16"
@@ -257,14 +252,12 @@
 		<div
 			class="bar bottom pointer-events-none absolute inset-x-0 bottom-0 z-10 grid grid-cols-[1fr_auto_1fr] items-end gap-x-5 gap-y-3 px-4 py-3.5 **:pointer-events-auto max-md:grid-cols-1 max-md:justify-items-center md:max-lg:grid-cols-1 md:max-lg:justify-items-center md:max-lg:gap-2.5"
 		>
-			<!-- Empty first lane: search moved to the top-left corner keys;
-				kept so the grid keeps the dock optically centred. -->
+			<!-- empty lane keeps grid dock optically centred -->
 			<div class="lane legend max-md:hidden md:max-lg:hidden"></div>
 			<div
 				class="lane dock flex min-w-0 flex-col items-start gap-2 justify-self-center max-md:w-full max-md:items-stretch md:max-lg:order-first md:max-lg:justify-self-center"
 			>
-				<!-- Phones only: legend compresses to one key row above the timeline; the
-					fit-map key lives in the top-right corner with the minimap stack. -->
+				<!-- phones: legend compresses to one row; fit key is in top-right -->
 				<div class="mobile-row relative hidden items-center justify-center gap-3 max-md:flex">
 					<BandToggle horizontal />
 				</div>

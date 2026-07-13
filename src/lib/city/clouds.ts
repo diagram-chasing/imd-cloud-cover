@@ -1,7 +1,4 @@
-// The home map's cloud marks (high cirrus → mid alto → low cumulus, coloured and
-// sized by cover) assembled into a vertical "tower" of SVG cells. Shared by the
-// city locator map and the nearby-stations list so a station reads the same
-// wherever it appears. Pure — no DOM — returns cell coordinates to plot.
+// returns SVG cell coords for a station cloud tower. pure, no DOM
 import { makePattern, MARK_ALPHA, TIER_ALPHA, MARK_VARIANTS } from '$lib/map/sprites';
 import { CLOUD, coverTier, type BandKey } from '$lib/theme';
 import { fnv1a } from '$lib/map/hash';

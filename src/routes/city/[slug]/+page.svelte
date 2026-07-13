@@ -58,8 +58,7 @@
 	);
 	let todayValues = $derived(values[data.code] ?? null);
 
-	// This city's day-by-day cover over the archived window, shaped for the SkyBarcode.
-	// Null until the rollup lands or if this city isn't in it.
+	// day-by-day cover for SkyBarcode; null until rollup lands
 	let history = $derived.by(() => {
 		const city = cities?.cities[data.code];
 		return cities && city ? { dates: cities.dates, name: city.name, e: city.e } : null;
