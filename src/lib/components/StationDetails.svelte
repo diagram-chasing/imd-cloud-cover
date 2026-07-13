@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Station, Rollup } from '$lib/types';
+	import type { Station } from '$lib/types';
 	import { Popover, PopoverContent } from '$lib/components/ui/popover';
 	import { Drawer, DrawerContent } from '$lib/components/ui/drawer';
 	import StationCard from './StationCard.svelte';
@@ -8,13 +8,12 @@
 		code: string;
 		station: Station;
 		current: { h: number; m: number; l: number } | null;
-		rollup: Rollup | null;
 		date: string;
 		when: string;
 		at: { x: number; y: number } | null;
 		onclose: () => void;
 	}
-	let { code, station, current, rollup, date, when, at, onclose }: Props = $props();
+	let { code, station, current, date, when, at, onclose }: Props = $props();
 
 	let open = $state(true);
 	$effect(() => {
@@ -52,7 +51,7 @@
 			class="max-h-[85vh] gap-0 border-2 border-ink bg-paper px-4 pt-1 pb-4 text-ink"
 		>
 			<div class="sheet-scroll max-h-[calc(85vh-40px)] overflow-y-auto">
-				<StationCard {code} {station} {current} {rollup} {date} {when} {onclose} />
+				<StationCard {code} {station} {current} {date} {when} {onclose} />
 			</div>
 		</DrawerContent>
 	</Drawer>
@@ -65,7 +64,7 @@
 			collisionPadding={16}
 			class="w-[340px] max-w-[calc(100vw-24px)] gap-0 border-2 border-ink bg-paper p-3 text-ink ring-0"
 		>
-			<StationCard {code} {station} {current} {rollup} {date} {when} {onclose} />
+			<StationCard {code} {station} {current} {date} {when} {onclose} />
 		</PopoverContent>
 	</Popover>
 {/if}

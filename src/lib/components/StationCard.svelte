@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { base } from '$app/paths';
-	import type { Station, Rollup, Forecast } from '$lib/types';
+	import type { Station, Forecast } from '$lib/types';
 	import { fetchForecast } from '$lib/api/r2';
 	import { prettyDate, skyCondition } from '$lib/format';
-	import { CLEAR_STARS } from '$lib/theme';
 	import StationMeteogram from './StationMeteogram.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -14,12 +13,11 @@
 		code: string;
 		station: Station;
 		current: { h: number; m: number; l: number } | null;
-		rollup: Rollup | null;
 		date: string;
 		when: string;
 		onclose?: () => void;
 	}
-	let { code, station, current, rollup, date, when, onclose }: Props = $props();
+	let { code, station, current, date, when, onclose }: Props = $props();
 
 	let forecast = $state<Forecast | null>(null);
 	let forecastError = $state(false);
@@ -47,19 +45,6 @@
 	}
 
 	let summary = $derived(current ? skyCondition(current) : 'NO READING TODAY');
-
-	let series = $derived(rollup?.stations[code] ?? null);
-	let clearStreak = $derived.by(() => {
-		if (!series) return 0;
-		const e = series.e;
-		let n = 0;
-		for (let i = e.length - 1; i >= 0; i--) {
-			const v = e[i];
-			if (v === null || v >= CLEAR_STARS) break;
-			n++;
-		}
-		return n;
-	});
 </script>
 
 <div class="card flex w-full flex-col gap-3 text-ink">

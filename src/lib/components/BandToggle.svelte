@@ -28,7 +28,6 @@
 			Math.round((node.width - w) / 2),
 			Math.round((node.height - h) / 2)
 		);
-		return {};
 	}
 
 	function previewAll(node: HTMLCanvasElement) {
@@ -46,7 +45,6 @@
 			const w = sprite.wCells * 2;
 			ctx.drawImage(sprite.canvas, Math.round((node.width - w) / 2), y);
 		}
-		return {};
 	}
 </script>
 

@@ -33,7 +33,7 @@
 		WAVE,
 		type BandKey
 	} from '$lib/theme';
-	import { buildGeo, loadGroundMask, type Geo } from '$lib/map/geo';
+	import { buildGeo, buildPlaces as buildGeoPlaces, loadGroundMask, type Geo } from '$lib/map/geo';
 	import groundDayUrl from '$lib/assets/ground/ground-day.png';
 	import groundNightUrl from '$lib/assets/ground/ground-night.png';
 	import groundMaskUrl from '$lib/assets/ground/ground-mask.png';
@@ -721,6 +721,14 @@
 		fillPlaces();
 		updatePlacesScale();
 		declutterPlaces();
+	}
+
+	// `places` is deferred: it usually arrives after init() has already built geo with an
+	// empty places array. Project the labels into the existing geo and (re)build the markers.
+	function syncPlaces() {
+		if (!geo || !places || geo.places.length || placeMarkers.length) return;
+		geo.places = buildGeoPlaces(places, geo.project);
+		buildPlaces();
 	}
 
 	function markFontsReady() {
@@ -1737,6 +1745,11 @@
 	$effect(() => {
 		void userGeo.loc;
 		if (app) updateUserMarker();
+	});
+	// deferred `places` load lands after init() — project it in and build the labels
+	$effect(() => {
+		void places;
+		if (app) syncPlaces();
 	});
 </script>
 

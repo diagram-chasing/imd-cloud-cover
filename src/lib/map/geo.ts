@@ -86,6 +86,32 @@ export async function loadGroundMask(url: string): Promise<GroundMask> {
 	return { cols, rows, land, shallow };
 }
 
+/** Project a place FeatureCollection into world-px labels. Reused when `places`
+ *  arrives after the initial geo build (deferred load). */
+export function buildPlaces(
+	placesFC: FeatureCollection,
+	project: (lon: number, lat: number) => [number, number] | null
+): GeoPlace[] {
+	const places: GeoPlace[] = [];
+	for (const f of placesFC.features) {
+		if (f.geometry?.type !== 'Point') continue;
+		const [lon, lat] = f.geometry.coordinates as [number, number];
+		const p = project(lon, lat);
+		if (!p) continue;
+		places.push({
+			name: String(f.properties?.name ?? ''),
+			pop: Number(f.properties?.pop ?? 0),
+			tier: Number(f.properties?.tier ?? 3),
+			state: (f.properties?.state as string | null) ?? null,
+			nearest: (f.properties?.nearest as string | null) ?? null,
+			nkm: Number(f.properties?.nkm ?? 0),
+			px: p[0],
+			py: p[1]
+		});
+	}
+	return places;
+}
+
 export function buildGeo(
 	india: FeatureCollection,
 	manifest: StationsManifest,
@@ -125,25 +151,7 @@ export function buildGeo(
 		stations.push({ code, px: cx * cell + cell / 2, py: cy * cell + cell / 2, rpx, rpy });
 	}
 
-	const places: GeoPlace[] = [];
-	if (placesFC) {
-		for (const f of placesFC.features) {
-			if (f.geometry?.type !== 'Point') continue;
-			const [lon, lat] = f.geometry.coordinates as [number, number];
-			const p = projection([lon, lat]);
-			if (!p) continue;
-			places.push({
-				name: String(f.properties?.name ?? ''),
-				pop: Number(f.properties?.pop ?? 0),
-				tier: Number(f.properties?.tier ?? 3),
-				state: (f.properties?.state as string | null) ?? null,
-				nearest: (f.properties?.nearest as string | null) ?? null,
-				nkm: Number(f.properties?.nkm ?? 0),
-				px: p[0],
-				py: p[1]
-			});
-		}
-	}
+	const places = placesFC ? buildPlaces(placesFC, (lon, lat) => projection([lon, lat]) ?? null) : [];
 
 	return {
 		cell,

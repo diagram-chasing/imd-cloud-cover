@@ -96,7 +96,6 @@
 						class="plaque absolute bottom-[34px] left-0 w-[208px] -translate-x-1/2 border-2 border-ink bg-paper shadow-[3px_3px_0] shadow-ink/28 transition-[width,box-shadow,transform] duration-160 ease-[ease] group-hover:w-[min(20rem,calc(100vw-32px))] group-hover:translate-x-[calc(-50%-1px)] group-hover:-translate-y-[3px] group-hover:shadow-[6px_6px_0] group-hover:shadow-ink group-focus-visible:w-[min(20rem,calc(100vw-32px))] group-focus-visible:translate-x-[calc(-50%-1px)] group-focus-visible:-translate-y-[3px] group-focus-visible:shadow-[6px_6px_0] group-focus-visible:shadow-ink group-data-open:w-[min(20rem,calc(100vw-32px))] group-data-open:translate-x-[calc(-50%-1px)] group-data-open:-translate-y-[3px] group-data-open:shadow-[6px_6px_0] group-data-open:shadow-ink"
 					>
 						{#if item.image}
-							<!-- Collapsed shows a sliver of the thumbnail; reveal shows the full image. -->
 							<div
 								class="thumb h-14 overflow-hidden border-b-2 border-ink transition-[height] duration-160 ease-[ease] group-hover:h-[150px] group-focus-visible:h-[150px] group-data-open:h-[150px]"
 							>
@@ -110,8 +109,6 @@
 						{/if}
 						<div class="body flex flex-col gap-1.5 px-3.5 pt-3 pb-3.5">
 							<h3 class="card-title m-0 text-base leading-tight">{item.title}</h3>
-							<!-- On the map the collapsed card hides its description + date;
-							     hovering/focusing/opening the city reveals them. -->
 							<p
 								class="card-desc m-0 [display:none] overflow-hidden text-sm leading-normal text-pretty text-muted-foreground [-webkit-box-orient:vertical] [-webkit-line-clamp:3] group-hover:[display:-webkit-box] group-focus-visible:[display:-webkit-box] group-data-open:[display:-webkit-box]"
 							>

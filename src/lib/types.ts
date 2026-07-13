@@ -177,7 +177,6 @@ export interface ForecastPoint {
 
 export interface Forecast {
 	start_date: string;
-	samples: number;
 	data: ForecastPoint[];
 }
 

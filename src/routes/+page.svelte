@@ -333,7 +333,6 @@
 		code={sky.selectedCode}
 		station={panelStation}
 		current={values[sky.selectedCode] ?? null}
-		rollup={core.rollup30 ?? null}
 		date={activeDate}
 		when={whenLabel}
 		at={anchorPoint}
