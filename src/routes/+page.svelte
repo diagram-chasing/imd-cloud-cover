@@ -250,12 +250,12 @@
 		</div>
 
 		<div
-			class="bar bottom pointer-events-none absolute inset-x-0 bottom-0 z-10 grid grid-cols-[1fr_auto_1fr] items-end gap-x-5 gap-y-3 px-4 py-3.5 **:pointer-events-auto max-md:grid-cols-1 max-md:justify-items-center md:max-lg:grid-cols-1 md:max-lg:justify-items-center md:max-lg:gap-2.5"
+			class="bar bottom pointer-events-none absolute inset-x-0 bottom-0 z-10 grid grid-cols-[1fr_auto_1fr] items-end gap-x-5 gap-y-3 px-4 py-3.5 **:pointer-events-auto max-md:grid-cols-1 max-md:justify-items-center"
 		>
 			<!-- empty lane keeps grid dock optically centred -->
-			<div class="lane legend max-md:hidden md:max-lg:hidden"></div>
+			<div class="lane legend max-md:hidden"></div>
 			<div
-				class="lane dock flex min-w-0 flex-col items-start gap-2 justify-self-center max-md:w-full max-md:items-stretch md:max-lg:order-first md:max-lg:justify-self-center"
+				class="lane dock flex min-w-0 flex-col items-start gap-2 justify-self-center max-md:w-full max-md:items-stretch"
 			>
 				<!-- phones: legend compresses to one row; fit key is in top-right -->
 				<div class="mobile-row relative hidden items-center justify-center gap-3 max-md:flex">
@@ -263,9 +263,8 @@
 				</div>
 				<TimeDock dates={activeRollup?.dates ?? null} />
 			</div>
-			<div
-				class="lane where flex min-w-0 items-center gap-3 justify-self-end max-md:hidden md:max-lg:justify-self-center"
-			>
+			<!-- tablets + desktop: vertical legend on the right, dock centred -->
+			<div class="lane where flex min-w-0 items-center gap-3 justify-self-end max-md:hidden">
 				<BandToggle />
 			</div>
 		</div>

@@ -256,6 +256,108 @@
 		return { minX: minX * gc, maxX: (maxX + 1) * gc, minY: minY * gc, maxY: (maxY + 1) * gc };
 	}
 
+	// Integral image of "opaque" cells (land or shallow coast ring) so any rectangle's
+	// land coverage is an O(1) lookup — used to place the title where it hides the least map.
+	let landSAT: Uint32Array | null = null;
+	function buildLandSAT() {
+		if (!geo) return;
+		const { cols, rows, land, shallow } = geo;
+		const W = cols + 1;
+		const sat = new Uint32Array(W * (rows + 1));
+		for (let y = 0; y < rows; y++) {
+			for (let x = 0; x < cols; x++) {
+				const v = land[y * cols + x] || shallow[y * cols + x] ? 1 : 0;
+				sat[(y + 1) * W + (x + 1)] =
+					v + sat[y * W + (x + 1)] + sat[(y + 1) * W + x] - sat[y * W + x];
+			}
+		}
+		landSAT = sat;
+	}
+	// fraction of the world-space rect covered by land; off-grid area counts as open (0)
+	function landFracInRect(x0: number, y0: number, x1: number, y1: number): number {
+		if (!landSAT || !geo) return 1;
+		const { cols, rows, groundScale: gc } = geo;
+		const W = cols + 1;
+		const fx0 = Math.floor(x0 / gc);
+		const fy0 = Math.floor(y0 / gc);
+		const fx1 = Math.ceil(x1 / gc);
+		const fy1 = Math.ceil(y1 / gc);
+		const fullArea = Math.max(1, (fx1 - fx0) * (fy1 - fy0));
+		const cx0 = Math.min(cols, Math.max(0, fx0));
+		const cy0 = Math.min(rows, Math.max(0, fy0));
+		const cx1 = Math.min(cols, Math.max(0, fx1));
+		const cy1 = Math.min(rows, Math.max(0, fy1));
+		if (cx1 <= cx0 || cy1 <= cy0) return 0;
+		const sum =
+			landSAT[cy1 * W + cx1] -
+			landSAT[cy0 * W + cx1] -
+			landSAT[cy1 * W + cx0] +
+			landSAT[cy0 * W + cx0];
+		return sum / fullArea;
+	}
+
+	// Search the framed view for the title placement that hides the least land, keeping the
+	// block at a comfortable size (largest size whose best slot is mostly open; else least-bad).
+	function bestTitlePlacement(groupW: number, groupH: number) {
+		// use the live camera rect so we score exactly what's on screen (fitCamera shifts the
+		// map left into a gutter on wide layouts — startView() would miss that)
+		const view = { x: panX, y: panY, w: vw / zoom, h: vh / zoom };
+		const mx = view.w * 0.03;
+		const my = view.h * 0.03;
+		// leave the top-right chrome and the bottom dock/legend band clear
+		const topAvoid = view.h * 0.05;
+		const bottomAvoid = view.h * 0.16;
+		const ax0 = view.x + mx;
+		const ay0 = view.y + my + topAvoid;
+		const ax1 = view.x + view.w - mx;
+		const ay1 = view.y + view.h - my - bottomAvoid;
+		const availW = ax1 - ax0;
+		const availH = ay1 - ay0;
+
+		// title's on-screen width is vw * frac (zoom-independent), so cap by an absolute px
+		// ceiling: big fractions still work on phones, but desktop stops growing unboundedly
+		const MAX_TITLE_PX = 460;
+		const maxFrac = MAX_TITLE_PX / vw;
+		const SIZE_FRACS = [0.5, 0.42, 0.34, 0.27, 0.2].map((f) => Math.min(f, maxFrac));
+		const GRID_X = 11;
+		const GRID_Y = 8;
+		const OPEN = 0.05;
+
+		let fallback: { x: number; y: number; s: number; cover: number } | null = null;
+		let prevF = -1;
+		for (const f of SIZE_FRACS) {
+			if (f === prevF) continue; // capping can collapse the top fractions together
+			prevF = f;
+			let s = (view.w * f) / groupW;
+			s = Math.min(s, availH / groupH);
+			const bw = groupW * s;
+			const bh = groupH * s;
+			if (bw > availW || bh > availH || s <= 0) continue;
+			const spanX = availW - bw;
+			const spanY = availH - bh;
+			let best: { x: number; y: number; s: number; cover: number; score: number } | null = null;
+			for (let iy = 0; iy < GRID_Y; iy++) {
+				const py = GRID_Y > 1 ? iy / (GRID_Y - 1) : 0.5;
+				const y = ay0 + spanY * py;
+				for (let ix = 0; ix < GRID_X; ix++) {
+					const px = GRID_X > 1 ? ix / (GRID_X - 1) : 0.5;
+					const x = ax0 + spanX * px;
+					const cover = landFracInRect(x, y, x + bw, y + bh);
+					// tie-breaker only (dwarfed by cover): prefer the centre of the open area, so
+					// with room to spare the title centres rather than jamming into a corner
+					const centerDist = Math.max(Math.abs(px - 0.5), Math.abs(py - 0.5)) * 2;
+					const score = cover + centerDist * 0.006;
+					if (!best || score < best.score) best = { x, y, s, cover, score };
+				}
+			}
+			if (best) {
+				if (!fallback || best.cover < fallback.cover) fallback = best;
+				if (best.cover <= OPEN) return best;
+			}
+		}
+		return fallback ?? { x: view.x + view.w - groupW * 0.3, y: view.y + view.h * 0.1, s: 0.3 };
+	}
+
 	function worldBBox() {
 		const g = geo!;
 		return { minX: -PAD, maxX: g.worldW + PAD, minY: -PAD, maxY: g.worldH + PAD };
@@ -697,6 +799,7 @@
 		});
 		geo = buildGeo(india, manifest, WORLD_W, CELL, places, mask);
 		buildLods();
+		buildLandSAT();
 
 		const ok = await appReady;
 		if (destroyed || !host || !ok) {
@@ -871,23 +974,9 @@
 
 		titleShown = true;
 
-		if (!narrow) {
-			const s = Math.min((gutter * 0.8) / groupW, (geo.worldH * 0.55) / groupH);
-			titleGroup.scale.set(s);
-			const TITLE_GUTTER_POS = -0.5;
-			titleGroup.position.set(
-				b.maxX + (gutter - groupW * s) * TITLE_GUTTER_POS,
-				geo.worldH / 2 - (groupH * s) / 2
-			);
-		} else {
-			const v = startView();
-			const s = Math.min((v.w * 0.6) / groupW, (v.h * 2) / groupH);
-			const mx = v.w * 0.02;
-			// fixed fraction below top: v.y * 4 pushed the title off tall/narrow phones
-			const TITLE_TOP_FRAC = 0.11;
-			titleGroup.scale.set(s);
-			titleGroup.position.set(v.x + v.w - groupW * s - mx, v.y + v.h * TITLE_TOP_FRAC);
-		}
+		const place = bestTitlePlacement(groupW, groupH);
+		titleGroup.scale.set(place.s);
+		titleGroup.position.set(place.x, place.y);
 		updateTitleMeta();
 		updateTitleFade();
 	}
@@ -1520,9 +1609,10 @@
 			vw = Math.round(r.width);
 			vh = Math.round(r.height);
 			drawSky();
-			drawTitle();
+			// fit first so drawTitle scores the real on-screen view (fitCamera sets pan/zoom)
 			if (!userMoved) fitCamera();
 			else emitLayout();
+			drawTitle();
 		});
 		ro.observe(host);
 		const onkey = (e: KeyboardEvent) => {
