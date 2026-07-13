@@ -201,9 +201,13 @@
 	// glyphs and keeps them until a reload warms the cache. Gate all text on this.
 	let fontsReady = false;
 	const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
-	const onIdle = (cb: () => void) => {
-		const w = window as unknown as { requestIdleCallback?: (cb: () => void) => void };
-		if (w.requestIdleCallback) w.requestIdleCallback(cb);
+	// The Pixi ticker runs every frame, so the page may never go idle — always pass a
+	// timeout so deferred work (place labels, off-mode ground) can't be starved forever.
+	const onIdle = (cb: () => void, timeout = 2000) => {
+		const w = window as unknown as {
+			requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => void;
+		};
+		if (w.requestIdleCallback) w.requestIdleCallback(cb, { timeout });
 		else setTimeout(cb, 1);
 	};
 	let balloonLayer: Container | null = null;

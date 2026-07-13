@@ -17,7 +17,6 @@
 	import type { HoverInfo } from '$lib/components/PixelMap.svelte';
 	import MapShell from '$lib/components/MapShell.svelte';
 	import TimeDock from '$lib/components/TimeDock.svelte';
-	import ViewTabs from '$lib/components/ViewTabs.svelte';
 	import BandToggle from '$lib/components/BandToggle.svelte';
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
 	import StationSearch from '$lib/components/StationSearch.svelte';
@@ -25,9 +24,8 @@
 	import Minimap from '$lib/components/Minimap.svelte';
 	import SiteFooter from '$lib/components/SiteFooter.svelte';
 	import PixelButton from '$lib/components/PixelButton.svelte';
-	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { InformationCircleIcon } from '@hugeicons/core-free-icons';
+	import { InformationCircleIcon, FocusIcon, ArrowDown01Icon } from '@hugeicons/core-free-icons';
 	import FieldNotes from '$lib/content.md';
 
 	let { data }: { data: CriticalData } = $props();
@@ -217,21 +215,10 @@
 					size="sm"
 					cap="paper"
 					aria-label="Fit map"
-					style="--pad: 5px 6px"
+					style="--pad: 4px 7px"
 					onclick={() => map?.zoomReset()}
 				>
-					<svg
-						class="block [shape-rendering:crispEdges]"
-						viewBox="0 0 8 8"
-						width="16"
-						height="16"
-						aria-hidden="true"
-					>
-						<path
-							d="M0 0h3v1H1v2H0z M5 0h3v3H7V1H5z M0 5h1v2h2v1H0z M7 5h1v3H5V7h2z"
-							fill="currentColor"
-						/>
-					</svg>
+					<HugeiconsIcon icon={FocusIcon} size={16} strokeWidth={2} />
 				</PixelButton>
 
 				{#if core}
@@ -248,7 +235,7 @@
 					size="sm"
 					href="#field-notes"
 					aria-label="About this map"
-					style="--pad: 5px 6px"
+					style="--pad: 4px 7px"
 					onclick={() => click('open')}
 				>
 					<HugeiconsIcon icon={InformationCircleIcon} size={16} strokeWidth={2} />
@@ -305,7 +292,8 @@
 	<PixelButton size="sm" aria-label="Scroll to the field notes" onclick={scrollToNotes}>
 		<span class="flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
 			Field notes
-			<ArrowDown
+			<HugeiconsIcon
+				icon={ArrowDown01Icon}
 				class="animate-shore-dip motion-reduce:animate-none"
 				size={15}
 				strokeWidth={2.5}
