@@ -39,6 +39,39 @@ GAZETTEER_NAME_KEY = {
 # Auto-derived name/state sources; anything else (e.g. "manual") is a human edit.
 AUTO_NAME_SOURCES = {"synop", "metar", "nowcast", "nwp_popup", "code"}
 
+# Curated clean names for major metros. The traditional in-city observatory gets the
+# bare city name; co-located airport/suburb stations get a locality qualifier. These
+# win over everything (name_source="manual") and set the canonical station for the
+# place, so the other co-located stations collapse under them in search/explorer.
+MANUAL_NAMES = {
+    "CLB": "Mumbai", "SCZ": "Mumbai (Santacruz)", "BMB": "Mumbai (Santacruz)",
+    "SAFDARJUNG": "Delhi", "SFD": "Delhi", "PALAM": "Delhi (Palam)", "PLM": "Delhi (Palam)",
+    "REDFORT": "Delhi (Red Fort)",
+    "BNG": "Bengaluru",
+    "HYD": "Hyderabad",
+    "MDS": "Chennai", "NGB": "Chennai (Meenambakkam)",
+    "ALP": "Kolkata", "DDM": "Kolkata (Dum Dum)",
+    "AHM": "Ahmedabad",
+    "PNE": "Pune",
+    "JPR": "Jaipur",
+    "LKN": "Lucknow", "USI": "Lucknow (Airport)",
+    "KNP": "Kanpur",
+    "SON": "Nagpur",
+    "SRT": "Surat",
+    "BHP": "Bhopal",
+    "PTN": "Patna",
+    "CHD": "Chandigarh",
+    "IND": "Indore", "VSK": "Visakhapatnam", "CMB": "Coimbatore", "TRV": "Thiruvananthapuram",
+    "BRD": "Vadodara", "LDN": "Ludhiana", "VNS": "Varanasi", "AMR": "Amritsar",
+    "NSK": "Nashik", "RJK": "Rajkot", "GHT": "Guwahati", "MYS": "Mysuru",
+}
+
+# Lower = kept as the canonical station when several share a name+state.
+NAME_SOURCE_RANK = {
+    "manual": 0, "synop": 1, "metar": 2, "nowcast": 3,
+    "nwp_name": 4, "nwp_popup": 4, "district": 5, "geonames_district": 6, "code": 7,
+}
+
 # One marker block = everything from a `new L.LatLng(...)` up to the next one.
 LATLNG_RE = re.compile(r"new\s+L\.LatLng\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)")
 NAME_RE = re.compile(r"<b>\s*([^<]+?)\s*</b>", re.IGNORECASE)
@@ -327,11 +360,13 @@ def district_headlines(places, districts):
 
 
 def title_case(s):
-    """KARNATAKA -> Karnataka; keep short parenthetical tags like (UT) uppercase."""
+    """KARNATAKA -> Karnataka; NEW DELHI -> New Delhi; keep parenthetical tags like (UT)."""
     if not s:
         return s
     def cap(w):
-        return w if (w.isupper() and len(w) <= 3) or w.startswith("(") else w.capitalize()
+        if w.startswith("(") and w.endswith(")"):
+            return w.upper()  # (UT), (LEH) — administrative tags stay upper
+        return w.capitalize()
     return " ".join(cap(w) for w in s.split())
 
 
@@ -468,6 +503,10 @@ def main():
                 else:
                     name, name_source = m["name"], "code"
 
+        # Curated clean name for major metros overrides everything.
+        if code in MANUAL_NAMES:
+            name, name_source = MANUAL_NAMES[code], "manual"
+
         # District-headline population + tier + search aliases.
         pop = headline[3] if headline else None
         tier = headline[4] if headline else None
@@ -490,9 +529,26 @@ def main():
             "state_source": state_source,
         }
 
+    # Collapse duplicates: many places have both a district-wide meteogram and a
+    # point station (same name + state). Mark one canonical (prefer a point
+    # observation over a district meteogram); search/explorer show only canonical
+    # ones, the map still shows all.
+    groups = {}
+    for code, s in result.items():
+        groups.setdefault((norm_key(s["name"]), s["state"] or ""), []).append(code)
+    n_canon = 0
+    for codes_in in groups.values():
+        best = min(codes_in, key=lambda c: (
+            NAME_SOURCE_RANK.get(result[c]["name_source"], 9),
+            -(result[c]["pop"] or 0), c))
+        for c in codes_in:
+            result[c]["canonical"] = c == best
+        n_canon += 1
+
     doc = {
         "version": 3,
         "count": len(result),
+        "canonical_count": n_canon,
         "generated_at": datetime.datetime.now(datetime.timezone.utc)
         .replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "sources": {
@@ -507,6 +563,7 @@ def main():
         f.write("\n")
 
     print(f"Wrote {len(result)} stations to {out_path}.")
+    print(f"  canonical:    {n_canon} unique places ({len(result) - n_canon} collapsed as duplicates)")
     print("  name_source:  " + ", ".join(f"{k}={v}" for k, v in sorted(name_srcs.items())))
     print("  state_source: " + ", ".join(f"{k}={v}" for k, v in sorted(state_srcs.items())))
 

@@ -50,6 +50,7 @@ def stations_table(stations, codes):
         "subdivision": [stations[c].get("subdivision") or "" for c in codes],
         "lat": [float(stations[c]["lat"]) for c in codes],
         "lon": [float(stations[c]["lon"]) for c in codes],
+        "canonical": [bool(stations[c].get("canonical", True)) for c in codes],
     })
 
 
@@ -69,6 +70,7 @@ def places_table(stations, codes):
         "tier": [stations[c].get("tier") for c in codes],
         "lat": [float(stations[c]["lat"]) for c in codes],
         "lon": [float(stations[c]["lon"]) for c in codes],
+        "canonical": [bool(stations[c].get("canonical", True)) for c in codes],
     })
 
 

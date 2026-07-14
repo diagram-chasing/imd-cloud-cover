@@ -246,6 +246,8 @@ def select_cities(manifest, manifest_codes):
     for code, s in manifest["stations"].items():
         if code not in manifest_codes:
             continue
+        if s.get("canonical") is False:  # duplicate place; its twin represents it
+            continue
         tier = s.get("tier")
         pop = s.get("pop") or 0
         if (tier is None or tier > CITY_TIER_MAX) and pop < CITY_POP_MIN:
