@@ -213,6 +213,16 @@
 	let balloon: { c: Container; x: number; y: number; phase: number } | null = null;
 	let balloonNoiseX: ((t: number) => number) | null = null;
 	let balloonNoiseY: ((t: number) => number) | null = null;
+	// the balloon nudges toward the last hovered world point, fading back to free
+	// wander after the cursor goes still
+	let cursorWorld: { x: number; y: number } | null = null;
+	let cursorAt = 0;
+	// pixel speech bubble shown when the balloon is clicked
+	let bubbleGroup: Container | null = null;
+	let bubbleBox: Graphics | null = null;
+	let bubbleText: Text | null = null;
+	let bubbleShownAt = -1e9;
+	const BUBBLE_MS = 3800;
 	const pool: Record<BandKey, Sprite[]> = { low: [], middle: [], high: [] };
 	let layers: Record<BandKey, Container> | null = null;
 	const alphaTarget: Record<BandKey, number> = { low: 1, middle: 1, high: 1 };
@@ -1185,6 +1195,114 @@
 		}
 	}
 
+	const BALLOON_SCALE = 0.58;
+	// a fresh cloud-name pun every time the balloon is poked
+	const BUBBLE_JOKES = [
+		'KEEPING UP WITH \nTHE STRATUS QUO',
+		"IT'S ALL\nCIRRUS BUSINESS",
+		'WHY SO CIRRUS',
+		'DRIZZLE\nME THIS',
+		'THATS\nTHUNDER-STANDABLE',
+		'DOING MY\nDEW DILIGENCE',
+		'SHOWER\nTHOUGHTS',
+		'HAIL\nYEAH',
+		'SLEET\nDREAMS',
+		'STRATUS:\nIT\'S COMPLICATED',
+		'MIST YOU\nYESTERDAY',
+		'ARE YOU CIRRUS\nRIGHT NOW',
+		'CHASING SOME\nDIAGRAMS'
+	];
+
+	function ensureBubble() {
+		if (bubbleGroup || !camera) return;
+		bubbleGroup = new Container();
+		bubbleGroup.eventMode = 'none';
+		bubbleGroup.visible = false;
+		bubbleBox = new Graphics();
+		bubbleText = new Text({
+			text: BUBBLE_JOKES[0],
+			style: {
+				fontFamily: "'Ships Whistle', monospace",
+				fontWeight: '700',
+				fontSize: 8,
+				fill: 0x0a1a28,
+				align: 'center',
+				lineHeight: 10,
+				letterSpacing: 0.4
+			},
+			resolution: 4
+		});
+		bubbleText.anchor.set(0.5, 1);
+		bubbleGroup.addChild(bubbleBox, bubbleText);
+		camera.addChild(bubbleGroup); // last child → drawn above everything
+		layoutBubble();
+	}
+
+	// bubble lives in world coords but is drawn at a constant screen size (scale
+	// 1/zoom, like the place labels), with the tail tip at the group origin
+	function layoutBubble() {
+		if (!bubbleBox || !bubbleText) return;
+		const padX = 6;
+		const padY = 4;
+		const tailH = 5;
+		const tailW = 6;
+		const boxW = bubbleText.width + padX * 2;
+		const boxH = bubbleText.height + padY * 2;
+		const bottom = -tailH;
+		const top = bottom - boxH;
+		const night = skyMode(sky.timeIndex) === 'night';
+		const plate = night ? 0x0a1a2e : 0xffffff;
+		const ink = night ? 0xeaf4ff : 0x0a1a28;
+		bubbleText.style.fill = ink;
+		bubbleBox.clear();
+		bubbleBox.rect(-boxW / 2, top, boxW, boxH).fill({ color: plate });
+		bubbleBox.rect(-boxW / 2, top, boxW, boxH).stroke({ width: 1.5, color: ink, alignment: 0 });
+		// tail fill covers the box's bottom border where it opens into the tail
+		bubbleBox.poly([-tailW / 2, bottom, tailW / 2, bottom, 0, 0]).fill({ color: plate });
+		bubbleBox
+			.moveTo(-tailW / 2, bottom)
+			.lineTo(0, 0)
+			.lineTo(tailW / 2, bottom)
+			.stroke({ width: 1.5, color: ink, alignment: 0 });
+		bubbleText.position.set(0, bottom - padY);
+	}
+
+	function positionBubble() {
+		if (!bubbleGroup || !balloon || !balloonTex) return;
+		bubbleGroup.position.set(balloon.x, balloon.y - balloonTex.height * BALLOON_SCALE - 2);
+		bubbleGroup.scale.set(1 / zoom);
+	}
+
+	function showBalloonBubble() {
+		ensureBubble();
+		if (!bubbleGroup || !bubbleText) return;
+		bubbleText.text = BUBBLE_JOKES[Math.floor(Math.random() * BUBBLE_JOKES.length)];
+		layoutBubble();
+		bubbleShownAt = performance.now();
+		bubbleGroup.visible = true;
+		positionBubble();
+	}
+
+	function updateBubble() {
+		if (!bubbleGroup || !bubbleGroup.visible) return;
+		const age = performance.now() - bubbleShownAt;
+		if (age >= BUBBLE_MS) {
+			bubbleGroup.visible = false;
+			return;
+		}
+		bubbleGroup.alpha = Math.max(0, Math.min(1, age / 160, (BUBBLE_MS - age) / 500));
+		positionBubble();
+	}
+
+	function hitBalloon(ox: number, oy: number): boolean {
+		if (!balloon || !balloonTex) return false;
+		const halfW = (balloonTex.width * BALLOON_SCALE) / 2 + 8;
+		const h = balloonTex.height * BALLOON_SCALE + 8;
+		const dx = ox - balloon.x;
+		const dy = oy - balloon.y; // anchor is the basket (bottom), envelope rises to -h
+		return dx >= -halfW && dx <= halfW && dy <= 6 && dy >= -h;
+	}
+
 	const WAVE_CURVE = [1, 0, 0, 1, 2, 2, 1, 1];
 	function buildWaveTex(): Texture[] {
 		const W = WAVE_CURVE.length;
@@ -1427,6 +1545,7 @@
 		// Planes keep flying across every view (today / week / month) — they're a
 		// living-map motif, not a "right now" one. Only reduced-motion stills them.
 		if (!reduced) flights?.tick(t.deltaMS);
+		updateBubble();
 		if (reduced || sky.view !== 'today') return;
 		const now = performance.now();
 		if (now - lastDrift > 1200) {
@@ -1442,14 +1561,29 @@
 			const F = 0.00006;
 			let vx = balloonNoiseX(balloon.phase * F) * 2 - 1;
 			let vy = balloonNoiseY(balloon.phase * F * 1.3) * 2 - 1;
+			// curiosity: drift toward the cursor, easing off as it goes still
+			let chase = 0;
+			if (cursorWorld) {
+				chase = Math.max(0, 1 - (performance.now() - cursorAt) / 4000);
+				if (chase > 0) {
+					const dx = cursorWorld.x - balloon.x;
+					const dy = cursorWorld.y - balloon.y;
+					const d = Math.hypot(dx, dy) || 1;
+					// slack near the cursor so it hovers around rather than jittering on it
+					const pull = chase * 1.7 * Math.min(1, d / 40);
+					vx += (dx / d) * pull;
+					vy += (dy / d) * pull;
+				}
+			}
 			const margin = 60;
 			if (balloon.x < b.minX + margin) vx += (b.minX + margin - balloon.x) / margin;
 			if (balloon.x > b.maxX - margin) vx -= (balloon.x - (b.maxX - margin)) / margin;
 			if (balloon.y < b.minY + margin) vy += (b.minY + margin - balloon.y) / margin;
 			if (balloon.y > b.maxY - margin) vy -= (balloon.y - (b.maxY - margin)) / margin;
 			const m = Math.hypot(vx, vy) || 1;
-			balloon.x += (vx / m) * BALLOON_SPEED * t.deltaMS;
-			balloon.y += (vy / m) * BALLOON_SPEED * t.deltaMS;
+			const spd = BALLOON_SPEED * (1 + chase * 1.6);
+			balloon.x += (vx / m) * spd * t.deltaMS;
+			balloon.y += (vy / m) * spd * t.deltaMS;
 			balloon.c.x = balloon.x;
 			balloon.c.y = balloon.y;
 		}
@@ -1521,6 +1655,8 @@
 				return;
 			}
 			const { ox, oy } = clientToWorld(e.clientX, e.clientY);
+			cursorWorld = { x: ox, y: oy };
+			cursorAt = performance.now();
 			const p = quad ? nearest(quad, ox, oy, hitR()) : null;
 			sky.hoverCode = p ? p.code : null;
 			drawHover();
@@ -1540,6 +1676,12 @@
 			if (pointers.size === 0) dragging = false;
 			if (wasTap) {
 				const { ox, oy } = clientToWorld(e.clientX, e.clientY);
+				if (hitBalloon(ox, oy)) {
+					showBalloonBubble();
+					click('select');
+					tap('light');
+					return;
+				}
 				const p = quad ? nearest(quad, ox, oy, hitR()) : null;
 				if (p) {
 					sky.selectedCode = p.code;
@@ -1557,6 +1699,7 @@
 		c.addEventListener('pointercancel', endPointer);
 		c.addEventListener('pointerleave', () => {
 			sky.hoverCode = null;
+			cursorWorld = null;
 			drawHover();
 			onhover?.(null);
 		});
@@ -1742,6 +1885,7 @@
 			stylePlaces();
 			styleAmbient();
 			drawHover();
+			if (bubbleGroup?.visible) layoutBubble();
 		}
 	});
 	$effect(() => {
