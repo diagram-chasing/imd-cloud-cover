@@ -2,9 +2,24 @@
 
 export interface Station {
 	name: string;
+	/** Station code (also the manifest key); present from manifest v3. */
+	code?: string;
 	state: string | null;
+	/** IMD district / met subdivision the station falls in (manifest v3). */
+	district?: string | null;
+	subdivision?: string | null;
 	lat: number;
 	lon: number;
+	/** District-headline population + tier (0 megacity … 3 town); for ranking/search. */
+	pop?: number | null;
+	tier?: number | null;
+	/** Search aliases: district-headline city + exonyms (Bombay, Madras, …). */
+	aliases?: string[];
+	/** How `name` was resolved: synop|metar|nowcast|nwp_name|district|code|manual. */
+	name_source?: string;
+	/** False when this station shares a place with another (a district meteogram +
+	 *  a point station); only the canonical one appears in search/explorer. Map shows all. */
+	canonical?: boolean;
 }
 
 export interface StationsManifest {
@@ -13,15 +28,17 @@ export interface StationsManifest {
 	stations: Record<string, Station>;
 }
 
-/** GeoJSON `properties` of a baked place (src/lib/assets/geo/india-places.json).
- *  Feeds both the map label layer and the unified search. */
+/** GeoJSON `properties` of a place feature. In the "place = station" model these
+ *  are derived from the station manifest (see `$lib/places`), so each place IS a
+ *  station: `nearest` is its own code and `nkm` is 0. Feeds the map label layer. */
 export interface PlaceProps {
 	name: string;
 	pop: number;
 	state: string | null;
+	district?: string | null;
 	/** Population bucket: 0 megacity … 3 town. */
 	tier: number;
-	/** Nearest IMD station code + rounded distance (km); precomputed at build. */
+	/** The station this place is (its own code); `nkm` kept at 0 for the map layer. */
 	nearest: string | null;
 	nkm: number;
 	aliases: string[];
@@ -124,6 +141,7 @@ export interface CityRun {
 export interface CityStats {
 	name: string;
 	state: string | null;
+	district?: string | null;
 	pop: number;
 	tier: number;
 	/** Daily effective cover aligned to the rollup's `dates`; null = no reading. */

@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { CitiesRollup, StationsManifest } from '$lib/types';
-import { citySlugs } from '$lib/city/slug.js';
+import { citySlugs } from '$lib/stations/slug.js';
 import { SITE_BASE } from '$lib/site';
 
 export const prerender = true;
@@ -23,8 +23,8 @@ export const GET: RequestHandler = () => {
 
 	const paths = [
 		'',
-		...Object.keys(codeBySlug).map((slug) => `/city/${slug}`),
-		// City-backed stations redirect to /city/[slug]; list only the standalone ones.
+		...Object.keys(codeBySlug).map((slug) => `/stations/${slug}`),
+		// City-backed stations redirect to /stations/[slug]; list only the standalone ones.
 		...Object.keys(manifest.stations)
 			.filter((code) => !slugByCode[code])
 			.map((code) => `/station/${code}`)

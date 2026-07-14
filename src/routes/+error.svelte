@@ -5,7 +5,7 @@
 	import { base } from '$app/paths';
 	import groundDayUrl from '$lib/assets/ground/ground-day.png';
 	import { fetchCities } from '$lib/api/r2';
-	import { citySlugs } from '$lib/city/slug.js';
+	import { citySlugs } from '$lib/stations/slug.js';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { ArrowLeft01Icon, ArrowDown01Icon } from '@hugeicons/core-free-icons';
 
@@ -64,10 +64,10 @@
 
 	{#if featured.length}
 		<section class="cities">
-			<h2>OR VISIT A CITY</h2>
+			<h2>OR VISIT A STATION</h2>
 			<div class="chips">
 				{#each featured as c (c.slug)}
-					<a class="chip" href="{base}/city/{c.slug}">{c.name}</a>
+					<a class="chip" href="{base}/stations/{c.slug}">{c.name}</a>
 				{/each}
 			</div>
 		</section>

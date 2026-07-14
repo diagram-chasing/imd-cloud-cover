@@ -6,7 +6,7 @@
 	import { base as APP_BASE } from '$app/paths';
 	import { click as clickFx } from '$lib/feedback';
 	import groundDayUrl from '$lib/assets/ground/ground-day.png';
-	import { buildTower, type CloudTower } from '$lib/city/clouds';
+	import { buildTower, type CloudTower } from '$lib/stations/clouds';
 
 	interface NearbyStation {
 		code: string;
@@ -25,7 +25,6 @@
 		values?: Record<string, { h: number; m: number; l: number; p?: number }>;
 		/** Adjoining cities: labelled only when they land inside the crop window. */
 		places?: { name: string; lat: number; lon: number }[];
-		slugByCode: Record<string, string>;
 		/** Zoom floor as a fraction of the world width — larger = wider regional view. */
 		minSpanFactor?: number;
 		onhover?: (info: { code: string; clientX: number; clientY: number } | null) => void;
@@ -36,7 +35,6 @@
 		stations,
 		values,
 		places = [],
-		slugByCode,
 		minSpanFactor = 0.02,
 		onhover
 	}: Props = $props();
@@ -290,12 +288,12 @@
 	const labelTransform = (align: string) =>
 		align === 'center' ? 'translateX(-50%)' : align === 'right' ? 'translateX(-100%)' : 'none';
 
-	// navigate to city page if backed by one, else station page
+	// every marker is just a station now — go to its station page. Code-backed cities
+	// 308-redirect from there to their canonical /stations/[slug] page.
 	function open(code: string) {
 		clickFx('open');
 		onhover?.(null);
-		const slug = slugByCode[code];
-		goto(slug ? `${APP_BASE}/city/${slug}` : `${APP_BASE}/station/${code}`);
+		goto(`${APP_BASE}/station/${code}`);
 	}
 </script>
 
@@ -314,8 +312,10 @@
 				k}px;"
 		/>
 		{#each placed as p (p.id)}
+			<!-- Only the station <button> should catch clicks; wide labels and the inert
+			     city/place glyphs must not overlay and swallow taps meant for a neighbour. -->
 			<div
-				class="absolute"
+				class="absolute [&>:not(button)]:pointer-events-none"
 				style="left: {(p.sx / mapW) * 100}%; top: {(p.sy / mapH) * 100}%;"
 			>
 				{#if p.kind === 'city'}
@@ -343,9 +343,7 @@
 						class="marker absolute block cursor-pointer bg-transparent p-0"
 						style="width: {hitW}px; height: {ch + CLOUD_GAP + DOT}px; left: {-hitW /
 							2}px; top: {-(ch + CLOUD_GAP)}px;"
-						aria-label={p.code && slugByCode[p.code]
-							? `${p.label} — open city`
-							: `${p.label} — open station`}
+						aria-label="{p.label} — open station"
 						onpointermove={(e: PointerEvent) =>
 							p.code && onhover?.({ code: p.code, clientX: e.clientX, clientY: e.clientY })}
 						onpointerleave={() => onhover?.(null)}

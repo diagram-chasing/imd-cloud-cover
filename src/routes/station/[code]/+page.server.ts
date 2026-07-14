@@ -1,6 +1,6 @@
 // station pages fully prerendered: header, reading, map, forecast and history
 // all baked so there is no client fetch (or "NO READING" flash) on hydration.
-// city-backed stations 308-redirect to /city/[slug] at build time.
+// city-backed stations 308-redirect to /stations/[slug] at build time.
 import type { EntryGenerator, PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import { base } from '$app/paths';
@@ -12,15 +12,15 @@ import type {
 	StationsManifest,
 	Summary
 } from '$lib/types';
-import { citySlugs } from '$lib/city/slug.js';
-import { haversineKm } from '$lib/city/distance';
+import { citySlugs } from '$lib/stations/slug.js';
+import { haversineKm } from '$lib/stations/distance';
 import { readView, readViewOpt, miniLatest } from '$lib/server/views';
 
 export const prerender = true;
 
-// map labels only cities that land inside the crop window
-const CITY_RADIUS_KM = 220;
-const CITY_CAP = 12;
+// nearby stations plotted on the map (clickable), nearest first — mirrors /stations/[slug]
+const STATION_RADIUS_KM = 100;
+const STATION_CAP = 12;
 
 function loadData() {
 	return {
@@ -61,44 +61,47 @@ export const load: PageServerLoad = ({ params }) => {
 	const code = manifest.stations[params.code] ? params.code : params.code.toUpperCase();
 
 	// city-backed station: redirect to canonical city page
-	const slug = citySlugs(cities.cities).slugByCode[code];
-	if (slug) throw redirect(308, `${base}/city/${slug}`);
+	const { slugByCode } = citySlugs(cities.cities);
+	if (slugByCode[code]) throw redirect(308, `${base}/stations/${slugByCode[code]}`);
 
 	const station = manifest.stations[code];
 	if (!station) throw error(404, `Unknown station ${code}`);
 
-	// adjoining cities: nearest within radius; map decides which land inside the frame
-	const nearbyCities = Object.entries(cities.cities)
-		.filter(([c]) => c !== code && manifest.stations[c])
-		.map(([c, city]) => {
-			const s = manifest.stations[c];
-			return {
-				name: city.name,
-				lat: s.lat,
-				lon: s.lon,
-				km: Math.round(haversineKm(station.lat, station.lon, s.lat, s.lon))
-			};
-		})
-		.filter((c) => c.km <= CITY_RADIUS_KM)
+	// own station (primary) + nearby stations within radius, nearest first: all plotted
+	// as clickable markers, exactly like the city page.
+	const stations = Object.entries(manifest.stations)
+		.map(([c, s]) => ({
+			code: c,
+			name: s.name,
+			lat: s.lat,
+			lon: s.lon,
+			km: Math.round(haversineKm(station.lat, station.lon, s.lat, s.lon)),
+			primary: c === code
+		}))
+		.filter((s) => s.primary || s.km <= STATION_RADIUS_KM)
 		.sort((a, b) => a.km - b.km)
-		.slice(0, CITY_CAP)
-		.map(({ name, lat, lon }) => ({ name, lat, lon }));
+		.slice(0, STATION_CAP);
 
-	// bake the station's own reading, forecast and history — the only station
-	// this page ever plots or reads values for.
-	const latest = miniLatest(all, [code]);
+	// bake each plotted station's reading (map clouds + hover), plus this station's
+	// forecast and history.
+	const codes = stations.map((s) => s.code);
+	const latest = miniLatest(all, codes);
 	const forecast = readViewOpt<Forecast>(`${summary.date}/${code}-meteogram.json`);
-	const stationLookup = { [code]: station };
+	const stationLookup = Object.fromEntries(
+		codes.filter((c) => manifest.stations[c]).map((c) => [c, manifest.stations[c]])
+	);
 	const history = buildHistory(code, station.name);
 
 	return {
 		code,
 		name: station.name,
 		state: station.state ?? null,
+		district: station.district ?? null,
 		lat: station.lat,
 		lon: station.lon,
 		date: summary.date,
-		cities: nearbyCities,
+		stationCount: stations.length,
+		stations,
 		latest,
 		forecast,
 		stationLookup,

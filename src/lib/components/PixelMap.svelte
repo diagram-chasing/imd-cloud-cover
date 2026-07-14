@@ -26,6 +26,7 @@
 		CELL,
 		SKY,
 		skyMode,
+		skyPhase,
 		coverTier,
 		UI,
 		SHADOW_TINT,
@@ -97,6 +98,8 @@
 	const SHADOW_DROP = TOWER_GAP + MARK_CELL * 2.5;
 	const WAVE_SCALE = 1.25;
 	const WAVE_MAX = 100;
+	// warm golden multiply-tint on the day ground during dawn/dusk (twilight phase)
+	const TWILIGHT_TINT = 0xecb884;
 	const BALLOON_SPEED = 1024 / 520000;
 
 	interface Bin {
@@ -876,7 +879,7 @@
 
 	function drawSky() {
 		if (!skyGfx) return;
-		const pal = SKY[skyMode(sky.timeIndex)];
+		const pal = SKY[skyPhase(sky.timeIndex)];
 		skyGfx.clear();
 		skyGfx.rect(0, 0, vw, vh).fill({ color: pal.top });
 	}
@@ -1264,6 +1267,9 @@
 		// off-mode texture may still be loading - keep stale until idle load lands
 		const t = groundTex[skyMode(sky.timeIndex)];
 		if (t) groundSprite.texture = t;
+		// dawn/dusk reuse the day texture (skyMode is 'day' at steps 2 & 6) warmed
+		// toward golden hour, giving a real intermediate between day and night
+		groundSprite.tint = skyPhase(sky.timeIndex) === 'twilight' ? TWILIGHT_TINT : 0xffffff;
 	}
 
 	function binCover(b: Bin, key: 'h' | 'm' | 'l'): number {
@@ -1730,8 +1736,14 @@
 		}
 	});
 	$effect(() => {
-		void sky.view;
 		void date;
+		// Read sky.view unconditionally so the effect always tracks it — a `flights?.`
+		// short-circuit (flights still null on first run) would otherwise drop the dep.
+		const isToday = sky.view === 'today';
+		// Planes are a "today / right now" motif and their tick is skipped off that view
+		// (see raf loop) — hide the whole layer so they vanish cleanly instead of freezing
+		// mid-flight, and reappear when the visitor returns to today.
+		flights?.setVisible(isToday);
 		if (app) updateTitleMeta();
 	});
 	$effect(() => {

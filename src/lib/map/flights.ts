@@ -73,6 +73,8 @@ interface Flight {
 export interface FlightEngine {
 	tick(deltaMS: number): void;
 	style(night: boolean): void;
+	/** Hide the whole layer (e.g. off the "today" view) so planes don't freeze mid-flight. */
+	setVisible(visible: boolean): void;
 	destroy(): void;
 }
 
@@ -359,6 +361,11 @@ export function createFlights(opts: FlightOptions): FlightEngine {
 		for (const f of flights) f.body.tint = bodyTint;
 	}
 
+	function setVisible(visible: boolean) {
+		trailLayer.visible = visible;
+		bodyLayer.visible = visible;
+	}
+
 	function destroy() {
 		flights.length = 0;
 		trailLayer.destroy({ children: true });
@@ -366,5 +373,5 @@ export function createFlights(opts: FlightOptions): FlightEngine {
 		planeTex.destroy(true);
 	}
 
-	return { tick, style, destroy };
+	return { tick, style, setVisible, destroy };
 }

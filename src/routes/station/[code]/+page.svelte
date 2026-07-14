@@ -13,22 +13,42 @@
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 
 	let latest = $derived(data.latest);
+	let days = $derived([latest.date, ...(latest.fdays ?? [])]);
 	let activeDay = $derived(resolveActiveDay(latest));
-	let viewDate = $derived(activeDay.date);
-	let timeIndex = $derived(
+	let liveDayIndex = $derived(activeDay.index);
+	let liveTimeIndex = $derived(
 		Math.min(7, Math.floor((((Date.now() + 5.5 * 3600 * 1000) / 3600000) % 24) / 3))
 	);
+
+	// null = follow the live clock; set once the visitor scrubs, cleared by "NOW".
+	let picked = $state<{ day: number; time: number } | null>(null);
+	let dayIndex = $derived(picked ? picked.day : liveDayIndex);
+	let timeIndex = $derived(picked ? picked.time : liveTimeIndex);
+	let isLive = $derived(
+		picked === null || (picked.day === liveDayIndex && picked.time === liveTimeIndex)
+	);
+
+	let viewDate = $derived(days[dayIndex] ?? activeDay.date);
 	let whenLabel = $derived(`${HOUR_LABELS[timeIndex]}:00 IST`);
-	let values = $derived(computeValues('today', latest, undefined, timeIndex, 0, activeDay.index));
+	let values = $derived(computeValues('today', latest, undefined, timeIndex, 0, dayIndex));
 	let todayValues = $derived(values[data.code] ?? null);
 
-	// primary marker: the station itself
-	let stations = $derived([
-		{ code: data.code, name: data.name, lat: data.lat, lon: data.lon, km: 0, primary: true }
-	]);
-
 	let dateline = $derived(
-		[data.state?.toUpperCase() ?? null, `${data.lat.toFixed(2)}°N ${data.lon.toFixed(2)}°E`]
+		[
+			[
+				data.district && data.district.toLowerCase() !== data.name.toLowerCase()
+					? data.district
+					: null,
+				data.state
+			]
+				.filter(Boolean)
+				.join(', ')
+				.toUpperCase() || null,
+			data.stationCount > 1
+				? `${data.stationCount} NEARBY STATION${data.stationCount === 1 ? '' : 'S'}`
+				: null,
+			`${data.lat.toFixed(2)}°N ${data.lon.toFixed(2)}°E`
+		]
 			.filter(Boolean)
 			.join(' · ')
 	);
@@ -54,9 +74,16 @@
 	metDate={data.date}
 	metCode={data.code}
 	india={indiaFeatures}
-	{stations}
-	cities={data.cities}
+	stations={data.stations}
 	perStation={values}
 	stationLookup={data.stationLookup}
 	history={data.history}
+	{days}
+	{dayIndex}
+	{timeIndex}
+	{isLive}
+	liveDay={liveDayIndex}
+	liveTime={liveTimeIndex}
+	onTime={(d, t) => (picked = { day: d, time: t })}
+	onNow={() => (picked = null)}
 />

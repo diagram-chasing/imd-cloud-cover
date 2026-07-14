@@ -1,11 +1,9 @@
 // critical views (~300 KB) gate first paint; deferred views (~1.5 MB) load after
 import type { Topology } from 'topojson-specification';
-import type { FeatureCollection } from 'geojson';
 import type { StationsManifest, AllStations, Summary, Rollup } from '$lib/types';
 import { CORE_BASE } from './r2';
 // content-hashed assets: immutable cache, base-aware URL
 import indiaUrl from '$lib/assets/geo/india.json?url';
-import placesUrl from '$lib/assets/geo/india-places.json?url';
 
 type Fetch = typeof fetch;
 
@@ -32,17 +30,16 @@ export function loadCritical(f: Fetch = fetch): Promise<CriticalData> {
 	]).then(([topo, manifest, latest, summary]) => ({ topo, manifest, latest, summary }));
 }
 
-/** place labels + week/month rollups - not needed for first paint */
+/** week/month rollups - not needed for first paint. Place labels are derived from
+ *  the (critical) manifest via `$lib/places`, so no separate gazetteer is fetched. */
 export interface DeferredData {
-	places: FeatureCollection;
 	rollup7: Rollup;
 	rollup30: Rollup;
 }
 
 export function loadDeferred(f: Fetch = fetch): Promise<DeferredData> {
 	return Promise.all([
-		json<FeatureCollection>(f, placesUrl),
 		json<Rollup>(f, `${CORE_BASE}/rollups/7d.json`),
 		json<Rollup>(f, `${CORE_BASE}/rollups/30d.json`)
-	]).then(([places, rollup7, rollup30]) => ({ places, rollup7, rollup30 }));
+	]).then(([rollup7, rollup30]) => ({ rollup7, rollup30 }));
 }

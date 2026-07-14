@@ -18,13 +18,14 @@ const ROWS = Math.floor(WORLD_H / GCELL);
 
 // ---- ground palette ----
 const LAND = {
-	day: { fill: '#5B8C6E', dither: '#568768' },
+	day: { fill: '#63946F', dither: '#5E8F6A' },
 	night: { fill: '#3E6B54', dither: '#3A664F' }
 };
-// built-up: subtle darkening, not a black hole
+// built-up: subtle darkening, not a black hole. night = dark cool slate so
+// unlit cells don't read as sand and lit ones pop as points of light.
 const URBAN = {
-	day: { fill: '#556353', dither: '#4E5C4C' },
-	night: { fill: '#33402F', dither: '#2E3A2A' }
+	day: { fill: '#59685A', dither: '#525F53' },
+	night: { fill: '#262E38', dither: '#22272F' }
 };
 // shallow band: partial alpha blends with sky-sea background
 const SEA = {
@@ -40,10 +41,11 @@ const TERRAIN_STRENGTH = 0.38;
 const TERRAIN_STEP = 0.08;
 const TERRAIN_BLUR_PASSES = 2;
 const HYP_BBOX = { lon0: 66, lon1: 100, lat0: 4, lat1: 38 };
-// night city lights: sparse warm pixels inside built-up cells
-const CITY_LIGHT = '#F2C14E';
+// night city lights: sparse warm-white pixels inside built-up cells; high mix so
+// lit cells read as crisp points of light on the dark slate base, not a wash
+const CITY_LIGHT = '#FFE6B0';
 const CITY_LIGHT_DENSITY = 0.16;
-const CITY_LIGHT_MIX = 0.6;
+const CITY_LIGHT_MIX = 0.85;
 // grass tile width in px
 const TILE_PX = 10;
 

@@ -45,16 +45,47 @@ Same data before the daily averaging: one row per station per 3-hour step.
 
 ### Stations ([stations.parquet](stations.parquet) · [stations.csv](stations.csv))
 
-One row per station.
+One row per station. The name and geography are IMD's own (see Source).
 
 | Variable | Type | Description |
 |----------|------|-------------|
 | code | string | Station code (join key) |
-| station | string | Station name |
-| state | string | Indian state/UT the station falls in (empty if the point fell outside all boundaries) |
+| station | string | Station name (IMD synop/metar/nowcast, or the IMD district for opaque codes) |
+| state | string | State/UT the station falls in (empty for foreign/offshore points) |
+| district | string | IMD district the station falls in (empty if outside all boundaries) |
+| subdivision | string | IMD meteorological subdivision |
 | lat | float64 | Latitude (decimal degrees) |
 | lon | float64 | Longitude (decimal degrees) |
+| canonical | bool | `false` when the station shares a place/name with another (e.g. a district-wide meteogram plus a point station in the same district); the canonical one represents the place in listings |
+
+### Places ([places.parquet](places.parquet) · [places.csv](places.csv))
+
+One row per station treated as a **place**. Each IMD station *is* a place: its name,
+district and state come from IMD, and `pop`/`tier` describe the station's district
+(the most populous settlement in it) — a coarse "how big is this place" signal for
+ranking, not the station's own town population.
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| code | string | Station code (join key to `stations.csv`) |
+| name | string | Place / station name |
+| state | string | State/UT (empty for foreign/offshore points) |
+| district | string | IMD district |
+| subdivision | string | IMD meteorological subdivision |
+| pop | int64 | Population of the district's headline settlement (null if unknown) |
+| tier | int64 | 0 = megacity (≥5M), 1 = major (≥1M), 2 = city (≥200k), 3 = town; null if unknown |
+| lat | float64 | Latitude (decimal degrees) |
+| lon | float64 | Longitude (decimal degrees) |
+| canonical | bool | `false` for a station that duplicates another place; filter to `canonical = true` for one row per place |
 
 ## Source
 
-IMD Numerical Weather Prediction meteograms, <https://nwp.imd.gov.in/>.
+- **Cloud cover** — IMD Numerical Weather Prediction meteograms,
+  <https://nwp.imd.gov.in/>.
+- **Station geography** (name, state, district, subdivision) — IMD's own GeoServer
+  layers: `imd:india_districts` (state/district by point-in-polygon) and the
+  `imd:synop_data_layer` / `imd:metar_data_layer` / `imd:NowcastWarningStation`
+  station layers (real names by coordinate match), via
+  <https://reactjs.imd.gov.in/geoserver/imd/wfs>.
+- **Population / tier** — [GeoNames](https://www.geonames.org/) (CC BY 4.0), joined to
+  each station's IMD district (district-headline settlement).

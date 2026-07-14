@@ -2,7 +2,8 @@
 	import { base } from '$app/paths';
 	import type { Station, Forecast } from '$lib/types';
 	import { fetchForecast } from '$lib/api/r2';
-	import { prettyDate, skyCondition } from '$lib/format';
+	import { prettyDate, skyCondition, stationLabel, stationSubtitle } from '$lib/format';
+	import { sky } from '$lib/state/sky.svelte';
 	import StationMeteogram from './StationMeteogram.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -44,6 +45,11 @@
 		return Math.round(v / 10);
 	}
 
+	// Mirror the map's band focus here: when an altitude band is picked in the toggle,
+	// emphasise its row and ghost the rest instead of showing an identical "all" readout.
+	const BAND_TO_ROW = { high: 'h', middle: 'm', low: 'l' } as const;
+	let focusKey = $derived(sky.focusBand ? BAND_TO_ROW[sky.focusBand] : null);
+
 	let summary = $derived(current ? skyCondition(current) : 'NO READING TODAY');
 </script>
 
@@ -51,12 +57,14 @@
 	<header class="flex items-start justify-between gap-2.5">
 		<div class="title">
 			<h2 class="m-0 flex items-center gap-2 text-base leading-tight tracking-[0.03em] uppercase">
-				{station.name}
+				{stationLabel(station)}
 				<span class="summary m-0 w-fit bg-day-sea px-1 py-0.5 text-xs tracking-wider text-paper"
 					>{summary}</span
 				>
 			</h2>
-			{#if station.state}<p class="state m-0 mt-0.5 text-xs opacity-70">{station.state}</p>{/if}
+			{#if stationSubtitle(station)}<p class="state m-0 mt-0.5 text-xs opacity-70">
+					{stationSubtitle(station)}
+				</p>{/if}
 			<p class="when m-0 mt-[3px] text-xs tracking-wider opacity-60">
 				{prettyDate(date)} · {when}
 			</p>
@@ -85,8 +93,21 @@
 					>, BY ALTITUDE
 				</p>
 				{#each ROWS as row (row.key)}
-					<div class="band-row flex items-center gap-2">
-						<span class="blabel w-[104px] text-xs tracking-[0.03em] opacity-80">{row.label}</span>
+					{@const focused = focusKey === row.key}
+					{@const ghosted = focusKey !== null && !focused}
+					<div
+						class={[
+							'band-row -mx-1 flex items-center gap-2 rounded-sm px-1 transition-opacity duration-150',
+							focused && 'bg-sun-gold/20',
+							ghosted && 'opacity-40'
+						]}
+					>
+						<span
+							class={[
+								'blabel w-[104px] text-xs tracking-[0.03em]',
+								focused ? 'font-bold opacity-100' : 'opacity-80'
+							]}>{row.label}</span
+						>
 						<span class="bar flex flex-1 gap-px" aria-hidden="true">
 							{#each Array(10) as _, i (i)}
 								<span
@@ -97,7 +118,9 @@
 								></span>
 							{/each}
 						</span>
-						<span class="num w-[38px] text-right text-xs">{current[row.key]}%</span>
+						<span class={['num w-[38px] text-right text-xs', focused && 'font-bold']}
+							>{current[row.key]}%</span
+						>
 					</div>
 				{/each}
 			</div>
@@ -105,6 +128,11 @@
 	</section>
 
 	<figure class="meteogram m-0">
+		<!-- Explicitly time-framed so this isn't mistaken for a second % breakdown: the
+		     chart above reads left→right as percentage, this one reads left→right as days. -->
+		<figcaption class="caption m-0 mb-[3px] border-t border-border pt-2 text-xs">
+			CLOUD COVER · NEXT 10 DAYS, 3-HOURLY
+		</figcaption>
 		{#if forecastError}
 			<p class="note py-6 text-center text-sm opacity-70">Forecast chart unavailable.</p>
 		{:else}

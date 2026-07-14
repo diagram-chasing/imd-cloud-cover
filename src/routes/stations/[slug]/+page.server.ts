@@ -1,13 +1,11 @@
 // city pages fully prerendered: header, reading, map and forecast all baked so
 // there is no client fetch (and no "NO READING" flash) on hydration.
 import type { EntryGenerator, PageServerLoad } from './$types';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { error } from '@sveltejs/kit';
-import type { FeatureCollection, Point } from 'geojson';
 import type { AllStations, CitiesRollup, Forecast, StationsManifest, Summary } from '$lib/types';
-import { citySlugs } from '$lib/city/slug.js';
-import { haversineKm } from '$lib/city/distance';
+import { citySlugs } from '$lib/stations/slug.js';
+import { haversineKm } from '$lib/stations/distance';
+import { titleCase } from '$lib/format';
 import { readView, readViewOpt, miniLatest } from '$lib/server/views';
 
 export const prerender = true;
@@ -20,10 +18,7 @@ function loadData() {
 	const summary = readView<Summary>('latest/summary.json');
 	const manifest = readView<StationsManifest>('meta/stations.json');
 	const all = readView<AllStations>('latest/all-stations.json');
-	const places = JSON.parse(
-		readFileSync(resolve('src/lib/assets/geo/india-places.json'), 'utf8')
-	) as FeatureCollection;
-	return { cities, summary, manifest, all, places };
+	return { cities, summary, manifest, all };
 }
 
 export const entries: EntryGenerator = () => {
@@ -33,30 +28,17 @@ export const entries: EntryGenerator = () => {
 };
 
 export const load: PageServerLoad = ({ params }) => {
-	const { cities, summary, manifest, all, places } = loadData();
-	const { slugByCode, codeBySlug } = citySlugs(cities.cities);
+	const { cities, summary, manifest, all } = loadData();
+	const { codeBySlug } = citySlugs(cities.cities);
 	const code = codeBySlug[params.slug];
-	if (!code) throw error(404, 'Unknown city');
+	if (!code) throw error(404, 'Unknown station');
 	const city = cities.cities[code];
 
-	// city coords: named place wins, then biggest place pointing here, then station's own
-	let lat: number | null = null;
-	let lon: number | null = null;
-	let bestScore = -1;
-	for (const f of places.features) {
-		const p = f.properties as { nearest?: string; name?: string; pop?: number } | null;
-		if (!p || p.nearest !== code || f.geometry?.type !== 'Point') continue;
-		const score = p.name === city.name ? Infinity : (p.pop ?? 0);
-		if (score > bestScore) {
-			bestScore = score;
-			[lon, lat] = (f.geometry as Point).coordinates as [number, number];
-		}
-	}
+	// Place = station: the page is the IMD station itself, so its coordinates are
+	// the station's own — no GeoNames place lookup, no far/spurious offset.
 	const own = manifest.stations[code];
-	if (lat === null && own) {
-		lat = own.lat;
-		lon = own.lon;
-	}
+	const lat: number | null = own ? own.lat : null;
+	const lon: number | null = own ? own.lon : null;
 
 	// own station always included (flagged primary); others within RADIUS_KM, nearest first
 	const scored = Object.entries(manifest.stations).map(([c, s]) => ({
@@ -74,24 +56,25 @@ export const load: PageServerLoad = ({ params }) => {
 	// cap at MAP_CAP so header count matches what's plotted
 	const stations = nearby.slice(0, MAP_CAP);
 	const stationCount = stations.length;
-	const primaryKm = stations.find((s) => s.primary)?.km ?? null;
+	// Place = station, so the reading is the station's own (0 km); hide the distance.
+	const primaryKm = stations.find((s) => s.primary)?.km || null;
 
-	const stateLabel = city.state ? `, ${city.state}` : '';
+	const sameName = city.district && city.district.toLowerCase() === city.name.toLowerCase();
+	const place = titleCase(city.district && !sameName ? city.district : null);
+	const region = [place, titleCase(city.state)].filter(Boolean).join(', ');
+	const stateLabel = region ? `, ${region}` : '';
 	const og = {
 		title: `${city.name}${stateLabel} — Mapping India's Clouds`,
 		description: `${city.name}${stateLabel}: daily cloud cover read from IMD meteograms, across ${stationCount} station${stationCount === 1 ? '' : 's'} nearby.`
 	};
 
 	// bake only what this page plots: the nearby-station bands (reading + map),
-	// their lookup/slug entries (tooltip + links) and the primary forecast.
+	// their lookup entries (tooltip) and the primary forecast.
 	const codes = stations.map((s) => s.code);
 	const latest = miniLatest(all, codes);
 	const forecast = readViewOpt<Forecast>(`${summary.date}/${code}-meteogram.json`);
 	const stationLookup = Object.fromEntries(
 		codes.filter((c) => manifest.stations[c]).map((c) => [c, manifest.stations[c]])
-	);
-	const nearbySlugs = Object.fromEntries(
-		codes.filter((c) => slugByCode[c]).map((c) => [c, slugByCode[c]])
 	);
 	const history = { dates: cities.dates, name: city.name, e: city.e };
 
@@ -100,6 +83,7 @@ export const load: PageServerLoad = ({ params }) => {
 		code,
 		name: city.name,
 		state: city.state,
+		district: city.district ?? null,
 		pop: city.pop,
 		tier: city.tier,
 		lat,
@@ -113,7 +97,6 @@ export const load: PageServerLoad = ({ params }) => {
 		latest,
 		forecast,
 		stationLookup,
-		slugByCode: nearbySlugs,
 		history
 	};
 };

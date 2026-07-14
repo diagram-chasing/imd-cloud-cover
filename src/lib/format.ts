@@ -24,3 +24,34 @@ export function skyCondition(v: { h: number; m: number; l: number } | null): str
 	if (c < 88) return 'MOSTLY CLOUDY';
 	return 'OVERCAST';
 }
+
+// --- Place labels (IMD strings are stored SHOUTY; fold to Title Case for display) ---
+
+/** `KARNATAKA` → `Karnataka`; `NEW DELHI` → `New Delhi`; keeps tags like `(UT)` upper. */
+export function titleCase(s?: string | null): string {
+	if (!s) return '';
+	return String(s)
+		.toLowerCase()
+		.replace(/\b[a-z]/g, (ch) => ch.toUpperCase())
+		.replace(/\(([a-z]+)\)/gi, (_m, w) => `(${w.toUpperCase()})`);
+}
+
+/** A station's display name (already a real place name post-enrichment). */
+export function stationLabel(s: { name: string }): string {
+	return s.name;
+}
+
+/** `District, State` subtitle; drops the district when it equals the name, and
+ *  shows just the state (or nothing) when district/state are missing. */
+export function stationSubtitle(s: {
+	name?: string;
+	district?: string | null;
+	state?: string | null;
+}): string {
+	const state = titleCase(s.state);
+	const district = titleCase(s.district);
+	if (district && district.toLowerCase() !== (s.name ?? '').toLowerCase()) {
+		return state ? `${district}, ${state}` : district;
+	}
+	return state;
+}

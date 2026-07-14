@@ -1,17 +1,19 @@
-// Build india-places.json from GeoNames IN.zip (streamed via unzip -p, no temp file).
-// Keeps places above POP_FLOOR + all capitals; precomputes nearest IMD station per place.
-// Output: { name, pop, state, tier, nearest, nkm, aliases } per feature.
+// Distil GeoNames IN.zip into a plain settlement gazetteer (streamed via unzip -p).
+// Keeps places above POP_FLOOR + all capitals. Output feeds the scraper enrichment
+// (seed_stations.py), which tags each settlement with an IMD district and folds a
+// district-headline population onto each station. No station binding is done here —
+// the old nearest-neighbour join was the source of the "spurious city" matching.
+// Output: { name, lat, lon, pop, state, tier, aliases } per feature.
 // Run from repo root: node scripts/build-places.mjs
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const ZIP = resolve(ROOT, 'src/lib/assets/IN.zip');
-const STATIONS = resolve(ROOT, 'scraper/stations.json');
-const OUT = resolve(ROOT, 'src/lib/assets/geo/india-places.json');
+const OUT = resolve(ROOT, 'scraper/data/geonames-places.json');
 
 // capitals kept regardless of population
 const POP_FLOOR = 15_000;
@@ -121,37 +123,6 @@ function aliasesFor(name, altField) {
 	return out;
 }
 
-function haversineKm(aLat, aLon, bLat, bLon) {
-	const R = 6371;
-	const dLat = ((bLat - aLat) * Math.PI) / 180;
-	const dLon = ((bLon - aLon) * Math.PI) / 180;
-	const la1 = (aLat * Math.PI) / 180;
-	const la2 = (bLat * Math.PI) / 180;
-	const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLon / 2) ** 2;
-	return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
-}
-
-// Stations as a flat array for the nearest-neighbour scan.
-const manifest = JSON.parse(readFileSync(STATIONS, 'utf8'));
-const stations = Object.entries(manifest.stations).map(([code, s]) => ({
-	code,
-	lat: s.lat,
-	lon: s.lon
-}));
-
-function nearestStation(lat, lon) {
-	let best = null;
-	let bestD = Infinity;
-	for (const st of stations) {
-		const d = haversineKm(lat, lon, st.lat, st.lon);
-		if (d < bestD) {
-			bestD = d;
-			best = st.code;
-		}
-	}
-	return { code: best, km: Math.round(bestD) };
-}
-
 const kept = [];
 const unzip = spawn('unzip', ['-p', ZIP, 'IN.txt']);
 unzip.on('error', (e) => {
@@ -174,7 +145,6 @@ rl.on('line', (line) => {
 	const lon = parseFloat(c[COL.lon]);
 	if (!name || !Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
-	const near = nearestStation(lat, lon);
 	kept.push({
 		name,
 		lat: Math.round(lat * 1e4) / 1e4,
@@ -182,8 +152,6 @@ rl.on('line', (line) => {
 		pop,
 		state: FIPS_STATE[c[COL.admin1]] ?? null,
 		tier: tierFor(pop),
-		nearest: near.code,
-		nkm: near.km,
 		aliases: aliasesFor(name, c[COL.alt])
 	});
 });
@@ -205,8 +173,6 @@ rl.on('close', () => {
 				pop: p.pop,
 				state: p.state,
 				tier: p.tier,
-				nearest: p.nearest,
-				nkm: p.nkm,
 				aliases: p.aliases
 			},
 			geometry: { type: 'Point', coordinates: [p.lon, p.lat] }

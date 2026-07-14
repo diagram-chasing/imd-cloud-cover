@@ -3,8 +3,8 @@
 	import { fade } from 'svelte/transition';
 	import { browser } from '$app/environment';
 	import type { Station, Rollup } from '$lib/types';
-	import type { FeatureCollection } from 'geojson';
 	import { loadDeferred, type CriticalData } from '$lib/api/load';
+	import { placesFromManifest } from '$lib/places';
 	import { topoToFeatures } from '$lib/map/geo';
 	import { sky } from '$lib/state/sky.svelte';
 	import { userGeo } from '$lib/state/geo.svelte';
@@ -31,7 +31,8 @@
 	let { data }: { data: CriticalData } = $props();
 
 	let india = $derived(topoToFeatures(data.topo));
-	let places = $state<FeatureCollection>();
+	// Place = station: labels come from the (critical) manifest, no extra fetch.
+	let places = $derived(placesFromManifest(data.manifest));
 	let rollup7 = $state<Rollup>();
 	let rollup30 = $state<Rollup>();
 
@@ -82,7 +83,6 @@
 		deferredStarted = true;
 		loadDeferred()
 			.then((d) => {
-				places = d.places;
 				rollup7 = d.rollup7;
 				rollup30 = d.rollup30;
 			})
@@ -227,7 +227,6 @@
 				{#if core}
 					<StationSearch
 						manifest={core.manifest}
-						places={core.places}
 						onselect={selectFromSearch}
 						compact
 						side="bottom"
@@ -311,7 +310,7 @@
 </div>
 
 <article class="article scroll-mt-4" id="field-notes">
-	<FieldNotes manifest={core?.manifest} places={core?.places} india={core?.india} />
+	<FieldNotes manifest={core?.manifest} india={core?.india} />
 </article>
 
 <SiteFooter />

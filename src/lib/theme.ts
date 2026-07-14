@@ -1,12 +1,22 @@
 export const CELL = 8;
 
 export type SkyMode = 'day' | 'night';
+// twilight is a sky-only overlay (dawn/dusk); ground textures stay 2-state via skyMode
+export type SkyPhase = SkyMode | 'twilight';
 
 // day = steps 2-6 (06:00-18:00 IST); steps 0, 1, 7 are night
 export const NIGHT_STEPS = new Set([0, 1, 7]);
+// dawn (06:00) and dusk (18:00) get the intermediate twilight sky
+export const TWILIGHT_STEPS = new Set([2, 6]);
 
 export function skyMode(timeIndex: number): SkyMode {
 	return NIGHT_STEPS.has(timeIndex) ? 'night' : 'day';
+}
+
+export function skyPhase(timeIndex: number): SkyPhase {
+	if (NIGHT_STEPS.has(timeIndex)) return 'night';
+	if (TWILIGHT_STEPS.has(timeIndex)) return 'twilight';
+	return 'day';
 }
 
 export interface SkyPalette {
@@ -14,8 +24,10 @@ export interface SkyPalette {
 	bottom: string;
 }
 
-export const SKY: Record<SkyMode, SkyPalette> = {
-	day: { top: '#2E7CC4', bottom: '#6FC4EF' },
+// flat fill (only `top` is drawn); twilight is a warm dusk block between day and night
+export const SKY: Record<SkyPhase, SkyPalette> = {
+	day: { top: '#3A88CC', bottom: '#6FC4EF' },
+	twilight: { top: '#2A5687', bottom: '#2A5687' },
 	night: { top: '#081831', bottom: '#16335C' }
 };
 

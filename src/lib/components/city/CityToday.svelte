@@ -1,5 +1,6 @@
 <script lang="ts">
 	// today card: same sky-condition read and altitude bars as StationTooltip
+	import type { Snippet } from 'svelte';
 	import { prettyDate, skyCondition } from '$lib/format';
 
 	interface Props {
@@ -12,8 +13,10 @@
 		when?: string;
 		/** Hero-scale variant: larger, more prominent, higher-resolution bars. */
 		expanded?: boolean;
+		/** Optional controls pinned to the bottom of the card (e.g. the time scrubber). */
+		footer?: Snippet;
 	}
-	let { values, stationName, km, date, when, expanded = false }: Props = $props();
+	let { values, stationName, km, date, when, expanded = false, footer }: Props = $props();
 
 	const ROWS: { key: 'h' | 'm' | 'l'; label: string }[] = [
 		{ key: 'h', label: 'HIGH · CIRRUS' },
@@ -81,9 +84,12 @@
 		{/each}
 	</div>
 
-	<p
-		class={['cap tracking-[0.05em] opacity-60', expanded ? 'text-[11px]' : 'text-[10px]']}
-	>
-		READING FROM {stationName.toUpperCase()}{#if km != null} · {km} KM AWAY{/if}
-	</p>
+	<div class="bottom flex flex-col gap-3">
+		<p class={['cap tracking-[0.05em] opacity-60', expanded ? 'text-[11px]' : 'text-[10px]']}>
+			READING FROM {stationName.toUpperCase()}{#if km != null} · {km} KM AWAY{/if}
+		</p>
+		{#if footer}
+			<div class="border-t border-ink/15 pt-3">{@render footer()}</div>
+		{/if}
+	</div>
 </div>

@@ -2,8 +2,8 @@
 	import type { StationsManifest, CitiesRollup } from '$lib/types';
 	import type { FeatureCollection } from 'geojson';
 	import { fetchCities } from '$lib/api/r2';
-	import { citySlugs } from '$lib/city/slug.js';
-	import { haversineKm } from '$lib/city/distance';
+	import { citySlugs } from '$lib/stations/slug.js';
+	import { haversineKm } from '$lib/stations/distance';
 	import { userGeo } from '$lib/state/geo.svelte';
 	import { citySky } from '$lib/state/citySky.svelte';
 	import { base as APP_BASE } from '$app/paths';
@@ -19,10 +19,9 @@
 
 	interface Props {
 		manifest: StationsManifest;
-		places?: FeatureCollection;
 		india: FeatureCollection;
 	}
-	let { manifest, places, india }: Props = $props();
+	let { manifest, india }: Props = $props();
 
 	// Max distance (km) from the visitor to their nearest city for us to default to
 	// it — beyond this (e.g. an overseas visitor) we fall back to the biggest city.
@@ -151,11 +150,11 @@
 	bind:this={root}
 	id="city-explorer"
 	class="scroll-mt-4 pt-2"
-	aria-label="City sky explorer"
+	aria-label="Station sky explorer"
 >
 	{#if failed}
 		<p class="px-5 text-center text-xs tracking-wider text-error-tint uppercase">
-			Couldn't load the city record — try again later.
+			Couldn't load the station record — try again later.
 		</p>
 	{:else if !data}
 		<!-- Skeleton mirrors the loaded layout box-for-box. The twin-map box (right) drives
@@ -208,7 +207,6 @@
 							How cloudy <br /> has it been in
 							<StationSearch
 								{manifest}
-								{places}
 								codes={cityCodes}
 								cityFirst
 								side="bottom"
@@ -249,7 +247,7 @@
 					<div class="mt-4 flex flex-wrap items-center gap-2 text-left">
 						{#if city}
 							<PixelButton
-								href={`${APP_BASE}/city/${slugByCode[selected!] ?? ''}`}
+								href={`${APP_BASE}/stations/${slugByCode[selected!] ?? ''}`}
 								cap="paper"
 								size="xs"
 								class="text-sm!"
@@ -264,7 +262,7 @@
 								size="xs"
 								class="text-sm!"
 								onclick={clearCity}
-								aria-label="Clear the selected city"
+								aria-label="Clear the selected station"
 							>
 								<span class="flex items-center gap-1">
 									<HugeiconsIcon icon={Cancel01Icon} strokeWidth={2.4} size={13} />
@@ -274,7 +272,6 @@
 						{:else}
 							<StationSearch
 								{manifest}
-								{places}
 								codes={cityCodes}
 								cityFirst
 								side="bottom"

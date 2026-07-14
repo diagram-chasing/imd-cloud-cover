@@ -17,7 +17,7 @@
 <script lang="ts">
 	// A station's sky as a small centred glyph — the map's cloud tower at list
 	// scale, or a pixel sun when the sky is clear.
-	import { buildTower } from '$lib/city/clouds';
+	import { buildTower } from '$lib/stations/clouds';
 
 	let {
 		code,

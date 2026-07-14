@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick, type Snippet } from 'svelte';
-	import type { StationsManifest, PlaceProps } from '$lib/types';
-	import type { FeatureCollection } from 'geojson';
+	import type { StationsManifest } from '$lib/types';
+	import { titleCase } from '$lib/format';
 	import { Command as CommandPrimitive } from 'bits-ui';
 	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover';
 	import PixelButton from '$lib/components/PixelButton.svelte';
@@ -10,9 +10,6 @@
 
 	interface Props {
 		manifest: StationsManifest;
-		/** Baked cities/towns (src/lib/assets/geo/india-places.json). Optional so the map
-		    still renders if the file is missing. */
-		places?: FeatureCollection;
 		onselect?: (code: string) => void;
 		/** Icon-only square trigger (mobile top corner). */
 		compact?: boolean;
@@ -22,14 +19,13 @@
 		/** Only offer entries resolving to one of these station codes (the city
 		    explorer passes the codes present in cities.json). */
 		codes?: Set<string>;
-		/** Cities outrank stations on tie-breaks and the trigger says so. */
+		/** Label the trigger for the city explorer ("Find your city"). */
 		cityFirst?: boolean;
 		/** Custom trigger markup; receives the popover trigger props to spread. */
 		trigger?: Snippet<[Record<string, unknown>]>;
 	}
 	let {
 		manifest,
-		places,
 		onselect,
 		compact = false,
 		side = 'bottom',
@@ -57,78 +53,53 @@
 			.trim();
 
 	interface Entry {
-		kind: 'station' | 'city';
 		name: string;
 		state: string | null;
-		/** For a station, its code; for a city, its nearest station's code. */
-		code: string | null;
-		/** City-only: nearest station name + distance for the sublabel. */
-		near: string | null;
-		nkm: number;
+		district: string | null;
+		code: string;
 		pop: number;
 		nameN: string;
 		aliasN: string[];
 		codeN: string;
 		stateN: string;
+		districtN: string;
 	}
 
+	// Place = station: one entry per IMD station, searchable by name, aliases
+	// (Bombay/Madras…), district, state and code. No separate cities corpus, so a
+	// query like "Kanpur" no longer returns duplicate station+city rows.
 	let index = $derived.by(() => {
-		// true when the place IS the station (skip as duplicate)
-		const isSamePlace = (p: PlaceProps) => {
-			const near = p.nearest ? manifest.stations[p.nearest] : null;
-			return !!near && norm(near.name) === norm(p.name);
-		};
-		// aliases from the city sharing the station's identity
-		const stationAlias = new Map<string, string[]>();
-		for (const f of places?.features ?? []) {
-			const p = f.properties as unknown as PlaceProps;
-			if (!p?.name || !p.aliases?.length || !p.nearest || !isSamePlace(p)) continue;
-			stationAlias.set(p.nearest, [...(stationAlias.get(p.nearest) ?? []), ...p.aliases]);
-		}
 		const out: Entry[] = [];
 		for (const [code, s] of Object.entries(manifest.stations)) {
-			const nn = norm(s.name);
+			// Skip duplicate places (a district meteogram + point station in the same
+			// district); the canonical station stands in for them. `codes` (explorer)
+			// is already canonical, so it isn't re-filtered.
+			if (!codes && s.canonical === false) continue;
 			out.push({
-				kind: 'station',
 				name: s.name,
 				state: s.state,
+				district: s.district ?? null,
 				code,
-				near: null,
-				nkm: 0,
-				pop: 0,
-				nameN: nn,
-				aliasN: (stationAlias.get(code) ?? []).map(norm),
+				pop: s.pop ?? 0,
+				nameN: norm(s.name),
+				aliasN: (s.aliases ?? []).map(norm),
 				codeN: norm(code),
-				stateN: s.state ? norm(s.state) : ''
+				stateN: s.state ? norm(s.state) : '',
+				districtN: s.district ? norm(s.district) : ''
 			});
 		}
-		for (const f of places?.features ?? []) {
-			const p = f.properties as unknown as PlaceProps;
-			if (!p?.name || isSamePlace(p)) continue;
-			out.push({
-				kind: 'city',
-				name: p.name,
-				state: p.state,
-				code: p.nearest,
-				near: p.nearest ? (manifest.stations[p.nearest]?.name ?? null) : null,
-				nkm: p.nkm,
-				pop: p.pop,
-				nameN: norm(p.name),
-				aliasN: (p.aliases ?? []).map(norm),
-				codeN: '',
-				stateN: p.state ? norm(p.state) : ''
-			});
-		}
-		return codes ? out.filter((e) => e.code && codes.has(e.code)) : out;
+		return codes ? out.filter((e) => codes.has(e.code)) : out;
 	});
 
-	// lower = better: prefix > word-boundary > substring; name > alias > state/code
+	// lower = better: prefix > word-boundary > substring; name > alias > district/state/code
 	function score(e: Entry, q: string): number {
 		if (e.nameN.startsWith(q)) return 0;
 		if (new RegExp('\\b' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(e.nameN)) return 1;
 		for (const a of e.aliasN) if (a.startsWith(q)) return 2;
+		if (e.districtN.startsWith(q)) return 2;
 		if (e.nameN.includes(q)) return 3;
 		for (const a of e.aliasN) if (a.includes(q)) return 4;
+		if (e.districtN.includes(q)) return 4;
 		if (e.stateN.includes(q)) return 5;
 		if (e.codeN.includes(q)) return 5;
 		return Infinity;
@@ -137,22 +108,16 @@
 	let results = $derived.by(() => {
 		const q = norm(query);
 		if (!q) {
-			// no query: show biggest cities as defaults
-			return [...index]
-				.filter((e) => e.kind === 'city')
-				.sort((a, b) => b.pop - a.pop)
-				.slice(0, 8);
+			// no query: show the biggest places as defaults
+			return [...index].sort((a, b) => b.pop - a.pop).slice(0, 8);
 		}
 		const scored: { e: Entry; s: number }[] = [];
 		for (const e of index) {
 			const s = score(e, q);
 			if (s !== Infinity) scored.push({ e, s });
 		}
-		// stations first on ties; city-first mode flips this
-		const lead = (e: Entry) => (e.kind === (cityFirst ? 'city' : 'station') ? 0 : 1);
 		scored.sort(
-			(a, b) =>
-				a.s - b.s || lead(a.e) - lead(b.e) || b.e.pop - a.e.pop || a.e.name.localeCompare(b.e.name)
+			(a, b) => a.s - b.s || b.e.pop - a.e.pop || a.e.name.localeCompare(b.e.name)
 		);
 		return scored.slice(0, 50).map((x) => x.e);
 	});
@@ -174,13 +139,13 @@
 					{...props}
 					size="sm"
 					cap="paper"
-					aria-label={cityFirst ? 'Find your city' : 'Find a city or station'}
+					aria-label={cityFirst ? 'Find your station' : 'Find a station'}
 					class="text-xs tracking-wider uppercase"
 					style={compact ? '--pad: 4px 7px' : undefined}
 				>
 					<span class="flex items-center gap-1.5">
 						<HugeiconsIcon icon={SearchIcon} strokeWidth={2} size={16} />
-						{#if !compact}<span>{cityFirst ? 'Find your city' : 'Find a place'}</span>{/if}
+						{#if !compact}<span>{cityFirst ? 'Find your station' : 'Find a station'}</span>{/if}
 					</span>
 				</PixelButton>
 			{/if}
@@ -200,7 +165,7 @@
 				<CommandPrimitive.Input
 					bind:ref={inputEl}
 					bind:value={query}
-					placeholder={cityFirst ? 'Search a city…' : 'Search a city or station…'}
+					placeholder={cityFirst ? 'Search a station…' : 'Search a station…'}
 					class="station-search-input h-10 w-full min-w-0 bg-transparent text-[15px] text-ink outline-none placeholder:text-ink/40"
 				/>
 			</div>
@@ -210,22 +175,22 @@
 				{:else}
 					{#if !norm(query)}
 						<p class="px-2 pt-1 pb-1.5 text-xs uppercase">
-							{cityFirst ? 'Biggest cities' : 'Popular places'}
+							{cityFirst ? 'Biggest stations' : 'Popular stations'}
 						</p>
 					{/if}
-					{#each results as e, i (`${e.kind}:${e.name}:${e.state ?? ''}:${i}`)}
+					{#each results as e, i (`${e.code}:${i}`)}
 						<CommandPrimitive.Item
-							value={`${e.name}:${e.kind}:${i}`}
+							value={`${e.name}:${e.code}:${i}`}
 							onSelect={() => pick(e)}
 							class="flex cursor-pointer items-center gap-2 rounded-none px-2 py-1.5 text-ink outline-none select-none data-selected:bg-cloud-block data-selected:text-ink"
 						>
 							<span class="min-w-0 flex-auto truncate">
 								<span class="text-base uppercase text-ink">{e.name}</span>
-								{#if e.state}<span class="ml-1.5 text-xs text-ink/45">{e.state}</span>{/if}
+								{#if e.state}<span class="ml-1.5 text-xs text-ink/45"
+										>{titleCase(e.district && norm(e.district) !== e.nameN ? `${e.district}, ${e.state}` : e.state)}</span
+									>{/if}
 							</span>
-							<span class="flex-none text-xs text-ink/90 uppercase">
-								{e.kind === 'station' ? 'Station' : 'City'}
-							</span>
+							<span class="flex-none font-mono text-xs text-ink/45 uppercase">{e.code}</span>
 						</CommandPrimitive.Item>
 					{/each}
 				{/if}

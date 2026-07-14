@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Station } from '$lib/types';
-	import { prettyDate, skyCondition } from '$lib/format';
+	import { prettyDate, skyCondition, stationLabel, stationSubtitle } from '$lib/format';
 
 	interface Props {
 		station: Station | null;
@@ -43,12 +43,14 @@
 		role="tooltip"
 	>
 		<div class="m-0 flex items-center gap-2 text-base leading-tight tracking-[0.03em] uppercase">
-			{station.name}
+			{stationLabel(station)}
 			<span class="summary m-0 w-fit bg-day-sea px-1 py-0.5 text-xs tracking-wider text-paper"
 				>{summary}</span
 			>
 		</div>
-		{#if station.state}<div class="state mt-0.5 text-xs opacity-70">{station.state}</div>{/if}
+		{#if stationSubtitle(station)}<div class="state mt-0.5 text-xs opacity-70">
+				{stationSubtitle(station)}
+			</div>{/if}
 		{#if when}<div class="when mt-[3px] text-xs">
 				{[prettyDate(date), when].filter(Boolean).join(' · ')}
 			</div>{/if}

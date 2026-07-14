@@ -46,4 +46,11 @@ src/lib/assets/fonts/
 # Re-download from https://www.naturalearthdata.com/downloads/ to rebuild
 # static/data/*.json; the generated JSON is what the app ships.
 src/lib/assets/ne_*
+
+# IMD district polygons (~100 MB) used by scraper/tools/seed_stations.py for
+# state/district point-in-polygon. Regenerate with:
+#   python scraper/tools/fetch_imd_gazetteer.py
+# The small synop/metar/nowcast layers and geonames-places.json ARE committed.
+scraper/data/imd/india_districts.json
+
 .claude/

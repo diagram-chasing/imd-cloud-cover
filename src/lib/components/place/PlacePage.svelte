@@ -10,6 +10,7 @@
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
 	import SkyBarcode from '$lib/components/city/SkyBarcode.svelte';
 	import PixelButton from '$lib/components/PixelButton.svelte';
+	import PlaceTimeControls from '$lib/components/place/PlaceTimeControls.svelte';
 	import Wordmark from '$lib/components/Wordmark.svelte';
 
 	type Cover = { h: number; m: number; l: number; p?: number };
@@ -41,11 +42,9 @@
 		/** City mode only. */
 		perStation?: Record<string, Cover>;
 		india?: FeatureCollection;
-		cityPoint?: { name: string; lat: number; lon: number } | null;
 		stations?: NearbyStation[];
 		/** Adjoining cities labelled on the map (station mode). */
 		cities?: { name: string; lat: number; lon: number }[];
-		slugByCode?: Record<string, string>;
 		stationLookup?: Record<string, Station>;
 		/** This place's day-by-day cover over the archived window, for the barcode
 		 * strip. Omitted until the record loads. */
@@ -54,6 +53,16 @@
 			name: string;
 			e: (number | null)[];
 		} | null;
+		/** Day/hour scrubber. Rendered only when `onTime` is supplied; the reading,
+		 * per-station map and forecast marker all follow the chosen (dayIndex, timeIndex). */
+		days?: string[];
+		dayIndex?: number;
+		timeIndex?: number;
+		isLive?: boolean;
+		liveDay?: number;
+		liveTime?: number;
+		onTime?: (dayIndex: number, timeIndex: number) => void;
+		onNow?: () => void;
 	}
 
 	let {
@@ -71,12 +80,18 @@
 		metCaption,
 		perStation = {},
 		india,
-		cityPoint,
 		stations = [],
 		cities = [],
-		slugByCode = {},
 		stationLookup = {},
-		history = null
+		history = null,
+		days,
+		dayIndex = 0,
+		timeIndex = 0,
+		isLive = true,
+		liveDay = 0,
+		liveTime = 0,
+		onTime,
+		onNow
 	}: Props = $props();
 
 	let tip = $state<{ code: string; clientX: number; clientY: number } | null>(null);
@@ -109,16 +124,30 @@
 		<section
 			class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]"
 		>
-			<CityToday expanded {values} {stationName} {km} {date} {when} />
+			<CityToday expanded {values} {stationName} {km} {date} {when}>
+				{#snippet footer()}
+					{#if onTime && days && days.length}
+						<PlaceTimeControls
+							{days}
+							{dayIndex}
+							{timeIndex}
+							{isLive}
+							{liveDay}
+							{liveTime}
+							onchange={onTime}
+							onnow={onNow ?? (() => {})}
+						/>
+					{/if}
+				{/snippet}
+			</CityToday>
 			<div class="h-full min-w-0">
-				{#if india && (mode === 'city' ? cityPoint : stations.length)}
+				{#if india && stations.length}
 					<CityMap
 						{india}
-						city={mode === 'city' ? (cityPoint ?? null) : null}
+						city={null}
 						{stations}
 						values={perStation}
 						places={mode === 'city' ? [] : cities}
-						{slugByCode}
 						minSpanFactor={mode === 'city' ? 0.02 : 0.12}
 						onhover={(info) => (tip = info)}
 					/>

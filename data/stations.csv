@@ -1,1246 +1,1246 @@
-"code","station","state","lat","lon"
-"A-MALWA","A-Malwa","Madhya Pradesh",23.8,76.05
-"AAA","Aaa","Maharashtra",19.08,74.8
-"ABG","Abg","",18.63,72.87
-"ABP","Abp","Chhattisgarh",23.17,83.25
-"ADILABAD","Adilabad","Andhra Pradesh",19.55,78.57
-"AGA","Aga","",10.82,72.17
-"AGB","Agb","Karnataka",13.5,75.08
-"AGD","Agd","Maharashtra",19.85,75.4
-"AGR","Agr","Uttar Pradesh",27.17,78.03
-"AGRA","Agra","Uttar Pradesh",27.08,78.04
-"AGT","Agt","Tripura",23.88,91.25
-"AHM","Ahm","Gujarat",23.07,72.63
-"AHMEDABAD","Ahmedabad","Gujarat",22.9,72.32
-"AHMEDNAGAR","Ahmednagar","Maharashtra",19.16,74.6
-"AIZWAL","Aizwal","Mizoram",23.84,92.92
-"AJM","Ajm","Rajasthan",26.45,74.62
-"AJMER","Ajmer","Rajasthan",26.31,74.64
-"AKL","Akl","Maharashtra",20.7,77.07
-"AKOLA","Akola","Maharashtra",20.76,77.15
-"ALA","Ala","",9.55,76.42
-"ALAPPUZHA","Alappuzha","Kerala",9.49,76.49
-"ALB","Prayagraj","Uttar Pradesh",25.45,81.73
-"ALD","Ald","Andhra Pradesh",19.65,78.53
-"ALG","Alg","Uttar Pradesh",27.88,78.07
-"ALIGARH","Aligarh","Uttar Pradesh",27.88,78.05
-"ALIRAJPUR","Alirajpur","Madhya Pradesh",22.28,74.39
-"ALJ","Alj","Madhya Pradesh",22.28,74.4
-"ALMORA","Almora","Uttaranchal",29.7,79.56
-"ALN","Aln","Arunachal Pradesh",28.16,94.8
-"ALP","Alp","West Bengal",22.53,88.33
-"ALW","Alw","Rajasthan",27.5,76.58
-"ALWAR","Alwar","Rajasthan",27.64,76.67
-"AMB","Amb","Haryana",30.38,76.77
-"AMBALA","Ambala","Haryana",30.33,76.88
-"AMBEDKAR","Ambedkar","Uttar Pradesh",26.43,82.7
-"AMETHI","Amethi","Uttar Pradesh",26.35,81.63
-"AML","Aml","Gujarat",21.6,71.22
-"AMN","Amn","",11.12,72.73
-"AMR","Amr","Punjab",31.63,74.87
-"AMRAVATI","Amravati","Maharashtra",21.16,77.54
-"AMRELI","Amreli","Gujarat",21.37,71.2
-"AMRITSAR","Amritsar","Punjab",31.76,74.94
-"AMT","Amt","Maharashtra",20.93,77.78
-"ANAND","Anand","Gujarat",22.44,72.78
-"ANANTNAG","Anantnag","Jammu and Kashmir",33.67,75.17
-"ANANTPUR","Anantpur","Andhra Pradesh",14.45,77.62
-"ANATNAG","Anatnag","Jammu and Kashmir",33.59,75.38
-"ANDAMAN","Andaman","",11.41,93.04
-"ANG","Ang","Orissa",20.83,85.1
-"ANGUL","Angul","Orissa",20.9,84.83
-"ANJAW","Anjaw","Arunachal Pradesh",28.04,96.85
-"ANP","Anp","Rajasthan",29.17,73.17
-"ANT","Ant","Andhra Pradesh",14.68,77.62
-"ANUPPUR","Anuppur","Madhya Pradesh",23.03,81.66
-"ARA","Ara","Bihar",25.57,84.67
-"ARARIA","Araria","Bihar",26.26,87.37
-"ARAVALLI","Aravalli","Gujarat",23.49,73.42
-"ARIYALUR","Ariyalur","Tamil Nadu",11.15,79.23
-"ARP","Arp","Tamil Nadu",10.33,79.38
-"ART","Art","",10.8,73.68
-"ARV","Arv","Andhra Pradesh",13.53,78.5
-"ARWAL","Arwal","Bihar",25.18,84.38
-"ASHOKNAGAR","Ashoknagar","Madhya Pradesh",24.62,77.88
-"AUGUSTMUNI","Augustmuni","Uttaranchal",30.39,79.02
-"AURAIYA","Auraiya","Uttar Pradesh",26.66,79.5
-"AURANGABAD","Aurangabad","Bihar",24.81,84.38
-"AVADI","Avadi","Tamil Nadu",13.12,80.08
-"AYL","Ayl","Tamil Nadu",11.23,79.29
-"AZAMGARH","Azamgarh","Uttar Pradesh",26.05,83.09
-"AZG","Azg","Uttar Pradesh",26.05,83.22
-"AZL","Azl","Mizoram",23.73,92.71
-"Airport_IMD","Airport_IMD","Gujarat",23.0768,72.6279
-"BABATPUR","Babatpur","Uttar Pradesh",25.26,82.51
-"BADAYUN","Badayun","Uttar Pradesh",28.06,78.89
-"BADGAM","Badgam","Jammu and Kashmir",33.86,74.66
-"BADRADRI","Badradri","Andhra Pradesh",17.72,80.76
-"BADRINATH","Badrinath","Uttaranchal",30.74,79.49
-"BADWANI","Badwani","Madhya Pradesh",21.75,75.03
-"BAG","Bag","West Bengal",22.98,88.37
-"BAGALKOT","Bagalkot","Karnataka",16.17,75.65
-"BAGALKOTE","Bagalkote","Karnataka",16.29,75.66
-"BAGESHWAR","Bageshwar","Uttaranchal",29.9,79.82
-"BAGHPAT","Baghpat","Uttar Pradesh",29.04,77.32
-"BAHRAICH","Bahraich","Uttar Pradesh",27.73,81.4
-"BAKSHA","Baksha","Assam",26.65,91.31
-"BALAGHAT","Balaghat","Madhya Pradesh",21.86,80.28
-"BALAGIR","Balagir","Orissa",20.61,83.18
-"BALASORE","Balasore","Orissa",21.28,86.68
-"BALLIA","Ballia","Uttar Pradesh",25.88,84.16
-"BALOD","Balod","Chhattisgarh",20.7,81.18
-"BALODABAZAR","Balodabazar","Chhattisgarh",21.54,82.32
-"BALRAMPUR","Balrampur","Chhattisgarh",23.85,83.35
-"BALTAL","Baltal","Jammu and Kashmir",34.26,75.42
-"BANASKANTHA","Banaskantha","Gujarat",24.27,72.15
-"BANDA","Banda","Uttar Pradesh",25.44,80.57
-"BANGALORE-RURAL","Bangalore-Rural","Karnataka",13.27,77.57
-"BANKA","Banka","Bihar",24.83,86.83
-"BANSWARA","Banswara","Rajasthan",23.49,74.36
-"BARABANKI","Barabanki","Uttar Pradesh",26.94,81.33
-"BARAGARH","Baragarh","Orissa",21.24,83.55
-"BARAMULLAH","Baramullah","Jammu and Kashmir",34.1,74.42
-"BARAN","Baran","Rajasthan",24.92,76.82
-"BAREILLY","Bareilly","Uttar Pradesh",28.45,79.38
-"BARKOT","Barkot","Uttaranchal",30.81,78.21
-"BARMER","Barmer","Rajasthan",25.58,71.47
-"BARNALA","Barnala","Punjab",30.39,75.5
-"BARODA","Baroda","Gujarat",22.31,73.27
-"BARPETA","Barpeta","Assam",26.43,91.09
-"BASTER","Baster","Chhattisgarh",19.14,81.77
-"BASTI","Basti","Uttar Pradesh",26.76,82.6
-"BAUDA","Bauda","Orissa",20.75,84.18
-"BBS","Bbs","Orissa",20.25,85.83
-"BDA","Bda","Uttar Pradesh",25.47,80.37
-"BDG","Bdg","West Bengal",26.63,88.32
-"BDI","Bdi","Rajasthan",25.45,75.63
-"BDN","Bdn","Maharashtra",20.53,76.23
-"BDS","Bds","Uttar Pradesh",28.4,77.87
-"BDU","Bdu","Uttar Pradesh",28.05,79.12
-"BEGUSARAI","Begusarai","Bihar",25.51,86.13
-"BELGAUM","Belgaum","Karnataka",16.16,74.77
-"BELLARY","Bellary","Karnataka",15.19,76.42
-"BEMATARA","Bematara","Chhattisgarh",21.65,81.45
-"BETUL","Betul","Madhya Pradesh",21.88,77.78
-"BGK","Bgk","Karnataka",16.7,75.25
-"BGP","Bgp","Bihar",25.23,86.95
-"BGT","Bgt","West Bengal",25.22,88.78
-"BHABUA","Bhabua","Bihar",24.98,83.61
-"BHADRAK","Bhadrak","Orissa",20.99,86.62
-"BHAGALPUR","Bhagalpur","Bihar",25.28,87.1
-"BHANDARA","Bhandara","Maharashtra",21.12,79.77
-"BHARATPUR","Bharatpur","Rajasthan",27.06,77.32
-"BHATINDA","Bhatinda","Punjab",30.18,75
-"BHATWARI","Bhatwari","Uttaranchal",30.81,78.61
-"BHAVNAGAR","Bhavnagar","Gujarat",21.67,71.95
-"BHILWARA","Bhilwara","Rajasthan",25.49,74.74
-"BHIND","Bhind","Madhya Pradesh",26.35,78.68
-"BHIWANI","Bhiwani","Haryana",28.73,75.98
-"BHJ","Bhj","Gujarat",23.25,69.67
-"BHOJPUR","Bhojpur","Bihar",25.45,84.57
-"BHOPAL","Bhopal","Madhya Pradesh",23.49,77.41
-"BHP","Bhp","Madhya Pradesh",23.28,77.35
-"BHU","Bhu","Gujarat",21.75,72.2
-"BHUNTAR","Bhuntar","Himachal Pradesh",31.87,77.15
-"BID","Bid","Maharashtra",18.94,75.77
-"BIDAR","Bidar","Karnataka",18.03,77.18
-"BIJAPUR","Bijapur","Karnataka",16.81,75.9
-"BIJNORE","Bijnore","Uttar Pradesh",29.41,78.46
-"BIKANER","Bikaner","Rajasthan",28.12,73.13
-"BIL","Bil","Himachal Pradesh",31.25,76.67
-"BILASPUR","Bilaspur","Chhattisgarh",22.62,82
-"BILASPUR-HP","Bilaspur-Hp","Himachal Pradesh",31.35,76.66
-"BIR","Bir","Maharashtra",19,75.72
-"BIRBHUM","Birbhum","West Bengal",23.85,87.56
-"BISHNUPUR","Bishnupur","Manipur",24.51,93.8
-"BISWANATH","Biswanath","Assam",26.89,93.42
-"BITRA","Bitra","",11.55,72.15
-"BJC_CHA","Bijapur","Chhattisgarh",18.77,80.74
-"BJP","Bjp","Karnataka",16.82,75.72
-"BKN","Bkn","Rajasthan",28,73.3
-"BLA","Bla","Uttar Pradesh",25.75,84.17
-"BLD","Bld","Chhattisgarh",18.71,81.23
-"BLG","Blg","Karnataka",15.85,74.62
-"BLN","Bln","Karnataka",13.37,75.45
-"BLR","Blr","Orissa",20.7,83.5
-"BLS","Bls","Orissa",21.52,86.93
-"BLW","Blw","Rajasthan",25.35,74.63
-"BLY","Bly","Karnataka",15.15,76.85
-"BMB","Bmb","Maharashtra",19.12,72.83
-"BMD","Bmd","Arunachal Pradesh",27.42,92.85
-"BMP","Bmp","Maharashtra",20.6,79.85
-"BMT","Bmt","Maharashtra",18.15,74.58
-"BND","Bnd","Madhya Pradesh",26.57,78.8
-"BNG","Bng","Karnataka",12.97,77.58
-"BNG-URBAN","Bng-Urban","Karnataka",12.94,77.78
-"BNK","Bnk","West Bengal",23.25,87.05
-"BNL","Bnl","Jammu and Kashmir",33.43,75.19
-"BNT","Bnt","Himachal Pradesh",31.83,77.17
-"BOKARO","Bokaro","Jharkhand",23.69,86.01
-"BONGAIGAON","Bongaigaon","Assam",26.35,90.62
-"BOTAD","Botad","Gujarat",22.15,71.75
-"BPD","Bpd","Orissa",21.93,86.77
-"BPT","Bpt","Andhra Pradesh",15.9,80.47
-"BRA","Bra","Maharashtra",18.45,73.4
-"BRC","Brc","Uttar Pradesh",27.57,81.6
-"BRD","Brd","Gujarat",22.3,73.25
-"BRH","Brh","Gujarat",21.73,73
-"BRL","Brl","Uttar Pradesh",28.37,79.4
-"BRM","Brm","Rajasthan",25.75,71.38
-"BROACH","Broach","Gujarat",21.73,73
-"BRP","Brp","West Bengal",24.13,88.27
-"BRT","Brt","Rajasthan",27.22,77.5
-"BST","Bst","Uttar Pradesh",26.8,82.73
-"BSW","Bsw","Rajasthan",23.55,74.45
-"BTD","Btd","Punjab",30.21,74.94
-"BTL","Btl","Madhya Pradesh",21.87,77.93
-"BTT","Btt","Jammu and Kashmir",33.07,75.19
-"BUL","Bul","Gujarat",20.62,72.93
-"BULANDSHAHR","Bulandshahr","Uttar Pradesh",28.39,78.07
-"BULDHANA","Buldhana","Maharashtra",20.57,76.38
-"BUNDI","Bundi","Rajasthan",25.44,75.79
-"BURDWAN","Burdwan","West Bengal",23.4,87.75
-"BURHANPUR","Burhanpur","Madhya Pradesh",21.33,76.37
-"BUXAR","Buxar","Bihar",25.51,84.08
-"BWN","Bwn","West Bengal",23.23,87.85
-"BWP","Bwp","Orissa",19.92,83.18
-"Bihta_bihar","Bihta_bihar","Bihar",25.557,84.8917
-"CACHER","Cacher","Assam",24.76,92.86
-"CAVE","Cave","Jammu and Kashmir",34.22,75.51
-"CBL","Cbl","Orissa",20.78,86.73
-"CBS","Cbs","Jharkhand",22.55,85.82
-"CDL","Cdl","Tamil Nadu",11.77,79.77
-"CDP","Cdp","Andhra Pradesh",14.48,78.83
-"CENTRAL-DELHI","Central-Delhi","Delhi",28.67,77.22
-"CENTRAL-SIKKIM","Central-Sikkim","Sikkim",27.6,88.51
-"CHA","Cha","Bihar",25.78,84.73
-"CHAMARAJNAGAR","Chamarajnagar","Karnataka",11.94,77.09
-"CHAMBA","Chamba","Himachal Pradesh",32.69,76.34
-"CHAMPAWAT","Champawat","Uttaranchal",29.29,80.06
-"CHAMPHAI","Champhai","Mizoram",23.54,93.23
-"CHANDAULI","Chandauli","Bihar",25.22,83.49
-"CHANDEL","Chandel","Manipur",24.1,94.07
-"CHANDIGARH","Chandigarh","Chandigarh",30.73,76.77
-"CHANDRAPUR","Chandrapur","Maharashtra",20.09,79.4
-"CHANGLANG","Changlang","Arunachal Pradesh",27.47,96.4
-"CHARAIDEO","Charaideo","Assam",27.07,95.07
-"CHARKHI-DADRI","Charkhi-Dadri","Haryana",28.6,76.15
-"CHATRAI","Chatrai","Jharkhand",24.1,84.9
-"CHB","Chb","West Bengal",26.33,89.47
-"CHD","Chd","Haryana",30.73,76.88
-"CHEMBARAPAKKAM","Chembarapakkam","Tamil Nadu",13.02,80.04
-"CHENNAI","Chennai","Tamil Nadu",13.07,80.25
-"CHETLAT","Chetlat","",11.69,72.7
-"CHHATARPUR","Chhatarpur","Madhya Pradesh",24.76,79.71
-"CHHINDWARA","Chhindwara","Madhya Pradesh",22.14,78.83
-"CHIKBALLAPUR","Chikballapur","Karnataka",13.59,77.79
-"CHIKMAGALUR","Chikmagalur","Karnataka",13.4,75.72
-"CHILAS","Chilas","",35.3,74.25
-"CHINYALISOUR","Chinyalisour","Uttaranchal",30.57,78.32
-"CHIRANG","Chirang","Assam",26.65,90.65
-"CHITRADURGA","Chitradurga","Karnataka",14.31,76.53
-"CHITRAKUT","Chitrakut","Uttar Pradesh",25.22,81.12
-"CHITTAURGARH","Chittaurgarh","Rajasthan",24.92,74.76
-"CHITTOOR","Chittoor","Andhra Pradesh",13.31,79.06
-"CHM","Chm","Uttaranchal",30.4,79.33
-"CHN","Chn","",9.95,76.27
-"CHOTA-UDEPUR","Chota-Udepur","Gujarat",22.22,73.89
-"CHP","Chp","Chhattisgarh",22.03,82.7
-"CHT","Cht","Karnataka",14.23,76.43
-"CHURACHANDPUR","Churachandpur","Manipur",24.28,93.43
-"CHURU","Churu","Rajasthan",28.4,74.76
-"CHW","Chw","Madhya Pradesh",22.1,79
-"CKG","Ckg","Karnataka",13.25,75.75
-"CLB","Clb","",18.9,72.82
-"CMB","Cmb","Tamil Nadu",11,76.97
-"CML","Cml","Rajasthan",24.92,75.58
-"CNB","Cnb","Andaman and Nicobar",9.17,92.83
-"CNG","Cng","West Bengal",22.25,88.67
-"CNN","Cnn","",11.83,75.33
-"CNR","Cnr","Tamil Nadu",11.35,76.8
-"CNT","Cnt","West Bengal",21.78,87.75
-"CNW","Cnw","Jammu and Kashmir",34.14,74.12
-"COIMBATORE","Coimbatore","Tamil Nadu",10.95,76.98
-"CPJ","Cpj","Meghalaya",25.25,91.73
-"CPM","Cpm","Assam",26.2,92.52
-"CPR","Cpr","Maharashtra",19.97,79.3
-"CRU","Cru","Rajasthan",28.25,74.92
-"CTG","Ctg","Rajasthan",24.88,74.63
-"CTK","Ctk","Orissa",20.47,85.93
-"CUDDALORE","Cuddalore","Tamil Nadu",11.52,79.45
-"CUDDEPAH","Cuddepah","Andhra Pradesh",14.4,78.65
-"CUTTACK","Cuttack","Orissa",20.5,85.84
-"Chandkheda","Chandkheda","Gujarat",23.108,72.5746
-"DAKSHAN-DINAJPUR","Dakshan-Dinajpur","West Bengal",25.38,88.6
-"DAKSHINA-KANNAD","Dakshina-Kannad","Karnataka",13.07,75.17
-"DAL","Dal","Himachal Pradesh",32.53,75.97
-"DAMOH","Damoh","Madhya Pradesh",23.8,79.51
-"DANGS","Dangs","Gujarat",20.82,73.71
-"DANTEWADA","Dantewada","Chhattisgarh",18.77,81.44
-"DARBHANGA","Darbhanga","Bihar",26.16,86.04
-"DARJEELING","Darjeeling","West Bengal",26.85,88.25
-"DARRANG","Darrang","Assam",26.44,92.07
-"DATIA","Datia","Madhya Pradesh",25.92,78.53
-"DAUSA","Dausa","Rajasthan",26.81,76.62
-"DBG","Dbg","Bihar",26.17,85.9
-"DBH","Dbh","Assam",27.48,95.02
-"DDM","Ddm","West Bengal",22.65,88.45
-"DDN","Ddn","Uttaranchal",30.32,78.03
-"DEHRADUN","Dehradun","Uttaranchal",30.4,77.85
-"DEMAJ","Demaj","Assam",27.54,94.7
-"DEOGARH","Deogarh","Orissa",21.49,84.8
-"DEOGHAR","Deoghar","Jharkhand",24.33,86.76
-"DEORIA","Deoria","Uttar Pradesh",26.42,83.84
-"DER","Der","Bihar",24.92,84.18
-"DEVANGERE","Devangere","Karnataka",14.37,75.96
-"DEVBHOOMI-DWARKA","Devbhoomi-Dwarka","Gujarat",22.14,69.44
-"DEVPRAYAG","Devprayag","Uttaranchal",30.14,78.61
-"DEWAS","Dewas","Madhya Pradesh",22.71,76.51
-"DGB","Dgb","Assam",27.55,95.62
-"DGH","Dgh","West Bengal",21.83,87.78
-"DGR","Dgr","Rajasthan",23.83,73.67
-"DHALAI","Dhalai","Tripura",23.83,91.96
-"DHAMTARI","Dhamtari","Chhattisgarh",20.63,81.79
-"DHANBAD","Dhanbad","Jharkhand",23.84,86.47
-"DHAR","Dhar","Madhya Pradesh",22.58,75.09
-"DHARMAPURI","Dharmapuri","Tamil Nadu",12.14,78.21
-"DHARWAD","Dharwad","Karnataka",15.37,75.15
-"DHAULPUR","Dhaulpur","Rajasthan",26.66,77.75
-"DHB","Dhb","Assam",26.02,89.98
-"DHD","Dhd","Gujarat",22.83,74.27
-"DHENKANAL","Dhenkanal","Orissa",20.84,85.6
-"DHN","Dhn","Maharashtra",19.97,72.72
-"DHR","Dhr","Madhya Pradesh",22.6,75.3
-"DHUBR","Dhubr","Assam",26.1,90
-"DHULE","Dhule","Maharashtra",21.13,74.53
-"DIBRUGARH","Dibrugarh","Assam",27.4,95.03
-"DIMAPUR","Dimapur","Nagaland",25.81,93.77
-"DINDIGUL","Dindigul","Tamil Nadu",10.43,77.8
-"DINDORI","Dindori","Madhya Pradesh",23.05,80.9
-"DIU","Diu","Daman and Diu",20.72,70.92
-"DJL","Djl","West Bengal",27.05,88.27
-"DLP","Dlp","Rajasthan",26.67,77.83
-"DMD","Dmd","West Bengal",22.18,88.2
-"DMH","Dmh","Madhya Pradesh",23.83,79.45
-"DMK","Dmk","Jharkhand",24.27,87.25
-"DMN","Dmn","Gujarat",20.42,72.85
-"DNB","Dnb","Jharkhand",23.78,86.43
-"DODA","Doda","Jammu and Kashmir",33.12,75.7
-"DOHAD","Dohad","Gujarat",22.92,74.14
-"DPR","Dpr","Tamil Nadu",12.13,78.03
-"DRC","Drc","Uttaranchal",29.85,80.53
-"DRG","Drg","Chhattisgarh",21.18,81.28
-"DRM","Drm","Himachal Pradesh",32.21,76.32
-"DRP","Drp","Himachal Pradesh",30.9,77.02
-"DRS","Drs","Jammu and Kashmir",34.43,75.77
-"DSA","Dsa","Gujarat",24.2,72.2
-"DTA","Dta","Madhya Pradesh",25.67,78.47
-"DTG","Dtg","Jharkhand",24.05,84.07
-"DUMKA","Dumka","Jharkhand",24.31,87.29
-"DUNGARPUR","Dungarpur","Rajasthan",23.67,73.87
-"DURG","Durg","Chhattisgarh",21.2,81.38
-"DVG","Dvg","",16.38,73.35
-"DWK","Dwk","Gujarat",22.37,69.08
-"Dhule","Dhule","Maharashtra",20.9042,74.7749
-"E-JAINTIA","E-Jaintia","Meghalaya",25.25,92.5
-"EAST","East","Sikkim",27.28,88.68
-"EAST-DELHI","East-Delhi","Delhi",28.61,77.31
-"EAST-GARO","East-Garo","Meghalaya",25.7,90.69
-"EAST-GODAVARI","East-Godavari","Andhra Pradesh",17.5,82.09
-"EAST-KAMENG","East-Kameng","Arunachal Pradesh",27.4,93.2
-"EAST-KHASI","East-Khasi","Meghalaya",25.35,91.8
-"EAST-SIANG","East-Siang","Arunachal Pradesh",27.95,95.26
-"EAST-SINGBHUM","East-Singbhum","Jharkhand",22.61,86.48
-"EDAKALINADU","Edakalinadu","Tamil Nadu",12.28,79.8
-"ENNORE-PORT","Ennore-Port","",13.27,88.33
-"ENP","Enp","Rajasthan",25.08,73.14
-"ERNAKULAM","Ernakulam","Kerala",10.05,76.5
-"ERODE","Erode","Tamil Nadu",11.49,77.38
-"ETAH","Etah","Uttar Pradesh",27.55,78.73
-"ETAWAH","Etawah","Uttar Pradesh",26.72,79.04
-"ETW","Etw","Madhya Pradesh",26.45,79.02
-"FAIZABAD","Faizabad","Uttar Pradesh",26.67,82.01
-"FARIDABAD","Faridabad","Haryana",28.33,77.35
-"FARIDKOT","Faridkot","Punjab",30.6,74.76
-"FARRUKHABAD","Farrukhabad","Uttar Pradesh",27.33,79.63
-"FATEHABAD","Fatehabad","Haryana",29.53,75.59
-"FATEHGARH","Fatehgarh","Uttar Pradesh",27.45,79.5
-"FATEHGARH-SAHIB","Fatehgarh-Sahib","Punjab",30.6,76.33
-"FATEHPUR","Fatehpur","Uttar Pradesh",25.83,80.78
-"FAZILIKA","Fazilika","Punjab",30.36,74.17
-"FBG","Fbg","Bihar",26.3,87.27
-"FEROZEPUR","Ferozepur","Punjab",30.9,74.8
-"FIROZABAD","Firozabad","Uttar Pradesh",27.19,78.51
-"FTP","Ftp","Uttar Pradesh",25.93,80.83
-"FURSATGANJ","Fursatganj","Uttar Pradesh",26.25,81.3
-"FZB","Fzb","Uttar Pradesh",26.75,82.08
-"FZP","Fzp","Punjab",30.92,74.67
-"GADAG","Gadag","Karnataka",15.41,75.66
-"GADCHIROLI","Gadchiroli","Maharashtra",19.76,80.32
-"GAJAPATI","Gajapati","Orissa",18.92,84.12
-"GANDERBAL","Ganderbal","Jammu and Kashmir",34.31,75.19
-"GANDHINAGAR","Gandhinagar","Gujarat",23.2,72.78
-"GANGANAGAR","Ganganagar","Rajasthan",29.2,73.55
-"GANGOTRI","Gangotri","Uttaranchal",30.99,78.93
-"GANJAM","Ganjam","Orissa",19.63,84.65
-"GARHWA","Garhwa","Jharkhand",24.05,83.7
-"GARIYABAND","Gariyaband","Chhattisgarh",20.4,82.29
-"GAUCHAR","Gauchar","Uttaranchal",30.28,79.15
-"GAYA","Gaya","Bihar",24.67,84.85
-"GDA","Gda","Uttar Pradesh",27.13,81.97
-"GDG","Gdg","Karnataka",15.42,75.63
-"GDN","Gdn","Gujarat",23.21,72.63
-"GGN","Ggn","Rajasthan",29.92,73.92
-"GHAT","Ghat","Uttaranchal",30.61,79.56
-"GHAZIABAD","Ghaziabad","Delhi",28.7,77.2
-"GHAZIPUR","Ghazipur","Uttar Pradesh",25.6,83.51
-"GHT","Ght","Assam",26.1,91.58
-"GILGIT","Gilgit","",36.45,74.75
-"GILGIT-WAZARAD","Gilgit-Wazarad","",35.05,74.85
-"GIR-SOMNATH","Gir-Somnath","Daman and Diu",20.94,70.8
-"GIRIDIH","Giridih","Jharkhand",24.33,86.12
-"GLB","Glb","Karnataka",17.35,76.85
-"GLM","Glm","Jammu and Kashmir",34.05,74.4
-"GLP","Glp","Assam",26.18,90.63
-"GLT","Glt","Assam",26.52,93.98
-"GNA","Gna","Madhya Pradesh",24.65,77.32
-"GND","Gnd","Maharashtra",21.47,80.2
-"GOA","Goa","Goa",15.38,73.82
-"GOALPARA","Goalpara","Assam",26.06,90.61
-"GODDA","Godda","Jharkhand",24.86,87.29
-"GOLAGHAT","Golaghat","Assam",26.66,93.74
-"GOMATI","Gomati","Tripura",23.51,91.62
-"GONDA","Gonda","Uttar Pradesh",27.11,82.07
-"GONDIA","Gondia","Maharashtra",21.34,80.24
-"GOPALGANJ","Gopalganj","Bihar",26.42,84.41
-"GORAKHPUR","Gorakhpur","Uttar Pradesh",26.68,83.5
-"GPL","Gpl","Orissa",19.27,84.88
-"GPR","Gpr","Assam",26.83,93.58
-"GRG","Grg","Haryana",28.42,77
-"GRK","Grk","Uttar Pradesh",26.75,83.37
-"GTK","Gtk","Sikkim",27.33,88.62
-"GULBARGA","Gulbarga","Karnataka",17.24,76.88
-"GUMLA","Gumla","Jharkhand",23.16,84.53
-"GUNA","Guna","Madhya Pradesh",24.5,77.27
-"GUND","Gund","Jammu and Kashmir",34.11,75.05
-"GUNTUR","Guntur","Andhra Pradesh",16.28,80.06
-"GURDASPUR","Gurdaspur","Punjab",31.88,75.32
-"GURGAON","Gurgaon","Haryana",28.37,76.95
-"GURUVAYUR","Guruvayur","Kerala",10.59,76.04
-"GWALIOR","Gwalior","Madhya Pradesh",25.95,78.29
-"GWL","Gwl","Madhya Pradesh",26.23,78.25
-"GYA","Gya","Bihar",24.75,84.95
-"GZB","Gzb","Uttar Pradesh",28.69,77.41
-"GZP","Gzp","Uttar Pradesh",25.4,83.55
-"HAILAKANDI","Hailakandi","Assam",24.45,92.83
-"HAMIRPUR","Hamirpur","Himachal Pradesh",31.66,76.51
-"HANUMANGARH","Hanumangarh","Rajasthan",29.07,74.67
-"HARDA","Harda","Madhya Pradesh",22.24,77.14
-"HARDOI","Hardoi","Uttar Pradesh",27.23,80.26
-"HARIDWAR","Haridwar","Uttaranchal",29.9,78.02
-"HARSIL","Harsil","Uttaranchal",31.03,78.73
-"HASSAN","Hassan","Karnataka",13.03,76.1
-"HATHRAS","Hathras","Uttar Pradesh",27.45,78.15
-"HAVERI","Haveri","Karnataka",14.72,75.42
-"HAZARIBAGH","Hazaribagh","Jharkhand",24.01,85.47
-"HFL","Hfl","Assam",25.17,93.02
-"HINGOLE","Hingole","Maharashtra",19.55,77.2
-"HISAR","Hisar","Haryana",29.15,75.72
-"HISSAR","Hissar","Haryana",29.24,75.79
-"HMP","Hmp","Uttar Pradesh",25.95,80.15
-"HNK","Hnk","Andhra Pradesh",18.02,79.57
-"HNV","Hnv","Karnataka",14.28,74.45
-"HOJAI","Hojai","Assam",25.96,92.97
-"HOSHANGABAD","Hoshangabad","Madhya Pradesh",22.6,77.96
-"HOSHIARPUR","Hoshiarpur","Punjab",31.6,75.85
-"HRD","Hrd","Uttar Pradesh",27.38,80.17
-"HRN","Hrn","Maharashtra",17.82,73.1
-"HSB","Hsb","Madhya Pradesh",22.77,77.77
-"HSN","Hsn","Karnataka",13,76.15
-"HSR","Hsr","Haryana",29.17,75.73
-"HTB","Htb","Andaman and Nicobar",10.58,92.55
-"HUBBLI","Hubbli","Karnataka",15.36,75.12
-"HYD","Hyd","Andhra Pradesh",17.45,78.47
-"HYDERABAD","Hyderabad","Andhra Pradesh",17.4,78.47
-"HZB","Hzb","Jharkhand",23.98,85.37
-"Hingoli","Hingoli","Maharashtra",19.7174,77.1494
-"IDR","Idr","Gujarat",23.83,73.03
-"IDUKKI","Idukki","Kerala",9.82,77.02
-"IIPHG","Iiphg","Gujarat",23.2436,72.6899
-"IMP","Imp","Manipur",24.67,93.9
-"IMPHAL","Imphal","Manipur",24.81,94.02
-"IND","Ind","Madhya Pradesh",22.72,75.8
-"INDORE","Indore","Madhya Pradesh",22.75,75.83
-"ISRO-Bopal","ISRO-Bopal","Gujarat",23.0411,72.4567
-"ISRO-SAC","Isro-Sac","Gujarat",23.0234,72.5152
-"JABALPUR","Jabalpur","Madhya Pradesh",23.22,79.96
-"JAGATSINGPUR","Jagatsingpur","Orissa",20.29,86.4
-"JAGTIYAL","Jagtiyal","Andhra Pradesh",18.82,78.91
-"JAHANABAD","Jahanabad","Bihar",25.15,85.04
-"JAINTIA","Jaintia","Meghalaya",25.6,92.32
-"JAIPUR","Jaipur","Rajasthan",27.15,75.6
-"JAISLAMER","Jaislamer","Rajasthan",27.03,70.91
-"JAJPUR","Jajpur","Orissa",20.8,86.25
-"JALANDHAR","Jalandhar","Punjab",31.15,75.51
-"JALAUN","Jalaun","Uttar Pradesh",26.1,79.44
-"JALGAON","Jalgaon","Maharashtra",20.84,75.58
-"JALNA","Jalna","Maharashtra",19.97,76.06
-"JALORE","Jalore","Rajasthan",25.01,72.15
-"JALPAIGURI","Jalpaiguri","West Bengal",26.75,88.85
-"JAMMU","Jammu","Jammu and Kashmir",32.85,74.7
-"JAMNAGAR","Jamnagar","Gujarat",22.33,70.1
-"JAMTARA","Jamtara","Jharkhand",23.99,86.89
-"JAMUI","Jamui","Bihar",24.76,86.23
-"JANAKPUR","Janakpur","",26.72,85.94
-"JANGOAN","Jangoan","Andhra Pradesh",17.73,79.21
-"JANJGIR","Janjgir","Chhattisgarh",21.97,82.82
-"JASHPUR","Jashpur","Chhattisgarh",22.77,83.9
-"JAUNPUR","Jaunpur","Uttar Pradesh",25.8,82.6
-"JAYASHANKAR","Jayashankar","Andhra Pradesh",18.44,80.18
-"JBP","Jbp","Madhya Pradesh",23.2,79.95
-"JDP","Jdp","Rajasthan",26.3,73.02
-"JGD","Jgd","Chhattisgarh",19.08,82.03
-"JHABUA","Jhabua","Madhya Pradesh",22.81,74.59
-"JHAJJAR","Jhajjar","Haryana",28.61,76.62
-"JHALAWAR","Jhalawar","Rajasthan",24.4,76.28
-"JHANSI","Jhansi","Uttar Pradesh",25.63,79.16
-"JHARSUGUDA","Jharsuguda","Orissa",21.75,84
-"JHS","Jhs","Uttar Pradesh",25.45,78.58
-"JHT","Jht","Uttaranchal",30.55,79.57
-"JHUNJHUNU","Jhunjhunu","Rajasthan",28.08,75.57
-"JIND","Jind","Haryana",29.45,76.35
-"JIRIBHAM","Jiribham","Manipur",24.71,93.1
-"JLD","Jld","Punjab",31.47,75.58
-"JLG","Jlg","Maharashtra",21.05,75.57
-"JLR","Jlr","Rajasthan",25.35,72.62
-"JLW","Jlw","Rajasthan",24.53,76.17
-"JMI","Jmi","Bihar",24.93,86.3
-"JMR","Jmr","Gujarat",22.45,70.08
-"JMU","Jmu","Jammu and Kashmir",32.67,74.83
-"JNP","Jnp","Uttar Pradesh",25.75,82.68
-"JODHPUR","Jodhpur","Rajasthan",26.74,72.83
-"JOGULAMBHA","Jogulambha","Andhra Pradesh",16.05,77.79
-"JOMSOM","Jomsom","",28.77,83.77
-"JORHAT","Jorhat","Assam",26.76,94.21
-"JOSHIMATH","Joshimath","Uttaranchal",30.41,79.3
-"JPG","Jpg","West Bengal",26.53,88.72
-"JPN","Jpn","Chhattisgarh",22.88,84.13
-"JPR","Jpr","Rajasthan",26.82,75.8
-"JRG","Jrg","Orissa",21.92,84.08
-"JSD","Jsd","Jharkhand",22.82,86.18
-"JSM","Jsm","Rajasthan",26.9,70.92
-"JUNAGADH","Junagadh","Gujarat",21.4,70.48
-"JUR","Jur","Maharashtra",18.2,75.2
-"JYOTIBA","Jyotiba","Uttar Pradesh",28.84,78.35
-"Jalna","Jalna","Maharashtra",19.8347,75.8816
-"KABIR","Kabir","Uttar Pradesh",26.96,83.14
-"KABIRDHAM","Kabirdham","Chhattisgarh",22.11,81.19
-"KADMAT","Kadmat","",11.22,72.77
-"KAKCHING","Kakching","Manipur",24.38,93.99
-"KALAHANDI","Kalahandi","Orissa",19.82,83.16
-"KALPENI","Kalpeni","",10.06,73.64
-"KAMAREDDY","Kamareddy","Andhra Pradesh",18.32,78.04
-"KAMJONG","Kamjong","Manipur",24.7,94.42
-"KAMRUP","Kamrup","Assam",26.12,91.34
-"KAMRUP-METRO","Kamrup-Metro","Assam",26.1,91.95
-"KAN","Kan","Madhya Pradesh",22.67,76.37
-"KANCHIPURAM","Kanchipuram","Tamil Nadu",12.68,79.98
-"KANGPOKRI","Kangpokri","Manipur",25.1,94.06
-"KANGRA","Kangra","Himachal Pradesh",32.08,76.33
-"KANKER","Kanker","Chhattisgarh",20.12,81.11
-"KANNAUJ","Kannauj","Uttar Pradesh",27,79.67
-"KANNUR","Kannur","Kerala",11.99,75.56
-"KANPUR-CITY","Kanpur-City","Uttar Pradesh",26.25,80.46
-"KANPUR-DEHAT","Kanpur-Dehat","Uttar Pradesh",26.4,79.98
-"KANSHIRAM","Kanshiram","Uttar Pradesh",27.8,78.84
-"KANYAKUMARI","Kanyakumari","Tamil Nadu",8.33,77.4
-"KAPURTHALA","Kapurthala","Punjab",31.35,75.33
-"KARAIKAL","Karaikal","",10.91,79.89
-"KARAULI","Karauli","Rajasthan",26.31,76.99
-"KARBI-ANGLONG","Karbi-Anglong","Assam",26.25,93.35
-"KARGIL","Kargil","Jammu and Kashmir",33.88,76.44
-"KARIMGANJ","Karimganj","Assam",24.58,92.4
-"KARIMNAGAR","Karimnagar","Andhra Pradesh",18.4,79.26
-"KARITHAL","Karithal","Haryana",29.85,76.35
-"KARNAL","Karnal","Haryana",29.69,76.83
-"KARUR","Karur","Tamil Nadu",10.9,78
-"KASARAGOD","Kasaragod","Kerala",12.43,75.15
-"KATHMANDU","Kathmandu","",27.72,85.33
-"KATHUA","Kathua","Jammu and Kashmir",32.56,75.67
-"KATIHAR","Katihar","Bihar",25.54,87.65
-"KATNI","Katni","Madhya Pradesh",23.72,80.39
-"KAUSHAMBHI","Kaushambhi","Uttar Pradesh",25.53,81.69
-"KAVARATTI","Kavaratti","",10.559,72.636
-"KDA","Kda","Gujarat",23.11,70.1
-"KDK","Kdk","Tamil Nadu",10.23,77.47
-"KEDARNATH","Kedarnath","Uttaranchal",30.73,79.06
-"KENDRAPARA","Kendrapara","Orissa",20.55,86.68
-"KENDUJHARGARH","Kendujhargarh","Orissa",21.58,85.79
-"KGF","Kgf","Karnataka",12.95,78.3
-"KGN","Kgn","Madhya Pradesh",21.82,75.62
-"KHAGARIA","Khagaria","Bihar",25.49,86.57
-"KHAMMAM","Khammam","Andhra Pradesh",17.17,80.37
-"KHANDWA","Khandwa","Madhya Pradesh",21.98,76.62
-"KHARGAON","Khargaon","Madhya Pradesh",21.96,75.72
-"KHD","Khd","Gujarat",21.32,70.32
-"KHEDA","Kheda","Gujarat",22.9,73.04
-"KHJ","Khj","Madhya Pradesh",24.83,79.91
-"KHM","Khm","Nagaland",25.63,94.17
-"KHN","Khn","Maharashtra",18.77,73.37
-"KHORDHA","Khordha","Orissa",20.26,85.71
-"KHOWAI","Khowai","Tripura",23.95,91.64
-"KHUNTI","Khunti","Jharkhand",22.92,85.28
-"KILTAN","Kiltan","",11.48,73
-"KINNAUR","Kinnaur","Himachal Pradesh",31.6,78.38
-"KIPHIRE","Kiphire","Nagaland",25.82,94.82
-"KISHANGANJ","Kishanganj","Bihar",26.24,87.96
-"KISHANGARH","Kishangarh","Rajasthan",26.58,74.81
-"KISTWAR","Kistwar","Jammu and Kashmir",33.4,76.14
-"KKC","Kkc","Tamil Nadu",11.73,78.97
-"KKD","Kkd","Tamil Nadu",10.07,78.8
-"KLA","Kla","Gujarat",23,70.22
-"KLG","Klg","Himachal Pradesh",32.58,77.07
-"KLN","Kln","Andhra Pradesh",18.33,84.13
-"KLP","Klp","Maharashtra",16.7,74.23
-"KMM","Kmm","Andhra Pradesh",17.25,80.15
-"KMP","Kmp","West Bengal",27.07,88.47
-"KND","Knd","Andhra Pradesh",16.95,82.23
-"KNJ","Knj","Orissa",21.62,85.52
-"KNK","Knk","Chhattisgarh",20.27,81.48
-"KNL","Knl","Haryana",29.7,77.03
-"KNP","Knp","Uttar Pradesh",26.4,80.4
-"KOCH-BEHAR","Koch-Behar","West Bengal",26.34,89.46
-"KODAGU","Kodagu","Karnataka",12.38,75.78
-"KODERMA","Koderma","Jharkhand",24.46,85.5
-"KOHIMA","Kohima","Nagaland",25.77,94.14
-"KOKRAJHAR","Kokrajhar","Assam",26.51,90.13
-"KOLAR","Kolar","Karnataka",13.15,78.21
-"KOLASIB","Kolasib","Mizoram",24.24,92.71
-"KOLHAPUR","Kolhapur","Maharashtra",16.46,74.19
-"KOLLAM","Kollam","Kerala",8.97,76.88
-"KON","Kon","",7.22,93.73
-"KONDAGAON","Kondagaon","Chhattisgarh",19.97,81.68
-"KOPPAL","Koppal","Karnataka",15.58,76.29
-"KOR","Kor","Orissa",18.82,82.72
-"KORAPUT","Koraput","Orissa",18.88,82.75
-"KORBA","Korba","Chhattisgarh",22.52,82.63
-"KORIYA-BAIKUNTHP","Koriya-Baikunthp","Chhattisgarh",23.63,82.17
-"KOTA","Kota","Rajasthan",25,76.1
-"KOTTAYAM","Kottayam","Kerala",9.63,76.68
-"KOV","Kov","",8.4,76.97
-"KOVALAM","Kovalam","Tamil Nadu",12.78,80.25
-"KOZHIKODE","Kozhikode","Kerala",11.46,75.84
-"KPR","Kpr","Kerala",11.13,75.95
-"KPT","Kpt","Punjab",31.33,75.33
-"KRA-DAADI","Kra-Daadi","Arunachal Pradesh",28.21,93.43
-"KRG","Krg","West Bengal",23.4,88.52
-"KRI","Kri","Uttar Pradesh",27.9,80.8
-"KRISHNA","Krishna","Andhra Pradesh",16.5,80.95
-"KRISHNAGIRI","Krishnagiri","Tamil Nadu",12.65,78
-"KRL","Krl","Puducherry",10.92,79.83
-"KRN","Krn","Andhra Pradesh",15.8,78.07
-"KSH","Ksh","Tripura",24.32,92
-"KTA","Kta","Rajasthan",25.15,75.85
-"KTG","Ktg","Andhra Pradesh",17.55,80.63
-"KTH","Kth","Jammu and Kashmir",32.33,75.5
-"KTM","Ktm","Kerala",9.58,76.52
-"KUD","Kud","Tamil Nadu",10.4,78.67
-"KULGAM","Kulgam","Jammu and Kashmir",33.55,74.84
-"KULU","Kulu","Himachal Pradesh",31.88,77.4
-"KUMURAM-BHEEM","Kumuram-Bheem","Andhra Pradesh",19.34,79.39
-"KUPWARA","Kupwara","Jammu and Kashmir",34.45,74.76
-"KURNOOL","Kurnool","Andhra Pradesh",15.53,77.95
-"KURUKSHETRA","Kurukshetra","Haryana",30.06,76.77
-"KURUNG-KUMEY","Kurung-Kumey","Arunachal Pradesh",27.97,93.25
-"KUSHINAGAR","Kushinagar","Uttar Pradesh",26.92,83.97
-"KUTCH","Kutch","Gujarat",23.71,69.96
-"KVL","Kvl","Andhra Pradesh",14.9,79.98
-"KWD","Kwd","Madhya Pradesh",21.83,76.37
-"KWR","Kwr","",14.78,74.13
-"KYK","Kyk","",8.08,77.5
-"KZK","Kzk","Kerala",11.25,75.78
-"LADAKH","Ladakh","Jammu and Kashmir",34.17,78.35
-"LAHAUL-SPITI","Lahaul-Spiti","Himachal Pradesh",32.5,77.52
-"LAKHIMPUR","Lakhimpur","Uttar Pradesh",28.15,80.65
-"LAKSHADWEEP","Lakshadweep","",10.54,72.62
-"LALITPUR","Lalitpur","Uttar Pradesh",24.7,78.58
-"LATEHAR","Latehar","Jharkhand",23.68,84.47
-"LATUR","Latur","Maharashtra",18.35,76.75
-"LAWNGTLAI","Lawngtlai","Mizoram",22.37,92.74
-"LDN","Ldn","Punjab",30.87,75.93
-"LEH-LADAKH","Leh-Ladakh","Jammu and Kashmir",34.15,77.57
-"LGI","Lgi","",12.42,92.93
-"LKN","Lkn","Uttar Pradesh",26.87,80.93
-"LKR","Lkr","Assam",27.23,94.12
-"LMD","Lmd","Assam",25.75,93.18
-"LOHARDAGA","Lohardaga","Jharkhand",23.48,84.68
-"LOHIT","Lohit","Arunachal Pradesh",27.96,96.23
-"LONGDING","Longding","Arunachal Pradesh",26.78,95.35
-"LONGLENG","Longleng","Nagaland",26.58,94.79
-"LOWER-DIBANG-VALLEY","Lower-Dibang-Valley","Arunachal Pradesh",28.4,95.88
-"LOWER-SUBANSIRI","Lower-Subansiri","Arunachal Pradesh",27.55,93.94
-"LUCKEESARAI","Luckeesarai","Bihar",25.15,86.15
-"LUCKNOW","Lucknow","Uttar Pradesh",26.83,80.89
-"LUDHIANA","Ludhiana","Punjab",30.79,75.87
-"LUDHIYANA","Ludhiyana","Punjab",30.85,75.95
-"LUNGLEI","Lunglei","Mizoram",22.95,92.76
-"MAB","Mab","Rajasthan",24.6,72.72
-"MADHEPURA","Madhepura","Bihar",25.78,86.87
-"MADHUBANI","Madhubani","Bihar",26.35,86.24
-"MADURAI","Madurai","Tamil Nadu",9.9,77.95
-"MAHABALIPURAM","Mahabalipuram","Tamil Nadu",12.62,80.19
-"MAHABUBABAD","Mahabubabad","Andhra Pradesh",17.72,79.92
-"MAHARAJGANJ","Maharajganj","Uttar Pradesh",27.18,83.53
-"MAHASAMUND","Mahasamund","Chhattisgarh",21.18,82.34
-"MAHBUBNAGAR","Mahbubnagar","Andhra Pradesh",16.7,77.81
-"MAHE","Mahe","Kerala",11.73,75.53
-"MAHENDRAGARH","Mahendragarh","Haryana",28.13,76.14
-"MAHISAGAR","Mahisagar","Gujarat",23.19,73.63
-"MAHOBA","Mahoba","Uttar Pradesh",25.33,79.71
-"MAINPURI","Mainpuri","Uttar Pradesh",27.1,79
-"MAJULI","Majuli","Assam",26.98,94.21
-"MALAPPURAM","Malappuram","Kerala",11.11,76.19
-"MALDAH","Maldah","West Bengal",25.1,88.2
-"MALKANGIRI","Malkangiri","Orissa",18.2,81.92
-"MAMIT","Mamit","Mizoram",23.76,92.47
-"MANCHERIAL","Mancherial","Andhra Pradesh",18.98,79.42
-"MANDI","Mandi","Himachal Pradesh",31.65,77.01
-"MANDLA","Mandla","Madhya Pradesh",22.69,80.57
-"MANDSAUR","Mandsaur","Madhya Pradesh",24.16,75.4
-"MANDYA","Mandya","Karnataka",12.64,76.83
-"MANSA","Mansa","Punjab",29.88,75.47
-"MARIGAON","Marigaon","Assam",26.29,92.26
-"MAT","Mat","Maharashtra",18.98,73.28
-"MATHAVARAM","Mathavaram","Tamil Nadu",13.14,80.22
-"MATHURA","Mathura","Uttar Pradesh",27.59,77.61
-"MAUNATH","Maunath","Uttar Pradesh",26.1,83.55
-"MAYURBHANJ","Mayurbhanj","Orissa",21.92,86.42
-"MBN","Mbn","Andhra Pradesh",16.75,78
-"MDI","Mdi","Himachal Pradesh",31.72,76.97
-"MDK","Mdk","Andhra Pradesh",18.05,78.27
-"MDP","Mdp","West Bengal",22.42,87.32
-"MDR","Mdr","Tamil Nadu",9.92,78.12
-"MDS","Mds","Tamil Nadu",12.98,80.17
-"MDV","Mdv","",22.82,69.27
-"MDY","Mdy","Karnataka",12.5,76.83
-"MEDAK","Medak","Andhra Pradesh",17.97,78.19
-"MEDCHAL","Medchal","Andhra Pradesh",17.53,78.56
-"MEERUT","Meerut","Uttar Pradesh",28.95,77.79
-"MEHSANA","Mehsana","Gujarat",23.57,72.4
-"MEWAT","Mewat","Haryana",27.99,77.1
-"MHV","Mhv","Gujarat",21.08,71.78
-"MINJUR","Minjur","Tamil Nadu",13.26,80.25
-"MIRZAPUR","Mirzapur","Uttar Pradesh",24.94,82.63
-"MJB","Mjb","Assam",26.79,92.29
-"MJK","Mjk","Madhya Pradesh",22,80.7
-"MKS","Mks","Uttaranchal",29.47,79.65
-"MLD","Mld","West Bengal",25.03,88.13
-"MLG","Mlg","Maharashtra",20.55,74.53
-"MLI","Mli","Himachal Pradesh",32.27,77.17
-"MMG","Mmg","",15.39,73.81
-"MNC","Mnc","",8.3,73.04
-"MND","Mnd","Madhya Pradesh",22.58,80.37
-"MNG","Mng","Karnataka",12.92,74.88
-"MOGA","Moga","Punjab",30.8,75.16
-"MOHALI","Mohali","Punjab",30.75,76.65
-"MOKAKCHUNG","Mokakchung","Nagaland",26.48,94.53
-"MON","Mon","Nagaland",26.74,95.01
-"MORADABAD","Moradabad","Uttar Pradesh",28.98,78.8
-"MORBI","Morbi","Gujarat",22.76,70.84
-"MORENA","Morena","Madhya Pradesh",26.39,77.83
-"MPR","Mpr","Uttar Pradesh",27.23,79.05
-"MPT","Mpt","Andhra Pradesh",16.2,81.15
-"MRD","Mrd","Uttar Pradesh",28.83,78.75
-"MRI","Mri","Karnataka",12.42,75.73
-"MRT","Mrt","Uttar Pradesh",29.02,77.63
-"MSR","Msr","Uttaranchal",30.45,78.08
-"MTH","Mth","Bihar",26.67,84.92
-"MTR","Mtr","Uttar Pradesh",27.5,77.68
-"MUKTINATH","Muktinath","",28.8,83.85
-"MUKTSAR","Muktsar","Punjab",30.28,74.54
-"MUMBAI","Mumbai","Maharashtra",18.95,72.83
-"MUN","Mun","Uttaranchal",30.12,80.25
-"MUNGELI","Mungeli","Chhattisgarh",22.15,81.73
-"MUNGER","Munger","Bihar",25.23,86.52
-"MURSHIDABAD","Murshidabad","West Bengal",24.29,88.28
-"MUSSOORIE","Mussoorie","Uttaranchal",30.47,78.05
-"MUZAFFARABAD","Muzaffarabad","Jammu and Kashmir",34.55,74.15
-"MUZAFFARNAGAR","Muzaffarnagar","Uttar Pradesh",29.34,77.42
-"MUZAFFARPUR","Muzaffarpur","Bihar",26.15,85.32
-"MWR","Mwr","Maharashtra",17.93,73.67
-"MYB","Myb","",12.92,92.92
-"MYS","Mys","Karnataka",12.3,76.7
-"MYSORE","Mysore","Karnataka",12.2,76.52
-"MZF","Mzf","Bihar",26.12,85.4
-"Masaurhi_bihar","Masaurhi_bihar","Bihar",25.558,84.9077
-"N-EAST-DELHI","N-East-Delhi","Delhi",28.71,77.29
-"N-WEST-DELHI","N-West-Delhi","Delhi",28.7,77.07
-"NABARANGPUR","Nabarangpur","Orissa",19.61,82.42
-"NAGAON","Nagaon","Assam",26.4,92.77
-"NAGAPATTINAM","Nagapattinam","Tamil Nadu",11.1,79.77
-"NAGARKURNOOL","Nagarkurnool","Andhra Pradesh",16.42,78.67
-"NAGAUR","Nagaur","Rajasthan",27.06,74.24
-"NAGPUR","Nagpur","Maharashtra",21.15,78.96
-"NAINBAGH","Nainbagh","Uttaranchal",30.57,78.01
-"NAINITAL","Nainital","Uttaranchal",29.3,79.41
-"NALANDA","Nalanda","Bihar",25.22,85.55
-"NALBARI","Nalbari","Assam",26.36,91.4
-"NALGONDA","Nalgonda","Andhra Pradesh",16.86,79.16
-"NAMAKKAL","Namakkal","Tamil Nadu",11.3,78.1
-"NAMSAI","Namsai","Arunachal Pradesh",27.67,95.95
-"NANDED","Nanded","Maharashtra",19.1,77.65
-"NANDURBAR","Nandurbar","Maharashtra",21.65,74.25
-"NAR","Nar","Madhya Pradesh",22.95,79.18
-"NARAYANPUR","Narayanpur","Chhattisgarh",19.56,81.09
-"NARMADA","Narmada","Gujarat",21.84,73.65
-"NARSINGPUR","Narsingpur","Madhya Pradesh",22.94,79.04
-"NAS","Nas","Maharashtra",20,73.78
-"NASIK","Nasik","Maharashtra",20.23,74.1
-"NAVSARI","Navsari","Gujarat",20.8,73.1
-"NAWADA","Nawada","Bihar",24.82,85.66
-"NAWANSHAHR","Nawanshahr","Punjab",31.08,76.15
-"NAYAGARH","Nayagarh","Orissa",20.34,84.97
-"NCW","Ncw","Andaman and Nicobar",7.98,93.53
-"NDB","Ndb","Maharashtra",21.33,74.25
-"NDG","Ndg","Andhra Pradesh",16.78,80.28
-"NDL","Ndl","Andhra Pradesh",15.47,78.48
-"NDV","Ndv","Andhra Pradesh",16.9,81.66
-"NEEMUCH","Neemuch","Madhya Pradesh",24.55,75.16
-"NELLORE","Nellore","Andhra Pradesh",14.3,79.8
-"NEW-DELHI","New-Delhi","Delhi",28.56,77.15
-"NGB","Ngb","Tamil Nadu",13.07,80.25
-"NGP","Ngp","Maharashtra",21.15,79.12
-"NGR","Ngr","Rajasthan",27.17,73.67
-"NICOBAR","Nicobar","",8.01,93.33
-"NILGIRIS","Nilgiris","Tamil Nadu",11.45,76.62
-"NIRMAL","Nirmal","Andhra Pradesh",19.09,78.35
-"NIZAMABAD","Nizamabad","Andhra Pradesh",18.73,78.18
-"NJB","Njb","Uttar Pradesh",29.62,78.38
-"NLA","Nla","Gujarat",23.25,68.85
-"NLAKHIMPUR","Nlakhimpur","Assam",27.17,94.14
-"NLG","Nlg","Andhra Pradesh",17,79.25
-"NLM","Nlm","Kerala",11.28,76.23
-"NLR","Nlr","Andhra Pradesh",14.45,79.98
-"NMC","Nmc","Madhya Pradesh",24.47,74.9
-"NND","Nnd","Maharashtra",19.08,77.33
-"NOIDA","Noida","Uttar Pradesh",28.5,77.46
-"NONEY","Noney","Manipur",24.68,93.42
-"NORTH-DELHI","North-Delhi","Delhi",28.78,77.1
-"NORTH-DINAJPUR","North-Dinajpur","",25.87,88.17
-"NORTH-DISTRICT","North-District","Sikkim",27.75,88.51
-"NORTH-GARO","North-Garo","Meghalaya",25.88,90.68
-"NORTH-GOA","North-Goa","Goa",15.53,73.98
-"NORTH-MIDDLE","North-Middle","",12.87,93.46
-"NORTH-TRIPURA","North-Tripura","Tripura",23.96,92.22
-"NPT","Npt","Tamil Nadu",10.77,79.85
-"NRN","Nrn","Haryana",28,76.08
-"NSK","Nsk","Maharashtra",20.13,73.92
-"NSP","Nsp","Andhra Pradesh",16.43,81.7
-"NTL","Ntl","Uttaranchal",29.4,79.47
-"NTW","Ntw","Uttar Pradesh",27.43,83.42
-"NUAPARHE","Nuaparhe","Orissa",20.54,82.6
-"NWG","Nwg","Madhya Pradesh",25.07,79.45
-"NZB","Nzb","Andhra Pradesh",18.67,78.1
-"OKH","Okh","",22.48,69.12
-"ONG","Ong","Andhra Pradesh",15.5,80.08
-"ORI","Ori","Uttar Pradesh",25.98,79.5
-"ORISSA","Orissa","Orissa",20.5,86.7
-"OSMANABAD","Osmanabad","Maharashtra",18.5,75.8
-"Osmanabad","Osmanabad","Maharashtra",18.207,76.1784
-"PAKAUR","Pakaur","Jharkhand",24.53,87.65
-"PALAKKAD","Palakkad","Kerala",10.85,76.57
-"PALAM","Palam","Delhi",28.55,77.1
-"PALAMAU","Palamau","Jharkhand",24.22,84.2
-"PALGHAR","Palghar","Maharashtra",19.76,73.07
-"PALI","Pali","Rajasthan",25.61,73.59
-"PALLIKARANAI","Pallikaranai","Tamil Nadu",12.92,80.2
-"PALWAL","Palwal","Haryana",28.06,77.31
-"PANCHKULA","Panchkula","Haryana",30.65,77.05
-"PANCHMAHAL","Panchmahal","Gujarat",22.87,73.68
-"PANCHSHEEL","Panchsheel","Uttar Pradesh",28.77,77.78
-"PANIPAT","Panipat","Haryana",29.33,76.9
-"PANNA","Panna","Madhya Pradesh",24.47,80.21
-"PANTNAGAR","Pantnagar","Uttaranchal",29.03,79.46
-"PAPUMPARA","Papumpara","Arunachal Pradesh",27.2,93.61
-"PARBHANI","Parbhani","Maharashtra",19.31,76.67
-"PARO","Paro","",27.41,89.41
-"PASHCHIM-CHAMPARAN","Pashchim-Champaran","Bihar",27.05,84.29
-"PATAN","Patan","Gujarat",23.77,71.76
-"PATHANKOT","Pathankot","Punjab",32.25,75.52
-"PATIALA","Patiala","Punjab",30.34,76.37
-"PATNA","Patna","Bihar",25.47,85.38
-"PATTANAMTHITTA","Pattanamthitta","Kerala",9.28,76.98
-"PAURI","Pauri","Uttaranchal",29.75,78.75
-"PBD","Pbd","Gujarat",21.65,69.67
-"PBL","Pbl","",11.67,92.72
-"PBN","Pbn","Tamil Nadu",9.27,79.3
-"PBT","Pbt","Uttar Pradesh",28.63,79.8
-"PCH","Pch","Jammu and Kashmir",34.18,75.51
-"PCM","Pcm","Madhya Pradesh",22.47,78.43
-"PDC","Pdc","Puducherry",11.92,79.83
-"PDS","Pds","Maharashtra",19.75,78.03
-"PEDDAPALLI","Peddapalli","Andhra Pradesh",18.62,79.47
-"PERAMBALUR","Perambalur","Tamil Nadu",11.28,78.9
-"PEREN","Peren","Nagaland",25.45,93.64
-"PERUNGALATHUR","Perungalathur","Tamil Nadu",12.9,80.08
-"PHEK","Phek","Nagaland",25.7,94.38
-"PHERZAWL","Pherzawl","Manipur",24.37,93.11
-"PHL","Phl","Jammu and Kashmir",34.02,75.02
-"PHULBANI","Phulbani","Orissa",20.15,84.05
-"PIL","Pil","Rajasthan",28.33,75.58
-"PILLIBHIT","Pillibhit","Uttar Pradesh",28.51,80.02
-"PITHORAGARH","Pithoragarh","Uttaranchal",30.12,80.43
-"PJM","Pjm","Goa",15.48,73.82
-"PKD","Pkd","Kerala",10.77,76.65
-"PLD","Pld","Rajasthan",27.13,72.37
-"PLM","Plm","Delhi",28.57,77.1
-"PLN","Pln","Orissa",20.48,84.27
-"PMY","Pmy","Tamil Nadu",10.95,78.08
-"PNA","Pna","Madhya Pradesh",24.72,80.17
-"PNB","Pnb","Karnataka",12.95,74.83
-"PND","Pnd","Chhattisgarh",22.77,81.9
-"PNE","Pne","Maharashtra",18.53,73.85
-"PNG","Png","West Bengal",23.47,87.43
-"PNL","Pnl","Kerala",9,76.92
-"PNR","Pnr","Uttaranchal",29.03,79.47
-"POKHRA","Pokhra","",28.23,83.99
-"POONAMALLE","Poonamalle","Tamil Nadu",13.04,80.09
-"POONCH","Poonch","Jammu and Kashmir",33.69,74.22
-"PORBANDAR","Porbandar","Gujarat",21.75,69.76
-"PORUR","Porur","Tamil Nadu",13.03,80.15
-"PRAKASAM","Prakasam","Andhra Pradesh",15.64,79.61
-"PRATAPGARH","Pratapgarh","Rajasthan",24.02,74.65
-"PRAYAGRAJ","Prayagraj","Uttar Pradesh",25.28,81.93
-"PRB","Prb","Maharashtra",19.27,76.77
-"PRD","Prd","Orissa",20.3,86.68
-"PRI","Pri","Orissa",19.8,85.82
-"PRL","Prl","West Bengal",23.33,86.42
-"PRN","Prn","Bihar",25.27,87.47
-"PSD","Psd","Maharashtra",19.92,77.58
-"PSG","Psg","Arunachal Pradesh",28.1,95.38
-"PTG","Ptg","Uttar Pradesh",25.9,81.95
-"PTL","Ptl","Punjab",30.33,76.47
-"PTN","Ptn","Bihar",25.6,85.1
-"PUDUCHCHERI","Puduchcheri","Puducherry",11.91,79.74
-"PUDUKOTTAI","Pudukottai","Tamil Nadu",10.29,78.85
-"PULWAMA","Pulwama","Jammu and Kashmir",33.93,75.18
-"PUNE","Pune","Maharashtra",18.64,74.24
-"PUR","Pur","Uttaranchal",30.15,78.78
-"PURBI-CHAMPARAN","Purbi-Champaran","Bihar",26.64,84.9
-"PURI","Puri","Orissa",19.95,85.76
-"PURNIA","Purnia","Bihar",25.78,87.43
-"Palghar","Palghar","Maharashtra",19.6967,72.7699
-"Panvel","Panvel","Maharashtra",18.9894,73.1175
-"Pirana","Pirana","Gujarat",22.9771,72.553
-"Punpun_bihar","Punpun_bihar","Bihar",25.093,85.1147
-"QZD","Qzd","Jammu and Kashmir",33.59,75.16
-"RAEBARELI","Raebareli","Uttar Pradesh",26.2,81.15
-"RAICHUR","Raichur","Karnataka",16.06,76.92
-"RAIGARH","Raigarh","Chhattisgarh",22.07,83.37
-"RAIGARH-MH","Raigarh-Mh","Maharashtra",18.49,73.25
-"RAIPUR","Raipur","Chhattisgarh",21.3,81.86
-"RAISEN","Raisen","Madhya Pradesh",23.27,78.09
-"RAJANNA-SIRCILLA","Rajanna-Sircilla","Andhra Pradesh",18.45,78.77
-"RAJGARH","Rajgarh","Madhya Pradesh",23.77,76.81
-"RAJKOT","Rajkot","Gujarat",22.35,70.77
-"RAJNANDGAON","Rajnandgaon","Chhattisgarh",21.07,80.81
-"RAJOURI","Rajouri","Jammu and Kashmir",33.32,74.4
-"RAJSAMAND","Rajsamand","Rajasthan",25.08,73.94
-"RAMANATHAPURAM","Ramanathapuram","Tamil Nadu",9.34,78.65
-"RAMBAN","Ramban","Jammu and Kashmir",33.24,75.21
-"RAMGARH","Ramgarh","Jharkhand",23.68,85.54
-"RAMNAGAR","Ramnagar","Karnataka",12.72,77.35
-"RAMPUR","Rampur","Uttar Pradesh",28.87,79.22
-"RANCHI","Ranchi","Jharkhand",23.3,85.39
-"RANGAREDDY","Rangareddy","Andhra Pradesh",17.13,78.38
-"RATLAM","Ratlam","Madhya Pradesh",23.51,75.1
-"RATNAGIRI","Ratnagiri","Maharashtra",17.28,73.45
-"RAYAGADA","Rayagada","Orissa",19.34,83.46
-"RCH","Rch","Karnataka",16.2,77.35
-"RCT","Rct","Andhra Pradesh",16.55,79.55
-"RDP","Rdp","Gujarat",23.83,71.6
-"REDFORT","Redfort","Delhi",28.65,77.24
-"REWA","Rewa","Madhya Pradesh",24.76,81.68
-"REWARI","Rewari","Haryana",28.22,76.57
-"RGH","Rgh","Chhattisgarh",21.88,83.38
-"RI-BHOI","Ri-Bhoi","Meghalaya",25.88,91.82
-"RIASI","Riasi","Jammu and Kashmir",33.19,74.8
-"RISHIKESH","Rishikesh","Uttaranchal",30.19,78.17
-"RJH","Rjh","Madhya Pradesh",24,76.72
-"RJK","Rjk","Gujarat",22.3,70.78
-"RMD","Rmd","Andhra Pradesh",18.77,79.43
-"RMP","Rmp","Uttar Pradesh",28.75,79
-"RNC","Rnc","Jharkhand",23.32,85.32
-"RNG","Rng","Assam",26.43,91.62
-"ROHINI","Rohini","Delhi",28.75,77.06
-"ROHTAK","Rohtak","Haryana",28.89,76.56
-"ROHTAS","Rohtas","Bihar",24.94,83.99
-"RPR","Rpr","Chhattisgarh",21.23,81.65
-"RRK","Rrk","Uttaranchal",29.85,77.88
-"RRL","Rrl","Orissa",22.22,84.88
-"RSN","Rsn","Madhya Pradesh",23.32,77.83
-"RTK","Rtk","Haryana",28.83,76.58
-"RTL","Rtl","Madhya Pradesh",23.32,75.05
-"RTN","Rtn","Maharashtra",16.98,73.33
-"RUDRAPRAYAG","Rudraprayag","Uttaranchal",30.61,79.09
-"RUP","Rup","Assam",26.15,89.92
-"RUPNAGAR","Rupnagar","Punjab",30.93,76.51
-"RWA","Rwa","Madhya Pradesh",24.53,81.3
-"RXL","Rxl","Bihar",26.98,84.85
-"Rabale","Rabale","Maharashtra",19.1463,73.0081
-"Raikhad","Raikhad","Gujarat",23.0205,72.5793
-"Rakhiyal","Rakhiyal","Gujarat",23.0168,72.6258
-"S-EAST-DELHI","S-East-Delhi","Delhi",28.55,77.28
-"S-WEST-DELHI","S-West-Delhi","Delhi",28.58,76.97
-"SAB","Sab","Bihar",25.23,87.07
-"SABARKANTHA","Sabarkantha","Gujarat",23.77,73.2
-"SAFDARJUNG","Safdarjung","Delhi",28.58,77.21
-"SAG","Sag","West Bengal",21.72,88.1
-"SAGAR","Sagar","Madhya Pradesh",23.81,78.71
-"SAHAB","Sahab","Uttaranchal",30.69,79.62
-"SAHARANPUR","Saharanpur","Uttar Pradesh",29.95,77.5
-"SAHARSA","Saharsa","Bihar",25.84,86.6
-"SAHEBGANJ","Sahebganj","Jharkhand",25.03,87.71
-"SAIHA","Saiha","Mizoram",22.25,92.95
-"SALEM","Salem","Tamil Nadu",11.7,78.1
-"SAMASTIPUR","Samastipur","Bihar",25.77,85.97
-"SAMBA","Samba","Jammu and Kashmir",32.58,75.1
-"SAMBALPUR","Sambalpur","Orissa",21.5,84.2
-"SAMBHAL","Sambhal","Uttar Pradesh",28.55,78.54
-"SAN","San","Punjab",30.17,75.83
-"SANGAREDDY","Sangareddy","Andhra Pradesh",17.73,77.94
-"SANGLI","Sangli","Maharashtra",17.17,74.68
-"SANGRUR","Sangrur","Punjab",30.21,75.88
-"SANTRAVI","Santravi","Uttar Pradesh",25.36,82.63
-"SARAIKELA","Saraikela","Jharkhand",22.81,85.88
-"SARAN","Saran","Bihar",25.92,84.81
-"SATARA","Satara","Maharashtra",17.64,74.22
-"SATNA","Satna","Madhya Pradesh",24.58,80.88
-"SAWAI-MADHOPUR","Sawai-Madhopur","Rajasthan",26.1,76.65
-"SBR","Sbr","Assam",26.98,94.63
-"SCZ","Scz","Maharashtra",19.12,72.85
-"SDH","Sdh","",20.85,88.25
-"SDI","Sdi","Madhya Pradesh",24.42,81.87
-"SDN","Sdn","Gujarat",22.73,71.6
-"SEHORE","Sehore","Madhya Pradesh",23.02,77.04
-"SENAPATI","Senapati","Manipur",25.3,94.08
-"SEONI","Seoni","Madhya Pradesh",22.27,79.74
-"SEPAHIJALA","Sepahijala","Tripura",23.53,91.3
-"SERCHHIP","Serchhip","Mizoram",23.26,92.94
-"SFD","Sfd","Delhi",28.58,77.23
-"SGR","Sgr","Madhya Pradesh",23.85,78.75
-"SHAHDARA","Shahdara","Delhi",28.66,77.3
-"SHAHDOL","Shahdol","Madhya Pradesh",23.65,81.49
-"SHAHJAHANPUR","Shahjahanpur","Uttar Pradesh",27.97,79.85
-"SHAJAPUR","Shajapur","Madhya Pradesh",23.35,76.67
-"SHAMLI","Shamli","Uttar Pradesh",29.46,77.29
-"SHEIKHPURA","Sheikhpura","Bihar",25.12,85.79
-"SHEOPUR","Sheopur","Madhya Pradesh",25.74,77.07
-"SHG","Shg","",35.01,75.51
-"SHIMLA","Shimla","Himachal Pradesh",31.24,77.65
-"SHIMOGA","Shimoga","Karnataka",14.06,75.25
-"SHIVHAR","Shivhar","Bihar",26.49,85.29
-"SHIVPURI","Shivpuri","Madhya Pradesh",25.38,77.74
-"SHJ","Shj","Uttar Pradesh",27.88,79.9
-"SHL","Shl","Meghalaya",25.57,91.88
-"SHOLAPUR","Sholapur","Maharashtra",17.83,75.52
-"SHOLINGANALLUR","Sholinganallur","Tamil Nadu",12.91,80.24
-"SHOPIAN","Shopian","Jammu and Kashmir",33.72,74.79
-"SHP","Shp","Madhya Pradesh",25.67,76.68
-"SHR","Shr","Andhra Pradesh",13.72,80.2
-"SHRAVASTI","Shravasti","Uttar Pradesh",27.61,81.92
-"SIANG","Siang","Arunachal Pradesh",28.48,94.78
-"SIBSAGAR","Sibsagar","Assam",26.95,94.74
-"SIDDHI","Siddhi","Madhya Pradesh",24.32,81.75
-"SIDDIPET","Siddipet","Andhra Pradesh",18.01,78.9
-"SIDHARTH-NGR","Sidharth-Ngr","Uttar Pradesh",27.26,82.87
-"SIKAR","Sikar","Rajasthan",27.66,75.1
-"SILVASSA","Silvassa","Dadra and Nagar Haveli",20.27,73
-"SIMDEGA","Simdega","Jharkhand",22.59,84.54
-"SINDHUDURG","Sindhudurg","Maharashtra",16.14,73.76
-"SINGROLI","Singroli","Madhya Pradesh",24.24,82.35
-"SIRMUR","Sirmur","Himachal Pradesh",30.7,77.43
-"SIROHI","Sirohi","Rajasthan",24.81,72.71
-"SIRSA","Sirsa","Haryana",29.6,74.89
-"SITAMARHI","Sitamarhi","Bihar",26.57,85.54
-"SITAPUR","Sitapur","Uttar Pradesh",27.51,80.86
-"SIVAGANGA","Sivaganga","Tamil Nadu",9.88,78.63
-"SIWAN","Siwan","Bihar",26.13,84.4
-"SJP","Sjp","Madhya Pradesh",23.43,76.32
-"SKR","Skr","Rajasthan",27.62,75.13
-"SKT","Skt","West Bengal",23.65,87.7
-"SLC","Slc","Assam",24.75,92.8
-"SLG","Slg","West Bengal",26.67,88.37
-"SLM","Slm","Tamil Nadu",11.65,78.17
-"SLP","Slp","Maharashtra",17.67,75.9
-"SMB","Smb","Orissa",21.47,83.97
-"SMG","Smg","Karnataka",13.93,75.63
-"SML","Sml","Himachal Pradesh",31.1,77.17
-"SMP","Smp","Rajasthan",25.98,76.37
-"SNG","Sng","Maharashtra",16.85,74.6
-"SNI","Sni","Madhya Pradesh",22.08,79.55
-"SNM","Snm","Jammu and Kashmir",34.32,75.32
-"SOLAN","Solan","Himachal Pradesh",31.06,76.93
-"SON","Son","Maharashtra",21.1,79.05
-"SONAPUR","Sonapur","Orissa",20.95,83.89
-"SONBHADRA","Sonbhadra","Uttar Pradesh",24.39,83.04
-"SONEPRAYAG","Soneprayag","Uttaranchal",30.63,78.99
-"SONIPAT","Sonipat","Haryana",29.05,76.86
-"SONITPUR","Sonitpur","Assam",26.77,92.7
-"SOUTH","South","Sikkim",27.31,88.4
-"SOUTH-DELHI","South-Delhi","Delhi",28.47,77.18
-"SOUTH-GARO","South-Garo","Meghalaya",25.24,90.68
-"SOUTH-GOA","South-Goa","Goa",15.12,74.06
-"SOUTH-TRIPURA","South-Tripura","Tripura",23.25,91.6
-"SRC","Src","Maharashtra",18.85,79.97
-"SRI-KAKULAM","Sri-Kakulam","Andhra Pradesh",18.62,84.09
-"SRINAGAR","Srinagar","Jammu and Kashmir",34.17,75.05
-"SRINAGAR-UK","Srinagar-Uk","Uttaranchal",30.22,78.81
-"SRL","Srl","Karnataka",14.07,74.53
-"SRN","Srn","Jammu and Kashmir",34.08,74.83
-"SRT","Srt","Gujarat",21.2,72.83
-"SS-MANKACHAR","Ss-Mankachar","",25.78,89.61
-"STA","Sta","Maharashtra",17.52,74.05
-"STN","Stn","Madhya Pradesh",24.57,80.83
-"STP","Stp","Uttar Pradesh",26.25,82
-"SUKMA","Sukma","Chhattisgarh",18.2,81.34
-"SULTANUR","Sultanur","Uttar Pradesh",26.25,82.22
-"SUN","Sun","Orissa",22.02,84
-"SUNDERGARH","Sundergarh","Orissa",22.25,84.46
-"SUP","Sup","Bihar",26.13,86.58
-"SUPAUL","Supaul","Bihar",26.28,86.76
-"SURAJPUR","Surajpur","Chhattisgarh",23.38,82.98
-"SURAT","Surat","Gujarat",21.3,73.04
-"SURENDRANAGAR","Surendranagar","Gujarat",22.6,71.57
-"SURGUJA","Surguja","Chhattisgarh",23.07,83.29
-"SURYAPET","Suryapet","Andhra Pradesh",17.08,79.72
-"SVP","Svp","Madhya Pradesh",25.33,77.65
-"SWEST-GARO","Swest-Garo","",25.5,89.7
-"SWEST-KHASI","Swest-Khasi","Meghalaya",25.31,91.21
-"S_P_Stadium","S_P_Stadium","Gujarat",23.043,72.563
-"TAMENGLONG","Tamenglong","Manipur",25.1,93.56
-"TAN","Tan","Assam",26.65,91.92
-"TAPI","Tapi","Gujarat",21.29,73.6
-"TAPOVAN","Tapovan","Uttaranchal",30.49,79.63
-"TARAN","Taran","Punjab",31.33,74.9
-"TAWANG","Tawang","Arunachal Pradesh",27.66,92.01
-"TEHRI-GARHWAL","Tehri-Garhwal","Uttaranchal",30.37,78.49
-"TEN","Ten","Tamil Nadu",8.95,77.31
-"TENGNOUPAL","Tengnoupal","Manipur",24.48,94.23
-"TEZ","Tez","Assam",26.72,92.8
-"THAMBARAM","Thambaram","Tamil Nadu",12.92,80.12
-"THANE","Thane","Maharashtra",19.35,73.32
-"THANJAVUR","Thanjavur","Tamil Nadu",10.79,79.1
-"THENI","Theni","Tamil Nadu",9.87,77.45
-"THIMPHU","Thimphu","",27.47,89.75
-"THIRUVETRIVUR","Thiruvetrivur","Tamil Nadu",13.15,80.29
-"THOUBAL","Thoubal","Manipur",24.65,94.02
-"THR","Thr","Uttaranchal",30.4,78.48
-"THRISSUR","Thrissur","Kerala",10.48,76.35
-"TIKAMGARH","Tikamgarh","Madhya Pradesh",25,78.89
-"TINSUKIA","Tinsukia","Assam",27.59,95.62
-"TIR","Tir","Tamil Nadu",8.73,77.75
-"TIRAP","Tirap","Arunachal Pradesh",26.95,95.54
-"TIRUNELVELI","Tirunelveli","Tamil Nadu",8.85,77.57
-"TIRUPPUR","Tiruppur","Tamil Nadu",10.79,77.5
-"TIRUVALLUR","Tiruvallur","Tamil Nadu",13.26,80.07
-"TIRUVANDRUM","Tiruvandrum","Kerala",8.57,76.97
-"TIRUVANNAMALAI","Tiruvannamalai","Tamil Nadu",12.55,79.15
-"TIRUVARUR","Tiruvarur","Tamil Nadu",10.65,79.52
-"TKG","Tkg","Madhya Pradesh",24.77,78.83
-"TMK","Tmk","Karnataka",13.33,77.08
-"TND","Tnd","",9.73,79.03
-"TNG","Tng","Nagaland",26.27,94.82
-"TNI","Tni","Andhra Pradesh",17.35,82.55
-"TNJ","Tnj","Tamil Nadu",10.78,79.13
-"TNK","Tnk","Rajasthan",26.17,75.75
-"TONK","Tonk","Rajasthan",26.12,75.72
-"TPI","Tpi","Andhra Pradesh",13.67,79.58
-"TRA","Tra","Meghalaya",25.52,90.23
-"TRIBAL-TERRITY","Tribal-Territy","",35.85,73.7
-"TRICHY","Trichy","Tamil Nadu",10.94,78.69
-"TRP","Trp","Tamil Nadu",10.77,78.72
-"TRR","Trr","Tamil Nadu",12.48,78.57
-"TRT","Trt","Tamil Nadu",13.15,79.53
-"TRV","Trv","Kerala",8.48,76.95
-"TTC","Ttc","",8.75,78.18
-"TTG","Ttg","Orissa",20.29,83.14
-"TUENSANG","Tuensang","Nagaland",26.17,94.87
-"TUMKUR","Tumkur","Karnataka",13.55,76.93
-"TUTICORIN","Tuticorin","Tamil Nadu",8.9,78
-"TZP","Tzp","Assam",26.62,92.78
-"Thane","Thane","Maharashtra",19.2183,72.9781
-"UDA","Uda","Rajasthan",24.62,73.88
-"UDAIPUR","Udaipur","Rajasthan",24.47,73.73
-"UDALGURI","Udalguri","Assam",26.7,92.06
-"UDHAMPUR","Udhampur","Jammu and Kashmir",32.9,75.38
-"UDHAMSINGH-NGR","Udhamsingh-Ngr","Uttaranchal",28.95,79.75
-"UDM","Udm","Jammu and Kashmir",32.91,75.17
-"UDP","Udp","Rajasthan",24.58,73.7
-"UDUPI","Udupi","Karnataka",13.48,74.89
-"UJJAIN","Ujjain","Madhya Pradesh",23.3,75.69
-"UJN","Ujn","Madhya Pradesh",23.18,75.78
-"UKHIMATH","Ukhimath","Uttaranchal",30.51,79.09
-"UKHRUL","Ukhrul","Manipur",25.08,94.43
-"ULB","Ulb","West Bengal",22.47,88.1
-"UMARIA","Umaria","Madhya Pradesh",23.64,80.94
-"UMR","Umr","Madhya Pradesh",23.53,80.88
-"UNA","Una","Himachal Pradesh",31.58,76.21
-"UNAKOTI","Unakoti","Tripura",24.18,92.06
-"UNNAO","Unnao","Uttar Pradesh",26.57,80.55
-"UPPER-DIBANG-VALLEY","Upper-Dibang-Valley","Arunachal Pradesh",28.85,95.93
-"UPPER-SIANG","Upper-Siang","Arunachal Pradesh",28.95,94.8
-"UPPER-SUBANSIRI","Upper-Subansiri","Arunachal Pradesh",28.38,93.8
-"USI","Usi","Uttar Pradesh",26.75,80.88
-"UTK","Utk","Uttaranchal",30.73,78.45
-"UTM","Utm","Tamil Nadu",11.4,76.73
-"UTTARKANNAD","Uttarkannad","Karnataka",14.73,74.58
-"UTTARKASHI","Uttarkashi","Uttaranchal",30.97,78.58
-"Udgir","Udgir","Maharashtra",18.3943,77.1126
-"VAISHALI","Vaishali","Bihar",25.75,85.35
-"VALSAD","Valsad","Gujarat",20.43,73.11
-"VARANASI","Varanasi","Uttar Pradesh",25.45,83.09
-"VDN","Vdn","Tamil Nadu",10.37,79.85
-"VDS","Vds","Madhya Pradesh",23.53,77.82
-"VELLORE","Vellore","Tamil Nadu",12.91,79
-"VIDISHA","Vidisha","Madhya Pradesh",23.85,77.78
-"VIKARABAD","Vikarabad","Andhra Pradesh",17.27,77.71
-"VILLUPURAM","Villupuram","Tamil Nadu",11.79,79.12
-"VIRUDHUNAGAR","Virudhunagar","Tamil Nadu",9.43,77.91
-"VISAKHAPATNAM","Visakhapatnam","Andhra Pradesh",17.8,82.66
-"VIZIANAGARAM","Vizianagaram","Andhra Pradesh",18.09,83.55
-"VJW","Vjw","Andhra Pradesh",16.5,80.64
-"VLR","Vlr","Tamil Nadu",12.92,79.15
-"VNG","Vng","Maharashtra",15.87,73.63
-"VNS","Vns","Uttar Pradesh",25.45,82.87
-"VRS","Vrs","Uttar Pradesh",25.3,83.02
-"VSK","Vsk","Andhra Pradesh",17.72,83.23
-"VVL","Vvl","Gujarat",20.9,70.37
-"VVN","Vvn","Gujarat",22.57,72.93
-"W-KARBI-ANALOG","W-Karbi-Analog","Assam",25.85,92.62
-"WANAPARTHY","Wanaparthy","Andhra Pradesh",16.36,77.99
-"WARANGAL-RURAL","Warangal-Rural","Andhra Pradesh",17.95,79.76
-"WARANGAL-URBAN","Warangal-Urban","Andhra Pradesh",18.03,79.45
-"WARDHA","Wardha","Maharashtra",20.83,78.64
-"WASHIM","Washim","Maharashtra",20.11,77.15
-"WAYANAD","Wayanad","Kerala",11.72,76.11
-"WEST","West","Sikkim",27.37,88.19
-"WEST-DELHI","West-Delhi","Delhi",28.64,77.07
-"WEST-GARO","West-Garo","Meghalaya",25.78,90.33
-"WEST-GODAVARI","West-Godavari","Andhra Pradesh",16.89,81.52
-"WEST-KAMENG","West-Kameng","Arunachal Pradesh",27.33,92.46
-"WEST-KHASI","West-Khasi","Meghalaya",25.65,91.3
-"WEST-SIANG","West-Siang","Arunachal Pradesh",28.6,94.35
-"WEST-SINGBHUM","West-Singbhum","Jharkhand",22.42,85.52
-"WEST-TRIPURA","West-Tripura","Tripura",23.8,91.37
-"WOKHA","Wokha","Nagaland",26.24,94.17
-"WRD","Wrd","Maharashtra",20.67,78.58
-"YADADRI","Yadadri","Andhra Pradesh",17.42,79.07
-"YADGIRI","Yadgiri","Karnataka",16.57,76.89
-"YAMUNA-NGR","Yamuna-Ngr","Haryana",30.22,77.34
-"YAMUNOTRI","Yamunotri","Uttaranchal",30.99,78.46
-"YANAM","Yanam","Tamil Nadu",11.76,79.71
-"YEOTMAL","Yeotmal","Maharashtra",20.07,78.22
-"YOT","Yot","Maharashtra",20.4,78.15
-"ZIR","Zir","Arunachal Pradesh",27.54,93.81
-"ZUNHEBOTO","Zunheboto","Nagaland",26.03,94.53
+"code","station","state","district","subdivision","lat","lon","canonical"
+"A-MALWA","Agar-malwa","MADHYA PRADESH","AGAR-MALWA","WEST MADHYA PRADESH",23.8,76.05,true
+"AAA","Ahmednagar","MAHARASHTRA","AHMEDNAGAR","MADHYA MAHARASHTRA",19.08,74.8,true
+"ABG","Alibag","MAHARASHTRA","RAIGAD","KONKAN & GOA",18.63,72.87,true
+"ABP","Ambikapur","CHHATTISGARH","SURGUJA","CHHATTISGARH",23.17,83.25,true
+"ADILABAD","Adilabad","TELANGANA","ADILABAD","TELANGANA",19.55,78.57,true
+"AGA","AGATTI","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",10.82,72.17,true
+"AGB","Agumbe","KARNATAKA","SHIVAMOGGA","SOUTHERN INTERIOR KARNATAKA",13.5,75.08,true
+"AGD","Aurangabad","MAHARASHTRA","CHHATRAPATI SAMBHAJINAGAR","MARATHWADA",19.85,75.4,true
+"AGR","MO Taj","UTTAR PRADESH","AGRA","WEST UTTAR PRADESH",27.17,78.03,true
+"AGRA","Agra","UTTAR PRADESH","AGRA","WEST UTTAR PRADESH",27.08,78.04,true
+"AGT","Agartala","TRIPURA","WEST TRIPURA","NMMT",23.88,91.25,true
+"AHM","Ahmedabad","GUJARAT","AHMEDABAD","GUJARAT REGION",23.07,72.63,true
+"AHMEDABAD","Ahmedabad","GUJARAT","AHMEDABAD","GUJARAT REGION",22.9,72.32,false
+"AHMEDNAGAR","Ahmednagar","MAHARASHTRA","AHMEDNAGAR","MADHYA MAHARASHTRA",19.16,74.6,false
+"AIZWAL","Aizawl","MIZORAM","AIZAWL","NMMT",23.84,92.92,false
+"AJM","Ajmer","RAJASTHAN","AJMER","EAST RAJASTHAN",26.45,74.62,true
+"AJMER","Ajmer","RAJASTHAN","AJMER","EAST RAJASTHAN",26.31,74.64,false
+"AKL","Akola","MAHARASHTRA","AKOLA","VIDARBHA",20.7,77.07,true
+"AKOLA","Akola","MAHARASHTRA","AKOLA","VIDARBHA",20.76,77.15,false
+"ALA","Alappuzha","KERALA","ALAPUZHA","KERALA & MAHE",9.55,76.42,true
+"ALAPPUZHA","Alapuzha","KERALA","ALAPUZHA","KERALA & MAHE",9.49,76.49,true
+"ALB","ALLAHABAD","UTTAR PRADESH","PRAYAGRAJ","EAST UTTAR PRADESH",25.45,81.73,true
+"ALD","Adilabad\r\n","TELANGANA","ADILABAD","TELANGANA",19.65,78.53,true
+"ALG","Aligarh","UTTAR PRADESH","ALIGARH","WEST UTTAR PRADESH",27.88,78.07,true
+"ALIGARH","Aligarh","UTTAR PRADESH","ALIGARH","WEST UTTAR PRADESH",27.88,78.05,false
+"ALIRAJPUR","Alirajpur","MADHYA PRADESH","ALIRAJPUR","WEST MADHYA PRADESH",22.28,74.39,true
+"ALJ","Alirajpur","MADHYA PRADESH","ALIRAJPUR","WEST MADHYA PRADESH",22.28,74.4,false
+"ALMORA","Almora","UTTARAKHAND","ALMORA","UTTARAKHAND",29.7,79.56,true
+"ALN","Along","ARUNACHAL PRADESH","WEST SIANG","ARUNACHAL PRADESH",28.16,94.8,true
+"ALP","Kolkata","WEST BENGAL","KOLKATA","GANGETIC WEST BENGAL",22.53,88.33,true
+"ALW","Alwar","RAJASTHAN","ALWAR","EAST RAJASTHAN",27.5,76.58,true
+"ALWAR","Alwar","RAJASTHAN","ALWAR","EAST RAJASTHAN",27.64,76.67,false
+"AMB","Ambala","HARYANA","AMBALA","DELHI, HARYANA AND CHANDIGARH",30.38,76.77,true
+"AMBALA","Ambala","HARYANA","AMBALA","DELHI, HARYANA AND CHANDIGARH",30.33,76.88,false
+"AMBEDKAR","Ambedkar Nagar","UTTAR PRADESH","AMBEDKAR NAGAR","EAST UTTAR PRADESH",26.43,82.7,true
+"AMETHI","Amethi","UTTAR PRADESH","AMETHI","EAST UTTAR PRADESH",26.35,81.63,true
+"AML","Amreli","GUJARAT","AMRELI","SAURASHTRA & KUTCH",21.6,71.22,true
+"AMN","Amini Divi","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",11.12,72.73,true
+"AMR","Amritsar","PUNJAB","AMRITSAR","PUNJAB",31.63,74.87,true
+"AMRAVATI","Amraoti","MAHARASHTRA","AMRAOTI","VIDARBHA",21.16,77.54,true
+"AMRELI","Amreli","GUJARAT","AMRELI","SAURASHTRA & KUTCH",21.37,71.2,false
+"AMRITSAR","Amritsar","PUNJAB","AMRITSAR","PUNJAB",31.76,74.94,false
+"AMT","Amravati","MAHARASHTRA","AMRAOTI","VIDARBHA",20.93,77.78,true
+"ANAND","Anand","GUJARAT","ANAND","GUJARAT REGION",22.44,72.78,true
+"ANANTNAG","Anantnag","JAMMU & KASHMIR (UT)","ANANTNAG","JAMMU & KASHMIR AND LADAKH",33.67,75.17,true
+"ANANTPUR","Sri Sathyasai District","ANDHRA PRADESH","SRI SATHYASAI DISTRICT","RAYALSEEMA",14.45,77.62,true
+"ANATNAG","Anantnag","JAMMU & KASHMIR (UT)","ANANTNAG","JAMMU & KASHMIR AND LADAKH",33.59,75.38,false
+"ANDAMAN","South Andaman","ANDAMAN & NICOBAR ISLANDS (UT)","SOUTH ANDAMAN","ANDAMAN & NICOBAR ISLANDS",11.41,93.04,true
+"ANG","Angul","ODISHA","ANGUL","ODISHA",20.83,85.1,true
+"ANGUL","Angul","ODISHA","ANGUL","ODISHA",20.9,84.83,false
+"ANJAW","Anjaw","ARUNACHAL PRADESH","ANJAW","ARUNACHAL PRADESH",28.04,96.85,true
+"ANP","Anupgarh","RAJASTHAN","SRI GANGANAGAR","WEST RAJASTHAN",29.17,73.17,true
+"ANT","Anantapuramu","ANDHRA PRADESH","ANANTAPURAMU","RAYALSEEMA",14.68,77.62,true
+"ANUPPUR","Anuppur","MADHYA PRADESH","ANUPPUR","EAST MADHYA PRADESH",23.03,81.66,true
+"ARA","Arrah","BIHAR","BHOJPUR","BIHAR",25.57,84.67,true
+"ARARIA","Araria","BIHAR","ARARIA","BIHAR",26.26,87.37,true
+"ARAVALLI","Aravalli","GUJARAT","ARAVALLI","GUJARAT REGION",23.49,73.42,true
+"ARIYALUR","Ariyalur","TAMILNADU","ARIYALUR","TAMILNADU, PUDUCHERRY & KARAIKAL",11.15,79.23,false
+"ARP","ATIRAMAPATTINAM","TAMILNADU","THANJAVUR","TAMILNADU, PUDUCHERRY & KARAIKAL",10.33,79.38,true
+"ART","Lakshadweep","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",10.8,73.68,true
+"ARV","AROGYAVARAM","ANDHRA PRADESH","ANNAMAYYA DISTRICT","RAYALSEEMA",13.53,78.5,true
+"ARWAL","Rohtas","BIHAR","ROHTAS","BIHAR",25.18,84.38,true
+"ASHOKNAGAR","Ashoknagar","MADHYA PRADESH","ASHOKNAGAR","WEST MADHYA PRADESH",24.62,77.88,true
+"AUGUSTMUNI","Augustmuni","UTTARAKHAND","RUDRAPRAYAG","UTTARAKHAND",30.39,79.02,true
+"AURAIYA","Auraiya","UTTAR PRADESH","AURAIYA","WEST UTTAR PRADESH",26.66,79.5,true
+"AURANGABAD","Aurangabad","BIHAR","AURANGABAD","BIHAR",24.81,84.38,true
+"AVADI","Avadi","TAMILNADU","THIRUVALLUR","TAMILNADU, PUDUCHERRY & KARAIKAL",13.12,80.08,true
+"AYL","Ariyalur","TAMILNADU","ARIYALUR","TAMILNADU, PUDUCHERRY & KARAIKAL",11.23,79.29,true
+"AZAMGARH","Azamgarh","UTTAR PRADESH","AZAMGARH","EAST UTTAR PRADESH",26.05,83.09,false
+"AZG","Azamgarh","UTTAR PRADESH","AZAMGARH","EAST UTTAR PRADESH",26.05,83.22,true
+"AZL","Aizawl","MIZORAM","AIZAWL","NMMT",23.73,92.71,true
+"Airport_IMD","Ahmedabad","GUJARAT","AHMEDABAD","GUJARAT REGION",23.0768,72.6279,false
+"BABATPUR","Babatpur","UTTAR PRADESH","BHADOHI","EAST UTTAR PRADESH",25.26,82.51,true
+"BADAYUN","Badaun","UTTAR PRADESH","BADAUN","WEST UTTAR PRADESH",28.06,78.89,true
+"BADGAM","Badgam","JAMMU & KASHMIR (UT)","BADGAM","JAMMU & KASHMIR AND LADAKH",33.86,74.66,true
+"BADRADRI","B. Kothagudem","TELANGANA","B. KOTHAGUDEM","TELANGANA",17.72,80.76,true
+"BADRINATH","Badrinath","UTTARAKHAND","CHAMOLI","UTTARAKHAND",30.74,79.49,true
+"BADWANI","Barwani","MADHYA PRADESH","BARWANI","WEST MADHYA PRADESH",21.75,75.03,true
+"BAG","BAGATI","WEST BENGAL","HOOGHLY","GANGETIC WEST BENGAL",22.98,88.37,true
+"BAGALKOT","Bagalkot","KARNATAKA","BAGALKOTE","NORTHERN INTERIOR KARNATAKA",16.17,75.65,true
+"BAGALKOTE","Bagalkote","KARNATAKA","BAGALKOTE","NORTHERN INTERIOR KARNATAKA",16.29,75.66,true
+"BAGESHWAR","Bageshwar","UTTARAKHAND","BAGESHWAR","UTTARAKHAND",29.9,79.82,true
+"BAGHPAT","Baghpat","UTTAR PRADESH","BAGHPAT","WEST UTTAR PRADESH",29.04,77.32,true
+"BAHRAICH","Bahraich","UTTAR PRADESH","BAHRAICH","EAST UTTAR PRADESH",27.73,81.4,false
+"BAKSHA","Baksa","ASSAM","BAKSA","ASSAM & MEGHALAYA",26.65,91.31,true
+"BALAGHAT","Balaghat","MADHYA PRADESH","BALAGHAT","EAST MADHYA PRADESH",21.86,80.28,true
+"BALAGIR","Balangir","ODISHA","BALANGIR","ODISHA",20.61,83.18,true
+"BALASORE","Balasore","ODISHA","BALASORE","ODISHA",21.28,86.68,false
+"BALLIA","Ballia","UTTAR PRADESH","BALLIA","EAST UTTAR PRADESH",25.88,84.16,false
+"BALOD","Balod","CHHATTISGARH","BALOD","CHHATTISGARH",20.7,81.18,true
+"BALODABAZAR","Baloda Bazar","CHHATTISGARH","BALODA BAZAR","CHHATTISGARH",21.54,82.32,true
+"BALRAMPUR","Balrampur","CHHATTISGARH","BALRAMPUR","CHHATTISGARH",23.85,83.35,true
+"BALTAL","Baltal","LADAKH (UT)","KARGIL","JAMMU & KASHMIR AND LADAKH",34.26,75.42,true
+"BANASKANTHA","Banaskantha","GUJARAT","BANASKANTHA","GUJARAT REGION",24.27,72.15,true
+"BANDA","Banda","UTTAR PRADESH","BANDA","EAST UTTAR PRADESH",25.44,80.57,false
+"BANGALORE-RURAL","Bengaluru Rural","KARNATAKA","BENGALURU RURAL","SOUTHERN INTERIOR KARNATAKA",13.27,77.57,true
+"BANKA","Banka","BIHAR","BANKA","BIHAR",24.83,86.83,true
+"BANSWARA","Banswara","RAJASTHAN","BANSWARA","EAST RAJASTHAN",23.49,74.36,false
+"BARABANKI","Barabanki","UTTAR PRADESH","BARABANKI","EAST UTTAR PRADESH",26.94,81.33,true
+"BARAGARH","Bargarh","ODISHA","BARGARH","ODISHA",21.24,83.55,true
+"BARAMULLAH","Baramula","JAMMU & KASHMIR (UT)","BARAMULA","JAMMU & KASHMIR AND LADAKH",34.1,74.42,true
+"BARAN","Baran","RAJASTHAN","BARAN","EAST RAJASTHAN",24.92,76.82,true
+"BAREILLY","Bareilly","UTTAR PRADESH","BAREILLY","WEST UTTAR PRADESH",28.45,79.38,false
+"BARKOT","Barkot","UTTARAKHAND","UTTARKASHI","UTTARAKHAND",30.81,78.21,true
+"BARMER","Barmer","RAJASTHAN","BARMER","WEST RAJASTHAN",25.58,71.47,false
+"BARNALA","Barnala","PUNJAB","BARNALA","PUNJAB",30.39,75.5,true
+"BARODA","Vadodara","GUJARAT","VADODARA","GUJARAT REGION",22.31,73.27,false
+"BARPETA","Barpeta","ASSAM","BARPETA","ASSAM & MEGHALAYA",26.43,91.09,true
+"BASTER","Bastar","CHHATTISGARH","BASTAR","CHHATTISGARH",19.14,81.77,true
+"BASTI","Basti","UTTAR PRADESH","BASTI","EAST UTTAR PRADESH",26.76,82.6,true
+"BAUDA","Boudh","ODISHA","BOUDH","ODISHA",20.75,84.18,true
+"BBS","Bhubneshwar-Airport","ODISHA","KHURDA","ODISHA",20.25,85.83,true
+"BDA","Banda","UTTAR PRADESH","BANDA","EAST UTTAR PRADESH",25.47,80.37,true
+"BDG","SILIGURI","WEST BENGAL","DARJEELING","SHWB & SIKKIM",26.63,88.32,true
+"BDI","Bundi","RAJASTHAN","BUNDI","EAST RAJASTHAN",25.45,75.63,true
+"BDN","Buldhana","MAHARASHTRA","BULDHANA","VIDARBHA",20.53,76.23,true
+"BDS","Bulandshahar","UTTAR PRADESH","BULANDSHAHAR","WEST UTTAR PRADESH",28.4,77.87,true
+"BDU","Badaun","UTTAR PRADESH","BADAUN","WEST UTTAR PRADESH",28.05,79.12,false
+"BEGUSARAI","Begusarai","BIHAR","BEGUSARAI","BIHAR",25.51,86.13,true
+"BELGAUM","Belagavi","KARNATAKA","BELAGAVI","NORTHERN INTERIOR KARNATAKA",16.16,74.77,false
+"BELLARY","Ballari","KARNATAKA","BALLARI","SOUTHERN INTERIOR KARNATAKA",15.19,76.42,true
+"BEMATARA","Bemetara","CHHATTISGARH","BEMETARA","CHHATTISGARH",21.65,81.45,true
+"BETUL","Betul","MADHYA PRADESH","BETUL","WEST MADHYA PRADESH",21.88,77.78,false
+"BGK","Belagavi","KARNATAKA","BELAGAVI","NORTHERN INTERIOR KARNATAKA",16.7,75.25,false
+"BGP","Bhagalpur","BIHAR","BHAGALPUR","BIHAR",25.23,86.95,true
+"BGT","BALURGHAT","WEST BENGAL","SOUTH DINAJPUR","SHWB & SIKKIM",25.22,88.78,true
+"BHABUA","Bhabua","BIHAR","BHABUA","BIHAR",24.98,83.61,true
+"BHADRAK","Bhadrak","ODISHA","BHADRAK","ODISHA",20.99,86.62,true
+"BHAGALPUR","Bhagalpur","BIHAR","BHAGALPUR","BIHAR",25.28,87.1,false
+"BHANDARA","Bhandara","MAHARASHTRA","BHANDARA","VIDARBHA",21.12,79.77,true
+"BHARATPUR","Bharatpur","RAJASTHAN","BHARATPUR","EAST RAJASTHAN",27.06,77.32,false
+"BHATINDA","Bhatinda","PUNJAB","BHATINDA","PUNJAB",30.18,75,false
+"BHATWARI","Bhatwari","UTTARAKHAND","UTTARKASHI","UTTARAKHAND",30.81,78.61,true
+"BHAVNAGAR","Bhavnagar","GUJARAT","BHAVNAGAR","SAURASHTRA & KUTCH",21.67,71.95,false
+"BHILWARA","Bhilwara","RAJASTHAN","BHILWARA","EAST RAJASTHAN",25.49,74.74,false
+"BHIND","Bhind","MADHYA PRADESH","BHIND","WEST MADHYA PRADESH",26.35,78.68,false
+"BHIWANI","Bhiwani","HARYANA","BHIWANI","DELHI, HARYANA AND CHANDIGARH",28.73,75.98,true
+"BHJ","Bhuj","GUJARAT","KUTCH","SAURASHTRA & KUTCH",23.25,69.67,true
+"BHOJPUR","Bhojpur","BIHAR","BHOJPUR","BIHAR",25.45,84.57,true
+"BHOPAL","Bhopal","MADHYA PRADESH","BHOPAL","WEST MADHYA PRADESH",23.49,77.41,false
+"BHP","Bhopal","MADHYA PRADESH","BHOPAL","WEST MADHYA PRADESH",23.28,77.35,true
+"BHU","Bhavnagar","GUJARAT","BHAVNAGAR","SAURASHTRA & KUTCH",21.75,72.2,true
+"BHUNTAR","KULLU-MANALI","HIMACHAL PRADESH","KULLU","HIMACHAL PRADESH",31.87,77.15,true
+"BID","Beed","MAHARASHTRA","BEED","MARATHWADA",18.94,75.77,false
+"BIDAR","Bidar","KARNATAKA","BIDAR","NORTHERN INTERIOR KARNATAKA",18.03,77.18,true
+"BIJAPUR","Vijayapura","KARNATAKA","VIJAYAPURA","NORTHERN INTERIOR KARNATAKA",16.81,75.9,false
+"BIJNORE","Bijnor","UTTAR PRADESH","BIJNOR","WEST UTTAR PRADESH",29.41,78.46,false
+"BIKANER","Bikaner","RAJASTHAN","BIKANER","WEST RAJASTHAN",28.12,73.13,false
+"BIL","Bilaspur","HIMACHAL PRADESH","BILASPUR","HIMACHAL PRADESH",31.25,76.67,true
+"BILASPUR","Gaurela-pendra-marwahi","CHHATTISGARH","GAURELA-PENDRA-MARWAHI","CHHATTISGARH",22.62,82,true
+"BILASPUR-HP","Bilaspur","HIMACHAL PRADESH","BILASPUR","HIMACHAL PRADESH",31.35,76.66,false
+"BIR","Beed","MAHARASHTRA","BEED","MARATHWADA",19,75.72,true
+"BIRBHUM","Birbhum","WEST BENGAL","BIRBHUM","GANGETIC WEST BENGAL",23.85,87.56,true
+"BISHNUPUR","Bishnupur","MANIPUR","BISHNUPUR","NMMT",24.51,93.8,true
+"BISWANATH","Sonitpur","ASSAM","SONITPUR","ASSAM & MEGHALAYA",26.89,93.42,true
+"BITRA","Bitra","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",11.55,72.15,true
+"BJC_CHA","Bijapur","CHHATTISGARH","BIJAPUR","CHHATTISGARH",18.77,80.74,true
+"BJP","Vijayapura","KARNATAKA","VIJAYAPURA","NORTHERN INTERIOR KARNATAKA",16.82,75.72,true
+"BKN","Bikaner","RAJASTHAN","BIKANER","WEST RAJASTHAN",28,73.3,true
+"BLA","Ballia","UTTAR PRADESH","BALLIA","EAST UTTAR PRADESH",25.75,84.17,true
+"BLD","Dantewada","CHHATTISGARH","DANTEWADA","CHHATTISGARH",18.71,81.23,true
+"BLG","Belagavi","KARNATAKA","BELAGAVI","NORTHERN INTERIOR KARNATAKA",15.85,74.62,true
+"BLN","Chikkamagaluru","KARNATAKA","CHIKKAMAGALURU","SOUTHERN INTERIOR KARNATAKA",13.37,75.45,true
+"BLR","Bolangir","ODISHA","BALANGIR","ODISHA",20.7,83.5,true
+"BLS","Balasore","ODISHA","BALASORE","ODISHA",21.52,86.93,true
+"BLW","Bhilwara","RAJASTHAN","BHILWARA","EAST RAJASTHAN",25.35,74.63,true
+"BLY","Ballari","KARNATAKA","BALLARI","SOUTHERN INTERIOR KARNATAKA",15.15,76.85,false
+"BMB","Mumbai (Santacruz)","MAHARASHTRA","MUMBAI SUBURBAN","KONKAN & GOA",19.12,72.83,true
+"BMD","East Kameng","ARUNACHAL PRADESH","EAST KAMENG","ARUNACHAL PRADESH",27.42,92.85,true
+"BMP","Brahmapuri","MAHARASHTRA","CHANDRAPUR","VIDARBHA",20.6,79.85,true
+"BMT","BARAMATI","MAHARASHTRA","PUNE","MADHYA MAHARASHTRA",18.15,74.58,true
+"BND","Bhind","MADHYA PRADESH","BHIND","WEST MADHYA PRADESH",26.57,78.8,true
+"BNG","Bengaluru","KARNATAKA","BENGALURU URBAN","SOUTHERN INTERIOR KARNATAKA",12.97,77.58,true
+"BNG-URBAN","Bengaluru Rural","KARNATAKA","BENGALURU RURAL","SOUTHERN INTERIOR KARNATAKA",12.94,77.78,false
+"BNK","Bankura","WEST BENGAL","BANKURA","GANGETIC WEST BENGAL",23.25,87.05,true
+"BNL","Banihal","JAMMU & KASHMIR (UT)","RAMBAN","JAMMU & KASHMIR AND LADAKH",33.43,75.19,true
+"BNT","Kullu","HIMACHAL PRADESH","MANDI","HIMACHAL PRADESH",31.83,77.17,true
+"BOKARO","Bokaro","JHARKHAND","BOKARO","JHARKHAND",23.69,86.01,true
+"BONGAIGAON","Bongaigaon","ASSAM","BONGAIGAON","ASSAM & MEGHALAYA",26.35,90.62,true
+"BOTAD","Botad","GUJARAT","BOTAD","SAURASHTRA & KUTCH",22.15,71.75,true
+"BPD","Baripada","ODISHA","MAYURBHANJ","ODISHA",21.93,86.77,true
+"BPT","Bapatla","ANDHRA PRADESH","BAPATLA","COASTAL ANDHRA PRADESH & YANAM",15.9,80.47,true
+"BRA","Raigad","MAHARASHTRA","RAIGAD","KONKAN & GOA",18.45,73.4,true
+"BRC","Bahraich","UTTAR PRADESH","BAHRAICH","EAST UTTAR PRADESH",27.57,81.6,true
+"BRD","Vadodara","GUJARAT","VADODARA","GUJARAT REGION",22.3,73.25,true
+"BRH","Bharuch","GUJARAT","BHARUCH","GUJARAT REGION",21.73,73,true
+"BRL","Bareilly","UTTAR PRADESH","BAREILLY","WEST UTTAR PRADESH",28.37,79.4,true
+"BRM","Barmer","RAJASTHAN","BARMER","WEST RAJASTHAN",25.75,71.38,true
+"BROACH","Bharuch","GUJARAT","BHARUCH","GUJARAT REGION",21.73,73,false
+"BRP","Baharampur","WEST BENGAL","MURSHIDABAD","GANGETIC WEST BENGAL",24.13,88.27,true
+"BRT","Bharatpur","RAJASTHAN","BHARATPUR","EAST RAJASTHAN",27.22,77.5,true
+"BST","Basti","UTTAR PRADESH","BASTI","EAST UTTAR PRADESH",26.8,82.73,false
+"BSW","Banswara","RAJASTHAN","BANSWARA","EAST RAJASTHAN",23.55,74.45,true
+"BTD","Bhatinda","PUNJAB","BHATINDA","PUNJAB",30.21,74.94,true
+"BTL","Betul","MADHYA PRADESH","BETUL","WEST MADHYA PRADESH",21.87,77.93,true
+"BTT","Udhampur","JAMMU & KASHMIR (UT)","UDHAMPUR","JAMMU & KASHMIR AND LADAKH",33.07,75.19,true
+"BUL","BULSAR","GUJARAT","VALSAD","GUJARAT REGION",20.62,72.93,true
+"BULANDSHAHR","Bulandshahar","UTTAR PRADESH","BULANDSHAHAR","WEST UTTAR PRADESH",28.39,78.07,false
+"BULDHANA","Buldhana","MAHARASHTRA","BULDHANA","VIDARBHA",20.57,76.38,false
+"BUNDI","Bundi","RAJASTHAN","BUNDI","EAST RAJASTHAN",25.44,75.79,false
+"BURDWAN","Purba Bardhaman","WEST BENGAL","PURBA BARDHAMAN","GANGETIC WEST BENGAL",23.4,87.75,true
+"BURHANPUR","Burhanpur","MADHYA PRADESH","BURHANPUR","WEST MADHYA PRADESH",21.33,76.37,true
+"BUXAR","Buxar","BIHAR","BUXAR","BIHAR",25.51,84.08,true
+"BWN","Burdwan","WEST BENGAL","PURBA BARDHAMAN","GANGETIC WEST BENGAL",23.23,87.85,true
+"BWP","BHAWANIPATNA","ODISHA","KALAHANDI","ODISHA",19.92,83.18,true
+"Bihta_bihar","Patna","BIHAR","PATNA","BIHAR",25.557,84.8917,false
+"CACHER","Cachar","ASSAM","CACHAR","ASSAM & MEGHALAYA",24.76,92.86,true
+"CAVE","Kargil","LADAKH (UT)","KARGIL","JAMMU & KASHMIR AND LADAKH",34.22,75.51,true
+"CBL","Chandbali","ODISHA","BHADRAK","ODISHA",20.78,86.73,true
+"CBS","West Singhbhum","JHARKHAND","WEST SINGHBHUM","JHARKHAND",22.55,85.82,true
+"CDL","CUDDALORE","TAMILNADU","CUDDALORE","TAMILNADU, PUDUCHERRY & KARAIKAL",11.77,79.77,true
+"CDP","Cuddappah","ANDHRA PRADESH","YSR DISTRICT","RAYALSEEMA",14.48,78.83,true
+"CENTRAL-DELHI","Central Delhi","DELHI (UT)","CENTRAL DELHI","DELHI, HARYANA AND CHANDIGARH",28.67,77.22,true
+"CENTRAL-SIKKIM","Mangan","SIKKIM","MANGAN","SHWB & SIKKIM",27.6,88.51,true
+"CHA","Chapra","BIHAR","SARAN","BIHAR",25.78,84.73,true
+"CHAMARAJNAGAR","Chamarajanagar","KARNATAKA","CHAMARAJANAGAR","SOUTHERN INTERIOR KARNATAKA",11.94,77.09,true
+"CHAMBA","Chamba","HIMACHAL PRADESH","CHAMBA","HIMACHAL PRADESH",32.69,76.34,true
+"CHAMPAWAT","Champawat","UTTARAKHAND","CHAMPAWAT","UTTARAKHAND",29.29,80.06,true
+"CHAMPHAI","Champhai","MIZORAM","CHAMPHAI","NMMT",23.54,93.23,true
+"CHANDAULI","Bhabua","BIHAR","BHABUA","BIHAR",25.22,83.49,false
+"CHANDEL","Chandel","MANIPUR","CHANDEL","NMMT",24.1,94.07,true
+"CHANDIGARH","Chandigarh","CHANDIGARH (UT)","CHANDIGARH","DELHI, HARYANA AND CHANDIGARH",30.73,76.77,true
+"CHANDRAPUR","Chandrapur","MAHARASHTRA","CHANDRAPUR","VIDARBHA",20.09,79.4,false
+"CHANGLANG","Changlang","ARUNACHAL PRADESH","CHANGLANG","ARUNACHAL PRADESH",27.47,96.4,true
+"CHARAIDEO","Sibsagar","ASSAM","SIBSAGAR","ASSAM & MEGHALAYA",27.07,95.07,true
+"CHARKHI-DADRI","Charkhi Dadri","HARYANA","CHARKHI DADRI","DELHI, HARYANA AND CHANDIGARH",28.6,76.15,true
+"CHATRAI","Chatra","JHARKHAND","CHATRA","JHARKHAND",24.1,84.9,true
+"CHB","Coochbehar","WEST BENGAL","COOCH BEHAR","SHWB & SIKKIM",26.33,89.47,true
+"CHD","Chandigarh","HARYANA","PANCHKULA","DELHI, HARYANA AND CHANDIGARH",30.73,76.88,true
+"CHEMBARAPAKKAM","Chembarapakkam","TAMILNADU","THIRUVALLUR","TAMILNADU, PUDUCHERRY & KARAIKAL",13.02,80.04,true
+"CHENNAI","Chennai","TAMILNADU","CHENNAI","TAMILNADU, PUDUCHERRY & KARAIKAL",13.07,80.25,false
+"CHETLAT","Chetlat","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",11.69,72.7,true
+"CHHATARPUR","Chhatarpur","MADHYA PRADESH","CHHATARPUR","EAST MADHYA PRADESH",24.76,79.71,true
+"CHHINDWARA","Chhindwara","MADHYA PRADESH","CHHINDWARA","EAST MADHYA PRADESH",22.14,78.83,false
+"CHIKBALLAPUR","Chikaballapura","KARNATAKA","CHIKABALLAPURA","SOUTHERN INTERIOR KARNATAKA",13.59,77.79,true
+"CHIKMAGALUR","Chikkamagaluru","KARNATAKA","CHIKKAMAGALURU","SOUTHERN INTERIOR KARNATAKA",13.4,75.72,false
+"CHILAS","Ladakh (LEH)","LADAKH (UT)","LADAKH (LEH)","JAMMU & KASHMIR AND LADAKH",35.3,74.25,true
+"CHINYALISOUR","Chinyalisour","UTTARAKHAND","GARHWAL TEHRI","UTTARAKHAND",30.57,78.32,true
+"CHIRANG","Chirang","ASSAM","CHIRANG","ASSAM & MEGHALAYA",26.65,90.65,true
+"CHITRADURGA","Chitradurga","KARNATAKA","CHITRADURGA","SOUTHERN INTERIOR KARNATAKA",14.31,76.53,false
+"CHITRAKUT","Chitrakoot","UTTAR PRADESH","CHITRAKOOT","EAST UTTAR PRADESH",25.22,81.12,true
+"CHITTAURGARH","Chittorgarh","RAJASTHAN","CHITTORGARH","EAST RAJASTHAN",24.92,74.76,false
+"CHITTOOR","Chittoor","ANDHRA PRADESH","CHITTOOR","RAYALSEEMA",13.31,79.06,true
+"CHM","Joshimath","UTTARAKHAND","CHAMOLI","UTTARAKHAND",30.4,79.33,true
+"CHN","Kochi","KERALA","ERNAKULAM","KERALA & MAHE",9.95,76.27,true
+"CHOTA-UDEPUR","Chhota Udepur","GUJARAT","CHHOTA UDEPUR","GUJARAT REGION",22.22,73.89,true
+"CHP","Janjgir","CHHATTISGARH","JANJGIR","CHHATTISGARH",22.03,82.7,true
+"CHT","Chitradurga","KARNATAKA","CHITRADURGA","SOUTHERN INTERIOR KARNATAKA",14.23,76.43,true
+"CHURACHANDPUR","Churachandpur","MANIPUR","CHURACHANDPUR","NMMT",24.28,93.43,true
+"CHURU","Churu","RAJASTHAN","CHURU","WEST RAJASTHAN",28.4,74.76,false
+"CHW","CHHINDWARA","MADHYA PRADESH","CHHINDWARA","EAST MADHYA PRADESH",22.1,79,true
+"CKG","Chickmaglur","KARNATAKA","CHIKKAMAGALURU","SOUTHERN INTERIOR KARNATAKA",13.25,75.75,true
+"CLB","Mumbai","MAHARASHTRA","MUMBAI CITY","KONKAN & GOA",18.9,72.82,true
+"CMB","Coimbatore","TAMILNADU","COIMBATORE","TAMILNADU, PUDUCHERRY & KARAIKAL",11,76.97,true
+"CML","Rawatbhata","RAJASTHAN","CHITTORGARH","EAST RAJASTHAN",24.92,75.58,true
+"CNB","Carnicobar","ANDAMAN & NICOBAR ISLANDS (UT)","NICOBAR","ANDAMAN & NICOBAR ISLANDS",9.17,92.83,true
+"CNG","CANNING","WEST BENGAL","SOUTH 24 PARGANAS","GANGETIC WEST BENGAL",22.25,88.67,true
+"CNN","Kannur","KERALA","KANNUR","KERALA & MAHE",11.83,75.33,true
+"CNR","Coonoor","TAMILNADU","NILGIRIS","TAMILNADU, PUDUCHERRY & KARAIKAL",11.35,76.8,true
+"CNT","CONTAI","WEST BENGAL","EAST MIDNAPORE","GANGETIC WEST BENGAL",21.78,87.75,true
+"CNW","Baramula","JAMMU & KASHMIR (UT)","BARAMULA","JAMMU & KASHMIR AND LADAKH",34.14,74.12,false
+"COIMBATORE","Coimbatore","TAMILNADU","COIMBATORE","TAMILNADU, PUDUCHERRY & KARAIKAL",10.95,76.98,false
+"CPJ","Cherrapunji","MEGHALAYA","EAST KHASI HILLS","ASSAM & MEGHALAYA",25.25,91.73,true
+"CPM","CHAPARMUKH","ASSAM","NAGAON","ASSAM & MEGHALAYA",26.2,92.52,true
+"CPR","Chandrapur","MAHARASHTRA","CHANDRAPUR","VIDARBHA",19.97,79.3,true
+"CRU","Churu","RAJASTHAN","CHURU","WEST RAJASTHAN",28.25,74.92,true
+"CTG","Chittorgarh","RAJASTHAN","CHITTORGARH","EAST RAJASTHAN",24.88,74.63,true
+"CTK","Bhubneshwar-Cuttack","ODISHA","CUTTACK","ODISHA",20.47,85.93,true
+"CUDDALORE","Cuddalore","TAMILNADU","CUDDALORE","TAMILNADU, PUDUCHERRY & KARAIKAL",11.52,79.45,false
+"CUDDEPAH","Ysr District","ANDHRA PRADESH","YSR DISTRICT","RAYALSEEMA",14.4,78.65,true
+"CUTTACK","Cuttack","ODISHA","CUTTACK","ODISHA",20.5,85.84,true
+"Chandkheda","Chandkheda","GUJARAT","AHMEDABAD","GUJARAT REGION",23.108,72.5746,true
+"DAKSHAN-DINAJPUR","South Dinajpur","WEST BENGAL","SOUTH DINAJPUR","SHWB & SIKKIM",25.38,88.6,true
+"DAKSHINA-KANNAD","Dakshina Kannada","KARNATAKA","DAKSHINA KANNADA","COASTAL KARNATAKA",13.07,75.17,true
+"DAL","Dalhousie","HIMACHAL PRADESH","CHAMBA","HIMACHAL PRADESH",32.53,75.97,true
+"DAMOH","Damoh","MADHYA PRADESH","DAMOH","EAST MADHYA PRADESH",23.8,79.51,false
+"DANGS","Dangs","GUJARAT","DANGS","GUJARAT REGION",20.82,73.71,true
+"DANTEWADA","Dantewada","CHHATTISGARH","DANTEWADA","CHHATTISGARH",18.77,81.44,false
+"DARBHANGA","Darbhanga","BIHAR","DARBHANGA","BIHAR",26.16,86.04,false
+"DARJEELING","Darjeeling","WEST BENGAL","DARJEELING","SHWB & SIKKIM",26.85,88.25,false
+"DARRANG","Darrang","ASSAM","DARRANG","ASSAM & MEGHALAYA",26.44,92.07,true
+"DATIA","Datia","MADHYA PRADESH","DATIA","WEST MADHYA PRADESH",25.92,78.53,false
+"DAUSA","Dausa","RAJASTHAN","DAUSA","EAST RAJASTHAN",26.81,76.62,true
+"DBG","DARBHANGA","BIHAR","DARBHANGA","BIHAR",26.17,85.9,true
+"DBH","Dibrugarh","ASSAM","DIBRUGARH","ASSAM & MEGHALAYA",27.48,95.02,true
+"DDM","Kolkata (Dum Dum)","WEST BENGAL","NORTH 24 PARGANAS","GANGETIC WEST BENGAL",22.65,88.45,true
+"DDN","Dehradun-Mokhampur","UTTARAKHAND","DEHRADUN","UTTARAKHAND",30.32,78.03,true
+"DEHRADUN","Dehradun","UTTARAKHAND","DEHRADUN","UTTARAKHAND",30.4,77.85,false
+"DEMAJ","Dhemaji","ASSAM","DHEMAJI","ASSAM & MEGHALAYA",27.54,94.7,true
+"DEOGARH","Deogarh","ODISHA","DEOGARH","ODISHA",21.49,84.8,true
+"DEOGHAR","Deoghar","JHARKHAND","DEOGHAR","JHARKHAND",24.33,86.76,true
+"DEORIA","Deoria","UTTAR PRADESH","DEORIA","EAST UTTAR PRADESH",26.42,83.84,true
+"DER","DEHRI","BIHAR","ROHTAS","BIHAR",24.92,84.18,true
+"DEVANGERE","Davangere","KARNATAKA","DAVANGERE","SOUTHERN INTERIOR KARNATAKA",14.37,75.96,true
+"DEVBHOOMI-DWARKA","Devbhoomi Dwarka","GUJARAT","DEVBHOOMI DWARKA","SAURASHTRA & KUTCH",22.14,69.44,true
+"DEVPRAYAG","Devprayag","UTTARAKHAND","GARHWAL PAURI","UTTARAKHAND",30.14,78.61,true
+"DEWAS","Dewas","MADHYA PRADESH","DEWAS","WEST MADHYA PRADESH",22.71,76.51,true
+"DGB","Tinsukia","ASSAM","TINSUKIA","ASSAM & MEGHALAYA",27.55,95.62,true
+"DGH","East Midnapore","WEST BENGAL","EAST MIDNAPORE","GANGETIC WEST BENGAL",21.83,87.78,true
+"DGR","Dungarpur","RAJASTHAN","DUNGARPUR","EAST RAJASTHAN",23.83,73.67,true
+"DHALAI","Dhalai","TRIPURA","DHALAI","NMMT",23.83,91.96,true
+"DHAMTARI","Dhamtari","CHHATTISGARH","DHAMTARI","CHHATTISGARH",20.63,81.79,true
+"DHANBAD","Dhanbad","JHARKHAND","DHANBAD","JHARKHAND",23.84,86.47,false
+"DHAR","Dhar","MADHYA PRADESH","DHAR","WEST MADHYA PRADESH",22.58,75.09,false
+"DHARMAPURI","Dharmapuri","TAMILNADU","DHARMAPURI","TAMILNADU, PUDUCHERRY & KARAIKAL",12.14,78.21,false
+"DHARWAD","Dharwad","KARNATAKA","DHARWAD","NORTHERN INTERIOR KARNATAKA",15.37,75.15,true
+"DHAULPUR","Dholpur","RAJASTHAN","DHOLPUR","EAST RAJASTHAN",26.66,77.75,false
+"DHB","DHUBRI","ASSAM","DHUBRI","ASSAM & MEGHALAYA",26.02,89.98,true
+"DHD","Dahod","GUJARAT","DAHOD","GUJARAT REGION",22.83,74.27,true
+"DHENKANAL","Dhenkanal","ODISHA","DHENKANAL","ODISHA",20.84,85.6,true
+"DHN","Dahanu","MAHARASHTRA","PALGHAR","KONKAN & GOA",19.97,72.72,true
+"DHR","Dhar","MADHYA PRADESH","DHAR","WEST MADHYA PRADESH",22.6,75.3,true
+"DHUBR","Dhubri","ASSAM","DHUBRI","ASSAM & MEGHALAYA",26.1,90,false
+"DHULE","Dhule","MAHARASHTRA","DHULE","MADHYA MAHARASHTRA",21.13,74.53,false
+"DIBRUGARH","Dibrugarh","ASSAM","DIBRUGARH","ASSAM & MEGHALAYA",27.4,95.03,false
+"DIMAPUR","Dimapur","NAGALAND","DIMAPUR","NMMT",25.81,93.77,true
+"DINDIGUL","Dindigul","TAMILNADU","DINDIGUL","TAMILNADU, PUDUCHERRY & KARAIKAL",10.43,77.8,true
+"DINDORI","Dindori","MADHYA PRADESH","DINDORI","EAST MADHYA PRADESH",23.05,80.9,true
+"DIU","Diu","DADRA & NAGAR HAVELI AND DAMAN & DIU (UT)","DIU","SAURASHTRA & KUTCH",20.72,70.92,true
+"DJL","Darjeeling","WEST BENGAL","DARJEELING","SHWB & SIKKIM",27.05,88.27,true
+"DLP","Dholpur","RAJASTHAN","DHOLPUR","EAST RAJASTHAN",26.67,77.83,true
+"DMD","Diamond Harbour","WEST BENGAL","SOUTH 24 PARGANAS","GANGETIC WEST BENGAL",22.18,88.2,true
+"DMH","DAMOH","MADHYA PRADESH","DAMOH","EAST MADHYA PRADESH",23.83,79.45,true
+"DMK","Dumka","JHARKHAND","DUMKA","JHARKHAND",24.27,87.25,true
+"DMN","Daman","DADRA & NAGAR HAVELI AND DAMAN & DIU (UT)","DAMAN","GUJARAT REGION",20.42,72.85,true
+"DNB","Dhanbad","JHARKHAND","DHANBAD","JHARKHAND",23.78,86.43,true
+"DODA","Doda","JAMMU & KASHMIR (UT)","DODA","JAMMU & KASHMIR AND LADAKH",33.12,75.7,true
+"DOHAD","Dahod","GUJARAT","DAHOD","GUJARAT REGION",22.92,74.14,false
+"DPR","Dharmapuri","TAMILNADU","DHARMAPURI","TAMILNADU, PUDUCHERRY & KARAIKAL",12.13,78.03,true
+"DRC","Dharchula","UTTARAKHAND","PITHORAGARH","UTTARAKHAND",29.85,80.53,true
+"DRG","Durg","CHHATTISGARH","DURG","CHHATTISGARH",21.18,81.28,true
+"DRM","Dharamsala","HIMACHAL PRADESH","KANGRA","HIMACHAL PRADESH",32.21,76.32,true
+"DRP","Solan","HIMACHAL PRADESH","SOLAN","HIMACHAL PRADESH",30.9,77.02,true
+"DRS","Kargil","LADAKH (UT)","KARGIL","JAMMU & KASHMIR AND LADAKH",34.43,75.77,false
+"DSA","Deesa","GUJARAT","BANASKANTHA","GUJARAT REGION",24.2,72.2,true
+"DTA","DATIA","MADHYA PRADESH","DATIA","WEST MADHYA PRADESH",25.67,78.47,true
+"DTG","Daltonganj","JHARKHAND","PALAMU","JHARKHAND",24.05,84.07,true
+"DUMKA","Dumka","JHARKHAND","DUMKA","JHARKHAND",24.31,87.29,false
+"DUNGARPUR","Dungarpur","RAJASTHAN","DUNGARPUR","EAST RAJASTHAN",23.67,73.87,false
+"DURG","Durg","CHHATTISGARH","DURG","CHHATTISGARH",21.2,81.38,false
+"DVG","Sindhudurg","MAHARASHTRA","SINDHUDURG","KONKAN & GOA",16.38,73.35,true
+"DWK","Dwarka","GUJARAT","DEVBHOOMI DWARKA","SAURASHTRA & KUTCH",22.37,69.08,true
+"Dhule","Dhule","MAHARASHTRA","DHULE","MADHYA MAHARASHTRA",20.9042,74.7749,true
+"E-JAINTIA","East Jaintia Hills","MEGHALAYA","EAST JAINTIA HILLS","ASSAM & MEGHALAYA",25.25,92.5,true
+"EAST","Pakyong","SIKKIM","PAKYONG","SHWB & SIKKIM",27.28,88.68,true
+"EAST-DELHI","East Delhi","DELHI (UT)","EAST DELHI","DELHI, HARYANA AND CHANDIGARH",28.61,77.31,true
+"EAST-GARO","East Garo Hills","MEGHALAYA","EAST GARO HILLS","ASSAM & MEGHALAYA",25.7,90.69,true
+"EAST-GODAVARI","Sri Alluri Sitharamaraju District","ANDHRA PRADESH","SRI ALLURI SITHARAMARAJU DISTRICT","COASTAL ANDHRA PRADESH & YANAM",17.5,82.09,true
+"EAST-KAMENG","East Kameng","ARUNACHAL PRADESH","EAST KAMENG","ARUNACHAL PRADESH",27.4,93.2,false
+"EAST-KHASI","East Khasi Hills","MEGHALAYA","EAST KHASI HILLS","ASSAM & MEGHALAYA",25.35,91.8,true
+"EAST-SIANG","East Siang","ARUNACHAL PRADESH","EAST SIANG","ARUNACHAL PRADESH",27.95,95.26,true
+"EAST-SINGBHUM","East Singhbhum","JHARKHAND","EAST SINGHBHUM","JHARKHAND",22.61,86.48,true
+"EDAKALINADU","Edakalinadu","TAMILNADU","VILLUPURAM","TAMILNADU, PUDUCHERRY & KARAIKAL",12.28,79.8,true
+"ENNORE-PORT","Ennore-Port","","","",13.27,88.33,true
+"ENP","Pali","RAJASTHAN","PALI","WEST RAJASTHAN",25.08,73.14,true
+"ERNAKULAM","Ernakulam","KERALA","ERNAKULAM","KERALA & MAHE",10.05,76.5,true
+"ERODE","Erode","TAMILNADU","ERODE","TAMILNADU, PUDUCHERRY & KARAIKAL",11.49,77.38,true
+"ETAH","Etah","UTTAR PRADESH","ETAH","WEST UTTAR PRADESH",27.55,78.73,true
+"ETAWAH","Etawah","UTTAR PRADESH","ETAWAH","WEST UTTAR PRADESH",26.72,79.04,true
+"ETW","Bhind","MADHYA PRADESH","BHIND","WEST MADHYA PRADESH",26.45,79.02,false
+"FAIZABAD","Ayodhya","UTTAR PRADESH","AYODHYA","EAST UTTAR PRADESH",26.67,82.01,true
+"FARIDABAD","Faridabad","HARYANA","FARIDABAD","DELHI, HARYANA AND CHANDIGARH",28.33,77.35,true
+"FARIDKOT","Faridkot","PUNJAB","FARIDKOT","PUNJAB",30.6,74.76,true
+"FARRUKHABAD","Farrukhabad","UTTAR PRADESH","FARRUKHABAD","EAST UTTAR PRADESH",27.33,79.63,true
+"FATEHABAD","Fatehabad","HARYANA","FATEHABAD","DELHI, HARYANA AND CHANDIGARH",29.53,75.59,true
+"FATEHGARH","Farrukhabad","UTTAR PRADESH","FARRUKHABAD","EAST UTTAR PRADESH",27.45,79.5,false
+"FATEHGARH-SAHIB","Fatehgarh Sahib","PUNJAB","FATEHGARH SAHIB","PUNJAB",30.6,76.33,true
+"FATEHPUR","Fatehpur","UTTAR PRADESH","FATEHPUR","EAST UTTAR PRADESH",25.83,80.78,false
+"FAZILIKA","Fazilka","PUNJAB","FAZILKA","PUNJAB",30.36,74.17,true
+"FBG","Farbesganj","BIHAR","ARARIA","BIHAR",26.3,87.27,true
+"FEROZEPUR","Ferozepur","PUNJAB","FEROZEPUR","PUNJAB",30.9,74.8,true
+"FIROZABAD","Firozabad","UTTAR PRADESH","FIROZABAD","WEST UTTAR PRADESH",27.19,78.51,true
+"FTP","Fatehpur","UTTAR PRADESH","FATEHPUR","EAST UTTAR PRADESH",25.93,80.83,true
+"FURSATGANJ","Fursatganj","UTTAR PRADESH","RAE BAREILLY","EAST UTTAR PRADESH",26.25,81.3,true
+"FZB","Ayodhya","UTTAR PRADESH","AYODHYA","EAST UTTAR PRADESH",26.75,82.08,false
+"FZP","Ferozepur","PUNJAB","FEROZEPUR","PUNJAB",30.92,74.67,false
+"GADAG","Gadag","KARNATAKA","GADAG","NORTHERN INTERIOR KARNATAKA",15.41,75.66,false
+"GADCHIROLI","Gadchiroli","MAHARASHTRA","GADCHIROLI","VIDARBHA",19.76,80.32,true
+"GAJAPATI","Gajapati","ODISHA","GAJAPATI","ODISHA",18.92,84.12,true
+"GANDERBAL","Ganderbal","JAMMU & KASHMIR (UT)","GANDERBAL","JAMMU & KASHMIR AND LADAKH",34.31,75.19,true
+"GANDHINAGAR","Gandhinagar","GUJARAT","GANDHINAGAR","GUJARAT REGION",23.2,72.78,false
+"GANGANAGAR","Sri Ganganagar","RAJASTHAN","SRI GANGANAGAR","WEST RAJASTHAN",29.2,73.55,false
+"GANGOTRI","Gangotri","UTTARAKHAND","UTTARKASHI","UTTARAKHAND",30.99,78.93,true
+"GANJAM","Ganjam","ODISHA","GANJAM","ODISHA",19.63,84.65,true
+"GARHWA","Garhwa","JHARKHAND","GARHWA","JHARKHAND",24.05,83.7,true
+"GARIYABAND","Gariaband","CHHATTISGARH","GARIABAND","CHHATTISGARH",20.4,82.29,true
+"GAUCHAR","Gauchar","UTTARAKHAND","CHAMOLI","UTTARAKHAND",30.28,79.15,true
+"GAYA","Gaya","BIHAR","GAYA","BIHAR",24.67,84.85,false
+"GDA","Gonda","UTTAR PRADESH","GONDA","EAST UTTAR PRADESH",27.13,81.97,true
+"GDG","Gadag","KARNATAKA","GADAG","NORTHERN INTERIOR KARNATAKA",15.42,75.63,true
+"GDN","Gandhinagar","GUJARAT","GANDHINAGAR","GUJARAT REGION",23.21,72.63,true
+"GGN","Sriganganagar","RAJASTHAN","SRI GANGANAGAR","WEST RAJASTHAN",29.92,73.92,true
+"GHAT","Chamoli","UTTARAKHAND","CHAMOLI","UTTARAKHAND",30.61,79.56,true
+"GHAZIABAD","North Delhi","DELHI (UT)","NORTH DELHI","DELHI, HARYANA AND CHANDIGARH",28.7,77.2,true
+"GHAZIPUR","Ghazipur","UTTAR PRADESH","GHAZIPUR","EAST UTTAR PRADESH",25.6,83.51,false
+"GHT","Guwahati","ASSAM","KAMRUP METROPOLITAN","ASSAM & MEGHALAYA",26.1,91.58,true
+"GILGIT","Ladakh (LEH)","LADAKH (UT)","LADAKH (LEH)","JAMMU & KASHMIR AND LADAKH",36.45,74.75,false
+"GILGIT-WAZARAD","Ladakh (LEH)","LADAKH (UT)","LADAKH (LEH)","JAMMU & KASHMIR AND LADAKH",35.05,74.85,false
+"GIR-SOMNATH","Gir Somnath","GUJARAT","GIR SOMNATH","SAURASHTRA & KUTCH",20.94,70.8,true
+"GIRIDIH","Giridih","JHARKHAND","GIRIDIH","JHARKHAND",24.33,86.12,true
+"GLB","Kalaburgi","KARNATAKA","KALABURAGI","NORTHERN INTERIOR KARNATAKA",17.35,76.85,true
+"GLM","Gulmarg","JAMMU & KASHMIR (UT)","BARAMULA","JAMMU & KASHMIR AND LADAKH",34.05,74.4,true
+"GLP","Goalpara","ASSAM","GOALPARA","ASSAM & MEGHALAYA",26.18,90.63,true
+"GLT","Golaghat","ASSAM","GOLAGHAT","ASSAM & MEGHALAYA",26.52,93.98,true
+"GNA","Guna","MADHYA PRADESH","GUNA","WEST MADHYA PRADESH",24.65,77.32,true
+"GND","Gondia","MAHARASHTRA","GONDIA","VIDARBHA",21.47,80.2,true
+"GOA","GOA","GOA","SOUTH GOA","KONKAN & GOA",15.38,73.82,true
+"GOALPARA","Goalpara","ASSAM","GOALPARA","ASSAM & MEGHALAYA",26.06,90.61,false
+"GODDA","Godda","JHARKHAND","GODDA","JHARKHAND",24.86,87.29,true
+"GOLAGHAT","Golaghat","ASSAM","GOLAGHAT","ASSAM & MEGHALAYA",26.66,93.74,false
+"GOMATI","Gomati","TRIPURA","GOMATI","NMMT",23.51,91.62,true
+"GONDA","Gonda","UTTAR PRADESH","GONDA","EAST UTTAR PRADESH",27.11,82.07,false
+"GONDIA","Gondia","MAHARASHTRA","GONDIA","VIDARBHA",21.34,80.24,false
+"GOPALGANJ","Gopalganj","BIHAR","GOPALGANJ","BIHAR",26.42,84.41,true
+"GORAKHPUR","Gorakhpur","UTTAR PRADESH","GORAKHPUR","EAST UTTAR PRADESH",26.68,83.5,false
+"GPL","Gopalpur","ODISHA","GANJAM","ODISHA",19.27,84.88,true
+"GPR","Sonitpur","ASSAM","SONITPUR","ASSAM & MEGHALAYA",26.83,93.58,false
+"GRG","Gurgaon","HARYANA","GURGAON","DELHI, HARYANA AND CHANDIGARH",28.42,77,true
+"GRK","Gorakhpur","UTTAR PRADESH","GORAKHPUR","EAST UTTAR PRADESH",26.75,83.37,true
+"GTK","Gangtok","SIKKIM","GANGTOK","SHWB & SIKKIM",27.33,88.62,true
+"GULBARGA","Kalaburagi","KARNATAKA","KALABURAGI","NORTHERN INTERIOR KARNATAKA",17.24,76.88,true
+"GUMLA","Gumla","JHARKHAND","GUMLA","JHARKHAND",23.16,84.53,true
+"GUNA","Guna","MADHYA PRADESH","GUNA","WEST MADHYA PRADESH",24.5,77.27,false
+"GUND","Pulwama","JAMMU & KASHMIR (UT)","PULWAMA","JAMMU & KASHMIR AND LADAKH",34.11,75.05,true
+"GUNTUR","Palnadu","ANDHRA PRADESH","PALNADU","COASTAL ANDHRA PRADESH & YANAM",16.28,80.06,true
+"GURDASPUR","Gurdaspur","PUNJAB","GURDASPUR","PUNJAB",31.88,75.32,true
+"GURGAON","Gurgaon","HARYANA","GURGAON","DELHI, HARYANA AND CHANDIGARH",28.37,76.95,false
+"GURUVAYUR","Guruvayur","KERALA","THRISSUR","KERALA & MAHE",10.59,76.04,true
+"GWALIOR","Gwalior","MADHYA PRADESH","GWALIOR","WEST MADHYA PRADESH",25.95,78.29,false
+"GWL","Gwalior","MADHYA PRADESH","GWALIOR","WEST MADHYA PRADESH",26.23,78.25,true
+"GYA","Gaya","BIHAR","GAYA","BIHAR",24.75,84.95,true
+"GZB","Ghaziabad","UTTAR PRADESH","GHAZIABAD","WEST UTTAR PRADESH",28.69,77.41,true
+"GZP","GHAZIPUR","UTTAR PRADESH","GHAZIPUR","EAST UTTAR PRADESH",25.4,83.55,true
+"HAILAKANDI","Cachar","ASSAM","CACHAR","ASSAM & MEGHALAYA",24.45,92.83,false
+"HAMIRPUR","Hamirpur","HIMACHAL PRADESH","HAMIRPUR","HIMACHAL PRADESH",31.66,76.51,true
+"HANUMANGARH","Hanumangarh","RAJASTHAN","HANUMANGARH","WEST RAJASTHAN",29.07,74.67,true
+"HARDA","Harda","MADHYA PRADESH","HARDA","WEST MADHYA PRADESH",22.24,77.14,true
+"HARDOI","Hardoi","UTTAR PRADESH","HARDOI","EAST UTTAR PRADESH",27.23,80.26,false
+"HARIDWAR","Hardwar","UTTARAKHAND","HARDWAR","UTTARAKHAND",29.9,78.02,true
+"HARSIL","Harsil","UTTARAKHAND","UTTARKASHI","UTTARAKHAND",31.03,78.73,true
+"HASSAN","Hassan","KARNATAKA","HASSAN","SOUTHERN INTERIOR KARNATAKA",13.03,76.1,true
+"HATHRAS","Hathras","UTTAR PRADESH","HATHRAS","WEST UTTAR PRADESH",27.45,78.15,true
+"HAVERI","Haveri","KARNATAKA","HAVERI","NORTHERN INTERIOR KARNATAKA",14.72,75.42,true
+"HAZARIBAGH","Hazaribag","JHARKHAND","HAZARIBAG","JHARKHAND",24.01,85.47,true
+"HFL","HAFLONG","ASSAM","DIMA HASAO","ASSAM & MEGHALAYA",25.17,93.02,true
+"HINGOLE","Hingoli","MAHARASHTRA","HINGOLI","MARATHWADA",19.55,77.2,false
+"HISAR","Hisar","HARYANA","HISAR","DELHI, HARYANA AND CHANDIGARH",29.15,75.72,true
+"HISSAR","Hisar","HARYANA","HISAR","DELHI, HARYANA AND CHANDIGARH",29.24,75.79,false
+"HMP","Hamirpur","UTTAR PRADESH","HAMIRPUR","WEST UTTAR PRADESH",25.95,80.15,true
+"HNK","Hanamkonda","TELANGANA","HANUMAKONDA","TELANGANA",18.02,79.57,true
+"HNV","Honnavar","KARNATAKA","UTTARA KANNADA","COASTAL KARNATAKA",14.28,74.45,true
+"HOJAI","Nagaon","ASSAM","NAGAON","ASSAM & MEGHALAYA",25.96,92.97,true
+"HOSHANGABAD","Narmadapuram","MADHYA PRADESH","NARMADAPURAM","WEST MADHYA PRADESH",22.6,77.96,true
+"HOSHIARPUR","Hoshiarpur","PUNJAB","HOSHIARPUR","PUNJAB",31.6,75.85,true
+"HRD","Hardoi","UTTAR PRADESH","HARDOI","EAST UTTAR PRADESH",27.38,80.17,true
+"HRN","Harnai","MAHARASHTRA","RATNAGIRI","KONKAN & GOA",17.82,73.1,true
+"HSB","HOSHANGABAD","MADHYA PRADESH","NARMADAPURAM","WEST MADHYA PRADESH",22.77,77.77,true
+"HSN","Hassan","KARNATAKA","HASSAN","SOUTHERN INTERIOR KARNATAKA",13,76.15,false
+"HSR","Hisar","HARYANA","HISAR","DELHI, HARYANA AND CHANDIGARH",29.17,75.73,false
+"HTB","HUT BAY","ANDAMAN & NICOBAR ISLANDS (UT)","SOUTH ANDAMAN","ANDAMAN & NICOBAR ISLANDS",10.58,92.55,true
+"HUBBLI","Hubbli","KARNATAKA","DHARWAD","NORTHERN INTERIOR KARNATAKA",15.36,75.12,true
+"HYD","Hyderabad","TELANGANA","HYDERABAD","TELANGANA",17.45,78.47,true
+"HYDERABAD","Hyderabad","TELANGANA","HYDERABAD","TELANGANA",17.4,78.47,false
+"HZB","Hazaribag","JHARKHAND","HAZARIBAG","JHARKHAND",23.98,85.37,false
+"Hingoli","Hingoli","MAHARASHTRA","HINGOLI","MARATHWADA",19.7174,77.1494,true
+"IDR","Idar","GUJARAT","SABARKANTHA","GUJARAT REGION",23.83,73.03,true
+"IDUKKI","Idukki","KERALA","IDUKKI","KERALA & MAHE",9.82,77.02,true
+"IIPHG","Gandhi Ng IIPH","GUJARAT","GANDHINAGAR","GUJARAT REGION",23.2436,72.6899,true
+"IMP","Imphal","MANIPUR","IMPHAL WEST","NMMT",24.67,93.9,true
+"IMPHAL","Imphal East","MANIPUR","IMPHAL EAST","NMMT",24.81,94.02,true
+"IND","Indore","MADHYA PRADESH","INDORE","WEST MADHYA PRADESH",22.72,75.8,true
+"INDORE","Indore","MADHYA PRADESH","INDORE","WEST MADHYA PRADESH",22.75,75.83,false
+"ISRO-Bopal","ISRO-Bopal","GUJARAT","AHMEDABAD","GUJARAT REGION",23.0411,72.4567,true
+"ISRO-SAC","Ahm Satellite","GUJARAT","AHMEDABAD","GUJARAT REGION",23.0234,72.5152,true
+"JABALPUR","Jabalpur","MADHYA PRADESH","JABALPUR","EAST MADHYA PRADESH",23.22,79.96,false
+"JAGATSINGPUR","Jagatsinghpur","ODISHA","JAGATSINGHPUR","ODISHA",20.29,86.4,true
+"JAGTIYAL","Jagtial","TELANGANA","JAGTIAL","TELANGANA",18.82,78.91,true
+"JAHANABAD","Jahanabad","BIHAR","JAHANABAD","BIHAR",25.15,85.04,true
+"JAINTIA","West Jaintia Hills","MEGHALAYA","WEST JAINTIA HILLS","ASSAM & MEGHALAYA",25.6,92.32,true
+"JAIPUR","Jaipur","RAJASTHAN","JAIPUR","EAST RAJASTHAN",27.15,75.6,false
+"JAISLAMER","Jaisalmer","RAJASTHAN","JAISALMER","WEST RAJASTHAN",27.03,70.91,false
+"JAJPUR","Jajpur","ODISHA","JAJPUR","ODISHA",20.8,86.25,true
+"JALANDHAR","Jalandhar","PUNJAB","JALANDHAR","PUNJAB",31.15,75.51,true
+"JALAUN","Jalaun","UTTAR PRADESH","JALAUN","WEST UTTAR PRADESH",26.1,79.44,true
+"JALGAON","Jalgaon","MAHARASHTRA","JALGAON","MADHYA MAHARASHTRA",20.84,75.58,false
+"JALNA","Buldhana","MAHARASHTRA","BULDHANA","VIDARBHA",19.97,76.06,false
+"JALORE","Jalore","RAJASTHAN","JALORE","WEST RAJASTHAN",25.01,72.15,true
+"JALPAIGURI","Jalpaiguri","WEST BENGAL","JALPAIGURI","SHWB & SIKKIM",26.75,88.85,false
+"JAMMU","Jammu","JAMMU & KASHMIR (UT)","JAMMU","JAMMU & KASHMIR AND LADAKH",32.85,74.7,true
+"JAMNAGAR","Jamnagar","GUJARAT","JAMNAGAR","SAURASHTRA & KUTCH",22.33,70.1,true
+"JAMTARA","Jamtara","JHARKHAND","JAMTARA","JHARKHAND",23.99,86.89,true
+"JAMUI","Jamui","BIHAR","JAMUI","BIHAR",24.76,86.23,true
+"JANAKPUR","Janakpur","BIHAR","MADHUBANI","BIHAR",26.72,85.94,true
+"JANGOAN","Jangaon","TELANGANA","JANGAON","TELANGANA",17.73,79.21,true
+"JANJGIR","Sakti","CHHATTISGARH","SAKTI","CHHATTISGARH",21.97,82.82,true
+"JASHPUR","Jashpur","CHHATTISGARH","JASHPUR","CHHATTISGARH",22.77,83.9,false
+"JAUNPUR","Jaunpur","UTTAR PRADESH","JAUNPUR","EAST UTTAR PRADESH",25.8,82.6,false
+"JAYASHANKAR","J. Bhupalpally","TELANGANA","J. BHUPALPALLY","TELANGANA",18.44,80.18,true
+"JBP","Jabalpur","MADHYA PRADESH","JABALPUR","EAST MADHYA PRADESH",23.2,79.95,true
+"JDP","Jodhpur","RAJASTHAN","JODHPUR","WEST RAJASTHAN",26.3,73.02,true
+"JGD","Jagdalpur","CHHATTISGARH","BASTAR","CHHATTISGARH",19.08,82.03,true
+"JHABUA","Jhabua","MADHYA PRADESH","JHABUA","WEST MADHYA PRADESH",22.81,74.59,true
+"JHAJJAR","Jhajjar","HARYANA","JHAJJAR","DELHI, HARYANA AND CHANDIGARH",28.61,76.62,true
+"JHALAWAR","Jhalawar","RAJASTHAN","JHALAWAR","EAST RAJASTHAN",24.4,76.28,true
+"JHANSI","Jhansi","UTTAR PRADESH","JHANSI","WEST UTTAR PRADESH",25.63,79.16,true
+"JHARSUGUDA","Sambalpur","ODISHA","SAMBALPUR","ODISHA",21.75,84,false
+"JHS","Jhansi","UTTAR PRADESH","JHANSI","WEST UTTAR PRADESH",25.45,78.58,false
+"JHT","Chamoli","UTTARAKHAND","CHAMOLI","UTTARAKHAND",30.55,79.57,false
+"JHUNJHUNU","Jhunjhunu","RAJASTHAN","JHUNJHUNU","EAST RAJASTHAN",28.08,75.57,true
+"JIND","Jind","HARYANA","JIND","DELHI, HARYANA AND CHANDIGARH",29.45,76.35,true
+"JIRIBHAM","Imphal East","MANIPUR","IMPHAL EAST","NMMT",24.71,93.1,false
+"JLD","Jalandhar","PUNJAB","JALANDHAR","PUNJAB",31.47,75.58,false
+"JLG","Jalgaon","MAHARASHTRA","JALGAON","MADHYA MAHARASHTRA",21.05,75.57,true
+"JLR","Jalore","RAJASTHAN","JALORE","WEST RAJASTHAN",25.35,72.62,false
+"JLW","Jhalawar","RAJASTHAN","JHALAWAR","EAST RAJASTHAN",24.53,76.17,false
+"JMI","Jamui","BIHAR","JAMUI","BIHAR",24.93,86.3,false
+"JMR","Jamnagar","GUJARAT","JAMNAGAR","SAURASHTRA & KUTCH",22.45,70.08,false
+"JMU","Jammu AP","JAMMU & KASHMIR (UT)","JAMMU","JAMMU & KASHMIR AND LADAKH",32.67,74.83,true
+"JNP","Jaunpur","UTTAR PRADESH","JAUNPUR","EAST UTTAR PRADESH",25.75,82.68,true
+"JODHPUR","Jodhpur","RAJASTHAN","JODHPUR","WEST RAJASTHAN",26.74,72.83,false
+"JOGULAMBHA","Jogulamba Gadwal","TELANGANA","JOGULAMBA GADWAL","TELANGANA",16.05,77.79,true
+"JOMSOM","Jomsom","","","",28.77,83.77,true
+"JORHAT","Jorhat","ASSAM","JORHAT","ASSAM & MEGHALAYA",26.76,94.21,true
+"JOSHIMATH","Joshimath","UTTARAKHAND","CHAMOLI","UTTARAKHAND",30.41,79.3,false
+"JPG","Jalpaiguri","WEST BENGAL","JALPAIGURI","SHWB & SIKKIM",26.53,88.72,true
+"JPN","Jashpur","CHHATTISGARH","JASHPUR","CHHATTISGARH",22.88,84.13,true
+"JPR","Jaipur","RAJASTHAN","JAIPUR","EAST RAJASTHAN",26.82,75.8,true
+"JRG","Jharsuguda","ODISHA","JHARSUGUDA","ODISHA",21.92,84.08,true
+"JSD","Jamshedpur","JHARKHAND","EAST SINGHBHUM","JHARKHAND",22.82,86.18,true
+"JSM","Jaisalmer","RAJASTHAN","JAISALMER","WEST RAJASTHAN",26.9,70.92,true
+"JUNAGADH","Junagadh","GUJARAT","JUNAGADH","SAURASHTRA & KUTCH",21.4,70.48,true
+"JUR","Jeur","MAHARASHTRA","SHOLAPUR","MADHYA MAHARASHTRA",18.2,75.2,true
+"JYOTIBA","Amroha","UTTAR PRADESH","AMROHA","WEST UTTAR PRADESH",28.84,78.35,true
+"Jalna","Jalna","MAHARASHTRA","JALNA","MARATHWADA",19.8347,75.8816,true
+"KABIR","Sant Kabir Nagar","UTTAR PRADESH","SANT KABIR NAGAR","EAST UTTAR PRADESH",26.96,83.14,true
+"KABIRDHAM","Kabirdham","CHHATTISGARH","KABIRDHAM","CHHATTISGARH",22.11,81.19,true
+"KADMAT","Kadmat","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",11.22,72.77,true
+"KAKCHING","Chandel","MANIPUR","CHANDEL","NMMT",24.38,93.99,false
+"KALAHANDI","Kalahandi","ODISHA","KALAHANDI","ODISHA",19.82,83.16,true
+"KALPENI","Kalpeni","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",10.06,73.64,true
+"KAMAREDDY","Kamareddy","TELANGANA","KAMAREDDY","TELANGANA",18.32,78.04,true
+"KAMJONG","Ukhrul","MANIPUR","UKHRUL","NMMT",24.7,94.42,true
+"KAMRUP","Kamrup Rural","ASSAM","KAMRUP RURAL","ASSAM & MEGHALAYA",26.12,91.34,true
+"KAMRUP-METRO","Kamrup Metropolitan","ASSAM","KAMRUP METROPOLITAN","ASSAM & MEGHALAYA",26.1,91.95,true
+"KAN","Dewas","MADHYA PRADESH","DEWAS","WEST MADHYA PRADESH",22.67,76.37,false
+"KANCHIPURAM","Chengalpattu","TAMILNADU","CHENGALPATTU","TAMILNADU, PUDUCHERRY & KARAIKAL",12.68,79.98,true
+"KANGPOKRI","Senapati","MANIPUR","SENAPATI","NMMT",25.1,94.06,true
+"KANGRA","Kangra","HIMACHAL PRADESH","KANGRA","HIMACHAL PRADESH",32.08,76.33,true
+"KANKER","Kanker","CHHATTISGARH","KANKER","CHHATTISGARH",20.12,81.11,false
+"KANNAUJ","Kannauj","UTTAR PRADESH","KANNAUJ","EAST UTTAR PRADESH",27,79.67,true
+"KANNUR","Kannur","KERALA","KANNUR","KERALA & MAHE",11.99,75.56,false
+"KANPUR-CITY","Kanpur City","UTTAR PRADESH","KANPUR CITY","EAST UTTAR PRADESH",26.25,80.46,true
+"KANPUR-DEHAT","Kanpur Dehat","UTTAR PRADESH","KANPUR DEHAT","EAST UTTAR PRADESH",26.4,79.98,true
+"KANSHIRAM","Kasganj","UTTAR PRADESH","KASGANJ","WEST UTTAR PRADESH",27.8,78.84,true
+"KANYAKUMARI","Kanyakumari","TAMILNADU","KANYAKUMARI","TAMILNADU, PUDUCHERRY & KARAIKAL",8.33,77.4,false
+"KAPURTHALA","Kapurthala","PUNJAB","KAPURTHALA","PUNJAB",31.35,75.33,true
+"KARAIKAL","Karaikal","PUDUCHERRY (UT)","KARAIKAL","TAMILNADU, PUDUCHERRY & KARAIKAL",10.91,79.89,false
+"KARAULI","Karauli","RAJASTHAN","KARAULI","EAST RAJASTHAN",26.31,76.99,true
+"KARBI-ANGLONG","Karbi Anglong","ASSAM","KARBI ANGLONG","ASSAM & MEGHALAYA",26.25,93.35,true
+"KARGIL","Kargil","LADAKH (UT)","KARGIL","JAMMU & KASHMIR AND LADAKH",33.88,76.44,false
+"KARIMGANJ","Karimganj","ASSAM","KARIMGANJ","ASSAM & MEGHALAYA",24.58,92.4,true
+"KARIMNAGAR","Karimnagar","TELANGANA","KARIMNAGAR","TELANGANA",18.4,79.26,true
+"KARITHAL","Kaithal","HARYANA","KAITHAL","DELHI, HARYANA AND CHANDIGARH",29.85,76.35,true
+"KARNAL","Karnal","HARYANA","KARNAL","DELHI, HARYANA AND CHANDIGARH",29.69,76.83,false
+"KARUR","Karur","TAMILNADU","KARUR","TAMILNADU, PUDUCHERRY & KARAIKAL",10.9,78,true
+"KASARAGOD","Kasargod","KERALA","KASARGOD","KERALA & MAHE",12.43,75.15,true
+"KATHMANDU","Kathmandu","","","",27.72,85.33,true
+"KATHUA","Kathua","JAMMU & KASHMIR (UT)","KATHUA","JAMMU & KASHMIR AND LADAKH",32.56,75.67,true
+"KATIHAR","Katihar","BIHAR","KATIHAR","BIHAR",25.54,87.65,true
+"KATNI","Katni","MADHYA PRADESH","KATNI","EAST MADHYA PRADESH",23.72,80.39,true
+"KAUSHAMBHI","Prayagraj","UTTAR PRADESH","PRAYAGRAJ","EAST UTTAR PRADESH",25.53,81.69,true
+"KAVARATTI","Kavarati","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",10.559,72.636,true
+"KDA","KANDLA","GUJARAT","KUTCH","SAURASHTRA & KUTCH",23.11,70.1,false
+"KDK","Kodaikanal","TAMILNADU","DINDIGUL","TAMILNADU, PUDUCHERRY & KARAIKAL",10.23,77.47,true
+"KEDARNATH","Kedarnath","UTTARAKHAND","RUDRAPRAYAG","UTTARAKHAND",30.73,79.06,true
+"KENDRAPARA","Kendrapara","ODISHA","KENDRAPARA","ODISHA",20.55,86.68,true
+"KENDUJHARGARH","Keonjhargarh","ODISHA","KEONJHARGARH","ODISHA",21.58,85.79,false
+"KGF","Kolar","KARNATAKA","KOLAR","SOUTHERN INTERIOR KARNATAKA",12.95,78.3,true
+"KGN","KHARGONE","MADHYA PRADESH","KHARGONE","WEST MADHYA PRADESH",21.82,75.62,true
+"KHAGARIA","Munger","BIHAR","MUNGER","BIHAR",25.49,86.57,true
+"KHAMMAM","Khammam","TELANGANA","KHAMMAM","TELANGANA",17.17,80.37,true
+"KHANDWA","Khandwa","MADHYA PRADESH","KHANDWA","WEST MADHYA PRADESH",21.98,76.62,false
+"KHARGAON","Khargone","MADHYA PRADESH","KHARGONE","WEST MADHYA PRADESH",21.96,75.72,false
+"KHD","KESHOD (A)","GUJARAT","JUNAGADH","SAURASHTRA & KUTCH",21.32,70.32,true
+"KHEDA","Kheda","GUJARAT","KHEDA","GUJARAT REGION",22.9,73.04,true
+"KHJ","Khajuraho","MADHYA PRADESH","CHHATARPUR","EAST MADHYA PRADESH",24.83,79.91,true
+"KHM","Kohima","NAGALAND","KOHIMA","NMMT",25.63,94.17,true
+"KHN","Khandala","MAHARASHTRA","PUNE","MADHYA MAHARASHTRA",18.77,73.37,true
+"KHORDHA","Khurda","ODISHA","KHURDA","ODISHA",20.26,85.71,true
+"KHOWAI","Khowai","TRIPURA","KHOWAI","NMMT",23.95,91.64,true
+"KHUNTI","Khunti","JHARKHAND","KHUNTI","JHARKHAND",22.92,85.28,true
+"KILTAN","Kiltan","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",11.48,73,true
+"KINNAUR","Kinnaur","HIMACHAL PRADESH","KINNAUR","HIMACHAL PRADESH",31.6,78.38,true
+"KIPHIRE","Kiphire","NAGALAND","KIPHIRE","NMMT",25.82,94.82,true
+"KISHANGANJ","Kishanganj","BIHAR","KISHANGANJ","BIHAR",26.24,87.96,true
+"KISHANGARH","Kishangarh","RAJASTHAN","AJMER","EAST RAJASTHAN",26.58,74.81,true
+"KISTWAR","Kistwar","JAMMU & KASHMIR (UT)","KISTWAR","JAMMU & KASHMIR AND LADAKH",33.4,76.14,true
+"KKC","Kallakurichi","TAMILNADU","KALLAKURICHI","TAMILNADU, PUDUCHERRY & KARAIKAL",11.73,78.97,true
+"KKD","Sivaganga","TAMILNADU","SIVAGANGA","TAMILNADU, PUDUCHERRY & KARAIKAL",10.07,78.8,true
+"KLA","Kandla","GUJARAT","KUTCH","SAURASHTRA & KUTCH",23,70.22,true
+"KLG","Lahaul & Spiti","HIMACHAL PRADESH","LAHAUL & SPITI","HIMACHAL PRADESH",32.58,77.07,true
+"KLN","Kalingapatnam","ANDHRA PRADESH","SRIKAKULAM","COASTAL ANDHRA PRADESH & YANAM",18.33,84.13,true
+"KLP","Kolhapur","MAHARASHTRA","KOLHAPUR","MADHYA MAHARASHTRA",16.7,74.23,true
+"KMM","Khammam\r\n\r\n","TELANGANA","KHAMMAM","TELANGANA",17.25,80.15,true
+"KMP","Kalimpong","WEST BENGAL","KALIMPONG","SHWB & SIKKIM",27.07,88.47,true
+"KND","Kakinada","ANDHRA PRADESH","KAKINADA","COASTAL ANDHRA PRADESH & YANAM",16.95,82.23,true
+"KNJ","Keonjhargarh","ODISHA","KEONJHARGARH","ODISHA",21.62,85.52,true
+"KNK","Kanker","CHHATTISGARH","KANKER","CHHATTISGARH",20.27,81.48,true
+"KNL","Karnal","HARYANA","KARNAL","DELHI, HARYANA AND CHANDIGARH",29.7,77.03,true
+"KNP","Kanpur","UTTAR PRADESH","KANPUR CITY","EAST UTTAR PRADESH",26.4,80.4,true
+"KOCH-BEHAR","Cooch Behar","WEST BENGAL","COOCH BEHAR","SHWB & SIKKIM",26.34,89.46,false
+"KODAGU","Kodagu","KARNATAKA","KODAGU","SOUTHERN INTERIOR KARNATAKA",12.38,75.78,true
+"KODERMA","Koderma","JHARKHAND","KODERMA","JHARKHAND",24.46,85.5,true
+"KOHIMA","Kohima","NAGALAND","KOHIMA","NMMT",25.77,94.14,false
+"KOKRAJHAR","Kokrajhar","ASSAM","KOKRAJHAR","ASSAM & MEGHALAYA",26.51,90.13,true
+"KOLAR","Kolar","KARNATAKA","KOLAR","SOUTHERN INTERIOR KARNATAKA",13.15,78.21,false
+"KOLASIB","Kolasib","MIZORAM","KOLASIB","NMMT",24.24,92.71,true
+"KOLHAPUR","Kolhapur","MAHARASHTRA","KOLHAPUR","MADHYA MAHARASHTRA",16.46,74.19,false
+"KOLLAM","Kollam","KERALA","KOLLAM","KERALA & MAHE",8.97,76.88,true
+"KON","Nicobar","ANDAMAN & NICOBAR ISLANDS (UT)","NICOBAR","ANDAMAN & NICOBAR ISLANDS",7.22,93.73,true
+"KONDAGAON","Kondagaon","CHHATTISGARH","KONDAGAON","CHHATTISGARH",19.97,81.68,true
+"KOPPAL","Koppal","KARNATAKA","KOPPAL","NORTHERN INTERIOR KARNATAKA",15.58,76.29,true
+"KOR","Koraput","ODISHA","KORAPUT","ODISHA",18.82,82.72,true
+"KORAPUT","Koraput","ODISHA","KORAPUT","ODISHA",18.88,82.75,false
+"KORBA","Korba","CHHATTISGARH","KORBA","CHHATTISGARH",22.52,82.63,true
+"KORIYA-BAIKUNTHP","Manendragarh-chirmiri-bharatpur","CHHATTISGARH","MANENDRAGARH-CHIRMIRI-BHARATPUR","CHHATTISGARH",23.63,82.17,true
+"KOTA","Kota","RAJASTHAN","KOTA","EAST RAJASTHAN",25,76.1,false
+"KOTTAYAM","Kottayam","KERALA","KOTTAYAM","KERALA & MAHE",9.63,76.68,false
+"KOV","Kovalam","KERALA","THIRUVANANTHAPURAM","KERALA & MAHE",8.4,76.97,true
+"KOVALAM","Kovalam","TAMILNADU","CHENGALPATTU","TAMILNADU, PUDUCHERRY & KARAIKAL",12.78,80.25,true
+"KOZHIKODE","Kozhikode","KERALA","KOZHIKODE","KERALA & MAHE",11.46,75.84,false
+"KPR","M.O. KARIPUR AIRPORT","KERALA","MALAPPURAM","KERALA & MAHE",11.13,75.95,true
+"KPT","Kapurthala","PUNJAB","KAPURTHALA","PUNJAB",31.33,75.33,false
+"KRA-DAADI","Kurung Kumey","ARUNACHAL PRADESH","KURUNG KUMEY","ARUNACHAL PRADESH",28.21,93.43,true
+"KRG","Krishnanagar","WEST BENGAL","NADIA","GANGETIC WEST BENGAL",23.4,88.52,true
+"KRI","Lakhimpur Kheri","UTTAR PRADESH","KHERI","EAST UTTAR PRADESH",27.9,80.8,true
+"KRISHNA","Krishna","ANDHRA PRADESH","KRISHNA","COASTAL ANDHRA PRADESH & YANAM",16.5,80.95,true
+"KRISHNAGIRI","Krishnagiri","TAMILNADU","KRISHNAGIRI","TAMILNADU, PUDUCHERRY & KARAIKAL",12.65,78,true
+"KRL","Karaikal","PUDUCHERRY (UT)","KARAIKAL","TAMILNADU, PUDUCHERRY & KARAIKAL",10.92,79.83,true
+"KRN","Kurnool","ANDHRA PRADESH","KURNOOL","RAYALSEEMA",15.8,78.07,true
+"KSH","Kailashahar","TRIPURA","UNAKOTI","NMMT",24.32,92,true
+"KTA","Kota","RAJASTHAN","KOTA","EAST RAJASTHAN",25.15,75.85,true
+"KTG","Kothagudem","TELANGANA","B. KOTHAGUDEM","TELANGANA",17.55,80.63,true
+"KTH","Kathua","JAMMU & KASHMIR (UT)","KATHUA","JAMMU & KASHMIR AND LADAKH",32.33,75.5,false
+"KTM","Kottayam","KERALA","KOTTAYAM","KERALA & MAHE",9.58,76.52,true
+"KUD","Pudukkottai","TAMILNADU","PUDUKKOTTAI","TAMILNADU, PUDUCHERRY & KARAIKAL",10.4,78.67,true
+"KULGAM","Kulgam","JAMMU & KASHMIR (UT)","KULGAM","JAMMU & KASHMIR AND LADAKH",33.55,74.84,true
+"KULU","Kullu","HIMACHAL PRADESH","KULLU","HIMACHAL PRADESH",31.88,77.4,false
+"KUMURAM-BHEEM","Kumaram Bheem","TELANGANA","KUMARAM BHEEM","TELANGANA",19.34,79.39,true
+"KUPWARA","Bandipora","JAMMU & KASHMIR (UT)","BANDIPORA","JAMMU & KASHMIR AND LADAKH",34.45,74.76,true
+"KURNOOL","Kurnool","ANDHRA PRADESH","KURNOOL","RAYALSEEMA",15.53,77.95,false
+"KURUKSHETRA","Kurukshetra","HARYANA","KURUKSHETRA","DELHI, HARYANA AND CHANDIGARH",30.06,76.77,true
+"KURUNG-KUMEY","Kurung Kumey","ARUNACHAL PRADESH","KURUNG KUMEY","ARUNACHAL PRADESH",27.97,93.25,false
+"KUSHINAGAR","Kushi Nagar","UTTAR PRADESH","KUSHI NAGAR","EAST UTTAR PRADESH",26.92,83.97,true
+"KUTCH","Kutch","GUJARAT","KUTCH","SAURASHTRA & KUTCH",23.71,69.96,true
+"KVL","Spsr Nellore","ANDHRA PRADESH","SPSR NELLORE","COASTAL ANDHRA PRADESH & YANAM",14.9,79.98,true
+"KWD","Khandwa","MADHYA PRADESH","KHANDWA","WEST MADHYA PRADESH",21.83,76.37,true
+"KWR","Karwar","KARNATAKA","UTTARA KANNADA","COASTAL KARNATAKA",14.78,74.13,true
+"KYK","Kanyakumari","TAMILNADU","KANYAKUMARI","TAMILNADU, PUDUCHERRY & KARAIKAL",8.08,77.5,true
+"KZK","kozhikode","KERALA","KOZHIKODE","KERALA & MAHE",11.25,75.78,true
+"LADAKH","Ladakh (LEH)","LADAKH (UT)","LADAKH (LEH)","JAMMU & KASHMIR AND LADAKH",34.17,78.35,false
+"LAHAUL-SPITI","Lahaul & Spiti","HIMACHAL PRADESH","LAHAUL & SPITI","HIMACHAL PRADESH",32.5,77.52,false
+"LAKHIMPUR","Kheri","UTTAR PRADESH","KHERI","EAST UTTAR PRADESH",28.15,80.65,true
+"LAKSHADWEEP","Lakshadweep","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",10.54,72.62,false
+"LALITPUR","Lalitpur","UTTAR PRADESH","LALITPUR","WEST UTTAR PRADESH",24.7,78.58,true
+"LATEHAR","Latehar","JHARKHAND","LATEHAR","JHARKHAND",23.68,84.47,true
+"LATUR","Latur","MAHARASHTRA","LATUR","MARATHWADA",18.35,76.75,true
+"LAWNGTLAI","Lawngtlai","MIZORAM","LAWNGTLAI","NMMT",22.37,92.74,true
+"LDN","Ludhiana","PUNJAB","LUDHIANA","PUNJAB",30.87,75.93,true
+"LEH-LADAKH","Leh","LADAKH (UT)","LADAKH (LEH)","JAMMU & KASHMIR AND LADAKH",34.15,77.57,true
+"LGI","LONG ISLAND","ANDAMAN & NICOBAR ISLANDS (UT)","NORTH & MIDDLE ANDAMAN","ANDAMAN & NICOBAR ISLANDS",12.42,92.93,true
+"LKN","Lucknow","UTTAR PRADESH","LUCKNOW","EAST UTTAR PRADESH",26.87,80.93,true
+"LKR","North Lakhimpur","ASSAM","LAKHIMPUR","ASSAM & MEGHALAYA",27.23,94.12,true
+"LMD","Lumding","ASSAM","NAGAON","ASSAM & MEGHALAYA",25.75,93.18,true
+"LOHARDAGA","Lohardaga","JHARKHAND","LOHARDAGA","JHARKHAND",23.48,84.68,true
+"LOHIT","Lohit","ARUNACHAL PRADESH","LOHIT","ARUNACHAL PRADESH",27.96,96.23,true
+"LONGDING","Tirap","ARUNACHAL PRADESH","TIRAP","ARUNACHAL PRADESH",26.78,95.35,true
+"LONGLENG","Longleng","NAGALAND","LONGLENG","NMMT",26.58,94.79,true
+"LOWER-DIBANG-VALLEY","Lower Dibang Valley","ARUNACHAL PRADESH","LOWER DIBANG VALLEY","ARUNACHAL PRADESH",28.4,95.88,true
+"LOWER-SUBANSIRI","Lower Subansiri","ARUNACHAL PRADESH","LOWER SUBANSIRI","ARUNACHAL PRADESH",27.55,93.94,true
+"LUCKEESARAI","Lakhisarai","BIHAR","LAKHISARAI","BIHAR",25.15,86.15,true
+"LUCKNOW","Lucknow","UTTAR PRADESH","LUCKNOW","EAST UTTAR PRADESH",26.83,80.89,false
+"LUDHIANA","Ludhiana","PUNJAB","LUDHIANA","PUNJAB",30.79,75.87,false
+"LUDHIYANA","Ludhiyana","PUNJAB","LUDHIANA","PUNJAB",30.85,75.95,true
+"LUNGLEI","Lunglei","MIZORAM","LUNGLEI","NMMT",22.95,92.76,true
+"MAB","Mount Abu","RAJASTHAN","SIROHI","EAST RAJASTHAN",24.6,72.72,true
+"MADHEPURA","Madhepura","BIHAR","MADHEPURA","BIHAR",25.78,86.87,true
+"MADHUBANI","Madhubani","BIHAR","MADHUBANI","BIHAR",26.35,86.24,true
+"MADURAI","Madurai","TAMILNADU","MADURAI","TAMILNADU, PUDUCHERRY & KARAIKAL",9.9,77.95,false
+"MAHABALIPURAM","Mahabalipuram","TAMILNADU","CHENGALPATTU","TAMILNADU, PUDUCHERRY & KARAIKAL",12.62,80.19,true
+"MAHABUBABAD","Mahabubabad","TELANGANA","MAHABUBABAD","TELANGANA",17.72,79.92,true
+"MAHARAJGANJ","Maharajganj","UTTAR PRADESH","MAHARAJGANJ","EAST UTTAR PRADESH",27.18,83.53,true
+"MAHASAMUND","Mahasamund","CHHATTISGARH","MAHASAMUND","CHHATTISGARH",21.18,82.34,true
+"MAHBUBNAGAR","Mahabubnagar","TELANGANA","MAHABUBNAGAR","TELANGANA",16.7,77.81,false
+"MAHE","Kannur","KERALA","KANNUR","KERALA & MAHE",11.73,75.53,false
+"MAHENDRAGARH","Mahendragarh","HARYANA","MAHENDRAGARH","DELHI, HARYANA AND CHANDIGARH",28.13,76.14,true
+"MAHISAGAR","Mahisagar","GUJARAT","MAHISAGAR","GUJARAT REGION",23.19,73.63,true
+"MAHOBA","Mahoba","UTTAR PRADESH","MAHOBA","WEST UTTAR PRADESH",25.33,79.71,true
+"MAINPURI","Mainpuri","UTTAR PRADESH","MAINPURI","WEST UTTAR PRADESH",27.1,79,false
+"MAJULI","Jorhat","ASSAM","JORHAT","ASSAM & MEGHALAYA",26.98,94.21,false
+"MALAPPURAM","Malappuram","KERALA","MALAPPURAM","KERALA & MAHE",11.11,76.19,true
+"MALDAH","Malda","WEST BENGAL","MALDA","SHWB & SIKKIM",25.1,88.2,false
+"MALKANGIRI","Malkangiri","ODISHA","MALKANGIRI","ODISHA",18.2,81.92,true
+"MAMIT","Mamit","MIZORAM","MAMIT","NMMT",23.76,92.47,true
+"MANCHERIAL","Mancherial","TELANGANA","MANCHERIAL","TELANGANA",18.98,79.42,true
+"MANDI","Mandi","HIMACHAL PRADESH","MANDI","HIMACHAL PRADESH",31.65,77.01,false
+"MANDLA","Dindori","MADHYA PRADESH","DINDORI","EAST MADHYA PRADESH",22.69,80.57,false
+"MANDSAUR","Mandsaur","MADHYA PRADESH","MANDSAUR","WEST MADHYA PRADESH",24.16,75.4,true
+"MANDYA","Mandya","KARNATAKA","MANDYA","SOUTHERN INTERIOR KARNATAKA",12.64,76.83,false
+"MANSA","Mansa","PUNJAB","MANSA","PUNJAB",29.88,75.47,true
+"MARIGAON","Morigaon","ASSAM","MORIGAON","ASSAM & MEGHALAYA",26.29,92.26,true
+"MAT","MATHERAN","MAHARASHTRA","RAIGAD","KONKAN & GOA",18.98,73.28,true
+"MATHAVARAM","Mathavaram","TAMILNADU","CHENNAI","TAMILNADU, PUDUCHERRY & KARAIKAL",13.14,80.22,true
+"MATHURA","Mathura","UTTAR PRADESH","MATHURA","WEST UTTAR PRADESH",27.59,77.61,false
+"MAUNATH","Mau","UTTAR PRADESH","MAU","EAST UTTAR PRADESH",26.1,83.55,true
+"MAYURBHANJ","Mayurbhanj","ODISHA","MAYURBHANJ","ODISHA",21.92,86.42,true
+"MBN","Mahabubnagar","TELANGANA","MAHABUBNAGAR","TELANGANA",16.75,78,true
+"MDI","Mandi","HIMACHAL PRADESH","MANDI","HIMACHAL PRADESH",31.72,76.97,true
+"MDK","Medak\r\n\r\n","TELANGANA","MEDAK","TELANGANA",18.05,78.27,true
+"MDP","Midnapore","WEST BENGAL","WEST MIDNAPORE","GANGETIC WEST BENGAL",22.42,87.32,true
+"MDR","MADURAI","TAMILNADU","MADURAI","TAMILNADU, PUDUCHERRY & KARAIKAL",9.92,78.12,true
+"MDS","Chennai","TAMILNADU","CHENNAI","TAMILNADU, PUDUCHERRY & KARAIKAL",12.98,80.17,true
+"MDV","Kutch","GUJARAT","KUTCH","SAURASHTRA & KUTCH",22.82,69.27,false
+"MDY","Mandya","KARNATAKA","MANDYA","SOUTHERN INTERIOR KARNATAKA",12.5,76.83,true
+"MEDAK","Medak","TELANGANA","MEDAK","TELANGANA",17.97,78.19,true
+"MEDCHAL","M. Malkajgiri","TELANGANA","M. MALKAJGIRI","TELANGANA",17.53,78.56,true
+"MEERUT","Meerut","UTTAR PRADESH","MEERUT","WEST UTTAR PRADESH",28.95,77.79,false
+"MEHSANA","Mehsana","GUJARAT","MEHSANA","GUJARAT REGION",23.57,72.4,true
+"MEWAT","Nuh","HARYANA","NUH","DELHI, HARYANA AND CHANDIGARH",27.99,77.1,true
+"MHV","MAHUVA","GUJARAT","BHAVNAGAR","SAURASHTRA & KUTCH",21.08,71.78,true
+"MINJUR","Minjur","TAMILNADU","THIRUVALLUR","TAMILNADU, PUDUCHERRY & KARAIKAL",13.26,80.25,true
+"MIRZAPUR","Mirzapur","UTTAR PRADESH","MIRZAPUR","EAST UTTAR PRADESH",24.94,82.63,true
+"MJB","Majbat","ASSAM","UDALGURI","ASSAM & MEGHALAYA",26.79,92.29,true
+"MJK","MALANJKHAND","MADHYA PRADESH","BALAGHAT","EAST MADHYA PRADESH",22,80.7,true
+"MKS","Mukteshwar","UTTARAKHAND","NAINITAL","UTTARAKHAND",29.47,79.65,true
+"MLD","Malda","WEST BENGAL","MALDA","SHWB & SIKKIM",25.03,88.13,true
+"MLG","Malegaon","MAHARASHTRA","NASHIK","MADHYA MAHARASHTRA",20.55,74.53,true
+"MLI","Manali","HIMACHAL PRADESH","KULLU","HIMACHAL PRADESH",32.27,77.17,true
+"MMG","South Goa","GOA","SOUTH GOA","KONKAN & GOA",15.39,73.81,true
+"MNC","Lakshadweep","LAKSHADWEEP (UT)","LAKSHADWEEP","LAKSHADWEEP",8.3,73.04,false
+"MND","Mandla","MADHYA PRADESH","MANDLA","EAST MADHYA PRADESH",22.58,80.37,true
+"MNG","Mangaluru","KARNATAKA","DAKSHINA KANNADA","COASTAL KARNATAKA",12.92,74.88,true
+"MOGA","Moga","PUNJAB","MOGA","PUNJAB",30.8,75.16,true
+"MOHALI","Sas Nagar","PUNJAB","SAS NAGAR","PUNJAB",30.75,76.65,true
+"MOKAKCHUNG","Mokokchung","NAGALAND","MOKOKCHUNG","NMMT",26.48,94.53,true
+"MON","Mon","NAGALAND","MON","NMMT",26.74,95.01,true
+"MORADABAD","Moradabad","UTTAR PRADESH","MORADABAD","WEST UTTAR PRADESH",28.98,78.8,false
+"MORBI","Morbi","GUJARAT","MORBI","SAURASHTRA & KUTCH",22.76,70.84,true
+"MORENA","Morena","MADHYA PRADESH","MORENA","WEST MADHYA PRADESH",26.39,77.83,true
+"MPR","Mainpuri","UTTAR PRADESH","MAINPURI","WEST UTTAR PRADESH",27.23,79.05,true
+"MPT","Machilipatnam","ANDHRA PRADESH","KRISHNA","COASTAL ANDHRA PRADESH & YANAM",16.2,81.15,true
+"MRD","Moradabad","UTTAR PRADESH","MORADABAD","WEST UTTAR PRADESH",28.83,78.75,true
+"MRI","Madikeri","KARNATAKA","KODAGU","SOUTHERN INTERIOR KARNATAKA",12.42,75.73,true
+"MRT","Meerut","UTTAR PRADESH","MEERUT","WEST UTTAR PRADESH",29.02,77.63,true
+"MSR","Dehradun","UTTARAKHAND","DEHRADUN","UTTARAKHAND",30.45,78.08,false
+"MTH","Motihari","BIHAR","EAST CHAMPARAN","BIHAR",26.67,84.92,true
+"MTR","Mathura","UTTAR PRADESH","MATHURA","WEST UTTAR PRADESH",27.5,77.68,true
+"MUKTINATH","Muktinath","","","",28.8,83.85,true
+"MUKTSAR","Muktsar","PUNJAB","MUKTSAR","PUNJAB",30.28,74.54,true
+"MUMBAI","Mumbai City","MAHARASHTRA","MUMBAI CITY","KONKAN & GOA",18.95,72.83,true
+"MUN","Pithoragarh","UTTARAKHAND","PITHORAGARH","UTTARAKHAND",30.12,80.25,true
+"MUNGELI","Mungeli","CHHATTISGARH","MUNGELI","CHHATTISGARH",22.15,81.73,true
+"MUNGER","Munger","BIHAR","MUNGER","BIHAR",25.23,86.52,false
+"MURSHIDABAD","Murshidabad","WEST BENGAL","MURSHIDABAD","GANGETIC WEST BENGAL",24.29,88.28,true
+"MUSSOORIE","Mussoorie","UTTARAKHAND","DEHRADUN","UTTARAKHAND",30.47,78.05,true
+"MUZAFFARABAD","Kupwara","JAMMU & KASHMIR (UT)","KUPWARA","JAMMU & KASHMIR AND LADAKH",34.55,74.15,true
+"MUZAFFARNAGAR","Shamli","UTTAR PRADESH","SHAMLI","WEST UTTAR PRADESH",29.34,77.42,true
+"MUZAFFARPUR","Muzaffarpur","BIHAR","MUZAFFARPUR","BIHAR",26.15,85.32,false
+"MWR","Mahabaleshwar","MAHARASHTRA","SATARA","MADHYA MAHARASHTRA",17.93,73.67,true
+"MYB","Maya Bandar","ANDAMAN & NICOBAR ISLANDS (UT)","NORTH & MIDDLE ANDAMAN","ANDAMAN & NICOBAR ISLANDS",12.92,92.92,true
+"MYS","Mysuru","KARNATAKA","MYSURU","SOUTHERN INTERIOR KARNATAKA",12.3,76.7,true
+"MYSORE","Mysuru","KARNATAKA","MYSURU","SOUTHERN INTERIOR KARNATAKA",12.2,76.52,false
+"MZF","Muzaffarpur","BIHAR","MUZAFFARPUR","BIHAR",26.12,85.4,true
+"Masaurhi_bihar","Patna","BIHAR","PATNA","BIHAR",25.558,84.9077,false
+"N-EAST-DELHI","Ghaziabad","UTTAR PRADESH","GHAZIABAD","WEST UTTAR PRADESH",28.71,77.29,false
+"N-WEST-DELHI","West Delhi","DELHI (UT)","WEST DELHI","DELHI, HARYANA AND CHANDIGARH",28.7,77.07,true
+"NABARANGPUR","Nawarangpur","ODISHA","NAWARANGPUR","ODISHA",19.61,82.42,true
+"NAGAON","Nagaon","ASSAM","NAGAON","ASSAM & MEGHALAYA",26.4,92.77,false
+"NAGAPATTINAM","Mayiladuthurai","TAMILNADU","MAYILADUTHURAI","TAMILNADU, PUDUCHERRY & KARAIKAL",11.1,79.77,true
+"NAGARKURNOOL","Nagarkurnool","TELANGANA","NAGARKURNOOL","TELANGANA",16.42,78.67,true
+"NAGAUR","Nagaur","RAJASTHAN","NAGAUR","WEST RAJASTHAN",27.06,74.24,true
+"NAGPUR","Nagpur","MAHARASHTRA","NAGPUR","VIDARBHA",21.15,78.96,false
+"NAINBAGH","Nainbagh","UTTARAKHAND","GARHWAL TEHRI","UTTARAKHAND",30.57,78.01,true
+"NAINITAL","Nainital","UTTARAKHAND","NAINITAL","UTTARAKHAND",29.3,79.41,true
+"NALANDA","Nalanda","BIHAR","NALANDA","BIHAR",25.22,85.55,true
+"NALBARI","Nalbari","ASSAM","NALBARI","ASSAM & MEGHALAYA",26.36,91.4,true
+"NALGONDA","Nalgonda","TELANGANA","NALGONDA","TELANGANA",16.86,79.16,true
+"NAMAKKAL","Namakkal","TAMILNADU","NAMAKKAL","TAMILNADU, PUDUCHERRY & KARAIKAL",11.3,78.1,true
+"NAMSAI","Lohit","ARUNACHAL PRADESH","LOHIT","ARUNACHAL PRADESH",27.67,95.95,false
+"NANDED","Nanded","MAHARASHTRA","NANDED","MARATHWADA",19.1,77.65,false
+"NANDURBAR","Nandurbar","MAHARASHTRA","NANDURBAR","MADHYA MAHARASHTRA",21.65,74.25,true
+"NAR","NARSINGHPUR","MADHYA PRADESH","NARSINGHPUR","EAST MADHYA PRADESH",22.95,79.18,true
+"NARAYANPUR","Narayanpur","CHHATTISGARH","NARAYANPUR","CHHATTISGARH",19.56,81.09,true
+"NARMADA","Narmada","GUJARAT","NARMADA","GUJARAT REGION",21.84,73.65,true
+"NARSINGPUR","Narsinghpur","MADHYA PRADESH","NARSINGHPUR","EAST MADHYA PRADESH",22.94,79.04,false
+"NAS","Nasik","MAHARASHTRA","NASHIK","MADHYA MAHARASHTRA",20,73.78,true
+"NASIK","Nashik","MAHARASHTRA","NASHIK","MADHYA MAHARASHTRA",20.23,74.1,false
+"NAVSARI","Navsari","GUJARAT","NAVSARI","GUJARAT REGION",20.8,73.1,true
+"NAWADA","Nawada","BIHAR","NAWADA","BIHAR",24.82,85.66,true
+"NAWANSHAHR","Sbs Nagar","PUNJAB","SBS NAGAR","PUNJAB",31.08,76.15,true
+"NAYAGARH","Nayagarh","ODISHA","NAYAGARH","ODISHA",20.34,84.97,true
+"NCW","Nancowrie","ANDAMAN & NICOBAR ISLANDS (UT)","NICOBAR","ANDAMAN & NICOBAR ISLANDS",7.98,93.53,true
+"NDB","Nandurbar","MAHARASHTRA","NANDURBAR","MADHYA MAHARASHTRA",21.33,74.25,false
+"NDG","NANDIGAMA","ANDHRA PRADESH","NTR DISTRICT","COASTAL ANDHRA PRADESH & YANAM",16.78,80.28,true
+"NDL","NANDYAL","ANDHRA PRADESH","NANDYAL","RAYALSEEMA",15.47,78.48,true
+"NDV","Nidadavolu","ANDHRA PRADESH","EAST GODAVARI","COASTAL ANDHRA PRADESH & YANAM",16.9,81.66,true
+"NEEMUCH","Neemuch","MADHYA PRADESH","NEEMUCH","WEST MADHYA PRADESH",24.55,75.16,true
+"NELLORE","Spsr Nellore","ANDHRA PRADESH","SPSR NELLORE","COASTAL ANDHRA PRADESH & YANAM",14.3,79.8,false
+"NEW-DELHI","New Delhi","DELHI (UT)","NEW DELHI","DELHI, HARYANA AND CHANDIGARH",28.56,77.15,true
+"NGB","Chennai (Meenambakkam)","TAMILNADU","CHENNAI","TAMILNADU, PUDUCHERRY & KARAIKAL",13.07,80.25,true
+"NGP","Nagpur","MAHARASHTRA","NAGPUR","VIDARBHA",21.15,79.12,false
+"NGR","Nagaur","RAJASTHAN","NAGAUR","WEST RAJASTHAN",27.17,73.67,false
+"NICOBAR","Nicobar","ANDAMAN & NICOBAR ISLANDS (UT)","NICOBAR","ANDAMAN & NICOBAR ISLANDS",8.01,93.33,false
+"NILGIRIS","Nilgiris","TAMILNADU","NILGIRIS","TAMILNADU, PUDUCHERRY & KARAIKAL",11.45,76.62,true
+"NIRMAL","Nirmal","TELANGANA","NIRMAL","TELANGANA",19.09,78.35,true
+"NIZAMABAD","Nizamabad","TELANGANA","NIZAMABAD","TELANGANA",18.73,78.18,false
+"NJB","Bijnor","UTTAR PRADESH","BIJNOR","WEST UTTAR PRADESH",29.62,78.38,true
+"NLA","Naliya","GUJARAT","KUTCH","SAURASHTRA & KUTCH",23.25,68.85,true
+"NLAKHIMPUR","Lakhimpur","ASSAM","LAKHIMPUR","ASSAM & MEGHALAYA",27.17,94.14,true
+"NLG","Nalgonda\r\n\r\n","TELANGANA","NALGONDA","TELANGANA",17,79.25,true
+"NLM","Malappuram","KERALA","MALAPPURAM","KERALA & MAHE",11.28,76.23,false
+"NLR","Nellore","ANDHRA PRADESH","SPSR NELLORE","COASTAL ANDHRA PRADESH & YANAM",14.45,79.98,true
+"NMC","Neemuch","MADHYA PRADESH","NEEMUCH","WEST MADHYA PRADESH",24.47,74.9,false
+"NND","Nanded","MAHARASHTRA","NANDED","MARATHWADA",19.08,77.33,true
+"NOIDA","Gautam Buddha Nagar","UTTAR PRADESH","GAUTAM BUDDHA NAGAR","WEST UTTAR PRADESH",28.5,77.46,true
+"NONEY","Tamenglong","MANIPUR","TAMENGLONG","NMMT",24.68,93.42,true
+"NORTH-DELHI","North Delhi","DELHI (UT)","NORTH DELHI","DELHI, HARYANA AND CHANDIGARH",28.78,77.1,false
+"NORTH-DINAJPUR","North Dinajpur","WEST BENGAL","NORTH DINAJPUR","SHWB & SIKKIM",25.87,88.17,true
+"NORTH-DISTRICT","Mangan","SIKKIM","MANGAN","SHWB & SIKKIM",27.75,88.51,false
+"NORTH-GARO","North Garo Hills","MEGHALAYA","NORTH GARO HILLS","ASSAM & MEGHALAYA",25.88,90.68,true
+"NORTH-GOA","North Goa","GOA","NORTH GOA","KONKAN & GOA",15.53,73.98,true
+"NORTH-MIDDLE","North-Middle","","","",12.87,93.46,true
+"NORTH-TRIPURA","North Tripura","TRIPURA","NORTH TRIPURA","NMMT",23.96,92.22,true
+"NPT","Nagapattinam","TAMILNADU","NAGAPATTINAM","TAMILNADU, PUDUCHERRY & KARAIKAL",10.77,79.85,true
+"NRN","Narnaul","HARYANA","MAHENDRAGARH","DELHI, HARYANA AND CHANDIGARH",28,76.08,true
+"NSK","Nashik","MAHARASHTRA","NASHIK","MADHYA MAHARASHTRA",20.13,73.92,true
+"NSP","Narasapur","ANDHRA PRADESH","WEST GODAVARI","COASTAL ANDHRA PRADESH & YANAM",16.43,81.7,true
+"NTL","Nanital","UTTARAKHAND","NAINITAL","UTTARAKHAND",29.4,79.47,true
+"NTW","Maharajganj","UTTAR PRADESH","MAHARAJGANJ","EAST UTTAR PRADESH",27.43,83.42,false
+"NUAPARHE","Nawapara","ODISHA","NAWAPARA","ODISHA",20.54,82.6,true
+"NWG","NOWGONG","MADHYA PRADESH","CHHATARPUR","EAST MADHYA PRADESH",25.07,79.45,true
+"NZB","Nizamabad","TELANGANA","NIZAMABAD","TELANGANA",18.67,78.1,true
+"OKH","Okha","GUJARAT","DEVBHOOMI DWARKA","SAURASHTRA & KUTCH",22.48,69.12,true
+"ONG","Prakasam","ANDHRA PRADESH","PRAKASAM","COASTAL ANDHRA PRADESH & YANAM",15.5,80.08,true
+"ORI","ORAI","UTTAR PRADESH","JALAUN","WEST UTTAR PRADESH",25.98,79.5,true
+"ORISSA","Orissa","ODISHA","KENDRAPARA","ODISHA",20.5,86.7,true
+"OSMANABAD","Dharashiv","MAHARASHTRA","DHARASHIV","MARATHWADA",18.5,75.8,true
+"Osmanabad","Osmanabad","MAHARASHTRA","DHARASHIV","MARATHWADA",18.207,76.1784,true
+"PAKAUR","Pakur","JHARKHAND","PAKUR","JHARKHAND",24.53,87.65,true
+"PALAKKAD","Palakkad","KERALA","PALAKKAD","KERALA & MAHE",10.85,76.57,false
+"PALAM","Delhi (Palam)","DELHI (UT)","NEW DELHI","DELHI, HARYANA AND CHANDIGARH",28.55,77.1,true
+"PALAMAU","Palamu","JHARKHAND","PALAMU","JHARKHAND",24.22,84.2,true
+"PALGHAR","Palghar","MAHARASHTRA","PALGHAR","KONKAN & GOA",19.76,73.07,false
+"PALI","Pali","RAJASTHAN","PALI","WEST RAJASTHAN",25.61,73.59,false
+"PALLIKARANAI","Pallikaranai","TAMILNADU","CHENNAI","TAMILNADU, PUDUCHERRY & KARAIKAL",12.92,80.2,true
+"PALWAL","Palwal","HARYANA","PALWAL","DELHI, HARYANA AND CHANDIGARH",28.06,77.31,true
+"PANCHKULA","Panchkula","HARYANA","PANCHKULA","DELHI, HARYANA AND CHANDIGARH",30.65,77.05,true
+"PANCHMAHAL","Panchmahal","GUJARAT","PANCHMAHAL","GUJARAT REGION",22.87,73.68,true
+"PANCHSHEEL","Meerut","UTTAR PRADESH","MEERUT","WEST UTTAR PRADESH",28.77,77.78,false
+"PANIPAT","Panipat","HARYANA","PANIPAT","DELHI, HARYANA AND CHANDIGARH",29.33,76.9,true
+"PANNA","Panna","MADHYA PRADESH","PANNA","EAST MADHYA PRADESH",24.47,80.21,false
+"PANTNAGAR","Pantnagar","UTTARAKHAND","UDHAM SINGH NAGAR","UTTARAKHAND",29.03,79.46,true
+"PAPUMPARA","Papumpara","ARUNACHAL PRADESH","PAPUMPARA","ARUNACHAL PRADESH",27.2,93.61,true
+"PARBHANI","Parbhani","MAHARASHTRA","PARBHANI","MARATHWADA",19.31,76.67,false
+"PARO","Paro","","","",27.41,89.41,true
+"PASHCHIM-CHAMPARAN","West Champaran","BIHAR","WEST CHAMPARAN","BIHAR",27.05,84.29,true
+"PATAN","Patan","GUJARAT","PATAN","GUJARAT REGION",23.77,71.76,true
+"PATHANKOT","Pathankot","PUNJAB","PATHANKOT","PUNJAB",32.25,75.52,true
+"PATIALA","Patiala","PUNJAB","PATIALA","PUNJAB",30.34,76.37,false
+"PATNA","Patna","BIHAR","PATNA","BIHAR",25.47,85.38,false
+"PATTANAMTHITTA","Pathanamthitta","KERALA","PATHANAMTHITTA","KERALA & MAHE",9.28,76.98,true
+"PAURI","Garhwal Pauri","UTTARAKHAND","GARHWAL PAURI","UTTARAKHAND",29.75,78.75,true
+"PBD","Porbandar","GUJARAT","PORBANDAR","SAURASHTRA & KUTCH",21.65,69.67,true
+"PBL","Port Blair","ANDAMAN & NICOBAR ISLANDS (UT)","SOUTH ANDAMAN","ANDAMAN & NICOBAR ISLANDS",11.67,92.72,true
+"PBN","Pamban","TAMILNADU","RAMANATHAPURAM","TAMILNADU, PUDUCHERRY & KARAIKAL",9.27,79.3,true
+"PBT","Pilibhit","UTTAR PRADESH","PILIBHIT","WEST UTTAR PRADESH",28.63,79.8,true
+"PCH","Anantnag","JAMMU & KASHMIR (UT)","ANANTNAG","JAMMU & KASHMIR AND LADAKH",34.18,75.51,false
+"PCM","Pachmarhi","MADHYA PRADESH","NARMADAPURAM","WEST MADHYA PRADESH",22.47,78.43,true
+"PDC","Puducherry","PUDUCHERRY (UT)","PUDUCHERRY","TAMILNADU, PUDUCHERRY & KARAIKAL",11.92,79.83,true
+"PDS","Nanded","MAHARASHTRA","NANDED","MARATHWADA",19.75,78.03,false
+"PEDDAPALLI","Peddapalle","TELANGANA","PEDDAPALLE","TELANGANA",18.62,79.47,true
+"PERAMBALUR","Perambalur","TAMILNADU","PERAMBALUR","TAMILNADU, PUDUCHERRY & KARAIKAL",11.28,78.9,true
+"PEREN","Peren","NAGALAND","PEREN","NMMT",25.45,93.64,true
+"PERUNGALATHUR","Perungalathur","TAMILNADU","CHENGALPATTU","TAMILNADU, PUDUCHERRY & KARAIKAL",12.9,80.08,true
+"PHEK","Phek","NAGALAND","PHEK","NMMT",25.7,94.38,true
+"PHERZAWL","Churachandpur","MANIPUR","CHURACHANDPUR","NMMT",24.37,93.11,false
+"PHL","Pulwama","JAMMU & KASHMIR (UT)","PULWAMA","JAMMU & KASHMIR AND LADAKH",34.02,75.02,false
+"PHULBANI","Kandhamal","ODISHA","KANDHAMAL","ODISHA",20.15,84.05,true
+"PIL","Pilani","RAJASTHAN","JHUNJHUNU","EAST RAJASTHAN",28.33,75.58,true
+"PILLIBHIT","Pilibhit","UTTAR PRADESH","PILIBHIT","WEST UTTAR PRADESH",28.51,80.02,false
+"PITHORAGARH","Pithoragarh","UTTARAKHAND","PITHORAGARH","UTTARAKHAND",30.12,80.43,false
+"PJM","Panjim","GOA","NORTH GOA","KONKAN & GOA",15.48,73.82,true
+"PKD","PALAKKAD","KERALA","PALAKKAD","KERALA & MAHE",10.77,76.65,true
+"PLD","PHALODI","RAJASTHAN","JODHPUR","WEST RAJASTHAN",27.13,72.37,true
+"PLM","Delhi (Palam)","DELHI (UT)","NEW DELHI","DELHI, HARYANA AND CHANDIGARH",28.57,77.1,false
+"PLN","Pulbani","ODISHA","KANDHAMAL","ODISHA",20.48,84.27,true
+"PMY","K. PARAMATHY","TAMILNADU","KARUR","TAMILNADU, PUDUCHERRY & KARAIKAL",10.95,78.08,true
+"PNA","Panna","MADHYA PRADESH","PANNA","EAST MADHYA PRADESH",24.72,80.17,true
+"PNB","PANAMBUR","KARNATAKA","DAKSHINA KANNADA","COASTAL KARNATAKA",12.95,74.83,true
+"PND","Pendra","CHHATTISGARH","GAURELA-PENDRA-MARWAHI","CHHATTISGARH",22.77,81.9,true
+"PNE","Pune","MAHARASHTRA","PUNE","MADHYA MAHARASHTRA",18.53,73.85,true
+"PNG","Asansol","WEST BENGAL","PASHCHIM BARDHAMAN","GANGETIC WEST BENGAL",23.47,87.43,true
+"PNL","Punalur","KERALA","KOLLAM","KERALA & MAHE",9,76.92,true
+"PNR","Pantnagar","UTTARAKHAND","UDHAM SINGH NAGAR","UTTARAKHAND",29.03,79.47,false
+"POKHRA","Pokhra","","","",28.23,83.99,true
+"POONAMALLE","Poonamalle","TAMILNADU","THIRUVALLUR","TAMILNADU, PUDUCHERRY & KARAIKAL",13.04,80.09,true
+"POONCH","Poonch","JAMMU & KASHMIR (UT)","POONCH","JAMMU & KASHMIR AND LADAKH",33.69,74.22,true
+"PORBANDAR","Porbandar","GUJARAT","PORBANDAR","SAURASHTRA & KUTCH",21.75,69.76,false
+"PORUR","Porur","TAMILNADU","CHENNAI","TAMILNADU, PUDUCHERRY & KARAIKAL",13.03,80.15,true
+"PRAKASAM","Prakasam","ANDHRA PRADESH","PRAKASAM","COASTAL ANDHRA PRADESH & YANAM",15.64,79.61,false
+"PRATAPGARH","Pratapgarh","RAJASTHAN","PRATAPGARH","EAST RAJASTHAN",24.02,74.65,true
+"PRAYAGRAJ","Prayagraj","UTTAR PRADESH","PRAYAGRAJ","EAST UTTAR PRADESH",25.28,81.93,false
+"PRB","Parbhani","MAHARASHTRA","PARBHANI","MARATHWADA",19.27,76.77,true
+"PRD","Paradip","ODISHA","JAGATSINGHPUR","ODISHA",20.3,86.68,true
+"PRI","Puri","ODISHA","PURI","ODISHA",19.8,85.82,true
+"PRL","PURULIA","WEST BENGAL","PURULIA","GANGETIC WEST BENGAL",23.33,86.42,true
+"PRN","Purnea","BIHAR","BHAGALPUR","BIHAR",25.27,87.47,true
+"PSD","Pusad","MAHARASHTRA","YEOTMAL","VIDARBHA",19.92,77.58,true
+"PSG","Passighat","ARUNACHAL PRADESH","EAST SIANG","ARUNACHAL PRADESH",28.1,95.38,true
+"PTG","Pratapgarh","UTTAR PRADESH","PRATAPGARH","EAST UTTAR PRADESH",25.9,81.95,true
+"PTL","Patiala","PUNJAB","PATIALA","PUNJAB",30.33,76.47,true
+"PTN","Patna","BIHAR","PATNA","BIHAR",25.6,85.1,true
+"PUDUCHCHERI","Puducherry","PUDUCHERRY (UT)","PUDUCHERRY","TAMILNADU, PUDUCHERRY & KARAIKAL",11.91,79.74,false
+"PUDUKOTTAI","Pudukkottai","TAMILNADU","PUDUKKOTTAI","TAMILNADU, PUDUCHERRY & KARAIKAL",10.29,78.85,false
+"PULWAMA","Pulwama","JAMMU & KASHMIR (UT)","PULWAMA","JAMMU & KASHMIR AND LADAKH",33.93,75.18,false
+"PUNE","Pune","MAHARASHTRA","PUNE","MADHYA MAHARASHTRA",18.64,74.24,false
+"PUR","Pauri","UTTARAKHAND","GARHWAL PAURI","UTTARAKHAND",30.15,78.78,true
+"PURBI-CHAMPARAN","East Champaran","BIHAR","EAST CHAMPARAN","BIHAR",26.64,84.9,true
+"PURI","Puri","ODISHA","PURI","ODISHA",19.95,85.76,false
+"PURNIA","Purnea","BIHAR","PURNEA","BIHAR",25.78,87.43,false
+"Palghar","Palghar","MAHARASHTRA","PALGHAR","KONKAN & GOA",19.6967,72.7699,true
+"Panvel","Panvel","MAHARASHTRA","RAIGAD","KONKAN & GOA",18.9894,73.1175,true
+"Pirana","Pirana","GUJARAT","AHMEDABAD","GUJARAT REGION",22.9771,72.553,true
+"Punpun_bihar","Jahanabad","BIHAR","JAHANABAD","BIHAR",25.093,85.1147,false
+"QZD","Qazigund","JAMMU & KASHMIR (UT)","ANANTNAG","JAMMU & KASHMIR AND LADAKH",33.59,75.16,true
+"RAEBARELI","Rae Bareilly","UTTAR PRADESH","RAE BAREILLY","EAST UTTAR PRADESH",26.2,81.15,true
+"RAICHUR","Raichur","KARNATAKA","RAICHUR","NORTHERN INTERIOR KARNATAKA",16.06,76.92,false
+"RAIGARH","Raigarh","CHHATTISGARH","RAIGARH","CHHATTISGARH",22.07,83.37,true
+"RAIGARH-MH","Raigad","MAHARASHTRA","RAIGAD","KONKAN & GOA",18.49,73.25,false
+"RAIPUR","Raipur","CHHATTISGARH","RAIPUR","CHHATTISGARH",21.3,81.86,true
+"RAISEN","Raisen","MADHYA PRADESH","RAISEN","WEST MADHYA PRADESH",23.27,78.09,false
+"RAJANNA-SIRCILLA","Rajanna Sircilla","TELANGANA","RAJANNA SIRCILLA","TELANGANA",18.45,78.77,true
+"RAJGARH","Rajgarh","MADHYA PRADESH","RAJGARH","WEST MADHYA PRADESH",23.77,76.81,false
+"RAJKOT","Rajkot","GUJARAT","RAJKOT","SAURASHTRA & KUTCH",22.35,70.77,false
+"RAJNANDGAON","Rajnandgaon","CHHATTISGARH","RAJNANDGAON","CHHATTISGARH",21.07,80.81,true
+"RAJOURI","Rajouri","JAMMU & KASHMIR (UT)","RAJOURI","JAMMU & KASHMIR AND LADAKH",33.32,74.4,true
+"RAJSAMAND","Rajsamand","RAJASTHAN","RAJSAMAND","EAST RAJASTHAN",25.08,73.94,true
+"RAMANATHAPURAM","Ramanathapuram","TAMILNADU","RAMANATHAPURAM","TAMILNADU, PUDUCHERRY & KARAIKAL",9.34,78.65,true
+"RAMBAN","Ramban","JAMMU & KASHMIR (UT)","RAMBAN","JAMMU & KASHMIR AND LADAKH",33.24,75.21,true
+"RAMGARH","Ramgarh","JHARKHAND","RAMGARH","JHARKHAND",23.68,85.54,true
+"RAMNAGAR","Ramanagara","KARNATAKA","RAMANAGARA","SOUTHERN INTERIOR KARNATAKA",12.72,77.35,true
+"RAMPUR","Rampur","UTTAR PRADESH","RAMPUR","WEST UTTAR PRADESH",28.87,79.22,true
+"RANCHI","Ranchi","JHARKHAND","RANCHI","JHARKHAND",23.3,85.39,false
+"RANGAREDDY","Rangareddy","TELANGANA","RANGAREDDY","TELANGANA",17.13,78.38,true
+"RATLAM","Ratlam","MADHYA PRADESH","RATLAM","WEST MADHYA PRADESH",23.51,75.1,false
+"RATNAGIRI","Ratnagiri","MAHARASHTRA","RATNAGIRI","KONKAN & GOA",17.28,73.45,false
+"RAYAGADA","Rayagada","ODISHA","RAYAGADA","ODISHA",19.34,83.46,true
+"RCH","Raichur","KARNATAKA","RAICHUR","NORTHERN INTERIOR KARNATAKA",16.2,77.35,true
+"RCT","RENTACHINTALA","ANDHRA PRADESH","PALNADU","COASTAL ANDHRA PRADESH & YANAM",16.55,79.55,true
+"RDP","Radhanpur","GUJARAT","PATAN","GUJARAT REGION",23.83,71.6,true
+"REDFORT","Delhi (Red Fort)","DELHI (UT)","CENTRAL DELHI","DELHI, HARYANA AND CHANDIGARH",28.65,77.24,true
+"REWA","Rewa","MADHYA PRADESH","REWA","EAST MADHYA PRADESH",24.76,81.68,false
+"REWARI","Rewari","HARYANA","REWARI","DELHI, HARYANA AND CHANDIGARH",28.22,76.57,true
+"RGH","Raigarh","CHHATTISGARH","RAIGARH","CHHATTISGARH",21.88,83.38,false
+"RI-BHOI","Ri Bhoi","MEGHALAYA","RI BHOI","ASSAM & MEGHALAYA",25.88,91.82,true
+"RIASI","Reasi","JAMMU & KASHMIR (UT)","REASI","JAMMU & KASHMIR AND LADAKH",33.19,74.8,true
+"RISHIKESH","DEHRADUN","UTTARAKHAND","DEHRADUN","UTTARAKHAND",30.19,78.17,true
+"RJH","RAJGARH","MADHYA PRADESH","RAJGARH","WEST MADHYA PRADESH",24,76.72,true
+"RJK","Rajkot","GUJARAT","RAJKOT","SAURASHTRA & KUTCH",22.3,70.78,true
+"RMD","Ramagundam","TELANGANA","PEDDAPALLE","TELANGANA",18.77,79.43,true
+"RMP","Rampur","UTTAR PRADESH","RAMPUR","WEST UTTAR PRADESH",28.75,79,false
+"RNC","Ranchi","JHARKHAND","RANCHI","JHARKHAND",23.32,85.32,true
+"RNG","RANGIA","ASSAM","KAMRUP RURAL","ASSAM & MEGHALAYA",26.43,91.62,true
+"ROHINI","Rohini","DELHI (UT)","NORTH DELHI","DELHI, HARYANA AND CHANDIGARH",28.75,77.06,true
+"ROHTAK","Rohtak","HARYANA","ROHTAK","DELHI, HARYANA AND CHANDIGARH",28.89,76.56,false
+"ROHTAS","Rohtas","BIHAR","ROHTAS","BIHAR",24.94,83.99,false
+"RPR","Raipur-Lalpur","CHHATTISGARH","RAIPUR","CHHATTISGARH",21.23,81.65,true
+"RRK","Roorkee","UTTARAKHAND","HARDWAR","UTTARAKHAND",29.85,77.88,true
+"RRL","Rourkela","ODISHA","SUNDARGARH","ODISHA",22.22,84.88,true
+"RSN","RAISEN","MADHYA PRADESH","RAISEN","WEST MADHYA PRADESH",23.32,77.83,true
+"RTK","Rohtak","HARYANA","ROHTAK","DELHI, HARYANA AND CHANDIGARH",28.83,76.58,true
+"RTL","RATLAM","MADHYA PRADESH","RATLAM","WEST MADHYA PRADESH",23.32,75.05,true
+"RTN","Ratnagiri","MAHARASHTRA","RATNAGIRI","KONKAN & GOA",16.98,73.33,true
+"RUDRAPRAYAG","Rudraprayag","UTTARAKHAND","RUDRAPRAYAG","UTTARAKHAND",30.61,79.09,true
+"RUP","RUPSI","ASSAM","KOKRAJHAR","ASSAM & MEGHALAYA",26.15,89.92,true
+"RUPNAGAR","Rupnagar","PUNJAB","RUPNAGAR","PUNJAB",30.93,76.51,true
+"RWA","Rewa","MADHYA PRADESH","REWA","EAST MADHYA PRADESH",24.53,81.3,true
+"RXL","East Champaran","BIHAR","EAST CHAMPARAN","BIHAR",26.98,84.85,false
+"Rabale","T.B.I.A","MAHARASHTRA","THANE","KONKAN & GOA",19.1463,73.0081,true
+"Raikhad","Raikhad","GUJARAT","AHMEDABAD","GUJARAT REGION",23.0205,72.5793,true
+"Rakhiyal","Rakhiyal","GUJARAT","AHMEDABAD","GUJARAT REGION",23.0168,72.6258,true
+"S-EAST-DELHI","South Delhi","DELHI (UT)","SOUTH DELHI","DELHI, HARYANA AND CHANDIGARH",28.55,77.28,true
+"S-WEST-DELHI","South West Delhi","DELHI (UT)","SOUTH WEST DELHI","DELHI, HARYANA AND CHANDIGARH",28.58,76.97,true
+"SAB","Bhagalpur","BIHAR","BHAGALPUR","BIHAR",25.23,87.07,false
+"SABARKANTHA","Aravalli","GUJARAT","ARAVALLI","GUJARAT REGION",23.77,73.2,false
+"SAFDARJUNG","Delhi","DELHI (UT)","SOUTH DELHI","DELHI, HARYANA AND CHANDIGARH",28.58,77.21,true
+"SAG","Sagar Island","WEST BENGAL","SOUTH 24 PARGANAS","GANGETIC WEST BENGAL",21.72,88.1,true
+"SAGAR","Sagar","MADHYA PRADESH","SAGAR","EAST MADHYA PRADESH",23.81,78.71,false
+"SAHAB","Hemkund Sahib","UTTARAKHAND","CHAMOLI","UTTARAKHAND",30.69,79.62,true
+"SAHARANPUR","Saharanpur","UTTAR PRADESH","SAHARANPUR","WEST UTTAR PRADESH",29.95,77.5,true
+"SAHARSA","Saharsa","BIHAR","SAHARSA","BIHAR",25.84,86.6,true
+"SAHEBGANJ","Sahibganj","JHARKHAND","SAHIBGANJ","JHARKHAND",25.03,87.71,true
+"SAIHA","Saiha","MIZORAM","SAIHA","NMMT",22.25,92.95,true
+"SALEM","Salem","TAMILNADU","SALEM","TAMILNADU, PUDUCHERRY & KARAIKAL",11.7,78.1,false
+"SAMASTIPUR","Samastipur","BIHAR","SAMASTIPUR","BIHAR",25.77,85.97,true
+"SAMBA","Samba","JAMMU & KASHMIR (UT)","SAMBA","JAMMU & KASHMIR AND LADAKH",32.58,75.1,true
+"SAMBALPUR","Sambalpur","ODISHA","SAMBALPUR","ODISHA",21.5,84.2,false
+"SAMBHAL","Sambhal","UTTAR PRADESH","SAMBHAL","WEST UTTAR PRADESH",28.55,78.54,true
+"SAN","Sangrur","PUNJAB","SANGRUR","PUNJAB",30.17,75.83,true
+"SANGAREDDY","Sangareddy","TELANGANA","SANGAREDDY","TELANGANA",17.73,77.94,true
+"SANGLI","Sangli","MAHARASHTRA","SANGLI","MADHYA MAHARASHTRA",17.17,74.68,false
+"SANGRUR","Sangrur","PUNJAB","SANGRUR","PUNJAB",30.21,75.88,false
+"SANTRAVI","Bhadohi","UTTAR PRADESH","BHADOHI","EAST UTTAR PRADESH",25.36,82.63,true
+"SARAIKELA","Seraikela-kharsawan","JHARKHAND","SERAIKELA-KHARSAWAN","JHARKHAND",22.81,85.88,true
+"SARAN","Saran","BIHAR","SARAN","BIHAR",25.92,84.81,true
+"SATARA","Satara","MAHARASHTRA","SATARA","MADHYA MAHARASHTRA",17.64,74.22,false
+"SATNA","Satna","MADHYA PRADESH","SATNA","EAST MADHYA PRADESH",24.58,80.88,false
+"SAWAI-MADHOPUR","Sawai Madhopur","RAJASTHAN","SAWAI MADHOPUR","EAST RAJASTHAN",26.1,76.65,true
+"SBR","Sivasagar","ASSAM","SIBSAGAR","ASSAM & MEGHALAYA",26.98,94.63,true
+"SCZ","Mumbai (Santacruz)","MAHARASHTRA","MUMBAI SUBURBAN","KONKAN & GOA",19.12,72.85,false
+"SDH","Sdh","","","",20.85,88.25,true
+"SDI","SIDHI","MADHYA PRADESH","SIDHI","EAST MADHYA PRADESH",24.42,81.87,true
+"SDN","SURENDRANAGAR","GUJARAT","SURENDRANAGAR","SAURASHTRA & KUTCH",22.73,71.6,true
+"SEHORE","Sehore","MADHYA PRADESH","SEHORE","WEST MADHYA PRADESH",23.02,77.04,true
+"SENAPATI","Senapati","MANIPUR","SENAPATI","NMMT",25.3,94.08,false
+"SEONI","Seoni","MADHYA PRADESH","SEONI","EAST MADHYA PRADESH",22.27,79.74,false
+"SEPAHIJALA","Sipahijala","TRIPURA","SIPAHIJALA","NMMT",23.53,91.3,true
+"SERCHHIP","Serchhip","MIZORAM","SERCHHIP","NMMT",23.26,92.94,true
+"SFD","Delhi","DELHI (UT)","SOUTH DELHI","DELHI, HARYANA AND CHANDIGARH",28.58,77.23,false
+"SGR","Sagar","MADHYA PRADESH","SAGAR","EAST MADHYA PRADESH",23.85,78.75,true
+"SHAHDARA","East Delhi","DELHI (UT)","EAST DELHI","DELHI, HARYANA AND CHANDIGARH",28.66,77.3,false
+"SHAHDOL","Shahdol","MADHYA PRADESH","SHAHDOL","EAST MADHYA PRADESH",23.65,81.49,true
+"SHAHJAHANPUR","Shahjahanpur","UTTAR PRADESH","SHAHJAHANPUR","WEST UTTAR PRADESH",27.97,79.85,false
+"SHAJAPUR","Shajapur","MADHYA PRADESH","SHAJAPUR","WEST MADHYA PRADESH",23.35,76.67,true
+"SHAMLI","Shamli","UTTAR PRADESH","SHAMLI","WEST UTTAR PRADESH",29.46,77.29,false
+"SHEIKHPURA","Sheikhpura","BIHAR","SHEIKHPURA","BIHAR",25.12,85.79,true
+"SHEOPUR","Sheopur","MADHYA PRADESH","SHEOPUR","WEST MADHYA PRADESH",25.74,77.07,false
+"SHG","Ladakh (LEH)","LADAKH (UT)","LADAKH (LEH)","JAMMU & KASHMIR AND LADAKH",35.01,75.51,false
+"SHIMLA","Shimla","HIMACHAL PRADESH","SHIMLA","HIMACHAL PRADESH",31.24,77.65,true
+"SHIMOGA","Shivamogga","KARNATAKA","SHIVAMOGGA","SOUTHERN INTERIOR KARNATAKA",14.06,75.25,true
+"SHIVHAR","Sheohar","BIHAR","SHEOHAR","BIHAR",26.49,85.29,true
+"SHIVPURI","Shivpuri","MADHYA PRADESH","SHIVPURI","WEST MADHYA PRADESH",25.38,77.74,false
+"SHJ","SHAHJAHANPUR","UTTAR PRADESH","SHAHJAHANPUR","WEST UTTAR PRADESH",27.88,79.9,true
+"SHL","Shillong","MEGHALAYA","EAST KHASI HILLS","ASSAM & MEGHALAYA",25.57,91.88,true
+"SHOLAPUR","Sholapur","MAHARASHTRA","SHOLAPUR","MADHYA MAHARASHTRA",17.83,75.52,false
+"SHOLINGANALLUR","Sholinganallur","TAMILNADU","CHENNAI","TAMILNADU, PUDUCHERRY & KARAIKAL",12.91,80.24,true
+"SHOPIAN","Shopian","JAMMU & KASHMIR (UT)","SHOPIAN","JAMMU & KASHMIR AND LADAKH",33.72,74.79,true
+"SHP","Sheopur","MADHYA PRADESH","SHEOPUR","WEST MADHYA PRADESH",25.67,76.68,true
+"SHR","Tirupati","ANDHRA PRADESH","TIRUPATI","RAYALSEEMA",13.72,80.2,true
+"SHRAVASTI","Shrawasti","UTTAR PRADESH","SHRAWASTI","EAST UTTAR PRADESH",27.61,81.92,true
+"SIANG","East Siang","ARUNACHAL PRADESH","EAST SIANG","ARUNACHAL PRADESH",28.48,94.78,false
+"SIBSAGAR","Sibsagar","ASSAM","SIBSAGAR","ASSAM & MEGHALAYA",26.95,94.74,false
+"SIDDHI","Sidhi","MADHYA PRADESH","SIDHI","EAST MADHYA PRADESH",24.32,81.75,false
+"SIDDIPET","Siddipet","TELANGANA","SIDDIPET","TELANGANA",18.01,78.9,true
+"SIDHARTH-NGR","Siddharth Nagar","UTTAR PRADESH","SIDDHARTH NAGAR","EAST UTTAR PRADESH",27.26,82.87,true
+"SIKAR","Sikar","RAJASTHAN","SIKAR","EAST RAJASTHAN",27.66,75.1,true
+"SILVASSA","Silvassa","DADRA & NAGAR HAVELI AND DAMAN & DIU (UT)","DADARA & NAGAR HAVELI","GUJARAT REGION",20.27,73,true
+"SIMDEGA","Simdega","JHARKHAND","SIMDEGA","JHARKHAND",22.59,84.54,true
+"SINDHUDURG","Sindhudurg","MAHARASHTRA","SINDHUDURG","KONKAN & GOA",16.14,73.76,false
+"SINGROLI","Singrauli","MADHYA PRADESH","SINGRAULI","EAST MADHYA PRADESH",24.24,82.35,true
+"SIRMUR","Sirmaur","HIMACHAL PRADESH","SIRMAUR","HIMACHAL PRADESH",30.7,77.43,true
+"SIROHI","Sirohi","RAJASTHAN","SIROHI","EAST RAJASTHAN",24.81,72.71,true
+"SIRSA","Sirsa","HARYANA","SIRSA","DELHI, HARYANA AND CHANDIGARH",29.6,74.89,true
+"SITAMARHI","Sitamarhi","BIHAR","SITAMARHI","BIHAR",26.57,85.54,true
+"SITAPUR","Sitapur","UTTAR PRADESH","SITAPUR","EAST UTTAR PRADESH",27.51,80.86,true
+"SIVAGANGA","Sivaganga","TAMILNADU","SIVAGANGA","TAMILNADU, PUDUCHERRY & KARAIKAL",9.88,78.63,false
+"SIWAN","Siwan","BIHAR","SIWAN","BIHAR",26.13,84.4,true
+"SJP","Shajapur","MADHYA PRADESH","SHAJAPUR","WEST MADHYA PRADESH",23.43,76.32,false
+"SKR","Siker","RAJASTHAN","SIKAR","EAST RAJASTHAN",27.62,75.13,true
+"SKT","Sriniketan","WEST BENGAL","BIRBHUM","GANGETIC WEST BENGAL",23.65,87.7,true
+"SLC","Silchar","ASSAM","CACHAR","ASSAM & MEGHALAYA",24.75,92.8,true
+"SLG","Darjeeling","WEST BENGAL","DARJEELING","SHWB & SIKKIM",26.67,88.37,false
+"SLM","Salem","TAMILNADU","SALEM","TAMILNADU, PUDUCHERRY & KARAIKAL",11.65,78.17,true
+"SLP","Sholapur","MAHARASHTRA","SHOLAPUR","MADHYA MAHARASHTRA",17.67,75.9,true
+"SMB","Sambalpur","ODISHA","SAMBALPUR","ODISHA",21.47,83.97,true
+"SMG","Shimoga","KARNATAKA","SHIVAMOGGA","SOUTHERN INTERIOR KARNATAKA",13.93,75.63,true
+"SML","Shimla-City","HIMACHAL PRADESH","SHIMLA","HIMACHAL PRADESH",31.1,77.17,true
+"SMP","Sawai Madhopur","RAJASTHAN","SAWAI MADHOPUR","EAST RAJASTHAN",25.98,76.37,false
+"SNG","Sangli","MAHARASHTRA","SANGLI","MADHYA MAHARASHTRA",16.85,74.6,true
+"SNI","Seoni","MADHYA PRADESH","SEONI","EAST MADHYA PRADESH",22.08,79.55,true
+"SNM","Bandipora","JAMMU & KASHMIR (UT)","BANDIPORA","JAMMU & KASHMIR AND LADAKH",34.32,75.32,false
+"SOLAN","Solan","HIMACHAL PRADESH","SOLAN","HIMACHAL PRADESH",31.06,76.93,false
+"SON","Nagpur","MAHARASHTRA","NAGPUR","VIDARBHA",21.1,79.05,true
+"SONAPUR","Sonepur","ODISHA","SONEPUR","ODISHA",20.95,83.89,true
+"SONBHADRA","Sonbhadra","UTTAR PRADESH","SONBHADRA","EAST UTTAR PRADESH",24.39,83.04,true
+"SONEPRAYAG","Soneprayag","UTTARAKHAND","RUDRAPRAYAG","UTTARAKHAND",30.63,78.99,true
+"SONIPAT","Sonepat","HARYANA","SONEPAT","DELHI, HARYANA AND CHANDIGARH",29.05,76.86,true
+"SONITPUR","Sonitpur","ASSAM","SONITPUR","ASSAM & MEGHALAYA",26.77,92.7,false
+"SOUTH","Namchi","SIKKIM","NAMCHI","SHWB & SIKKIM",27.31,88.4,true
+"SOUTH-DELHI","South Delhi","DELHI (UT)","SOUTH DELHI","DELHI, HARYANA AND CHANDIGARH",28.47,77.18,false
+"SOUTH-GARO","South Garo Hills","MEGHALAYA","SOUTH GARO HILLS","ASSAM & MEGHALAYA",25.24,90.68,true
+"SOUTH-GOA","South Goa","GOA","SOUTH GOA","KONKAN & GOA",15.12,74.06,false
+"SOUTH-TRIPURA","South Tripura","TRIPURA","SOUTH TRIPURA","NMMT",23.25,91.6,true
+"SRC","Gadchiroli","MAHARASHTRA","GADCHIROLI","VIDARBHA",18.85,79.97,false
+"SRI-KAKULAM","Srikakulam","ANDHRA PRADESH","SRIKAKULAM","COASTAL ANDHRA PRADESH & YANAM",18.62,84.09,true
+"SRINAGAR","Ganderbal","JAMMU & KASHMIR (UT)","GANDERBAL","JAMMU & KASHMIR AND LADAKH",34.17,75.05,false
+"SRINAGAR-UK","Srinagar Uttarakhand","UTTARAKHAND","GARHWAL PAURI","UTTARAKHAND",30.22,78.81,true
+"SRL","SHIRALI","KARNATAKA","UTTARA KANNADA","COASTAL KARNATAKA",14.07,74.53,true
+"SRN","Srinagar-City","JAMMU & KASHMIR (UT)","SRINAGAR","JAMMU & KASHMIR AND LADAKH",34.08,74.83,true
+"SRT","Surat","GUJARAT","SURAT","GUJARAT REGION",21.2,72.83,true
+"SS-MANKACHAR","Cooch Behar","WEST BENGAL","COOCH BEHAR","SHWB & SIKKIM",25.78,89.61,false
+"STA","Satara","MAHARASHTRA","SATARA","MADHYA MAHARASHTRA",17.52,74.05,true
+"STN","Satna","MADHYA PRADESH","SATNA","EAST MADHYA PRADESH",24.57,80.83,true
+"STP","Sultanpur","UTTAR PRADESH","SULTANPUR","EAST UTTAR PRADESH",26.25,82,true
+"SUKMA","Sukma","CHHATTISGARH","SUKMA","CHHATTISGARH",18.2,81.34,true
+"SULTANUR","Sultanpur","UTTAR PRADESH","SULTANPUR","EAST UTTAR PRADESH",26.25,82.22,false
+"SUN","Sundergarh","ODISHA","SUNDARGARH","ODISHA",22.02,84,true
+"SUNDERGARH","Sundargarh","ODISHA","SUNDARGARH","ODISHA",22.25,84.46,true
+"SUP","Supaul","BIHAR","SUPAUL","BIHAR",26.13,86.58,true
+"SUPAUL","Supaul","BIHAR","SUPAUL","BIHAR",26.28,86.76,false
+"SURAJPUR","Surajpur","CHHATTISGARH","SURAJPUR","CHHATTISGARH",23.38,82.98,true
+"SURAT","Surat","GUJARAT","SURAT","GUJARAT REGION",21.3,73.04,false
+"SURENDRANAGAR","Surendranagar","GUJARAT","SURENDRANAGAR","SAURASHTRA & KUTCH",22.6,71.57,false
+"SURGUJA","Surguja","CHHATTISGARH","SURGUJA","CHHATTISGARH",23.07,83.29,true
+"SURYAPET","Suryapet","TELANGANA","SURYAPET","TELANGANA",17.08,79.72,true
+"SVP","Shivpuri","MADHYA PRADESH","SHIVPURI","WEST MADHYA PRADESH",25.33,77.65,true
+"SWEST-GARO","Dhubri","ASSAM","DHUBRI","ASSAM & MEGHALAYA",25.5,89.7,false
+"SWEST-KHASI","South West Khasi Hills","MEGHALAYA","SOUTH WEST KHASI HILLS","ASSAM & MEGHALAYA",25.31,91.21,true
+"S_P_Stadium","Navrangpura","GUJARAT","AHMEDABAD","GUJARAT REGION",23.043,72.563,true
+"TAMENGLONG","Tamenglong","MANIPUR","TAMENGLONG","NMMT",25.1,93.56,false
+"TAN","Udalguri","ASSAM","UDALGURI","ASSAM & MEGHALAYA",26.65,91.92,true
+"TAPI","Tapi","GUJARAT","TAPI","GUJARAT REGION",21.29,73.6,true
+"TAPOVAN","Tapovan","UTTARAKHAND","CHAMOLI","UTTARAKHAND",30.49,79.63,true
+"TARAN","Tarn Taran","PUNJAB","TARN TARAN","PUNJAB",31.33,74.9,true
+"TAWANG","Tawang","ARUNACHAL PRADESH","TAWANG","ARUNACHAL PRADESH",27.66,92.01,true
+"TEHRI-GARHWAL","Garhwal Tehri","UTTARAKHAND","GARHWAL TEHRI","UTTARAKHAND",30.37,78.49,true
+"TEN","Tenkasi","TAMILNADU","TENKASI","TAMILNADU, PUDUCHERRY & KARAIKAL",8.95,77.31,true
+"TENGNOUPAL","Chandel","MANIPUR","CHANDEL","NMMT",24.48,94.23,false
+"TEZ","Sonitpur","ASSAM","SONITPUR","ASSAM & MEGHALAYA",26.72,92.8,false
+"THAMBARAM","Thambaram","TAMILNADU","CHENGALPATTU","TAMILNADU, PUDUCHERRY & KARAIKAL",12.92,80.12,true
+"THANE","Thane","MAHARASHTRA","THANE","KONKAN & GOA",19.35,73.32,false
+"THANJAVUR","Thanjavur","TAMILNADU","THANJAVUR","TAMILNADU, PUDUCHERRY & KARAIKAL",10.79,79.1,false
+"THENI","Theni","TAMILNADU","THENI","TAMILNADU, PUDUCHERRY & KARAIKAL",9.87,77.45,true
+"THIMPHU","Thimphu","","","",27.47,89.75,true
+"THIRUVETRIVUR","Thiruvetrivur","TAMILNADU","CHENNAI","TAMILNADU, PUDUCHERRY & KARAIKAL",13.15,80.29,true
+"THOUBAL","Thoubal","MANIPUR","THOUBAL","NMMT",24.65,94.02,true
+"THR","Tehri","UTTARAKHAND","GARHWAL TEHRI","UTTARAKHAND",30.4,78.48,true
+"THRISSUR","Thrissur","KERALA","THRISSUR","KERALA & MAHE",10.48,76.35,true
+"TIKAMGARH","Tikamgarh","MADHYA PRADESH","TIKAMGARH","EAST MADHYA PRADESH",25,78.89,false
+"TINSUKIA","Tinsukia","ASSAM","TINSUKIA","ASSAM & MEGHALAYA",27.59,95.62,false
+"TIR","Palayankottai","TAMILNADU","TIRUNELVELI","TAMILNADU, PUDUCHERRY & KARAIKAL",8.73,77.75,true
+"TIRAP","Tirap","ARUNACHAL PRADESH","TIRAP","ARUNACHAL PRADESH",26.95,95.54,false
+"TIRUNELVELI","Tenkasi","TAMILNADU","TENKASI","TAMILNADU, PUDUCHERRY & KARAIKAL",8.85,77.57,false
+"TIRUPPUR","Tiruppur","TAMILNADU","TIRUPPUR","TAMILNADU, PUDUCHERRY & KARAIKAL",10.79,77.5,true
+"TIRUVALLUR","Thiruvallur","TAMILNADU","THIRUVALLUR","TAMILNADU, PUDUCHERRY & KARAIKAL",13.26,80.07,true
+"TIRUVANDRUM","Thiruvananthapuram","KERALA","THIRUVANANTHAPURAM","KERALA & MAHE",8.57,76.97,false
+"TIRUVANNAMALAI","Tiruvannamalai","TAMILNADU","TIRUVANNAMALAI","TAMILNADU, PUDUCHERRY & KARAIKAL",12.55,79.15,true
+"TIRUVARUR","Tiruvarur","TAMILNADU","TIRUVARUR","TAMILNADU, PUDUCHERRY & KARAIKAL",10.65,79.52,true
+"TKG","Tikamgarh","MADHYA PRADESH","TIKAMGARH","EAST MADHYA PRADESH",24.77,78.83,true
+"TMK","Tumakuru","KARNATAKA","TUMAKURU","SOUTHERN INTERIOR KARNATAKA",13.33,77.08,true
+"TND","Tondi","TAMILNADU","RAMANATHAPURAM","TAMILNADU, PUDUCHERRY & KARAIKAL",9.73,79.03,true
+"TNG","Tuensang","NAGALAND","TUENSANG","NMMT",26.27,94.82,true
+"TNI","Tuni","ANDHRA PRADESH","KAKINADA","COASTAL ANDHRA PRADESH & YANAM",17.35,82.55,true
+"TNJ","THANJAVUR","TAMILNADU","THANJAVUR","TAMILNADU, PUDUCHERRY & KARAIKAL",10.78,79.13,true
+"TNK","Tonk","RAJASTHAN","TONK","EAST RAJASTHAN",26.17,75.75,true
+"TONK","Tonk","RAJASTHAN","TONK","EAST RAJASTHAN",26.12,75.72,false
+"TPI","Tirupathi","ANDHRA PRADESH","TIRUPATI","RAYALSEEMA",13.67,79.58,true
+"TRA","West Garo Hills","MEGHALAYA","WEST GARO HILLS","ASSAM & MEGHALAYA",25.52,90.23,true
+"TRIBAL-TERRITY","Ladakh (LEH)","LADAKH (UT)","LADAKH (LEH)","JAMMU & KASHMIR AND LADAKH",35.85,73.7,false
+"TRICHY","Thiruchirapalli","TAMILNADU","THIRUCHIRAPALLI","TAMILNADU, PUDUCHERRY & KARAIKAL",10.94,78.69,true
+"TRP","Tiruchirapalli","TAMILNADU","THIRUCHIRAPALLI","TAMILNADU, PUDUCHERRY & KARAIKAL",10.77,78.72,true
+"TRR","TIRUPPATTUR","TAMILNADU","TIRUPATTUR","TAMILNADU, PUDUCHERRY & KARAIKAL",12.48,78.57,true
+"TRT","TIRUTTANI","TAMILNADU","THIRUVALLUR","TAMILNADU, PUDUCHERRY & KARAIKAL",13.15,79.53,true
+"TRV","Thiruvananthapuram","KERALA","THIRUVANANTHAPURAM","KERALA & MAHE",8.48,76.95,true
+"TTC","TUTICORIN NEW PORT","TAMILNADU","THOOTHUKUDI","TAMILNADU, PUDUCHERRY & KARAIKAL",8.75,78.18,true
+"TTG","Balangir","ODISHA","BALANGIR","ODISHA",20.29,83.14,false
+"TUENSANG","Tuensang","NAGALAND","TUENSANG","NMMT",26.17,94.87,false
+"TUMKUR","Tumakuru","KARNATAKA","TUMAKURU","SOUTHERN INTERIOR KARNATAKA",13.55,76.93,false
+"TUTICORIN","Thoothukudi","TAMILNADU","THOOTHUKUDI","TAMILNADU, PUDUCHERRY & KARAIKAL",8.9,78,true
+"TZP","Tezpur","ASSAM","SONITPUR","ASSAM & MEGHALAYA",26.62,92.78,true
+"Thane","Thane","MAHARASHTRA","THANE","KONKAN & GOA",19.2183,72.9781,true
+"UDA","Udaipur","RAJASTHAN","UDAIPUR","EAST RAJASTHAN",24.62,73.88,true
+"UDAIPUR","Udaipur","RAJASTHAN","UDAIPUR","EAST RAJASTHAN",24.47,73.73,false
+"UDALGURI","Udalguri","ASSAM","UDALGURI","ASSAM & MEGHALAYA",26.7,92.06,false
+"UDHAMPUR","Udhampur","JAMMU & KASHMIR (UT)","UDHAMPUR","JAMMU & KASHMIR AND LADAKH",32.9,75.38,false
+"UDHAMSINGH-NGR","Udham Singh Nagar","UTTARAKHAND","UDHAM SINGH NAGAR","UTTARAKHAND",28.95,79.75,true
+"UDM","Udhampur","JAMMU & KASHMIR (UT)","UDHAMPUR","JAMMU & KASHMIR AND LADAKH",32.91,75.17,false
+"UDP","Udaipur","RAJASTHAN","UDAIPUR","EAST RAJASTHAN",24.58,73.7,false
+"UDUPI","Udupi","KARNATAKA","UDUPI","COASTAL KARNATAKA",13.48,74.89,true
+"UJJAIN","Ujjain","MADHYA PRADESH","UJJAIN","WEST MADHYA PRADESH",23.3,75.69,false
+"UJN","Ujjain","MADHYA PRADESH","UJJAIN","WEST MADHYA PRADESH",23.18,75.78,true
+"UKHIMATH","Ukhimath","UTTARAKHAND","RUDRAPRAYAG","UTTARAKHAND",30.51,79.09,true
+"UKHRUL","Ukhrul","MANIPUR","UKHRUL","NMMT",25.08,94.43,false
+"ULB","Uluberia","WEST BENGAL","HOWRAH","GANGETIC WEST BENGAL",22.47,88.1,true
+"UMARIA","Umaria","MADHYA PRADESH","UMARIA","EAST MADHYA PRADESH",23.64,80.94,false
+"UMR","Umaria","MADHYA PRADESH","UMARIA","EAST MADHYA PRADESH",23.53,80.88,true
+"UNA","Una","HIMACHAL PRADESH","UNA","HIMACHAL PRADESH",31.58,76.21,true
+"UNAKOTI","Unakoti","TRIPURA","UNAKOTI","NMMT",24.18,92.06,true
+"UNNAO","Unnao","UTTAR PRADESH","UNNAO","EAST UTTAR PRADESH",26.57,80.55,true
+"UPPER-DIBANG-VALLEY","Dibang Valley","ARUNACHAL PRADESH","DIBANG VALLEY","ARUNACHAL PRADESH",28.85,95.93,true
+"UPPER-SIANG","Upper Siang","ARUNACHAL PRADESH","UPPER SIANG","ARUNACHAL PRADESH",28.95,94.8,true
+"UPPER-SUBANSIRI","Upper Subansiri","ARUNACHAL PRADESH","UPPER SUBANSIRI","ARUNACHAL PRADESH",28.38,93.8,true
+"USI","Lucknow (Airport)","UTTAR PRADESH","LUCKNOW","EAST UTTAR PRADESH",26.75,80.88,true
+"UTK","Uttarkashi","UTTARAKHAND","UTTARKASHI","UTTARAKHAND",30.73,78.45,true
+"UTM","UDHAGAMANDALAM","TAMILNADU","NILGIRIS","TAMILNADU, PUDUCHERRY & KARAIKAL",11.4,76.73,true
+"UTTARKANNAD","Uttara Kannada","KARNATAKA","UTTARA KANNADA","COASTAL KARNATAKA",14.73,74.58,true
+"UTTARKASHI","Uttarkashi","UTTARAKHAND","UTTARKASHI","UTTARAKHAND",30.97,78.58,false
+"Udgir","Udgir","MAHARASHTRA","LATUR","MARATHWADA",18.3943,77.1126,true
+"VAISHALI","Vaishali","BIHAR","VAISHALI","BIHAR",25.75,85.35,true
+"VALSAD","Valsad","GUJARAT","VALSAD","GUJARAT REGION",20.43,73.11,true
+"VARANASI","Varanasi","UTTAR PRADESH","VARANASI","EAST UTTAR PRADESH",25.45,83.09,false
+"VDN","Vedaranyam","TAMILNADU","NAGAPATTINAM","TAMILNADU, PUDUCHERRY & KARAIKAL",10.37,79.85,true
+"VDS","Vidisha","MADHYA PRADESH","VIDISHA","WEST MADHYA PRADESH",23.53,77.82,true
+"VELLORE","Vellore","TAMILNADU","VELLORE","TAMILNADU, PUDUCHERRY & KARAIKAL",12.91,79,false
+"VIDISHA","Vidisha","MADHYA PRADESH","VIDISHA","WEST MADHYA PRADESH",23.85,77.78,false
+"VIKARABAD","Vikarabad","TELANGANA","VIKARABAD","TELANGANA",17.27,77.71,true
+"VILLUPURAM","Kallakurichi","TAMILNADU","KALLAKURICHI","TAMILNADU, PUDUCHERRY & KARAIKAL",11.79,79.12,false
+"VIRUDHUNAGAR","Virudhunagar","TAMILNADU","VIRUDHUNAGAR","TAMILNADU, PUDUCHERRY & KARAIKAL",9.43,77.91,true
+"VISAKHAPATNAM","Anakapalli","ANDHRA PRADESH","ANAKAPALLI","COASTAL ANDHRA PRADESH & YANAM",17.8,82.66,true
+"VIZIANAGARAM","Vizianagaram","ANDHRA PRADESH","VIZIANAGARAM","COASTAL ANDHRA PRADESH & YANAM",18.09,83.55,true
+"VJW","Vijayawada","ANDHRA PRADESH","NTR DISTRICT","COASTAL ANDHRA PRADESH & YANAM",16.5,80.64,true
+"VLR","Vellore","TAMILNADU","VELLORE","TAMILNADU, PUDUCHERRY & KARAIKAL",12.92,79.15,true
+"VNG","Vengurla","MAHARASHTRA","SINDHUDURG","KONKAN & GOA",15.87,73.63,true
+"VNS","Varanasi","UTTAR PRADESH","VARANASI","EAST UTTAR PRADESH",25.45,82.87,true
+"VRS","Varanasi BHU","UTTAR PRADESH","CHANDAULI","EAST UTTAR PRADESH",25.3,83.02,true
+"VSK","Visakhapatnam","ANDHRA PRADESH","VISHAKHAPATNAM","COASTAL ANDHRA PRADESH & YANAM",17.72,83.23,true
+"VVL","Veraval","GUJARAT","GIR SOMNATH","SAURASHTRA & KUTCH",20.9,70.37,true
+"VVN","VALLABH VIDYANAGAR","GUJARAT","ANAND","GUJARAT REGION",22.57,72.93,true
+"W-KARBI-ANALOG","Karbi Anglong","ASSAM","KARBI ANGLONG","ASSAM & MEGHALAYA",25.85,92.62,false
+"WANAPARTHY","Wanaparthy","TELANGANA","WANAPARTHY","TELANGANA",16.36,77.99,true
+"WARANGAL-RURAL","Warangal","TELANGANA","WARANGAL","TELANGANA",17.95,79.76,true
+"WARANGAL-URBAN","Hanumakonda","TELANGANA","HANUMAKONDA","TELANGANA",18.03,79.45,true
+"WARDHA","Wardha","MAHARASHTRA","WARDHA","VIDARBHA",20.83,78.64,false
+"WASHIM","Washim","MAHARASHTRA","WASHIM","VIDARBHA",20.11,77.15,true
+"WAYANAD","Wynad","KERALA","WYNAD","KERALA & MAHE",11.72,76.11,true
+"WEST","Gyalshing","SIKKIM","GYALSHING","SHWB & SIKKIM",27.37,88.19,true
+"WEST-DELHI","West Delhi","DELHI (UT)","WEST DELHI","DELHI, HARYANA AND CHANDIGARH",28.64,77.07,false
+"WEST-GARO","West Garo Hills","MEGHALAYA","WEST GARO HILLS","ASSAM & MEGHALAYA",25.78,90.33,false
+"WEST-GODAVARI","West Godavari","ANDHRA PRADESH","WEST GODAVARI","COASTAL ANDHRA PRADESH & YANAM",16.89,81.52,true
+"WEST-KAMENG","West Kameng","ARUNACHAL PRADESH","WEST KAMENG","ARUNACHAL PRADESH",27.33,92.46,true
+"WEST-KHASI","West Khasi Hills","MEGHALAYA","WEST KHASI HILLS","ASSAM & MEGHALAYA",25.65,91.3,true
+"WEST-SIANG","West Siang","ARUNACHAL PRADESH","WEST SIANG","ARUNACHAL PRADESH",28.6,94.35,true
+"WEST-SINGBHUM","West Singhbhum","JHARKHAND","WEST SINGHBHUM","JHARKHAND",22.42,85.52,false
+"WEST-TRIPURA","West Tripura","TRIPURA","WEST TRIPURA","NMMT",23.8,91.37,true
+"WOKHA","Wokha","NAGALAND","WOKHA","NMMT",26.24,94.17,true
+"WRD","Wardha","MAHARASHTRA","WARDHA","VIDARBHA",20.67,78.58,true
+"YADADRI","Y. Bhuvanagiri","TELANGANA","Y. BHUVANAGIRI","TELANGANA",17.42,79.07,true
+"YADGIRI","Yadgir","KARNATAKA","YADGIR","NORTHERN INTERIOR KARNATAKA",16.57,76.89,true
+"YAMUNA-NGR","Yamuna Nagar","HARYANA","YAMUNA NAGAR","DELHI, HARYANA AND CHANDIGARH",30.22,77.34,true
+"YAMUNOTRI","Yamunotri","UTTARAKHAND","UTTARKASHI","UTTARAKHAND",30.99,78.46,true
+"YANAM","Cuddalore","TAMILNADU","CUDDALORE","TAMILNADU, PUDUCHERRY & KARAIKAL",11.76,79.71,false
+"YEOTMAL","Yeotmal","MAHARASHTRA","YEOTMAL","VIDARBHA",20.07,78.22,false
+"YOT","Yeotmal","MAHARASHTRA","YEOTMAL","VIDARBHA",20.4,78.15,true
+"ZIR","Lower Subansiri","ARUNACHAL PRADESH","LOWER SUBANSIRI","ARUNACHAL PRADESH",27.54,93.81,false
+"ZUNHEBOTO","Zunheboto","NAGALAND","ZUNHEBOTO","NMMT",26.03,94.53,true

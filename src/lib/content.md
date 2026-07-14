@@ -8,7 +8,7 @@
 	import { fetchCities } from '$lib/api/r2';
 	import { citySky } from '$lib/state/citySky.svelte';
 
-	let { manifest = undefined, places = undefined, india = undefined } = $props();
+	let { manifest = undefined, india = undefined } = $props();
 
 	let cities = $state(null);
 	$effect(() => {
@@ -108,7 +108,7 @@ The cloud-cover panel is a stacked histogram split into three tiers: low clouds 
 
 I love this visualization. It's charming that the person who wrote the software took complicated weather data and made it look like cloudy, fun pixel art. Every day since February 2026, I have been archiving these charts. I wrote a script that reads the pixels and turns the histogram images back into structured data, so I could plot a given slice of time onto a map. The mapping of India's clouds at the top of this page is the result of that daily collection and analysis.
 
-With {monthsLabel} of data, some patterns start to show. Every city here has a twin, or a distant city whose skies cloud over and clear in similar ways.
+With {monthsLabel} of data, some patterns start to show. Every station here has a twin, or a distant station whose skies cloud over and clear in similar ways.
 
 {#if skyPair}
 <p>For example, <strong>{skyPair.city}</strong> and <strong>{skyPair.twin}</strong> are hundreds of kilometers apart, but the daily cloud strips below show that they move in sync.</p>
@@ -126,18 +126,18 @@ With {monthsLabel} of data, some patterns start to show. Every city here has a t
 </div>
 {/if}
 
-Below are all {cities ? Object.keys(cities.cities).length : 424} cities, ordered from clear to cloudy. You can look up a city to see how cloudy it has been over time and today, and to see which faraway city the sky looks most like.
+Below are {cities ? Object.keys(cities.cities).length : 536} of these stations, ordered from clear to cloudy. You can look up a station to see how cloudy it has been over time and today, and to see which faraway station the sky looks most like.
 
 {#if manifest && india}
 <div class="breakout full-bleed">
-	<CitySkyExplorer {manifest} {places} {india} />
+	<CitySkyExplorer {manifest} {india} />
 </div>
 {/if}
 
 <section class="methodology">
 	<h2>How we analyze meteograms</h2>
-	<p>We extract daily cloud coverage data by analysing meteograms for each weather station. Because the charts use a standard layout, we could isolate the cloud-cover section and sample 80 evenly spaced intervals across the timeline. The chart divides the sky into high, middle, and low altitude layers, representing cloud density with the height of white shading. By measuring how high this shading reaches in each band, we calculate the percentage of cloud cover. To an observer on the ground, the sky looks overcast if even one layer is full, so we define a city’s overall cloudiness using the highest percentage among the three layers recorded at its nearest station. Due to the nature of this data collection and also the meteogram itself, these figures represent a forecasted expectation rather than exact satellite imagery.</p>
-	<p>Finally, to match distant cities with similar weather trends, we tracked how each city’s daily cloud cover shifted compared to its average, pairing locations at least 400 kilometres apart and in different states whose skies cleared and clouded similarly.</p>
+	<p>We extract daily cloud coverage data by analysing meteograms for each weather station. Because the charts use a standard layout, we could isolate the cloud-cover section and sample 80 evenly spaced intervals across the timeline. The chart divides the sky into high, middle, and low altitude layers, representing cloud density with the height of white shading. By measuring how high this shading reaches in each band, we calculate the percentage of cloud cover. To an observer on the ground, the sky looks overcast if even one layer is full, so we define a station’s overall cloudiness using the highest percentage among its three recorded layers. Due to the nature of this data collection and also the meteogram itself, these figures represent a forecasted expectation rather than exact satellite imagery.</p>
+	<p>Finally, to match distant stations with similar weather trends, we tracked how each station’s daily cloud cover shifted compared to its average, pairing locations at least 400 kilometres apart and in different states whose skies cleared and clouded similarly.</p>
 </section>
 
 <div class="support-band">
