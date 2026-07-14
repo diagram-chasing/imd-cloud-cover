@@ -18,6 +18,9 @@ export interface GeoStation {
 	py: number;
 	rpx: number; // unsnapped - LOD binning uses these, not the legacy CELL snap
 	rpy: number;
+	/** Population bucket (0 megacity … 3 town); biases which station represents a
+	 *  coarse LOD bin so big cities win over nearby-to-centre small ones. */
+	tier: number;
 }
 
 export interface GeoPlace {
@@ -148,7 +151,14 @@ export function buildGeo(
 		cy = Math.max(0, Math.min(rows - 1, cy));
 		const rpx = Math.max(0, Math.min(worldW, p[0]));
 		const rpy = Math.max(0, Math.min(worldH, p[1]));
-		stations.push({ code, px: cx * cell + cell / 2, py: cy * cell + cell / 2, rpx, rpy });
+		stations.push({
+			code,
+			px: cx * cell + cell / 2,
+			py: cy * cell + cell / 2,
+			rpx,
+			rpy,
+			tier: s.tier ?? 3
+		});
 	}
 
 	const places = placesFC ? buildPlaces(placesFC, (lon, lat) => projection([lon, lat]) ?? null) : [];
