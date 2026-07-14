@@ -205,7 +205,7 @@
 			disable: ['note', 'subject'],
 			note: {},
 			connector: {
-				points: arc.pts.slice(1, -1).map(([px, py]) => [px - sx, py - sy]),
+				points: arc.pts.slice(1, -1).map(([px, py]) => [px - sx, py - sy] as [number, number]),
 				curve: curveLinear
 			}
 		};
