@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { sky } from '$lib/state/sky.svelte';
 	import PlayToggle from '$lib/components/PlayToggle.svelte';
 
@@ -29,10 +30,24 @@
 		}
 		return (from + 1) % dates.length;
 	}
+	// First day with a reading; 0 if the whole window is empty (or availability unknown).
+	let firstData = $derived.by(() => {
+		for (let i = 0; i < dates.length; i++) if (hasData(i)) return i;
+		return 0;
+	});
 
 	$effect(() => {
 		if (sky.windowDayIndex > dates.length - 1) sky.windowDayIndex = dates.length - 1;
 		if (sky.windowDayIndex < 0) sky.windowDayIndex = 0;
+	});
+
+	// On view entry / week↔month switch / data arrival (all change `firstData`), land on the
+	// first day that has a reading. The index is read untracked so a drag onto an empty day —
+	// which doesn't change `firstData` — isn't snapped back.
+	$effect(() => {
+		const target = firstData;
+		if (untrack(() => hasData(sky.windowDayIndex))) return;
+		sky.windowDayIndex = target;
 	});
 
 	let reduced = $state(false);
