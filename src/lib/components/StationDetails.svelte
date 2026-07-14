@@ -9,11 +9,13 @@
 		station: Station;
 		current: { h: number; m: number; l: number } | null;
 		date: string;
+		/** Data/scrape date the forecast files are keyed under (see StationCard). */
+		metDate?: string;
 		when: string;
 		at: { x: number; y: number } | null;
 		onclose: () => void;
 	}
-	let { code, station, current, date, when, at, onclose }: Props = $props();
+	let { code, station, current, date, metDate, when, at, onclose }: Props = $props();
 
 	let open = $state(true);
 	$effect(() => {
@@ -51,7 +53,7 @@
 			class="max-h-[85vh] gap-0 border-2 border-ink bg-paper px-4 pt-1 pb-4 text-ink"
 		>
 			<div class="sheet-scroll max-h-[calc(85vh-40px)] overflow-y-auto">
-				<StationCard {code} {station} {current} {date} {when} {onclose} />
+				<StationCard {code} {station} {current} {date} {metDate} {when} {onclose} />
 			</div>
 		</DrawerContent>
 	</Drawer>
@@ -64,7 +66,7 @@
 			collisionPadding={16}
 			class="w-[340px] max-w-[calc(100vw-24px)] gap-0 border-2 border-ink bg-paper p-3 text-ink ring-0"
 		>
-			<StationCard {code} {station} {current} {date} {when} {onclose} />
+			<StationCard {code} {station} {current} {date} {metDate} {when} {onclose} />
 		</PopoverContent>
 	</Popover>
 {/if}

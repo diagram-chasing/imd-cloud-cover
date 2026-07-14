@@ -333,6 +333,7 @@
 		station={panelStation}
 		current={values[sky.selectedCode] ?? null}
 		date={activeDate}
+		metDate={core.latest.date}
 		when={whenLabel}
 		at={anchorPoint}
 		onclose={closePanel}

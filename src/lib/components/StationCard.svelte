@@ -15,10 +15,14 @@
 		station: Station;
 		current: { h: number; m: number; l: number } | null;
 		date: string;
+		/** Date the forecast files are keyed under (the data/scrape date). Falls back to
+		 *  `date`, but when IMD's daily refresh is late these diverge: `date` follows the
+		 *  active display day while the baked forecast still lives under the data date. */
+		metDate?: string;
 		when: string;
 		onclose?: () => void;
 	}
-	let { code, station, current, date, when, onclose }: Props = $props();
+	let { code, station, current, date, metDate, when, onclose }: Props = $props();
 
 	let forecast = $state<Forecast | null>(null);
 	let forecastError = $state(false);
@@ -27,7 +31,7 @@
 		forecast = null;
 		forecastError = false;
 		const c = code;
-		fetchForecast(date, c)
+		fetchForecast(metDate ?? date, c)
 			.then((f) => {
 				if (c === code) forecast = f;
 			})
@@ -88,7 +92,7 @@
 		{#if current}
 			<div class="bands flex flex-col gap-[3px]" aria-label="Percent of sky covered, by altitude">
 				<p class="caption m-0 mb-[3px] border-t border-border pt-2 text-xs">
-					% OF SKY COVERED <span class="now bg-sun-gold px-[3px] py-px font-bold text-ink"
+					% OF SKY COVERED AT <span class="now bg-sun-gold px-[3px] py-px font-bold text-ink"
 						>{when}</span
 					>, BY ALTITUDE
 				</p>
