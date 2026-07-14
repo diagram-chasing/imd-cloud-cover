@@ -30,12 +30,20 @@ dataset in [`../data`](../data). Please see [DATA.md](../data/DATA.md) for what'
 
 ## Occasionally useful
 
-Re-seed the station manifest from the IMD page (grabs code, name, lat, lon;
-figures out the state via point-in-polygon against `static/data/india.json`):
+Re-seed the station manifest from the IMD page. This grabs the code + lat/lon,
+then enriches each station with IMD-native geography: state/district/subdivision
+by point-in-polygon against IMD's `imd:india_districts`, a real name by coordinate
+match against IMD's synop/metar/nowcast station layers, and a district-headline
+population/tier from GeoNames. First cache the IMD GeoServer layers, then seed:
 
 ```bash
-python tools/seed_stations.py --states ../static/data/india.json --merge
+python tools/fetch_imd_gazetteer.py     # caches scraper/data/imd/*.json
+python tools/seed_stations.py --merge   # reads scraper/data/imd + geonames-places.json
 ```
+
+`--merge` keeps any field whose `*_source` is `"manual"` (hand edits). The
+GeoNames input (`scraper/data/geonames-places.json`) is distilled by
+`node scripts/build-places.mjs` from `src/lib/assets/IN.zip`.
 If the derived views ever get out of sync, rebuild everything from the dated
 files already in the store:
 

@@ -46,6 +46,27 @@ def stations_table(stations, codes):
         "code": codes,
         "station": [stations[c]["name"] for c in codes],
         "state": [stations[c].get("state") or "" for c in codes],
+        "district": [stations[c].get("district") or "" for c in codes],
+        "subdivision": [stations[c].get("subdivision") or "" for c in codes],
+        "lat": [float(stations[c]["lat"]) for c in codes],
+        "lon": [float(stations[c]["lon"]) for c in codes],
+    })
+
+
+def places_table(stations, codes):
+    """One row per station as a place: IMD geography + district-headline population.
+
+    In this dataset a station *is* the place — the name/district/state come from IMD,
+    and pop/tier describe the station's district (headline settlement), used only for
+    ranking notable places. Foreign/offshore stations have empty state and null pop."""
+    return pa.table({
+        "code": codes,
+        "name": [stations[c]["name"] for c in codes],
+        "state": [stations[c].get("state") or "" for c in codes],
+        "district": [stations[c].get("district") or "" for c in codes],
+        "subdivision": [stations[c].get("subdivision") or "" for c in codes],
+        "pop": [stations[c].get("pop") for c in codes],
+        "tier": [stations[c].get("tier") for c in codes],
         "lat": [float(stations[c]["lat"]) for c in codes],
         "lon": [float(stations[c]["lon"]) for c in codes],
     })
@@ -96,12 +117,14 @@ def export(store, out_dir):
     histories = load_histories(store, set(codes))
 
     n_st = write_table(out_dir, "stations", stations_table(stations, codes), zip_csv=False)
+    n_pl = write_table(out_dir, "places", places_table(stations, codes), zip_csv=False)
     n_day = write_table(out_dir, "cloud-cover-daily", daily_table(stations, histories, codes), zip_csv=True)
     n_3h = write_table(out_dir, "cloud-cover-3hourly", three_hourly_table(stations, histories, codes), zip_csv=True)
 
     with_history = sum(1 for c in codes if (histories.get(c) or {}).get("days"))
     print(f"Wrote {out_dir}:")
     print(f"  stations              {n_st} stations")
+    print(f"  places                {n_pl} places")
     print(f"  cloud-cover-daily     {n_day} rows ({with_history} stations with history)")
     print(f"  cloud-cover-3hourly   {n_3h} rows")
 

@@ -1,16 +1,43 @@
-"""Seed scraper/stations.json from the IMD meteograms page.
-Parses Leaflet markers (code, name, lat/lon) from the page HTML.
---merge preserves hand-edited fields in an existing manifest.
-Usage: python scraper/tools/seed_stations.py [--url URL] [--states india.json] [--out PATH] [--merge]
+"""Seed scraper/stations.json from the IMD meteograms page, enriched with IMD-native
+geography. Parses Leaflet markers (code, lat/lon) from the nwp page, then:
+  * assigns state + district + subdivision by point-in-polygon against IMD's own
+    imd:india_districts layer (authoritative, covers disputed areas + islands);
+  * resolves a real station name by coordinate re-identification against IMD's
+    synop/metar/nowcast station layers (the nwp popup only repeats the code);
+  * folds a district-headline population + tier + search aliases onto each station
+    from a GeoNames settlement gazetteer, guarded by the IMD district.
+
+--merge preserves fields whose *_source is "manual" (hand edits) in an existing manifest.
+
+Usage:
+  python scraper/tools/fetch_imd_gazetteer.py      # refresh scraper/data/imd/ snapshots
+  python scraper/tools/seed_stations.py --merge \\
+      --districts ../data/imd/india_districts.json \\
+      --gazetteers ../data/imd/synop_data_layer.json,../data/imd/metar_data_layer.json,../data/imd/nowcast_stations.json \\
+      --places ../data/geonames-places.json
 """
 
 import argparse
+import datetime
 import json
+import math
 import os
 import re
 import sys
 
 DEFAULT_URL = "https://nwp.imd.gov.in/gfs_meteograms_mausam.php"
+HERE = os.path.dirname(__file__)
+
+# Which property holds the human-readable name in each gazetteer layer, and the
+# short source tag recorded on the station. Order = match priority (best first).
+GAZETTEER_NAME_KEY = {
+    "synop_data_layer": ("station", "synop"),
+    "metar_data_layer": ("station_name", "metar"),
+    "nowcast_stations": ("Station", "nowcast"),
+}
+
+# Auto-derived name/state sources; anything else (e.g. "manual") is a human edit.
+AUTO_NAME_SOURCES = {"synop", "metar", "nowcast", "nwp_popup", "code"}
 
 # One marker block = everything from a `new L.LatLng(...)` up to the next one.
 LATLNG_RE = re.compile(r"new\s+L\.LatLng\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)")
@@ -35,13 +62,17 @@ def parse_markers(html):
         if not gif:
             continue
         code = gif.group(1)
+        # Blue markers are district meteograms (gfs_meteograms_dist/); IMD names them
+        # by district, often abbreviated (DAKSHINA-KANNAD). Flag them so we can use the
+        # clean district field instead.
+        is_dist = "gfs_meteograms_dist" in gif.group(0)
 
         name_match = NAME_RE.search(chunk)
         name = name_match.group(1).strip() if name_match else code
         # The IMD markers repeat the code as an all-caps <b> label; prettify it.
         name = prettify_name(name)
 
-        stations.append({"code": code, "name": name, "lat": lat, "lon": lon})
+        stations.append({"code": code, "name": name, "lat": lat, "lon": lon, "is_dist": is_dist})
     return stations
 
 
@@ -168,13 +199,180 @@ def assign_state(lon, lat, states):
     return None
 
 
+def haversine_km(lat1, lon1, lat2, lon2):
+    r = math.radians
+    dlat = r(lat2 - lat1)
+    dlon = r(lon2 - lon1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(r(lat1)) * math.cos(r(lat2)) * math.sin(dlon / 2) ** 2
+    return 2 * 6371 * math.asin(math.sqrt(a))
+
+
+def _ring_bbox(rings):
+    xs = [p[0] for ring in rings for p in ring]
+    ys = [p[1] for ring in rings for p in ring]
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def load_districts(path):
+    """IMD imd:india_districts GeoJSON -> [(state, district, subdivision, rings, bbox)]."""
+    if not path or not os.path.exists(path):
+        return None
+    with open(path) as f:
+        doc = json.load(f)
+    out = []
+    for feat in doc.get("features", []):
+        p = feat.get("properties", {})
+        geom = feat.get("geometry") or {}
+        rings = []
+        if geom.get("type") == "Polygon":
+            rings.append(geom["coordinates"][0])
+        elif geom.get("type") == "MultiPolygon":
+            for poly in geom["coordinates"]:
+                rings.append(poly[0])
+        if not rings:
+            continue
+        out.append((p.get("state"), p.get("district"), p.get("subdivisio"),
+                    rings, _ring_bbox(rings)))
+    return out
+
+
+def assign_admin(lon, lat, districts, snap_km=0):
+    """Return (state, district, subdivision) for the district containing the point.
+
+    If no polygon contains it and snap_km > 0, snap to the nearest district within
+    snap_km (handles coastal/island points that sit just offshore of the boundary).
+    """
+    for state, district, subdivision, rings, (x0, y0, x1, y1) in districts:
+        if lon < x0 or lon > x1 or lat < y0 or lat > y1:
+            continue
+        for ring in rings:
+            if point_in_ring(lon, lat, ring):
+                return state, district, subdivision
+    if snap_km:
+        best, best_d = None, snap_km
+        for state, district, subdivision, rings, _bbox in districts:
+            for ring in rings:
+                for px, py in ring:
+                    d = haversine_km(lat, lon, py, px)
+                    if d < best_d:
+                        best_d, best = d, (state, district, subdivision)
+        if best:
+            return best
+    return None, None, None
+
+
+def load_gazetteers(paths):
+    """Ordered list of {source, points:[(name, lat, lon)]} for coordinate name-matching."""
+    layers = []
+    for path in paths:
+        if not os.path.exists(path):
+            print(f"  (gazetteer missing, skipping: {path})", file=sys.stderr)
+            continue
+        stem = os.path.splitext(os.path.basename(path))[0]
+        name_key, source = GAZETTEER_NAME_KEY.get(stem, ("station", stem))
+        with open(path) as f:
+            doc = json.load(f)
+        points = []
+        for feat in doc.get("features", []):
+            c = (feat.get("geometry") or {}).get("coordinates")
+            name = (feat.get("properties") or {}).get(name_key)
+            if c and name and str(name).strip():
+                points.append((str(name).strip(), c[1], c[0]))
+        layers.append({"source": source, "points": points})
+    return layers
+
+
+def match_name(lon, lat, gazetteers, max_km):
+    """Nearest gazetteer name within max_km, searching layers in priority order."""
+    for layer in gazetteers:
+        best, best_d = None, max_km
+        for name, plat, plon in layer["points"]:
+            d = haversine_km(lat, lon, plat, plon)
+            if d < best_d:
+                best_d, best = d, name
+        if best is not None:
+            return best, layer["source"]
+    return None, None
+
+
+def load_places(path):
+    """GeoNames settlement gazetteer -> [(name, lat, lon, pop, tier, state, aliases)]."""
+    if not path or not os.path.exists(path):
+        return None
+    with open(path) as f:
+        doc = json.load(f)
+    out = []
+    for feat in doc.get("features", []):
+        p = feat.get("properties", {})
+        c = (feat.get("geometry") or {}).get("coordinates")
+        if not c:
+            continue
+        out.append((p.get("name"), c[1], c[0], p.get("pop") or 0,
+                    p.get("tier"), p.get("state"), p.get("aliases") or []))
+    return out
+
+
+def district_headlines(places, districts):
+    """Most populous settlement per IMD district -> {(state, district): place_tuple}."""
+    best = {}
+    for place in places:
+        name, lat, lon, pop, tier, _state, _aliases = place
+        state, district, _sub = assign_admin(lon, lat, districts)
+        if district is None:
+            continue
+        key = (state, district)
+        if key not in best or pop > best[key][3]:
+            best[key] = place
+    return best
+
+
+def title_case(s):
+    """KARNATAKA -> Karnataka; keep short parenthetical tags like (UT) uppercase."""
+    if not s:
+        return s
+    def cap(w):
+        return w if (w.isupper() and len(w) <= 3) or w.startswith("(") else w.capitalize()
+    return " ".join(cap(w) for w in s.split())
+
+
+def _default(*parts):
+    return os.path.join(HERE, *parts)
+
+
+def _station_aliases(station_name, headline):
+    """Search aliases: the district's headline city name + its exonyms (Bombay, ...)."""
+    if not headline:
+        return []
+    out, seen = [], {norm_key(station_name)}
+    for a in [headline[0], *headline[6]]:
+        k = norm_key(a)
+        if a and k and k not in seen:
+            seen.add(k)
+            out.append(a)
+    return out
+
+
+def norm_key(s):
+    return re.sub(r"[^a-z0-9]", "", str(s or "").lower())
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--url", default=DEFAULT_URL)
     ap.add_argument("--html", help="read from a local HTML file instead of fetching")
-    ap.add_argument("--states", help="TopoJSON/GeoJSON of India states for state assignment")
-    ap.add_argument("--out", default=os.path.join(os.path.dirname(__file__), "..", "stations.json"))
-    ap.add_argument("--merge", action="store_true", help="preserve curated fields in existing manifest")
+    ap.add_argument("--states", help="legacy TopoJSON/GeoJSON of India states (fallback only)")
+    ap.add_argument("--districts", default=_default("..", "data", "imd", "india_districts.json"),
+                    help="IMD imd:india_districts GeoJSON for state+district assignment")
+    ap.add_argument("--gazetteers",
+                    default=",".join(_default("..", "data", "imd", f + ".json")
+                                     for f in ("synop_data_layer", "metar_data_layer", "nowcast_stations")),
+                    help="comma list of IMD station-name layers, priority order")
+    ap.add_argument("--places", default=_default("..", "data", "geonames-places.json"),
+                    help="GeoNames settlement gazetteer for district-headline population")
+    ap.add_argument("--match-km", type=float, default=2.0,
+                    help="max distance (km) for coordinate name re-identification")
+    ap.add_argument("--out", default=_default("..", "stations.json"))
+    ap.add_argument("--merge", action="store_true", help="preserve manual edits in existing manifest")
     args = ap.parse_args()
 
     if args.html:
@@ -202,9 +400,20 @@ def main():
     stations = seen
     print(f"{len(stations)} unique station codes.")
 
+    # IMD-native geography sources.
+    districts = load_districts(args.districts)
+    if districts:
+        print(f"Loaded {len(districts)} IMD district polygons.")
     states = load_states(args.states) if args.states else None
-    if states:
-        print(f"Loaded {len(states)} state polygons for assignment.")
+    gazetteers = load_gazetteers(args.gazetteers.split(",")) if args.gazetteers else []
+    if gazetteers:
+        print("Loaded name gazetteers: " + ", ".join(
+            f"{g['source']}({len(g['points'])})" for g in gazetteers))
+    places = load_places(args.places)
+    headlines = {}
+    if places and districts:
+        headlines = district_headlines(places, districts)
+        print(f"Loaded {len(places)} settlements -> {len(headlines)} district headlines.")
 
     existing = {}
     out_path = os.path.abspath(args.out)
@@ -213,28 +422,100 @@ def main():
             existing = json.load(f).get("stations", {})
 
     result = {}
-    n_stated = 0
+    name_srcs, state_srcs = {}, {}
     for code, m in sorted(stations.items()):
         prev = existing.get(code, {})
-        lat = prev.get("lat") if prev.get("lat") is not None else m["lat"]
-        lon = prev.get("lon") if prev.get("lon") is not None else m["lon"]
-        state = prev.get("state")
-        if state is None and states:
-            state = assign_state(lon, lat, states)
-        if state:
-            n_stated += 1
+        lat = round(prev.get("lat") if prev.get("lat") is not None else m["lat"], 4)
+        lon = round(prev.get("lon") if prev.get("lon") is not None else m["lon"], 4)
+
+        # State / district / subdivision from IMD's own boundaries (authoritative).
+        # Snap coastal/island points that sit just offshore to the nearest district.
+        if prev.get("state_source") == "manual":
+            state, district, subdivision = prev.get("state"), prev.get("district"), prev.get("subdivision")
+            state_source = "manual"
+        else:
+            state, district, subdivision = (None, None, None)
+            if districts:
+                state, district, subdivision = assign_admin(lon, lat, districts, snap_km=30)
+            if state is None and states:  # legacy fallback
+                state = assign_state(lon, lat, states)
+            state_source = "india_districts" if district is not None else (
+                "legacy_states" if state else "none")
+
+        # Real name resolution, best first:
+        #   manual edit -> IMD gazetteer coordinate match -> the nwp label if it is a
+        #   real place name -> for opaque codes, the district's headline city, then the
+        #   district name -> finally the prettified code.
+        headline = headlines.get((state, district)) if district is not None else None
+        if prev.get("name_source") == "manual":
+            name, name_source = prev["name"], "manual"
+        elif m.get("is_dist") and district:
+            # District meteogram: use the clean IMD district field rather than IMD's
+            # abbreviated marker label (DAKSHINA-KANNAD -> Dakshina Kannada).
+            name, name_source = title_case(district), "district"
+        else:
+            name, name_source = match_name(lon, lat, gazetteers, args.match_km)
+            if name is None:
+                opaque = bool(re.fullmatch(r"[A-Z0-9]{2,4}", m["code"]))
+                if not opaque:
+                    name, name_source = m["name"], "nwp_name"   # e.g. VISAKHAPATNAM, GURUVAYUR
+                elif district:
+                    # The district name is always correct; a headline city could sit in
+                    # a different part of a large/multi-island district (e.g. Minicoy).
+                    name, name_source = title_case(district), "district"  # TMK -> Tumakuru
+                elif headline:
+                    name, name_source = headline[0], "geonames_district"
+                else:
+                    name, name_source = m["name"], "code"
+
+        # District-headline population + tier + search aliases.
+        pop = headline[3] if headline else None
+        tier = headline[4] if headline else None
+        aliases = _station_aliases(name, headline)
+
+        name_srcs[name_source] = name_srcs.get(name_source, 0) + 1
+        state_srcs[state_source] = state_srcs.get(state_source, 0) + 1
         result[code] = {
-            "name": prev.get("name") or m["name"],
+            "name": name,
+            "code": code,
             "state": state,
-            "lat": round(lat, 4),
-            "lon": round(lon, 4),
+            "district": district,
+            "subdivision": subdivision,
+            "lat": lat,
+            "lon": lon,
+            "pop": pop,
+            "tier": tier,
+            "aliases": aliases,
+            "name_source": name_source,
+            "state_source": state_source,
         }
 
-    doc = {"version": 1, "count": len(result), "stations": result}
+    doc = {
+        "version": 3,
+        "count": len(result),
+        "generated_at": datetime.datetime.now(datetime.timezone.utc)
+        .replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "sources": {
+            "districts": "imd:india_districts",
+            "gazetteer": [g["source"] for g in gazetteers],
+            "population": "GeoNames (district headline)",
+        },
+        "stations": result,
+    }
     with open(out_path, "w") as f:
         json.dump(doc, f, indent=2, ensure_ascii=False)
         f.write("\n")
-    print(f"Wrote {len(result)} stations to {out_path} ({n_stated} with state).")
+
+    print(f"Wrote {len(result)} stations to {out_path}.")
+    print("  name_source:  " + ", ".join(f"{k}={v}" for k, v in sorted(name_srcs.items())))
+    print("  state_source: " + ", ".join(f"{k}={v}" for k, v in sorted(state_srcs.items())))
+
+    # Guard: no domestic (in-bbox) station may ship without a state/UT.
+    stateless = [c for c, s in result.items()
+                 if s["state"] is None and 6.0 <= s["lat"] <= 38.0 and 67.0 <= s["lon"] <= 98.0]
+    if stateless:
+        print(f"  WARNING: {len(stateless)} in-India stations have no state: {sorted(stateless)}",
+              file=sys.stderr)
 
 
 if __name__ == "__main__":

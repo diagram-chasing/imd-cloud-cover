@@ -236,28 +236,21 @@ def build_rollups(histories, dates_window, manifest_codes):
 # Cities view (the homepage's long-term city explorer)
 # --------------------------------------------------------------------------
 
-def load_places():
-    """place gazetteer (city -> nearest station); returns None if file absent/corrupt."""
-    try:
-        with open(here("..", "static", "data", "india-places.json")) as f:
-            return json.load(f)["features"]
-    except (OSError, ValueError, KeyError) as e:
-        print(f"cities: could not read india-places.json ({e}); skipping cities view")
-        return None
+def select_cities(manifest, manifest_codes):
+    """Stations that stand in for a notable place: tier<=2 or district pop>=100k.
 
-
-def select_cities(features, manifest_codes):
-    """cities (tier<=2 or pop>=100k) with a mapped station; one per station (biggest)."""
+    Each IMD station IS the place (real name + district + state + its own coords),
+    so there is no city->nearest-station join and no spurious far matches. Returns
+    {code: station_entry}."""
     best = {}
-    for feat in features:
-        p = feat.get("properties", {})
-        code = p.get("nearest")
+    for code, s in manifest["stations"].items():
         if code not in manifest_codes:
             continue
-        if p.get("tier", 9) > CITY_TIER_MAX and (p.get("pop") or 0) < CITY_POP_MIN:
+        tier = s.get("tier")
+        pop = s.get("pop") or 0
+        if (tier is None or tier > CITY_TIER_MAX) and pop < CITY_POP_MIN:
             continue
-        if code not in best or (p.get("pop") or 0) > (best[code].get("pop") or 0):
-            best[code] = p
+        best[code] = s
     return best
 
 
@@ -321,6 +314,7 @@ def city_entry(place, days, dates):
     return {
         "name": place["name"],
         "state": place.get("state"),
+        "district": place.get("district"),
         "pop": place.get("pop"),
         "tier": place.get("tier"),
         "e": es,
@@ -534,13 +528,11 @@ def aggregate_date(store, date, generated_at, report=None):
         roll = build_rollups(histories, window_dates(date, n), manifest_codes)
         store.put_json(f"rollups/{name}.json", roll, cache_control=SHORT)
 
-    places = load_places()
-    if places is not None:
-        doc = build_cities(histories, select_cities(places, manifest_codes), date, manifest)
-        if doc:
-            store.put_json("rollups/cities.json", doc, cache_control=SHORT)
-            print(f"Wrote cities view: {len(doc['cities'])} cities, "
-                  f"{len(doc['dates'])} days.")
+    doc = build_cities(histories, select_cities(manifest, manifest_codes), date, manifest)
+    if doc:
+        store.put_json("rollups/cities.json", doc, cache_control=SHORT)
+        print(f"Wrote cities view: {len(doc['cities'])} cities, "
+              f"{len(doc['dates'])} days.")
 
     failed_count = report.get("failed_count", 0) if report else 0
     summary = build_summary(date, manifest, today_means, failed_count)
@@ -567,15 +559,12 @@ def cities_only(store, date=None):
     """Build just rollups/cities.json from the histories already in the store."""
     manifest = load_manifest()
     manifest_codes = set(manifest["stations"])
-    places = load_places()
-    if places is None:
-        return
     if date is None:
         idx = store.get_json("meta/dates.json")
         date = (idx or {}).get("latest") or datetime.date.today().isoformat()
     print(f"Loading {len(manifest_codes)} station histories...")
     histories = load_histories(store, manifest_codes)
-    doc = build_cities(histories, select_cities(places, manifest_codes), date, manifest)
+    doc = build_cities(histories, select_cities(manifest, manifest_codes), date, manifest)
     if doc:
         store.put_json("rollups/cities.json", doc, cache_control=SHORT)
         print(f"Wrote cities view: {len(doc['cities'])} cities, {len(doc['dates'])} days.")
