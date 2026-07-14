@@ -283,7 +283,7 @@
 </section>
 
 <div
-	class="shore mx-auto -mt-6 flex w-full max-w-[1080px] items-center gap-[18px] px-5 py-1.5 md:-mt-5"
+	class="shore mx-auto -mt-5.5 flex w-full max-w-[1080px] items-center gap-[18px] px-5 py-1.5 md:-mt-5"
 >
 	<span
 		class="shore-waves h-[16px] flex-1 animate-shore-drift bg-size-[100px_16px] bg-repeat-x opacity-20 [image-rendering:pixelated] motion-reduce:animate-none"

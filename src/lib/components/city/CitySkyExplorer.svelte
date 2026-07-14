@@ -278,7 +278,7 @@
 								align="start"
 								onselect={select}
 							/>
-							<span class="text-xs tracking-wider text-ink/55 uppercase">
+							<span class="text-xs text-ink/85 uppercase">
 								or tap any cloud below
 							</span>
 						{/if}

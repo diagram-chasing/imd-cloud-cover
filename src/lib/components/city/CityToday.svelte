@@ -38,9 +38,7 @@
 >
 	<div class="head">
 		{#if when}
-			<div
-				class={['when tracking-wider uppercase opacity-55', expanded ? 'text-sm' : 'text-xs']}
-			>
+			<div class={['when tracking-wider uppercase opacity-55', expanded ? 'text-sm' : 'text-xs']}>
 				{[prettyDate(date), when].filter(Boolean).join(' · ')}
 			</div>
 		{/if}
@@ -58,10 +56,8 @@
 		{#each ROWS as row (row.key)}
 			<div class={['row flex items-center', expanded ? 'gap-3.5' : 'gap-2.5']}>
 				<span
-					class={[
-						'rlabel tracking-[0.03em]',
-						expanded ? 'w-[104px] text-sm' : 'w-[88px] text-xs'
-					]}>{row.label}</span
+					class={['rlabel tracking-[0.03em]', expanded ? 'w-[104px] text-sm' : 'w-[88px] text-xs']}
+					>{row.label}</span
 				>
 				<span class={['bar flex flex-1', expanded ? 'gap-0.5' : 'gap-px']} aria-hidden="true">
 					{#each Array(segCount) as _, i (i)}
@@ -74,20 +70,14 @@
 						></span>
 					{/each}
 				</span>
-				<span
-					class={[
-						'num text-right tabular-nums',
-						expanded ? 'w-9 text-sm' : 'w-[26px] text-xs'
-					]}>{values ? values[row.key] : '–'}</span
+				<span class={['num text-right tabular-nums', expanded ? 'w-9 text-sm' : 'w-[26px] text-xs']}
+					>{values ? values[row.key] : '–'}</span
 				>
 			</div>
 		{/each}
 	</div>
 
 	<div class="bottom flex flex-col gap-3">
-		<p class={['cap tracking-[0.05em] opacity-60', expanded ? 'text-[11px]' : 'text-[10px]']}>
-			READING FROM {stationName.toUpperCase()}{#if km != null} · {km} KM AWAY{/if}
-		</p>
 		{#if footer}
 			<div class="border-t border-ink/15 pt-3">{@render footer()}</div>
 		{/if}

@@ -86,10 +86,6 @@
 		{ bin: null, enter: 4.6 }
 	];
 	const LOD_DOWN_FACTOR = 0.9;
-	// Bin-representative tier bias: one tier step ≈ (REP_TIER_BIAS·binSize)² px of
-	// "effective distance". 0.5 → a megacity (tier 0) reliably outranks a town (tier 3)
-	// anywhere in the bin, while a one-tier gap still yields to a clearly-centred station.
-	const REP_TIER_BIAS = 0.5;
 	const GHOST_ALPHA = 0.4;
 	const TIER_ZOOM = [1.6, 3.2, 3.6, Infinity];
 	const BAND_OFFSET: Record<BandKey, number> = {
@@ -313,14 +309,21 @@
 		const availW = ax1 - ax0;
 		const availH = ay1 - ay0;
 
+		// Portrait phones: India fills the frame, so the only cover<=OPEN slots are tiny ocean
+		// slivers that force a small title. Bias bigger and tolerate more land there — a legible
+		// title that overlaps some land beats a shrunken one wedged into a corner.
+		const portrait = vh > vw;
+
 		// title's on-screen width is vw * frac (zoom-independent), so cap by an absolute px
 		// ceiling: big fractions still work on phones, but desktop stops growing unboundedly
-		const MAX_TITLE_PX = 460;
+		const MAX_TITLE_PX = portrait ? 520 : 460;
 		const maxFrac = MAX_TITLE_PX / vw;
-		const SIZE_FRACS = [0.5, 0.42, 0.34, 0.27, 0.2].map((f) => Math.min(f, maxFrac));
+		const SIZE_FRACS = (portrait ? [0.60, 0.56, 0.48, 0.4] : [0.5, 0.42, 0.34, 0.27, 0.2]).map(
+			(f) => Math.min(f, maxFrac)
+		);
 		const GRID_X = 11;
 		const GRID_Y = 8;
-		const OPEN = 0.05;
+		const OPEN = portrait ? 0.4 : 0.05;
 
 		let fallback: { x: number; y: number; s: number; cover: number } | null = null;
 		let prevF = -1;
@@ -574,15 +577,11 @@
 			}
 			b.members.push(i);
 		});
-		// tier penalty in px², scaled by bin size: at coarse LODs (big bins, lots of
-		// collisions) a megacity beats a town sitting nearer the centre; at fine LODs
-		// the bins are tiny so it fades to plain nearest-to-centre.
-		const tierUnit = (REP_TIER_BIAS * binSize) ** 2;
 		for (const b of map.values()) {
 			let best = Infinity;
 			for (const i of b.members) {
 				const st = g.stations[i];
-				const d = (st.rpx - b.px) ** 2 + (st.rpy - b.py) ** 2 + st.tier * tierUnit;
+				const d = (st.rpx - b.px) ** 2 + (st.rpy - b.py) ** 2;
 				if (d < best) {
 					best = d;
 					b.code = st.code;
@@ -899,7 +898,7 @@
 		const narrow = gutter < 90;
 
 		const unit = 30;
-		const pad = unit * 0.72;
+		const pad = unit * 0.52;
 		const gap = unit * 0.5;
 
 		titleText.style.fontSize = unit;
@@ -1425,8 +1424,10 @@
 			userPulse.scale.set(1 + g * 0.7);
 			userPulse.alpha = 1 - g;
 		}
+		// Planes keep flying across every view (today / week / month) — they're a
+		// living-map motif, not a "right now" one. Only reduced-motion stills them.
+		if (!reduced) flights?.tick(t.deltaMS);
 		if (reduced || sky.view !== 'today') return;
-		flights?.tick(t.deltaMS);
 		const now = performance.now();
 		if (now - lastDrift > 1200) {
 			lastDrift = now;
@@ -1745,13 +1746,8 @@
 	});
 	$effect(() => {
 		void date;
-		// Read sky.view unconditionally so the effect always tracks it — a `flights?.`
-		// short-circuit (flights still null on first run) would otherwise drop the dep.
-		const isToday = sky.view === 'today';
-		// Planes are a "today / right now" motif and their tick is skipped off that view
-		// (see raf loop) — hide the whole layer so they vanish cleanly instead of freezing
-		// mid-flight, and reappear when the visitor returns to today.
-		flights?.setVisible(isToday);
+		// Planes stay visible and animating across every view (today / week / month),
+		// so there's no view-based show/hide here anymore.
 		if (app) updateTitleMeta();
 	});
 	$effect(() => {

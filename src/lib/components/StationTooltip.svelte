@@ -29,8 +29,9 @@
 		{ key: 'm', label: 'MID · ALTO' },
 		{ key: 'l', label: 'LOW · CUMULUS' }
 	];
+	const SEGS = 6;
 	function filled(v: number): number {
-		return Math.round(v / 10);
+		return Math.round((v / 100) * SEGS);
 	}
 
 	let summary = $derived(values ? skyCondition(values) : '');
@@ -62,7 +63,7 @@
 				<div class="row flex items-center gap-1.5">
 					<span class="rlabel w-[104px] text-xs tracking-[0.03em] opacity-80">{row.label}</span>
 					<span class="bar flex gap-px" aria-hidden="true">
-						{#each Array(6) as _, i (i)}
+						{#each Array(SEGS) as _, i (i)}
 							<span
 								class={[
 									'seg h-2 w-[9px]',
