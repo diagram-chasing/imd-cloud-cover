@@ -4,8 +4,31 @@
 
 	interface Props {
 		dates: string[];
+		/** Per-date data availability, aligned to `dates`; false = no reading that day. */
+		available?: boolean[] | null;
 	}
-	let { dates }: Props = $props();
+	let { dates, available = null }: Props = $props();
+
+	// Days with no reading are dimmed and skipped by stepping/autoplay (drag can still land
+	// on them). Unknown availability (no array) counts as present, so nothing is hidden.
+	function hasData(i: number): boolean {
+		return !available || available[i] !== false;
+	}
+	// Nearest data-bearing day from `from` going `dir` (±1), no wrap; stays put if none.
+	function seek(from: number, dir: number): number {
+		for (let i = from + dir; i >= 0 && i <= dates.length - 1; i += dir) {
+			if (hasData(i)) return i;
+		}
+		return from;
+	}
+	// Next data-bearing day after `from`, wrapping; falls back to +1 if every day is empty.
+	function nextData(from: number): number {
+		for (let step = 1; step <= dates.length; step++) {
+			const i = (from + step) % dates.length;
+			if (hasData(i)) return i;
+		}
+		return (from + 1) % dates.length;
+	}
 
 	$effect(() => {
 		if (sky.windowDayIndex > dates.length - 1) sky.windowDayIndex = dates.length - 1;
@@ -25,7 +48,7 @@
 	$effect(() => {
 		if (!sky.playing || reduced || dates.length < 2) return;
 		const id = setInterval(() => {
-			sky.windowDayIndex = (sky.windowDayIndex + 1) % dates.length;
+			sky.windowDayIndex = nextData(sky.windowDayIndex);
 		}, 900);
 		return () => clearInterval(id);
 	});
@@ -66,11 +89,11 @@
 	}
 	function onkeydown(e: KeyboardEvent) {
 		if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
-			sky.windowDayIndex = Math.max(0, sky.windowDayIndex - 1);
+			sky.windowDayIndex = seek(sky.windowDayIndex, -1);
 			sky.playing = false;
 			e.preventDefault();
 		} else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
-			sky.windowDayIndex = Math.min(dates.length - 1, sky.windowDayIndex + 1);
+			sky.windowDayIndex = seek(sky.windowDayIndex, 1);
 			sky.playing = false;
 			e.preventDefault();
 		}
@@ -100,7 +123,10 @@
 		></div>
 		{#each dates as d, i (d)}
 			<span
-				class="tick absolute top-1.5 -ml-px h-1.5 w-0.5 bg-white opacity-70 shadow-[1px_1px_0] shadow-navy/90"
+				class={[
+					'tick absolute top-1.5 -ml-px h-1.5 w-0.5 bg-white shadow-[1px_1px_0] shadow-navy/90',
+					hasData(i) ? 'opacity-70' : 'opacity-25'
+				]}
 				style="left:{dates.length > 1 ? (i / (dates.length - 1)) * 100 : 0}%"
 			></span>
 		{/each}

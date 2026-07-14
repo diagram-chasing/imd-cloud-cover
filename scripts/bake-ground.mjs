@@ -25,7 +25,7 @@ const LAND = {
 // unlit cells don't read as sand and lit ones pop as points of light.
 const URBAN = {
 	day: { fill: '#59685A', dither: '#525F53' },
-	night: { fill: '#262E38', dither: '#22272F' }
+	night: { fill: '#333D49', dither: '#2E3742' }
 };
 // shallow band: partial alpha blends with sky-sea background
 const SEA = {
@@ -41,11 +41,13 @@ const TERRAIN_STRENGTH = 0.38;
 const TERRAIN_STEP = 0.08;
 const TERRAIN_BLUR_PASSES = 2;
 const HYP_BBOX = { lon0: 66, lon1: 100, lat0: 4, lat1: 38 };
-// night city lights: sparse warm-white pixels inside built-up cells; high mix so
-// lit cells read as crisp points of light on the dark slate base, not a wash
+// night city lights: sparse warm-white pixels inside built-up cells. slightly
+// sparser + gentler mix so they read as small muted points, not a wash; each lit
+// cell also gets a per-cell brightness jitter so the field isn't uniformly bright
 const CITY_LIGHT = '#FFE6B0';
-const CITY_LIGHT_DENSITY = 0.16;
-const CITY_LIGHT_MIX = 0.85;
+const CITY_LIGHT_DENSITY = 0.11;
+const CITY_LIGHT_MIX = 0.72;
+const CITY_LIGHT_MIX_MIN = 0.45; // dimmest lights get this fraction of the mix
 // grass tile width in px
 const TILE_PX = 10;
 
@@ -328,9 +330,12 @@ function composeGround(mode) {
 			let g = (t.data[si + 1] * tint[1] * fg) / t.mean[1];
 			let b = (t.data[si + 2] * tint[2] * fb) / t.mean[2];
 			if (night && built && cellHash(x, y) < CITY_LIGHT_DENSITY) {
-				r = r + (lightRGB[0] - r) * CITY_LIGHT_MIX;
-				g = g + (lightRGB[1] - g) * CITY_LIGHT_MIX;
-				b = b + (lightRGB[2] - b) * CITY_LIGHT_MIX;
+				// decorrelated hash → per-cell brightness in [MIX_MIN, 1] of the base mix
+					const bv = cellHash(x + 1013, y + 1619);
+					const mix = CITY_LIGHT_MIX * (CITY_LIGHT_MIX_MIN + (1 - CITY_LIGHT_MIX_MIN) * bv);
+					r = r + (lightRGB[0] - r) * mix;
+					g = g + (lightRGB[1] - g) * mix;
+					b = b + (lightRGB[2] - b) * mix;
 			}
 			img[o] = Math.min(255, r);
 			img[o + 1] = Math.min(255, g);

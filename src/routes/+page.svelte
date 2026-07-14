@@ -104,6 +104,9 @@
 	});
 
 	let activeRollup = $derived(rollupForView(sky.view, core?.rollup7, core?.rollup30));
+	// per-date data availability for the window scrubber: national.e is null on days no
+	// station reported, so the scrubber can skip those (see WindowScrubber).
+	let dayAvailable = $derived(activeRollup?.national?.e?.map((v) => v != null) ?? null);
 
 	let activeDay = $derived(core ? resolveActiveDay(core.latest) : null);
 	let values = $derived(
@@ -263,7 +266,7 @@
 				<div class="mobile-row relative hidden items-center justify-center gap-3 max-md:flex">
 					<BandToggle horizontal />
 				</div>
-				<TimeDock dates={activeRollup?.dates ?? null} />
+				<TimeDock dates={activeRollup?.dates ?? null} available={dayAvailable} />
 			</div>
 			<!-- tablets + desktop: vertical legend on the right, dock centred -->
 			<div class="lane where flex min-w-0 items-center gap-3 justify-self-end max-md:hidden">

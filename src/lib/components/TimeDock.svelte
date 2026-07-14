@@ -6,8 +6,10 @@
 
 	interface Props {
 		dates?: string[] | null;
+		/** Per-date data availability, aligned to `dates`; false = no reading that day. */
+		available?: boolean[] | null;
 	}
-	let { dates = null }: Props = $props();
+	let { dates = null, available = null }: Props = $props();
 </script>
 
 <div class="dock flex flex-col items-start gap-1.5">
@@ -15,6 +17,6 @@
 	{#if sky.view === 'today'}
 		<TimeScrubber />
 	{:else if dates}
-		<WindowScrubber {dates} />
+		<WindowScrubber {dates} {available} />
 	{/if}
 </div>

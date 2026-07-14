@@ -1106,8 +1106,8 @@
 		const ctx = c.getContext('2d')!;
 		ctx.imageSmoothingEnabled = false;
 		const W1 = '#ffffff';
-		const W2 = '#c4ccd4';
-		const W3 = '#e2e7ec';
+		const W2 = '#dde2e8';
+		const W3 = '#f0f3f6';
 		BALLOON_HALF.forEach((h, y) => {
 			const a = cx - h;
 			const b = cx + h;
@@ -1163,7 +1163,7 @@
 		const b = balloonBounds;
 		const sp = new Sprite(balloonTex);
 		sp.anchor.set(0.5, 1);
-		sp.scale.set(0.7);
+		sp.scale.set(0.58);
 		const c = new Container();
 		c.eventMode = 'none';
 		c.addChild(sp);
@@ -1260,7 +1260,7 @@
 		const mode = skyMode(sky.timeIndex);
 		const night = mode === 'night';
 		flights?.style(night);
-		if (balloon) (balloon.c.children[0] as Sprite).tint = night ? 0x9fb0cc : 0xffffff;
+		if (balloon) (balloon.c.children[0] as Sprite).tint = night ? 0xd2d8de : 0xffffff;
 		if (shadowLayer) shadowLayer.alpha = SHADOW_ALPHA[mode];
 		const wavePal = WAVE[mode];
 		for (const w of waves) {
