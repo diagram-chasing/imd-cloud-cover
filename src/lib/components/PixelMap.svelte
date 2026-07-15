@@ -86,6 +86,10 @@
 		{ bin: null, enter: 4.6 }
 	];
 	const LOD_DOWN_FACTOR = 0.9;
+	// Bin-representative tier bias: one tier step ≈ (REP_TIER_BIAS·binSize)² px of
+	// "effective distance". 0.5 → a megacity (tier 0) reliably outranks a town (tier 3)
+	// anywhere in the bin, while a one-tier gap still yields to a clearly-centred station.
+	const REP_TIER_BIAS = 0.5;
 	const GHOST_ALPHA = 0.4;
 	const TIER_ZOOM = [1.6, 3.2, 3.6, Infinity];
 	const BAND_OFFSET: Record<BandKey, number> = {
@@ -587,11 +591,15 @@
 			}
 			b.members.push(i);
 		});
+		// tier penalty in px², scaled by bin size: at coarse LODs (big bins, lots of
+		// collisions) a megacity beats a town sitting nearer the centre; at fine LODs
+		// the bins are tiny so it fades to plain nearest-to-centre.
+		const tierUnit = (REP_TIER_BIAS * binSize) ** 2;
 		for (const b of map.values()) {
 			let best = Infinity;
 			for (const i of b.members) {
 				const st = g.stations[i];
-				const d = (st.rpx - b.px) ** 2 + (st.rpy - b.py) ** 2;
+				const d = (st.rpx - b.px) ** 2 + (st.rpy - b.py) ** 2 + st.tier * tierUnit;
 				if (d < best) {
 					best = d;
 					b.code = st.code;
