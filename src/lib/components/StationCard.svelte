@@ -4,11 +4,17 @@
 	import { fetchForecast } from '$lib/api/r2';
 	import { prettyDate, skyCondition, stationLabel, stationSubtitle } from '$lib/format';
 	import { sky } from '$lib/state/sky.svelte';
+	import { webcamFor } from '$lib/webcams';
 	import StationMeteogram from './StationMeteogram.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { Cancel01Icon, ArrowRight01Icon } from '@hugeicons/core-free-icons';
+	import {
+		Cancel01Icon,
+		ArrowRight01Icon,
+		CctvCameraIcon,
+		ArrowUpRight01Icon
+	} from '@hugeicons/core-free-icons';
 
 	interface Props {
 		code: string;
@@ -55,6 +61,7 @@
 	let focusKey = $derived(sky.focusBand ? BAND_TO_ROW[sky.focusBand] : null);
 
 	let summary = $derived(current ? skyCondition(current) : 'NO READING TODAY');
+	let webcam = $derived(webcamFor(code));
 </script>
 
 <div class="card flex w-full flex-col gap-3 text-ink">
@@ -143,6 +150,19 @@
 			<StationMeteogram {forecast} today={date} />
 		{/if}
 	</figure>
+
+	{#if webcam}
+		<a
+			class="webcam -mx-0.5 flex items-center gap-2 border-t border-border px-0.5 pt-2 text-xs tracking-[0.03em] text-ink uppercase no-underline hover:text-focus"
+			href={webcam.url}
+			target="_blank"
+			rel="noopener noreferrer"
+		>
+			<HugeiconsIcon icon={CctvCameraIcon} size={15} strokeWidth={2} aria-hidden="true" />
+			<span class="flex-1">Live webcam · {webcam.source}</span>
+			<HugeiconsIcon icon={ArrowUpRight01Icon} size={13} strokeWidth={2.5} aria-hidden="true" />
+		</a>
+	{/if}
 
 	<footer class="cta mt-0.5">
 		<Button

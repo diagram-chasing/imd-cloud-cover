@@ -3,6 +3,9 @@
 	import type { FeatureCollection } from 'geojson';
 	import type { Forecast, Station } from '$lib/types';
 	import { meteogramImageUrl } from '$lib/api/r2';
+	import { webcamFor } from '$lib/webcams';
+	import { HugeiconsIcon } from '@hugeicons/svelte';
+	import { CctvCameraIcon, ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
 	import CityToday from '$lib/components/city/CityToday.svelte';
 	import CityMap from '$lib/components/city/CityMap.svelte';
 	import CloudGlyph from '$lib/components/city/CloudGlyph.svelte';
@@ -101,6 +104,8 @@
 	function href(s: NearbyStation): string | null {
 		return s.primary ? null : `${base}/station/${s.code}`;
 	}
+
+	let webcam = $derived(webcamFor(metCode));
 </script>
 
 <main class="mx-auto max-w-[860px] px-5 pt-6 pb-18">
@@ -110,9 +115,7 @@
 
 	<article class="flex flex-col gap-6">
 		<header class="border-b-2 border-ink pb-3">
-			<h1
-				class=" text-[length:clamp(2rem,7vw,calc(var(--ms-6)*1rem))] leading-[1.05]  uppercase"
-			>
+			<h1 class=" text-[length:clamp(2rem,7vw,calc(var(--ms-6)*1rem))] leading-[1.05] uppercase">
 				{name}{#if mode === 'station'}<span class="ml-3 inline-block text-sm font-bold text-ink"
 						>[WEATHER STATION]</span
 					>{/if}
@@ -156,6 +159,21 @@
 				{/if}
 			</div>
 		</section>
+
+		{#if webcam}
+			<a
+				class="group flex items-center gap-3 bg-paper px-4 py-3 text-ink no-underline shadow-[0_0_0_2px] shadow-ink transition-colors hover:bg-focus"
+				href={webcam.url}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				<HugeiconsIcon icon={CctvCameraIcon} size={20} strokeWidth={2} aria-hidden="true" />
+				<span class="flex-1 text-sm tracking-[0.03em] uppercase">
+					Live webcam <span class="opacity-55">· {webcam.source}</span>
+				</span>
+				<HugeiconsIcon icon={ArrowUpRight01Icon} size={16} strokeWidth={2.5} aria-hidden="true" />
+			</a>
+		{/if}
 
 		<section>
 			<h2 class="mb-3 border-b border-ink pb-1 text-xl">CLOUD COVER FORECAST</h2>
