@@ -8,8 +8,10 @@ on:
 # Grant the token the permissions the reusable deploy workflow requires. A
 # reusable workflow can never request more than its caller, so the caller must
 # declare `deployments: write` here (the repo default is `deployments: none`).
+# `contents: write` lets the scrape job commit the regenerated public dataset
+# (data/) back to the repo.
 permissions:
-  contents: read
+  contents: write
   deployments: write
 
 jobs:
@@ -41,6 +43,25 @@ jobs:
       - name: Aggregate derived views
         working-directory: scraper
         run: python aggregate.py --results /tmp/run-results.json
+
+      # Regenerate the public dataset (data/*.parquet, *.csv, *.csv.zip) from the
+      # freshly-aggregated histories in R2, so the committed dataset tracks each
+      # run. export.py writes to repo-root data/ by default.
+      - name: Export public dataset
+        working-directory: scraper
+        run: python export.py
+
+      - name: Commit regenerated dataset
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "No dataset changes to commit."
+          else
+            git commit -m "chore: regenerate public dataset [skip ci]"
+            git push
+          fi
 
       - name: Upload run report artifact
         if: always()

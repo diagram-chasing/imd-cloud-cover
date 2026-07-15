@@ -1,8 +1,6 @@
 # IMD Meteogram Pipeline
 
-This is the pipeline that turns IMD's meteogram PNGs into data. It downloads
-the charts, pixel-extracts the cloud-cover panel, and builds the static JSON
-the frontend reads. A GitHub Actions workflow runs it once a day.
+Pipeline for processing IMD's meteogram PNGs into data. We download the charts, pixel-extract the cloud-cover panel, and build the static data for the frontend. Run once daily via Github Actions.
 
 ## Setup
 
@@ -11,10 +9,10 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-The `.env` holds R2 credentials for production. For local dev you can skip
+In prod, please set `.env` with R2 credentials. For local dev you can skip
 those and just set `LOCAL_MODE=1`.
 
-## What a daily run looks like
+## Daily Run
 
 ```bash
 python main.py --out /tmp/run-results.json          # scrape + extract + upload
@@ -23,7 +21,7 @@ python export.py                                    # write public dataset to ..
 ```
 
 `main.py` downloads every station's meteogram, checks the chart geometry looks right, extracts the day-0 slice, and uploads
-`{date}/{CODE}-meteogram.{webp,json}`. If fewer than 80% of stations succeed it exits non-zero so the workflow fails loudly rather than publishing a bad day.
+`{date}/{CODE}-meteogram.{webp,json}`.
 
 `aggregate.py` then reads those day-0 slices and writes the frontend view listed below. `export.py` flattens the histories into the public CSV/Parquet
 dataset in [`../data`](../data). Please see [DATA.md](../data/DATA.md) for what's in it.
@@ -31,10 +29,9 @@ dataset in [`../data`](../data). Please see [DATA.md](../data/DATA.md) for what'
 ## Occasionally useful
 
 Re-seed the station manifest from the IMD page. This grabs the code + lat/lon,
-then enriches each station with IMD-native geography: state/district/subdivision
+then enriches each station with IMD geography data: state/district/subdivision
 by point-in-polygon against IMD's `imd:india_districts`, a real name by coordinate
-match against IMD's synop/metar/nowcast station layers, and a district-headline
-population/tier from GeoNames. First cache the IMD GeoServer layers, then seed:
+match against IMD station layers.
 
 ```bash
 python tools/fetch_imd_gazetteer.py     # caches scraper/data/imd/*.json

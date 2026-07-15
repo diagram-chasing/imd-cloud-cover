@@ -6,9 +6,9 @@ feed behind it, just an image. So this dataset is built by reading the
 cloud-cover panel out of the image pixels, recovering the high / middle / low
 cloud fractions, and reducing them to the tables below.
 
-Two things to keep in mind:
+Please note:
 
-- These are **forecast** values (the day-0 portion of the model run), not
+- These are forecast*values (the day-0 portion of that day's model run), not
   observations.
 - Coverage grows one day at a time from when the scraper first ran, and each
   station keeps at most its last 400 days. A station shows up from the first
@@ -45,7 +45,7 @@ Same data before the daily averaging: one row per station per 3-hour step.
 
 ### Stations ([stations.parquet](stations.parquet) · [stations.csv](stations.csv))
 
-One row per station. The name and geography are IMD's own (see Source).
+One row per station.
 
 | Variable | Type | Description |
 |----------|------|-------------|
@@ -60,10 +60,7 @@ One row per station. The name and geography are IMD's own (see Source).
 
 ### Places ([places.parquet](places.parquet) · [places.csv](places.csv))
 
-One row per station treated as a **place**. Each IMD station *is* a place: its name,
-district and state come from IMD, and `pop`/`tier` describe the station's district
-(the most populous settlement in it) — a coarse "how big is this place" signal for
-ranking, not the station's own town population.
+Locations extracted from IMD to give stations readable names. Population and tier was arrived at by joining GeoNames.
 
 | Variable | Type | Description |
 |----------|------|-------------|
@@ -80,12 +77,12 @@ ranking, not the station's own town population.
 
 ## Source
 
-- **Cloud cover** — IMD Numerical Weather Prediction meteograms,
+- **Cloud cover** from IMD Numerical Weather Prediction meteograms,
   <https://nwp.imd.gov.in/>.
-- **Station geography** (name, state, district, subdivision) — IMD's own GeoServer
+- **Station geography** (name, state, district, subdivision) from IMD's own GeoServer
   layers: `imd:india_districts` (state/district by point-in-polygon) and the
   `imd:synop_data_layer` / `imd:metar_data_layer` / `imd:NowcastWarningStation`
   station layers (real names by coordinate match), via
   <https://reactjs.imd.gov.in/geoserver/imd/wfs>.
-- **Population / tier** — [GeoNames](https://www.geonames.org/) (CC BY 4.0), joined to
+- **Population / tier** from [GeoNames](https://www.geonames.org/) (CC BY 4.0), joined to
   each station's IMD district (district-headline settlement).
