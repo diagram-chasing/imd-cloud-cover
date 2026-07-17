@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { FeatureCollection } from 'geojson';
-	import type { Feature, Geometry } from 'geojson';
-	import { geoConicConformal } from 'd3-geo';
 	import groundDayUrl from '$lib/assets/ground/ground-day.png';
+	import { indiaProjection } from '$lib/map/geo';
+	import { WORLD_W, WORLD_H } from '$lib/map/camera';
 
 	interface Pin {
 		// unique station code — keys the each; two cities can share a display label
@@ -18,10 +18,6 @@
 		pins: Pin[];
 	}
 	let { india, pins }: Props = $props();
-
-	const WORLD_W = 1024;
-	const WORLD_H = WORLD_W * 1.06;
-	const CELL = 8;
 
 	const V_TOP = 0.05;
 	const V_BOT = 0.05;
@@ -40,18 +36,7 @@
 	const MARK_HX = MARK_W / 2;
 	const MARK_HY = MARK_H / 2;
 
-	let projection = $derived(
-		geoConicConformal()
-			.parallels([12, 36])
-			.rotate([-82.5, 0])
-			.fitExtent(
-				[
-					[CELL, CELL],
-					[WORLD_W - CELL, WORLD_H - CELL]
-				],
-				india as unknown as Feature<Geometry>
-			)
-	);
+	let projection = $derived(indiaProjection(india));
 
 
 	let mapW = $state(180);

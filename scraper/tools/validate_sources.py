@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from dotenv import load_dotenv  # noqa: E402
 
-from aggregate import codes_for_date, read_slices, effective  # noqa: E402
+from bands import codes_for_date, effective, read_slices  # noqa: E402
 from anchor import apply_anchoring  # noqa: E402
 from storage import get_store, SHORT  # noqa: E402
 from synop import is_raining_wx  # noqa: E402

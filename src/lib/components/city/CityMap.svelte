@@ -1,12 +1,13 @@
 <script lang="ts">
 
-	import type { FeatureCollection, Feature, Geometry } from 'geojson';
-	import { geoConicConformal } from 'd3-geo';
+	import type { FeatureCollection } from 'geojson';
 	import { goto } from '$app/navigation';
 	import { base as APP_BASE } from '$app/paths';
 	import { click as clickFx } from '$lib/feedback';
 	import groundDayUrl from '$lib/assets/ground/ground-day.png';
 	import { buildTower, type CloudTower } from '$lib/stations/clouds';
+	import { indiaProjection } from '$lib/map/geo';
+	import { WORLD_W, WORLD_H } from '$lib/map/camera';
 
 	interface NearbyStation {
 		code: string;
@@ -39,24 +40,9 @@
 		onhover
 	}: Props = $props();
 
-	// must match PixelMap/bake-ground.mjs so the raster and projected points align
-	const WORLD_W = 1024;
-	const WORLD_H = WORLD_W * 1.06;
-	const CELL = 8;
 	const ASPECT = 1.2; // rendered width / height - landscape crops wider, not taller
 
-	let projection = $derived(
-		geoConicConformal()
-			.parallels([12, 36])
-			.rotate([-82.5, 0])
-			.fitExtent(
-				[
-					[CELL, CELL],
-					[WORLD_W - CELL, WORLD_H - CELL]
-				],
-				india as unknown as Feature<Geometry>
-			)
-	);
+	let projection = $derived(indiaProjection(india));
 
 	let mapW = $state(320);
 	let mapH = $derived(mapW / ASPECT);

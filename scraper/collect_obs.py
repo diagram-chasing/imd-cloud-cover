@@ -12,17 +12,13 @@ from dotenv import load_dotenv
 
 import mosdac
 import synop
-from aggregate import load_manifest
+from common import c100, load_manifest
 from storage import get_store, SHORT
 
 load_dotenv()
 
 SYNOP_MAX_AGE = datetime.timedelta(hours=4.5)
 ARCHIVE_KEEP = 60  # snapshots per daily QA archive file
-
-
-def _c100(v):
-    return max(0, min(100, round(v)))
 
 
 def build_obs(now):
@@ -36,7 +32,7 @@ def build_obs(now):
         row = {}
         sc = mosdac.sample(cmk, s["lat"], s["lon"])
         if sc is not None:
-            row["sc"] = _c100(sc * 100)
+            row["sc"] = c100(sc * 100)
         rr = mosdac.sample(hem, s["lat"], s["lon"])
         if rr:
             row["rr"] = round(rr, 1)
@@ -55,9 +51,9 @@ def build_obs(now):
         # the observer's oktas higher when both are fresh.
         okpct = row["ok"] / 8 * 100 if "ok" in row else None
         if "sc" in row and okpct is not None:
-            row["oc"] = _c100(0.4 * row["sc"] + 0.6 * okpct)
+            row["oc"] = c100(0.4 * row["sc"] + 0.6 * okpct)
         elif okpct is not None:
-            row["oc"] = _c100(okpct)
+            row["oc"] = c100(okpct)
         elif "sc" in row:
             row["oc"] = row["sc"]
 

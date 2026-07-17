@@ -9,11 +9,11 @@ renders as 12 discrete grey bands of 2 mm/hr.
 import datetime
 import io
 import re
-import ssl
-import urllib.request
 
 import numpy as np
 from PIL import Image
+
+from common import insecure_get
 
 LATEST_URL = ("https://mosdac.gov.in/live/backend/satellite_latest.php"
               "?file_prefix=3SIMG&param=addlayer&timezone=local"
@@ -32,21 +32,12 @@ _MONTHS = {m: i + 1 for i, m in enumerate(
      "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"])}
 
 
-def _get(url, timeout=90):
-    ctx = ssl.create_default_context()
-    ctx.check_hostname = False
-    ctx.verify_mode = ssl.CERT_NONE
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
-        return r.read()
-
-
 def latest_files(now):
     """{"CMK": filename, "HEM": filename} for the newest fresh scan of each
     product, or {} when the listing is unreachable. The listing dumps every
     product unordered, so take the max timestamp per product."""
     try:
-        text = _get(LATEST_URL, timeout=45).decode("utf-8", "replace")
+        text = insecure_get(LATEST_URL, timeout=45).decode("utf-8", "replace")
     except Exception:  # noqa: BLE001
         return {}
     best = {}
@@ -71,7 +62,7 @@ def _fetch_grid(filename, layer, colorscalerange, numcolorbands=""):
            f"&styles=boxfill/greyscale&colorscalerange={colorscalerange}"
            + (f"&numcolorbands={numcolorbands}" if numcolorbands else ""))
     try:
-        a = np.asarray(Image.open(io.BytesIO(_get(url))).convert("RGBA"),
+        a = np.asarray(Image.open(io.BytesIO(insecure_get(url, timeout=90))).convert("RGBA"),
                        dtype=np.float32)
     except Exception:  # noqa: BLE001
         return None

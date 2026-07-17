@@ -26,6 +26,34 @@ python export.py                                    # write public dataset to ..
 `aggregate.py` then reads those day-0 slices and writes the frontend view listed below. `export.py` flattens the histories into the public CSV/Parquet
 dataset in [`../data`](../data). Please see [DATA.md](../data/DATA.md) for what's in it.
 
+Two more jobs run on their own schedules: `collect_numeric.py` writes the
+MausamGram MME sidecar `{date}/numeric.json` (used by aggregate to anchor the
+OCR bands and supply forecast rain), and `collect_obs.py` refreshes
+`latest/obs.json` every ~30 min from INSAT-3DS + IMD synop.
+
+## Layout
+
+Entry points, one per scheduled job:
+
+| script | job |
+| --- | --- |
+| `main.py` | scrape meteogram GIFs, OCR the cloud panel (`extract_data.py`), upload raws |
+| `collect_numeric.py` | fetch the MausamGram MME sidecar (`mausamgram.py`) |
+| `collect_obs.py` | near-real-time observations (`mosdac.py`, `synop.py`) |
+| `aggregate.py` | build all derived views (`anchor.py`, `cities.py`) |
+| `export.py` | public CSV/Parquet dataset |
+
+Shared modules (nothing imports an entry point):
+
+| module | owns |
+| --- | --- |
+| `bands.py` | the day-0 band model: parse raw slices, daily means, effective cover |
+| `histories.py` | `history/{CODE}.json` documents + the 400-day retention policy |
+| `cities.py` | the city-explorer view and sky-twin assignment |
+| `anchor.py` | anchoring OCR bands to the MME total; attaching rain |
+| `storage.py` | R2/local byte store + concurrent store-op helper |
+| `common.py` | manifest access and small shared utilities |
+
 ## Occasionally useful
 
 Re-seed the station manifest from the IMD page. This grabs the code + lat/lon,

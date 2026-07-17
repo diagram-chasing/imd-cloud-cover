@@ -4,7 +4,22 @@ Pick one with get_store().
 
 import json
 import os
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
+
+# The store's per-object ops are network round-trips; run them concurrently.
+# boto3 clients are thread-safe for distinct calls (main.py relies on this too).
+MAX_WORKERS = 16
+
+
+def pmap(fn, items):
+    """Map `fn` over `items` concurrently, preserving order. Empty-safe."""
+    items = list(items)
+    if not items:
+        return []
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+        return list(ex.map(fn, items))
+
 
 # Cache-Control policy by key prefix. Dated snapshots never change;
 # rolling/latest views change daily and are served with a short TTL.

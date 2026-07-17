@@ -12,7 +12,9 @@ export function prettyDate(iso?: string): string {
 
 import { rainTier } from '$lib/theme';
 
-function effectiveCover(v: { h: number; m: number; l: number }): number {
+/** Effective cover: low counts fully, higher bands progressively less. The one
+ *  canonical set of weights — the map's cloud shadows use it too. */
+export function effectiveCover(v: { h: number; m: number; l: number }): number {
 	return Math.max(v.l, v.m * 0.8, v.h * 0.45);
 }
 

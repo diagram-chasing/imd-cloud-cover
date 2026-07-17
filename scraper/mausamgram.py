@@ -14,6 +14,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import requests
 
+from common import to_float
+
 URL = "https://mausamgram.imd.gov.in/test4_mme.php"
 GRID = 0.125
 N_STEPS = 41
@@ -24,14 +26,6 @@ MAX_WORKERS = 6
 
 def snap(v):
     return math.floor(v / GRID) * GRID
-
-
-def _num(v):
-    try:
-        f = float(v)
-        return None if math.isnan(f) else f
-    except (TypeError, ValueError):
-        return None
 
 
 def fetch_cell(lat, lon, ic, sess):
@@ -46,7 +40,7 @@ def fetch_cell(lat, lon, ic, sess):
             if not (isinstance(tc, list) and len(tc) == N_STEPS
                     and isinstance(p, list) and len(p) == N_STEPS):
                 return None
-            return {"tc": [_num(v) for v in tc], "p": [_num(v) for v in p]}
+            return {"tc": [to_float(v) for v in tc], "p": [to_float(v) for v in p]}
         except Exception:  # noqa: BLE001 — flaky govt endpoint; retry then give up
             if attempt == 2:
                 return None

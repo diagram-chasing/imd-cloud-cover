@@ -4,7 +4,28 @@ import { feature } from 'topojson-client';
 import type { Topology, GeometryCollection } from 'topojson-specification';
 import type { FeatureCollection, Feature, Geometry } from 'geojson';
 import { jitter } from './hash';
+import { WORLD_W, WORLD_H } from './camera';
+import { CELL } from '$lib/theme';
 import type { StationsManifest } from '$lib/types';
+
+/** The canonical India→world-px projection every map view shares. */
+export function indiaProjection(
+	india: FeatureCollection,
+	worldW = WORLD_W,
+	worldH = WORLD_H,
+	cell = CELL
+): GeoProjection {
+	return geoConicConformal()
+		.parallels([12, 36])
+		.rotate([-82.5, 0])
+		.fitExtent(
+			[
+				[cell, cell],
+				[worldW - cell, worldH - cell]
+			],
+			india as unknown as Feature<Geometry>
+		);
+}
 
 /** Expand a topojson's first object (India's states) into a GeoJSON FeatureCollection. */
 export function topoToFeatures(topo: Topology): FeatureCollection {
@@ -59,6 +80,28 @@ export interface Geo {
 	places: GeoPlace[];
 	/** Project lon/lat into world px (may be off-map). */
 	project(lon: number, lat: number): [number, number] | null;
+}
+
+/** World-px bbox of the land cells (fallback: the whole world). */
+export function landBBox(g: Geo): { minX: number; maxX: number; minY: number; maxY: number } {
+	let minX = g.cols,
+		maxX = 0,
+		minY = g.rows,
+		maxY = 0,
+		found = false;
+	for (let y = 0; y < g.rows; y++) {
+		for (let x = 0; x < g.cols; x++) {
+			if (!g.land[y * g.cols + x]) continue;
+			found = true;
+			if (x < minX) minX = x;
+			if (x > maxX) maxX = x;
+			if (y < minY) minY = y;
+			if (y > maxY) maxY = y;
+		}
+	}
+	if (!found) return { minX: 0, maxX: g.worldW, minY: 0, maxY: g.worldH };
+	const gc = g.groundScale;
+	return { minX: minX * gc, maxX: (maxX + 1) * gc, minY: minY * gc, maxY: (maxY + 1) * gc };
 }
 
 function loadImage(url: string): Promise<HTMLImageElement> {
@@ -130,16 +173,7 @@ export function buildGeo(
 	const cols = mask?.cols ?? Math.floor(worldW / gcell);
 	const rows = mask?.rows ?? Math.floor(worldH / gcell);
 
-	const projection: GeoProjection = geoConicConformal()
-		.parallels([12, 36])
-		.rotate([-82.5, 0])
-		.fitExtent(
-			[
-				[cell, cell],
-				[worldW - cell, worldH - cell]
-			],
-			india as unknown as Feature<Geometry>
-		);
+	const projection = indiaProjection(india, worldW, worldH, cell);
 
 	const stations: GeoStation[] = [];
 	for (const [code, s] of Object.entries(manifest.stations)) {
