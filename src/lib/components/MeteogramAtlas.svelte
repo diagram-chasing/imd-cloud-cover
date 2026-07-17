@@ -141,6 +141,29 @@
 
 	let root: HTMLElement | undefined = $state();
 
+	// The specimen sits mid-article, so its cards stagger in the first time they scroll
+	// into view rather than on mount (where they'd play unseen). One-shot; skipped under
+	// reduced motion.
+	let revealed = $state(false);
+	$effect(() => {
+		if (!root) return;
+		if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			revealed = true;
+			return;
+		}
+		const io = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((e) => e.isIntersecting)) {
+					revealed = true;
+					io.disconnect();
+				}
+			},
+			{ rootMargin: '0px 0px -15% 0px' }
+		);
+		io.observe(root);
+		return () => io.disconnect();
+	});
+
 	const IMG_L = 22;
 	const IMG_W = 56;
 	const CARD_L = 19.5;
@@ -414,13 +437,14 @@
 		</div>
 
 		<div class="cards pointer-events-none absolute inset-0 z-[2] max-[1099px]:hidden">
-			{#each REGIONS as r (r.id)}
+			{#each REGIONS as r, i (r.id)}
 				<div
 					class={[
 						'card-slot pointer-events-auto absolute w-[19.5%] -translate-y-1/2',
-						r.side === 'left' ? 'left-0' : 'right-0'
+						r.side === 'left' ? 'left-0' : 'right-0',
+						revealed && 'revealed'
 					]}
-					style="top: {r.anchorY}%"
+					style="top: {r.anchorY}%; --i: {i}"
 				>
 					{@render card(r, 'd')}
 				</div>
@@ -465,6 +489,29 @@
 </figure>
 
 <style>
+	/* Specimen cards stagger up as the plate scrolls into view (see `revealed`).
+	   Hidden by default so the entrance reads even though the atlas loads far below
+	   the fold; the transform composes with Tailwind's `translate` (-translate-y-1/2). */
+	.card-slot {
+		opacity: 0;
+		transform: translateY(8px);
+		transition:
+			opacity 200ms ease,
+			transform 200ms ease;
+		transition-delay: calc(var(--i, 0) * 45ms);
+	}
+	.card-slot.revealed {
+		opacity: 1;
+		transform: none;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.card-slot {
+			opacity: 1;
+			transform: none;
+			transition: none;
+		}
+	}
+
 	.leads :global(g.casing g.annotation path) {
 		fill: none;
 		stroke: var(--paper);

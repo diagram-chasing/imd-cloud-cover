@@ -25,7 +25,7 @@
 
 
 	let track = $state<HTMLDivElement>();
-	let dragging = false;
+	let dragging = $state(false);
 
 	function stepFromX(clientX: number): number {
 		if (!track) return sky.timeIndex;
@@ -102,7 +102,9 @@
 		<span
 			class={[
 				'handle absolute top-1 -ml-[5px] h-2.5 w-2.5 shadow-[0_0_0_2px_var(--color-ink),2px_2px_0_2px_color-mix(in_srgb,var(--color-navy)_50%,transparent)]',
-				night ? 'bg-mist-200' : 'bg-sun-gold'
+				night ? 'bg-mist-200' : 'bg-sun-gold',
+				// Ease into each autoplay/keyboard step, but track the finger 1:1 while dragging.
+				!dragging && !reduced && 'transition-[left] duration-150 ease-out'
 			]}
 			style="left:{handleX}%"
 		></span>

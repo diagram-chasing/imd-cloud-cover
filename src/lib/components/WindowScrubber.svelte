@@ -76,7 +76,7 @@
 
 	let current = $derived(dates[sky.windowDayIndex] ?? dates[dates.length - 1]);
 	let track = $state<HTMLDivElement>();
-	let dragging = false;
+	let dragging = $state(false);
 
 	function stepFromX(clientX: number): number {
 		if (!track) return sky.windowDayIndex;
@@ -146,11 +146,18 @@
 			></span>
 		{/each}
 		<span
-			class="handle absolute top-1 -ml-[5px] h-2.5 w-2.5 bg-sun-gold shadow-[0_0_0_2px_var(--color-ink),2px_2px_0_2px_color-mix(in_srgb,var(--color-navy)_50%,transparent)]"
+			class={[
+				'handle absolute top-1 -ml-[5px] h-2.5 w-2.5 bg-sun-gold shadow-[0_0_0_2px_var(--color-ink),2px_2px_0_2px_color-mix(in_srgb,var(--color-navy)_50%,transparent)]',
+				// Ease into each autoplay/keyboard step, but track the finger 1:1 while dragging.
+				!dragging && !reduced && 'transition-[left] duration-150 ease-out'
+			]}
 			style="left:{handleX}%"
 		></span>
 		<span
-			class="date absolute top-[18px] -translate-x-1/2 text-xs tracking-wider whitespace-nowrap text-white text-shadow-sky"
+			class={[
+				'date absolute top-[18px] -translate-x-1/2 text-xs tracking-wider whitespace-nowrap text-white text-shadow-sky',
+				!dragging && !reduced && 'transition-[left] duration-150 ease-out'
+			]}
 			style="left:{handleX}%">{current ? label(current) : ''}</span
 		>
 	</div>
