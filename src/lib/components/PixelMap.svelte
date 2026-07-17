@@ -242,7 +242,10 @@
 	let driftTick = 0;
 	function updateClouds() {
 		if (!geo) return;
-		field.update(bins, binCover, binRain, driftTick);
+		// Rain rides with the low band: hide it when the user mutes rain, and when a
+		// non-low band is soloed (streaks would fall from ghosted low clouds).
+		const showRain = sky.rainOn && (sky.focusBand === null || sky.focusBand === 'low');
+		field.update(bins, binCover, binRain, driftTick, showRain);
 	}
 
 	function retargetAlphas() {
@@ -361,6 +364,7 @@
 		flights?.style(mode === 'night');
 		balloon?.style(mode === 'night');
 		field.setShadowMode(mode);
+		field.setRainMode(skyPhase(sky.timeIndex));
 		waves?.style(mode);
 	}
 
@@ -819,7 +823,9 @@
 	});
 	$effect(() => {
 		void sky.focusBand;
+		void sky.rainOn;
 		retargetAlphas();
+		if (app) updateClouds();
 	});
 	$effect(() => {
 		void sky.timeIndex;

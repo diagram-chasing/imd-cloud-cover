@@ -1,4 +1,4 @@
-import { CLOUD, RAIN, type BandKey } from '$lib/theme';
+import { CLOUD, type BandKey } from '$lib/theme';
 import { fnv1a, mulberry32 } from './hash';
 
 type Pattern = number[][];
@@ -124,25 +124,40 @@ function drawMark(pattern: Pattern, band: BandKey, tier: number, cell: number): 
 }
 
 
-// Rain streaks: vertical 1-cell dashes under the cloud, denser with intensity.
-// Same footprint family as the low-cloud marks so LOD scaling matches.
-const RAIN_W = [4, 6, 8]; // tiers 1..3
+// Rain streaks: short diagonal dashes that fall at a slant, staggered in depth
+// with gaps between them, so they read as falling rain rather than icicles
+// hanging off the cloud base. Drawn white and tinted per sky phase at runtime.
+// Each streak steps one cell across per row (~45°) over a few cells, then breaks.
+const RAIN_W = [3, 4, 5]; // tiers 1..3
 const RAIN_ROWS = 4;
-const RAIN_DENSITY = [0.35, 0.6, 0.85];
+const RAIN_STREAKS = [1, 2, 3]; // at most three streaks, only at the heaviest tier
 
 export function rainPattern(tier: 1 | 2 | 3, variant: number): Pattern {
 	const rand = mulberry32(fnv1a(`rain:${tier}:${variant}`));
 	const w = RAIN_W[tier - 1];
 	const grid: number[][] = Array.from({ length: RAIN_ROWS }, () => new Array(w).fill(0));
+	// vary the count per bin so same-intensity neighbours don't render identically
+	const n = Math.max(1, RAIN_STREAKS[tier - 1] - (rand() < 0.35 ? 1 : 0));
 	let drew = false;
-	for (let x = 0; x < w; x++) {
-		if (rand() >= RAIN_DENSITY[tier - 1]) continue;
-		const len = 1 + (rand() < 0.4 ? 1 : 0);
-		const y = Math.floor(rand() * (RAIN_ROWS - len + 1));
-		for (let i = 0; i < len; i++) grid[y + i][x] = 1;
-		drew = true;
+	for (let s = 0; s < n; s++) {
+		const len = 2 + (rand() < 0.5 ? 1 : 0); // 2–3 cells long
+		const sy = Math.floor(rand() * (RAIN_ROWS - len + 1)); // staggered start depth
+		const sx = Math.floor(rand() * (w - 1)); // leave one column for the lean
+		for (let i = 0; i < len; i++) {
+			const r = sy + i;
+			// near-vertical: a single cell of lean over the whole streak (not 45° —
+			// parallel diagonals read as hatching, straight verticals as icicles)
+			const c = sx + Math.round(i / (len - 1));
+			if (r < RAIN_ROWS && c < w) {
+				grid[r][c] = 1;
+				drew = true;
+			}
+		}
 	}
-	if (!drew) grid[1][Math.floor(w / 2)] = 1; // never fully empty
+	if (!drew) {
+		grid[0][0] = 1;
+		grid[1][0] = 1;
+	}
 	return grid;
 }
 
@@ -159,14 +174,15 @@ export function drawRain(tier: 1 | 2 | 3, variant: number, cell: number): Sprite
 			});
 	const ctx = (canvas as HTMLCanvasElement).getContext('2d')!;
 	ctx.imageSmoothingEnabled = false;
-	ctx.globalAlpha = RAIN.alpha;
-	ctx.fillStyle = RAIN.fill;
+	ctx.fillStyle = '#ffffff';
+	// streak thickness: ~half a cell so they read as lines, not full blocks
+	const thick = Math.max(1, Math.round(cell / 2));
+	const inset = Math.floor((cell - thick) / 2);
 	for (let y = 0; y < rows; y++) {
 		for (let x = 0; x < cols; x++) {
-			if (pattern[y][x]) ctx.fillRect(x * cell, y * cell, cell, cell);
+			if (pattern[y][x]) ctx.fillRect(x * cell + inset, y * cell, thick, cell);
 		}
 	}
-	ctx.globalAlpha = 1;
 	return { canvas: canvas as HTMLCanvasElement, wCells: cols, hCells: rows, shadowRows: 0 };
 }
 

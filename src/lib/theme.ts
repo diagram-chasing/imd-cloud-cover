@@ -48,7 +48,17 @@ export const CLOUD = {
 	high: { fill: '#E6F2FB', alpha: 0.55 }
 } as const;
 
-export const RAIN = { fill: '#2E86D4', alpha: 0.85 } as const;
+// Streaks are baked white and tinted per sky mode at runtime (CloudField.setRainMode)
+// so they read as a soft blue over the bright day ground and dim down at night
+// rather than glowing against the darkened land.
+// Keyed by sky PHASE, not mode: full day needs a deeper blue to carry contrast
+// against the bright green ground, while the dimmer twilight scene reads well
+// with the same lighter blue as night.
+export const RAIN: Record<SkyPhase, { tint: number; alpha: number }> = {
+	day: { tint: 0x2e7cc4, alpha: 0.92 }, // --day-sea: the map's own daytime water
+	twilight: { tint: 0x74acdf, alpha: 0.9 }, // lighter blue pops on the warm-tinted dusk ground
+	night: { tint: 0x74acdf, alpha: 0.85 }
+};
 
 // mm per 3-hour step; IMD-style light / moderate / heavy bins
 const RAIN_TIERS = [1, 5, 15];

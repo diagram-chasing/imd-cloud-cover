@@ -3,12 +3,14 @@
 // attached individually so the caller controls z-order interleaving.
 import { Container, Sprite, type Texture } from 'pixi.js';
 import {
+	RAIN,
 	SHADOW_ALPHA,
 	SHADOW_TINT,
 	coverTier,
 	rainTier,
 	type BandKey,
-	type SkyMode
+	type SkyMode,
+	type SkyPhase
 } from '$lib/theme';
 import { effectiveCover } from '$lib/format';
 import { MARK_VARIANTS, buildMarkAtlas, drawRain } from './sprites';
@@ -52,6 +54,7 @@ export class CloudField {
 	attachRain(parent: Container) {
 		this.rainLayer = new Container();
 		this.rainLayer.eventMode = 'none';
+		this.rainLayer.alpha = RAIN.day.alpha; // mode-tuned in setRainMode
 		parent.addChild(this.rainLayer);
 	}
 
@@ -99,6 +102,7 @@ export class CloudField {
 			for (let k = this.rainPool.length; k < target; k++) {
 				const s = new Sprite(this.rainTex[1][0]);
 				s.anchor.set(0.5, 0); // top-center: streaks start at the cloud's base
+				s.tint = RAIN.day.tint; // mode-tuned in setRainMode
 				s.visible = false;
 				this.rainLayer.addChild(s);
 				this.rainPool.push(s);
@@ -152,7 +156,13 @@ export class CloudField {
 	}
 
 	/** Retint/retier every visible sprite from the bins' current values. */
-	update(bins: Bin[], cover: BandCover, rain: (b: Bin) => number, driftTick: number) {
+	update(
+		bins: Bin[],
+		cover: BandCover,
+		rain: (b: Bin) => number,
+		driftTick: number,
+		showRain = true
+	) {
 		if (!this.layers) return;
 		for (const band of BAND_KEYS) {
 			const key = VAL_KEY[band];
@@ -190,7 +200,7 @@ export class CloudField {
 		for (let i = 0; i < bins.length; i++) {
 			const sp = this.rainPool[i];
 			if (!sp) break;
-			const tier = rainTier(rain(bins[i]));
+			const tier = showRain ? rainTier(rain(bins[i])) : 0;
 			this.rainTierByBin[i] = tier;
 			if (tier === 0) {
 				sp.visible = false;
@@ -230,5 +240,11 @@ export class CloudField {
 
 	setShadowMode(mode: SkyMode) {
 		if (this.shadowLayer) this.shadowLayer.alpha = SHADOW_ALPHA[mode];
+	}
+
+	/** Retint the white rain streaks for the current sky phase (day/twilight/night). */
+	setRainMode(phase: SkyPhase) {
+		if (this.rainLayer) this.rainLayer.alpha = RAIN[phase].alpha;
+		for (const sp of this.rainPool) sp.tint = RAIN[phase].tint;
 	}
 }

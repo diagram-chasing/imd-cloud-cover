@@ -11,6 +11,9 @@ export function defaultTimeIndex(): number {
 class SkyState {
 	timeIndex = $state(defaultTimeIndex());
 	focusBand = $state<BandKey | null>(null);
+	// Rain streaks are a user-dismissable layer; they also self-suppress unless
+	// the low band is in view (rain hangs from low clouds). See CloudField.update.
+	rainOn = $state(true);
 	view = $state<ViewMode>('today');
 	windowDayIndex = $state(0); 
 	selectedCode = $state<string | null>(null);

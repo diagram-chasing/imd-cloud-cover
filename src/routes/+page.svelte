@@ -8,7 +8,7 @@
 	import { topoToFeatures } from '$lib/map/geo';
 	import { sky } from '$lib/state/sky.svelte';
 	import { userGeo } from '$lib/state/geo.svelte';
-	import { skyMode } from '$lib/theme';
+	import { skyMode, rainTier } from '$lib/theme';
 	import { computeValues, rollupForView, resolveActiveDay } from '$lib/data';
 	import { applyObs, istToday } from '$lib/obs';
 	import { fetchObs } from '$lib/api/r2';
@@ -21,6 +21,7 @@
 	import MapShell from '$lib/components/MapShell.svelte';
 	import TimeDock from '$lib/components/TimeDock.svelte';
 	import BandToggle from '$lib/components/BandToggle.svelte';
+	import RainToggle from '$lib/components/RainToggle.svelte';
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
 	import StationSearch from '$lib/components/StationSearch.svelte';
 	import StationDetails from '$lib/components/StationDetails.svelte';
@@ -142,6 +143,9 @@
 			sky.timeIndex
 		)
 	);
+
+	// the rain toggle only earns its spot when this frame has rain to mute
+	let hasRain = $derived(Object.values(values).some((v) => rainTier(v.r) > 0));
 
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 	let activeDate = $derived.by(() => {
@@ -286,13 +290,19 @@
 				class="lane dock flex min-w-0 flex-col items-start gap-2 justify-self-center max-md:w-full max-md:items-stretch"
 			>
 				<!-- phones: legend compresses to one row; fit key is in top-right -->
-				<div class="mobile-row relative hidden items-center justify-center gap-3 max-md:flex">
+				<div class="mobile-row relative hidden items-center justify-center gap-2 max-md:flex">
 					<BandToggle horizontal />
+					{#if hasRain}
+						<RainToggle />
+					{/if}
 				</div>
 				<TimeDock dates={activeRollup?.dates ?? null} available={dayAvailable} />
 			</div>
 			<!-- tablets + desktop: vertical legend on the right, dock centred -->
-			<div class="lane where flex min-w-0 items-center gap-3 justify-self-end max-md:hidden">
+			<div class="lane where flex min-w-0 items-center gap-2 justify-self-end max-md:hidden">
+				{#if hasRain}
+					<RainToggle />
+				{/if}
 				<BandToggle />
 			</div>
 		</div>

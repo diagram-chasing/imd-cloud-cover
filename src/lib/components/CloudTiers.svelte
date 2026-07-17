@@ -48,6 +48,9 @@
 		low: { name: 'Cumulus', alt: 'Low · 0–2 km' }
 	};
 
+	// this diagram is a day-lit scene; borrow the day rain tint as a flat hex
+	const RAIN_HEX = `#${RAIN.day.tint.toString(16).padStart(6, '0')}`;
+
 	const skyStops = Array.from(
 		{ length: 5 },
 		(_, i) =>
@@ -64,12 +67,12 @@
 		viewBox="0 0 {pat[0].length} {pat.length}"
 		width={pat[0].length * cell}
 		height={pat.length * cell}
-		opacity={RAIN.alpha}
+		opacity={RAIN.day.alpha}
 		aria-hidden="true"
 	>
 		{#each pat as row, y (y)}
 			{#each row as v, x (x)}
-				{#if v}<rect {x} {y} width="1" height="1" fill={RAIN.fill} />{/if}
+				{#if v}<rect {x} {y} width="1" height="1" fill={RAIN_HEX} />{/if}
 			{/each}
 		{/each}
 	</svg>
