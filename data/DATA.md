@@ -13,6 +13,12 @@ Please note:
 - Coverage grows one day at a time from when the scraper first ran, and each
   station keeps at most its last 400 days. A station shows up from the first
   day its meteogram parsed successfully and around 1,245 are tracked.
+- From July 2026 the pixel-extracted bands are *anchored* against IMD's
+  MausamGram multi-model-ensemble total cloud (numeric, same 12 km grid) for
+  days where that feed was reachable: when the two disagree by more than 20
+  points, the bands are pulled halfway toward the ensemble total. The raw
+  per-day extraction JSONs and the per-day `numeric.json` sidecars are both
+  kept, so any day is reproducible either way.
 
 ## Data dictionary
 

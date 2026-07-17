@@ -1,4 +1,4 @@
-import { CLOUD, type BandKey } from '$lib/theme';
+import { CLOUD, RAIN, type BandKey } from '$lib/theme';
 import { fnv1a, mulberry32 } from './hash';
 
 type Pattern = number[][];
@@ -123,6 +123,52 @@ function drawMark(pattern: Pattern, band: BandKey, tier: number, cell: number): 
 	return { canvas: canvas as HTMLCanvasElement, wCells: cols, hCells: rows, shadowRows: 0 };
 }
 
+
+// Rain streaks: vertical 1-cell dashes under the cloud, denser with intensity.
+// Same footprint family as the low-cloud marks so LOD scaling matches.
+const RAIN_W = [4, 6, 8]; // tiers 1..3
+const RAIN_ROWS = 4;
+const RAIN_DENSITY = [0.35, 0.6, 0.85];
+
+export function rainPattern(tier: 1 | 2 | 3, variant: number): Pattern {
+	const rand = mulberry32(fnv1a(`rain:${tier}:${variant}`));
+	const w = RAIN_W[tier - 1];
+	const grid: number[][] = Array.from({ length: RAIN_ROWS }, () => new Array(w).fill(0));
+	let drew = false;
+	for (let x = 0; x < w; x++) {
+		if (rand() >= RAIN_DENSITY[tier - 1]) continue;
+		const len = 1 + (rand() < 0.4 ? 1 : 0);
+		const y = Math.floor(rand() * (RAIN_ROWS - len + 1));
+		for (let i = 0; i < len; i++) grid[y + i][x] = 1;
+		drew = true;
+	}
+	if (!drew) grid[1][Math.floor(w / 2)] = 1; // never fully empty
+	return grid;
+}
+
+export function drawRain(tier: 1 | 2 | 3, variant: number, cell: number): Sprite {
+	const pattern = rainPattern(tier, variant);
+	const rows = pattern.length;
+	const cols = pattern[0].length;
+	const canvas =
+		typeof OffscreenCanvas !== 'undefined'
+			? new OffscreenCanvas(cols * cell, rows * cell)
+			: Object.assign(document.createElement('canvas'), {
+				width: cols * cell,
+				height: rows * cell
+			});
+	const ctx = (canvas as HTMLCanvasElement).getContext('2d')!;
+	ctx.imageSmoothingEnabled = false;
+	ctx.globalAlpha = RAIN.alpha;
+	ctx.fillStyle = RAIN.fill;
+	for (let y = 0; y < rows; y++) {
+		for (let x = 0; x < cols; x++) {
+			if (pattern[y][x]) ctx.fillRect(x * cell, y * cell, cell, cell);
+		}
+	}
+	ctx.globalAlpha = 1;
+	return { canvas: canvas as HTMLCanvasElement, wCells: cols, hCells: rows, shadowRows: 0 };
+}
 
 export function buildMarkAtlas(cell: number): SpriteAtlas {
 	const cache = new Map<string, Sprite>();

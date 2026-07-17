@@ -10,13 +10,21 @@ export function prettyDate(iso?: string): string {
 	return `${String(d).padStart(2, '0')} ${MONTHS[m - 1]} ${y}`;
 }
 
+import { rainTier } from '$lib/theme';
+
 function effectiveCover(v: { h: number; m: number; l: number }): number {
 	return Math.max(v.l, v.m * 0.8, v.h * 0.45);
 }
 
-/** Band values → sky-condition label (CLEAR … OVERCAST). */
-export function skyCondition(v: { h: number; m: number; l: number } | null): string {
+const RAIN_LABEL = ['', 'LIGHT RAIN', 'RAIN', 'HEAVY RAIN'];
+
+/** Band values → sky-condition label (CLEAR … OVERCAST). Forecast rain, when
+ *  the view carries it, overrides the cloud label — a raining "CLEAR" must
+ *  never be shown. */
+export function skyCondition(v: { h: number; m: number; l: number; r?: number } | null): string {
 	if (!v) return '';
+	const rt = rainTier(v.r);
+	if (rt > 0) return RAIN_LABEL[rt];
 	const c = effectiveCover(v);
 	if (c < 13) return 'CLEAR';
 	if (c < 38) return 'MOSTLY CLEAR';

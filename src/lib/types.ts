@@ -20,6 +20,9 @@ export interface Station {
 	/** False when this station shares a place with another (a district meteogram +
 	 *  a point station); only the canonical one appears in search/explorer. Map shows all. */
 	canonical?: boolean;
+	/** Nearest WMO synop station id within 35 km (manifest v4); null = none.
+	 *  Informational — obs are already joined per-code server-side. */
+	wmo?: string | null;
 }
 
 export interface StationsManifest {
@@ -49,8 +52,9 @@ export interface DatesIndex {
 	latest: string;
 }
 
-/** One {h, m, l} value (0-100) per station code for the current view. */
-export type BandValues = Record<string, { h: number; m: number; l: number }>;
+/** One {h, m, l} value (0-100) per station code for the current view, plus
+ *  forecast rain `r` (mm per 3 h, MausamGram MME) where the view carries it. */
+export type BandValues = Record<string, { h: number; m: number; l: number; r?: number }>;
 
 /** latest/all-stations.json — the day-0 slice per station, plus a short
  *  multi-day forecast tail so the client can render the visitor's *current*
@@ -74,6 +78,29 @@ export interface StationBands {
 	h: number[]; // length 8
 	m: number[];
 	l: number[];
+	/** Forecast rain, mm per 3-h step (MausamGram MME numeric sidecar). Absent
+	 *  on views baked before the numeric ingest landed, or when MausamGram was down. */
+	r?: number[];
+}
+
+/** One station's near-real-time observations in latest/obs.json: merged cloud
+ *  % (oc), satellite cloud % (sc), synop oktas (ok), satellite rain mm/hr
+ *  (rr), synop 3-h rain mm (r3), present-weather code (wx). All optional —
+ *  each source can be down. */
+export interface ObsStation {
+	oc?: number;
+	sc?: number;
+	ok?: number;
+	rr?: number;
+	r3?: number;
+	wx?: number;
+}
+
+/** latest/obs.json — written every ~30 min by scraper/collect_obs.py. */
+export interface ObsLatest {
+	generated_at: string;
+	sources: { synop: string | null; cmk: string | null; hem: string | null };
+	stations: Record<string, ObsStation>;
 }
 
 export interface NamedValue {

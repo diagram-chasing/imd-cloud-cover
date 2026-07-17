@@ -4,7 +4,7 @@
 		clientX: number;
 		clientY: number;
 		members: number;
-		agg?: { h: number; m: number; l: number };
+		agg?: { h: number; m: number; l: number; r?: number };
 	}
 </script>
 
@@ -28,6 +28,7 @@
 		skyMode,
 		skyPhase,
 		coverTier,
+		rainTier,
 		UI,
 		SHADOW_TINT,
 		SHADOW_ALPHA,
@@ -38,7 +39,7 @@
 	import groundDayUrl from '$lib/assets/ground/ground-day.png';
 	import groundNightUrl from '$lib/assets/ground/ground-night.png';
 	import groundMaskUrl from '$lib/assets/ground/ground-mask.png';
-	import { buildMarkAtlas, MARK_VARIANTS } from '$lib/map/sprites';
+	import { buildMarkAtlas, drawRain, MARK_VARIANTS } from '$lib/map/sprites';
 	import { buildQuadtree, nearest, type StationPoint } from '$lib/map/hit';
 	import { createFlights, type FlightEngine } from '$lib/map/flights';
 	import { fnv1a, jitter, mulberry32 } from '$lib/map/hash';
@@ -50,7 +51,7 @@
 		india: FeatureCollection;
 		places?: FeatureCollection;
 		manifest: StationsManifest;
-		values: Record<string, { h: number; m: number; l: number }>;
+		values: Record<string, { h: number; m: number; l: number; r?: number }>;
 		enableTooltip?: boolean;
 		date?: string;
 		onhover?: (info: HoverInfo | null) => void;
@@ -100,6 +101,8 @@
 	const BAND_KEYS: BandKey[] = ['low', 'middle', 'high'];
 	const VAL_KEY: Record<BandKey, 'h' | 'm' | 'l'> = { high: 'h', middle: 'm', low: 'l' };
 	const SHADOW_DROP = TOWER_GAP + MARK_CELL * 2.5;
+	// rain streaks hang from the low cloud's bottom edge (sprite anchored top-center)
+	const RAIN_TOP = TOWER_GAP + MARK_CELL * 1.5;
 	const WAVE_SCALE = 1.25;
 	const WAVE_MAX = 100;
 	// warm golden multiply-tint on the day ground during dawn/dusk (twilight phase)
@@ -233,6 +236,10 @@
 	let cloudTex: Record<BandKey, Texture[][]> = { low: [], middle: [], high: [] };
 	let shadowLayer: Container | null = null;
 	let shadowPool: Sprite[] = [];
+	let rainLayer: Container | null = null;
+	let rainPool: Sprite[] = [];
+	let rainTex: Texture[][] = []; // [tier 1..3][variant]
+	let rainTierByBin: number[] = [];
 	let waveLayer: Container | null = null;
 	let waveTex: Texture[] = [];
 	let waves: { s: Sprite; phase: number }[] = [];
@@ -684,6 +691,15 @@
 			sp.scale.set(sc, sc * 0.55);
 		}
 		for (let k = bins.length; k < shadowPool.length; k++) shadowPool[k].visible = false;
+
+		const rainOff = RAIN_TOP * sc;
+		for (let k = 0; k < bins.length && k < rainPool.length; k++) {
+			const sp = rainPool[k];
+			sp.x = bins[k].px;
+			sp.y = bins[k].py + rainOff;
+			sp.scale.set(sc);
+		}
+		for (let k = bins.length; k < rainPool.length; k++) rainPool[k].visible = false;
 		quad = buildQuadtree(lod.points);
 		updateClouds();
 		drawSelected();
@@ -729,6 +745,15 @@
 			s.visible = false;
 			shadowLayer.addChild(s);
 			shadowPool.push(s);
+		}
+		if (rainLayer && rainTex.length) {
+			for (let k = rainPool.length; k < target; k++) {
+				const s = new Sprite(rainTex[1][0]);
+				s.anchor.set(0.5, 0); // top-center: streaks start at the cloud's base
+				s.visible = false;
+				rainLayer.addChild(s);
+				rainPool.push(s);
+			}
 		}
 		for (const band of BAND_KEYS) {
 			const arr = pool[band];
@@ -847,6 +872,11 @@
 		createWaveLayer();
 		buildTitle();
 
+		// rain sits under every cloud band: streaks read as falling FROM the cloud
+		rainLayer = new Container();
+		rainLayer.eventMode = 'none';
+		camera.addChild(rainLayer);
+
 		const layerMap = {} as Record<BandKey, Container>;
 		for (const band of BAND_KEYS) {
 			const layer = new Container();
@@ -872,6 +902,13 @@
 				for (let v = 0; v < MARK_VARIANTS; v++) {
 					cloudTex[band][tier][v] = mkTex(atlas.get(band, tier as 1 | 2 | 3 | 4, v).canvas);
 				}
+			}
+		}
+		rainTex = [];
+		for (let tier = 1; tier <= 3; tier++) {
+			rainTex[tier] = [];
+			for (let v = 0; v < MARK_VARIANTS; v++) {
+				rainTex[tier][v] = mkTex(drawRain(tier as 1 | 2 | 3, v, MARK_CELL).canvas);
 			}
 		}
 		growPools(maxBins);
@@ -1418,6 +1455,19 @@
 		return n ? s / n : 0;
 	}
 
+	function binRain(b: Bin): number {
+		let s = 0;
+		let n = 0;
+		for (const i of b.members) {
+			const v = values[geo!.stations[i].code];
+			if (v) {
+				s += v.r ?? 0;
+				n++;
+			}
+		}
+		return n ? s / n : 0;
+	}
+
 	function hoverInfo(code: string, clientX: number, clientY: number): HoverInfo {
 		const b = binByCode.get(code);
 		const members = b?.members.length ?? 1;
@@ -1431,7 +1481,8 @@
 					? {
 							h: Math.round(binCover(b, 'h')),
 							m: Math.round(binCover(b, 'm')),
-							l: Math.round(binCover(b, 'l'))
+							l: Math.round(binCover(b, 'l')),
+							r: Math.round(binRain(b) * 10) / 10
 						}
 					: undefined
 		};
@@ -1470,6 +1521,27 @@
 			}
 			sp.visible = true;
 			sp.texture = cloudTex.low[tier][bins[i].variant];
+		}
+		// rain streaks under the tower; rollup views carry no r so this stays dark there
+		rainTierByBin.length = bins.length;
+		for (let i = 0; i < bins.length; i++) {
+			const sp = rainPool[i];
+			if (!sp) break;
+			const tier = rainTier(binRain(bins[i]));
+			rainTierByBin[i] = tier;
+			if (tier === 0) {
+				sp.visible = false;
+				continue;
+			}
+			sp.visible = true;
+			sp.texture = rainTex[tier][(bins[i].variant + driftTick) % MARK_VARIANTS];
+			// raining => cloud: mixed bins can average below the cover floor while
+			// still averaging visible rain; never let streaks fall from an empty sky
+			const lowSp = pool.low[i];
+			if (lowSp && !lowSp.visible) {
+				lowSp.visible = true;
+				lowSp.texture = cloudTex.low[1][bins[i].variant];
+			}
 		}
 	}
 
@@ -1561,6 +1633,11 @@
 			driftTick = (driftTick + 1) % 4;
 			if (layers) layers.high.x = driftTick * 2 * (lodIndex < 0 ? 1 : lods[lodIndex].scale);
 			for (const w of waves) w.s.texture = waveTex[(driftTick + w.phase) & 1];
+			// cycle rain variants for a cheap falling shimmer
+			for (let i = 0; i < bins.length && i < rainPool.length; i++) {
+				const t = rainTierByBin[i];
+				if (t) rainPool[i].texture = rainTex[t][(bins[i].variant + driftTick) % MARK_VARIANTS];
+			}
 		}
 		if (balloon && balloonBounds && balloonNoiseX && balloonNoiseY) {
 			const b = balloonBounds;

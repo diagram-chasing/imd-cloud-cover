@@ -10,6 +10,9 @@
 	import { userGeo } from '$lib/state/geo.svelte';
 	import { skyMode } from '$lib/theme';
 	import { computeValues, rollupForView, resolveActiveDay } from '$lib/data';
+	import { applyObs, istToday } from '$lib/obs';
+	import { fetchObs } from '$lib/api/r2';
+	import type { ObsLatest } from '$lib/types';
 	import { click } from '$lib/feedback';
 	import { SITE_BASE } from '$lib/site';
 	import SEO from '$lib/components/SEO.svelte';
@@ -89,6 +92,13 @@
 			.catch(() => {});
 	}
 
+	// Live observations, refreshed every 15 min; corrects the current-time
+	// frame silently (see $lib/obs).
+	let obs = $state<ObsLatest | null>(null);
+	function refreshObs() {
+		fetchObs().then((o) => (obs = o ?? obs));
+	}
+
 	onMount(() => {
 		userGeo.ensure(); // coarse visitor location for the "you are here" map marker
 		pixelMapImport
@@ -97,6 +107,10 @@
 		const w = window as unknown as { requestIdleCallback?: (cb: () => void) => void };
 		if (w.requestIdleCallback) w.requestIdleCallback(ensureDeferred);
 		else setTimeout(ensureDeferred, 200);
+
+		refreshObs();
+		const obsTimer = setInterval(refreshObs, 15 * 60 * 1000);
+		return () => clearInterval(obsTimer);
 	});
 
 	$effect(() => {
@@ -109,7 +123,7 @@
 	let dayAvailable = $derived(activeRollup?.national?.e?.map((v) => v != null) ?? null);
 
 	let activeDay = $derived(core ? resolveActiveDay(core.latest) : null);
-	let values = $derived(
+	let forecastValues = $derived(
 		computeValues(
 			sky.view,
 			core?.latest,
@@ -117,6 +131,15 @@
 			sky.timeIndex,
 			sky.windowDayIndex,
 			activeDay?.index ?? 0
+		)
+	);
+	// obs-corrected view of the current frame; pass-through everywhere else
+	let values = $derived(
+		applyObs(
+			forecastValues,
+			obs,
+			sky.view === 'today' && activeDay?.date === istToday(),
+			sky.timeIndex
 		)
 	);
 

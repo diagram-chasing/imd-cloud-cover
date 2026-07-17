@@ -15,6 +15,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from dotenv import load_dotenv
 
+from anchor import apply_anchoring, attach_rain
 from storage import get_store, SHORT
 
 load_dotenv()
@@ -99,8 +100,10 @@ def forecast_bands(raw, n_days=FORECAST_DAYS):
 
 
 def day0(bands):
-    """The day-0 slice (first 8 steps) of a possibly multi-day bands dict."""
-    return {k: bands[k][:DAY0_SAMPLES] for k, _ in RAW_FIELDS}
+    """The day-0 slice (first 8 steps) of a possibly multi-day bands dict.
+    Carries the optional rain list `r` through when present."""
+    keys = [k for k, _ in RAW_FIELDS] + (["r"] if "r" in bands else [])
+    return {k: bands[k][:DAY0_SAMPLES] for k in keys}
 
 
 def effective(b):
@@ -200,6 +203,8 @@ def build_latest(date, generated_at, manifest_codes, slices):
         want = (n_future + 1) * DAY0_SAMPLES
         for c, b in mapped.items():
             tail = {k: b[k][DAY0_SAMPLES:want] for k, _ in RAW_FIELDS}
+            if "r" in b:
+                tail["r"] = b["r"][DAY0_SAMPLES:want]
             # Keep only stations covering every future day fully, so the client's
             # day-major indexing never lands on a short array.
             if len(tail["h"]) == n_future * DAY0_SAMPLES:
@@ -517,9 +522,18 @@ def aggregate_date(store, date, generated_at, report=None):
     slices = read_slices(store, date, codes)
     unmapped = sorted(c for c in slices if c not in manifest_codes)
 
-    store.put_json("latest/all-stations.json",
-                   build_latest(date, generated_at, manifest_codes, slices),
-                   cache_control=SHORT)
+    # Anchor OCR bands against the MME numeric sidecar (when the day has one)
+    # BEFORE any view is built, so latest/histories/rollups agree.
+    numeric = store.get_json(f"{date}/numeric.json")
+    anchor_report = apply_anchoring(slices, numeric)
+    attach_rain(slices, numeric)
+    if anchor_report["anchored"]:
+        print(f"Anchored {anchor_report['steps_anchored']} steps against "
+              f"MME ic {anchor_report['ic']}.")
+
+    latest_doc = build_latest(date, generated_at, manifest_codes, slices)
+    latest_doc["anchored"] = anchor_report["anchored"]
+    store.put_json("latest/all-stations.json", latest_doc, cache_control=SHORT)
 
     print(f"Loading {len(manifest_codes)} station histories...")
     histories = load_histories(store, manifest_codes)
@@ -552,6 +566,7 @@ def aggregate_date(store, date, generated_at, report=None):
         "failed": report.get("failed", []) if report else [],
         "suspicious": report.get("suspicious", []) if report else [],
         "discovered": report.get("discovered") if report else len(codes),
+        "anchoring": anchor_report,
     }
     store.put_json(f"reports/{date}.json", run_report, cache_control=SHORT)
     return run_report
@@ -588,7 +603,11 @@ def rebuild(store, generated_at):
     histories = {}
     for date in all_dates:
         codes = [c for c in codes_for_date(store, date) if c in manifest_codes]
-        for code, b in read_slices(store, date, codes).items():
+        date_slices = read_slices(store, date, codes)
+        # Each date re-anchors against its own immutable numeric sidecar, so a
+        # rebuild reproduces exactly what the daily runs produced.
+        apply_anchoring(date_slices, store.get_json(f"{date}/numeric.json"))
+        for code, b in date_slices.items():
             hist = histories.setdefault(code, {"code": code, "kind": "day0-forecast",
                                                "days": {}})
             hist["days"][date] = history_entry(day0(b))

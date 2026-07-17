@@ -8,7 +8,8 @@ import type {
 	Summary,
 	CitiesRollup,
 	History,
-	Forecast
+	Forecast,
+	ObsLatest
 } from '$lib/types';
 
 const REMOTE = (import.meta.env.VITE_R2_PUBLIC_URL || '').replace(/\/$/, '');
@@ -38,6 +39,12 @@ export const fetchLatest = () => getJSON<AllStations>(CORE, 'latest/all-stations
 export const fetchSummary = () => getJSON<Summary>(CORE, 'latest/summary.json');
 
 export const fetchCities = () => getJSON<CitiesRollup>(CORE, 'rollups/cities.json');
+
+/** Live observations sidecar, refreshed every ~30 min by a separate CI job.
+ *  Always remote (bakes are daily; obs must be fresher). Null when absent —
+ *  the map then shows the pure forecast. */
+export const fetchObs = (): Promise<ObsLatest | null> =>
+	getJSON<ObsLatest>(BASE, 'latest/obs.json', { cache: 'no-store' }).catch(() => null);
 
 // per-station tail: baked, remote fallback for anything unbaked
 export const fetchHistory = (code: string) => getTail<History>(`history/${code}.json`);

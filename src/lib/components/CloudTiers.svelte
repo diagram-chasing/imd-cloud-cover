@@ -1,6 +1,6 @@
 <script lang="ts" module>
-	import { CLOUD, SKY } from '$lib/theme';
-	import { makePattern, MARK_ALPHA, TIER_ALPHA } from '$lib/map/sprites';
+	import { CLOUD, RAIN, SKY } from '$lib/theme';
+	import { makePattern, rainPattern, MARK_ALPHA, TIER_ALPHA } from '$lib/map/sprites';
 
 
 	type Band = 'high' | 'middle' | 'low';
@@ -56,6 +56,25 @@
 	const skyStyle = `background: linear-gradient(to bottom, ${skyStops.join(', ')})`;
 </script>
 
+{#snippet rainMark(tier: 1 | 2 | 3, variant: number, left: string, top: string, cell: number)}
+	{@const pat = rainPattern(tier, variant)}
+	<svg
+		class="cloud [shape-rendering:crispEdges]"
+		style="left: {left}; top: {top}"
+		viewBox="0 0 {pat[0].length} {pat.length}"
+		width={pat[0].length * cell}
+		height={pat.length * cell}
+		opacity={RAIN.alpha}
+		aria-hidden="true"
+	>
+		{#each pat as row, y (y)}
+			{#each row as v, x (x)}
+				{#if v}<rect {x} {y} width="1" height="1" fill={RAIN.fill} />{/if}
+			{/each}
+		{/each}
+	</svg>
+{/snippet}
+
 {#snippet cloud(band: Band, tier: number, variant: number, left: string, top: string, cell: number)}
 	{@const m = markPixels(band, tier, variant)}
 	<svg
@@ -93,6 +112,13 @@
 			{#each SCENE[band] as c, i (i)}
 				{@render cloud(band, c.tier, c.variant, c.left, c.top, c.cell)}
 			{/each}
+			{#if band === 'low'}
+				{@render rainMark(2, 1, '6%', '80%', 7)}
+				<span class="tag rain-tag">
+					<span class="name">Rain</span>
+					<span class="alt">Streaks · mm per 3 h</span>
+				</span>
+			{/if}
 		</div>
 	{/each}
 	<div class="ground" aria-hidden="true"></div>
@@ -162,6 +188,15 @@
 
 	.cloud {
 		position: absolute;
+	}
+
+	.rain-tag {
+		top: auto;
+		right: auto;
+		bottom: 6px;
+		left: 6px;
+		align-items: flex-start;
+		text-align: left;
 	}
 
 	.ground {

@@ -48,6 +48,19 @@ export const CLOUD = {
 	high: { fill: '#E6F2FB', alpha: 0.55 }
 } as const;
 
+export const RAIN = { fill: '#2E86D4', alpha: 0.85 } as const;
+
+// mm per 3-hour step; IMD-style light / moderate / heavy bins
+const RAIN_TIERS = [1, 5, 15];
+
+/** Rain (mm/3h) -> intensity tier. 0 = dry (no sprite, no label override). */
+export function rainTier(mm3h: number | undefined): 0 | 1 | 2 | 3 {
+	if (!mm3h || mm3h < RAIN_TIERS[0]) return 0;
+	if (mm3h < RAIN_TIERS[1]) return 1;
+	if (mm3h < RAIN_TIERS[2]) return 2;
+	return 3;
+}
+
 export type BandKey = 'high' | 'middle' | 'low';
 
 export const UI = {

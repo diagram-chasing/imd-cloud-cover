@@ -28,7 +28,8 @@ function dayBands(latest: AllStations, code: string, index: number): StationBand
 	if (!f) return day0;
 	const off = (index - 1) * DAY_STEPS;
 	const cut = (a?: number[]) => a?.slice(off, off + DAY_STEPS) ?? [];
-	const bands = { h: cut(f.h), m: cut(f.m), l: cut(f.l) };
+	const bands: StationBands = { h: cut(f.h), m: cut(f.m), l: cut(f.l) };
+	if (f.r) bands.r = cut(f.r);
 	return bands.h.length === DAY_STEPS ? bands : day0;
 }
 
@@ -67,7 +68,8 @@ export function computeValues(
 			out[code] = {
 				h: b.h[timeIndex] ?? 0,
 				m: b.m[timeIndex] ?? 0,
-				l: b.l[timeIndex] ?? 0
+				l: b.l[timeIndex] ?? 0,
+				r: b.r?.[timeIndex] ?? 0
 			};
 		}
 		return out;

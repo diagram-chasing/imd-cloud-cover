@@ -5,7 +5,7 @@
 
 	interface Props {
 		station: Station | null;
-		values: { h: number; m: number; l: number } | null;
+		values: { h: number; m: number; l: number; r?: number } | null;
 		clientX: number;
 		clientY: number;
 		members?: number;

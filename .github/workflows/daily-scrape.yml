@@ -40,9 +40,22 @@ jobs:
         working-directory: scraper
         run: python main.py --out /tmp/run-results.json
 
+      # Numeric MME sidecar used to anchor the pixel-extracted bands and to
+      # supply forecast rain. MausamGram being down is non-fatal: the script
+      # exits 0 without writing and aggregation falls back to pure meteograms.
+      - name: Fetch MausamGram numerics
+        working-directory: scraper
+        run: python collect_numeric.py
+
       - name: Aggregate derived views
         working-directory: scraper
         run: python aggregate.py --results /tmp/run-results.json
+
+      # Score yesterday's displayed forecast against the obs archive (synop
+      # oktas, present weather) collected by obs-refresh.yml. Warn-only.
+      - name: Validate against observations
+        working-directory: scraper
+        run: python tools/validate_sources.py --date "$(date -u -d yesterday +%F)" || true
 
       # Regenerate the public dataset (data/*.parquet, *.csv, *.csv.zip) from the
       # freshly-aggregated histories in R2, so the committed dataset tracks each
