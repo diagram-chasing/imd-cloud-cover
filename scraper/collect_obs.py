@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 import mosdac
 import synop
 from common import c100, load_manifest
+from render_sky import render_sky
 from storage import get_store, SHORT
 
 load_dotenv()
@@ -24,6 +25,7 @@ ARCHIVE_KEEP = 60  # snapshots per daily QA archive file
 def build_obs(now):
     files = mosdac.latest_files(now)
     cmk = mosdac.fetch_cmk_grid(files["CMK"]) if "CMK" in files else None
+    cmk_file = files.get("CMK") if cmk is not None else None
     hem = mosdac.fetch_hem_grid(files["HEM"]) if "HEM" in files else None
     syn = synop.fetch_synop()
 
@@ -69,7 +71,7 @@ def build_obs(now):
             "hem": files.get("HEM") if hem is not None else None,
         },
         "stations": stations,
-    }
+    }, cmk, cmk_file
 
 
 def append_archive(store, doc, now):
@@ -87,13 +89,26 @@ def append_archive(store, doc, now):
         print(f"archive append failed (ignored): {e}")
 
 
+def put_sky(store, cmk, cmk_file):
+    """Best-effort styled sky image from the CMK grid already in hand."""
+    try:
+        png = render_sky(cmk, cmk_file)
+        if png:
+            store.put_bytes("latest/sky.png", png, "image/png",
+                            cache_control=SHORT)
+            print(f"Wrote latest/sky.png ({len(png) // 1024} KB)")
+    except Exception as e:  # noqa: BLE001 — illustration must never fail the run
+        print(f"sky render failed (ignored): {e}")
+
+
 def main():
     now = datetime.datetime.now(datetime.timezone.utc)
-    doc = build_obs(now)
+    doc, cmk, cmk_file = build_obs(now)
     store = get_store()
     store.put_json("latest/obs.json", doc, cache_control="public, max-age=60")
     print(f"Wrote latest/obs.json: {len(doc['stations'])} stations, "
           f"sources {doc['sources']}")
+    put_sky(store, cmk, cmk_file)
     append_archive(store, doc, now)
 
 

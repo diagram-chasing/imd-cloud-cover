@@ -169,6 +169,12 @@ export class TitleOverlay {
 		parent.addChild(this.group);
 	}
 
+	/** Nudge sizes so the next layout() counts as a change and re-measures with the
+	 *  now-loaded font (PIXI equality-guards style setters). */
+	invalidateFonts() {
+		for (const t of [this.text, this.sub, this.meta, this.brand]) t.style.fontSize = 0;
+	}
+
 	/** Seat the pixel balloon beside the brand text (texture built lazily elsewhere). */
 	setBalloon(tex: Texture) {
 		if (this.balloon) return;

@@ -1,19 +1,21 @@
 <script lang="ts">
 	import { sky } from '$lib/state/sky.svelte';
 	import { buildMarkAtlas } from '$lib/map/sprites';
+	import { click } from '$lib/feedback';
 	import type { BandKey } from '$lib/theme';
 
 	interface Props {
 		horizontal?: boolean;
+		// show the rain toggle row (caller gates on the frame actually having rain)
+		rain?: boolean;
 	}
-	let { horizontal = false }: Props = $props();
+	let { horizontal = false, rain = false }: Props = $props();
 
 	const BANDS: { band: BandKey; label: string; short: string }[] = [
 		{ band: 'high', label: 'HIGH · CIRRUS', short: 'HIGH' },
 		{ band: 'middle', label: 'MID · ALTO', short: 'MID' },
 		{ band: 'low', label: 'LOW · CUMULUS', short: 'LOW' }
 	];
-
 
 	function preview(node: HTMLCanvasElement, band: BandKey) {
 		const atlas = buildMarkAtlas(4);
@@ -46,89 +48,111 @@
 			ctx.drawImage(sprite.canvas, Math.round((node.width - w) / 2), y);
 		}
 	}
+
+	// low cloud with hairline streaks beneath — the "low band, raining" swatch
+	function rainSwatch(node: HTMLCanvasElement) {
+		const atlas = buildMarkAtlas(4);
+		const sprite = atlas.get('low', 4, 0);
+		const ctx = node.getContext('2d')!;
+		ctx.imageSmoothingEnabled = false;
+		ctx.clearRect(0, 0, node.width, node.height);
+		const w = sprite.wCells * 4;
+		const h = sprite.hCells * 4;
+		const x = Math.round((node.width - w) / 2);
+		const y = 0;
+		ctx.drawImage(sprite.canvas, x, y);
+		ctx.fillStyle = '#9fc8ee';
+		const baseY = y + h + 1;
+		for (const [i, sx] of [x + 5, x + Math.round(w / 2), x + w - 6].entries()) {
+			ctx.fillRect(sx, baseY + (i === 1 ? 0 : 3), 2, 6);
+		}
+	}
+
+	function toggleRain() {
+		sky.rainOn = !sky.rainOn;
+		click(sky.rainOn ? 'open' : 'select');
+	}
 </script>
 
-
 {#if horizontal}
-	<div class="legend flex flex-row items-center gap-1" role="radiogroup" aria-label="Cloud layers">
-		<button
-			class={[
-				'band all flex cursor-pointer items-center gap-[5px] px-1 py-px text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100',
-				sky.focusBand === null ? 'pixel-frame-gold bg-sun-gold/18' : 'pixel-frame-white'
-			]}
-			role="radio"
-			aria-checked={sky.focusBand === null}
-			onclick={() => (sky.focusBand = null)}
-		>
-			<canvas
-				class="swatch h-auto w-[30px] drop-shadow-[1px_1px_0] drop-shadow-navy/60 [image-rendering:pixelated]"
-				width="44"
-				height="18"
-				use:previewAll
-				aria-hidden="true"
-			></canvas>
-			<span class="label text-xs tracking-[0.06em]">ALL</span>
-		</button>
-		{#each BANDS as b (b.band)}
+	<div class="legend flex flex-row items-center gap-1">
+		<div class="flex flex-row items-center gap-1" role="radiogroup" aria-label="Cloud layers">
 			<button
 				class={[
-					'band flex cursor-pointer items-center gap-[5px] px-1 py-px text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100',
-					sky.focusBand === b.band ? 'pixel-frame-gold bg-sun-gold/18' : 'pixel-frame-white',
-					sky.focusBand !== null && sky.focusBand !== b.band && 'opacity-40'
+					'band all flex cursor-pointer items-center gap-[5px] px-1 py-px text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100',
+					sky.focusBand === null ? 'pixel-frame-gold bg-sun-gold/18' : 'pixel-frame-white'
 				]}
 				role="radio"
-				aria-checked={sky.focusBand === b.band}
-				onclick={() => (sky.focusBand = sky.focusBand === b.band ? null : b.band)}
+				aria-checked={sky.focusBand === null}
+				onclick={() => (sky.focusBand = null)}
 			>
 				<canvas
 					class="swatch h-auto w-[30px] drop-shadow-[1px_1px_0] drop-shadow-navy/60 [image-rendering:pixelated]"
 					width="44"
 					height="18"
-					use:preview={b.band}
+					use:previewAll
 					aria-hidden="true"
 				></canvas>
-				<span class="label text-xs tracking-[0.06em]">{b.short}</span>
+				<span class="label text-xs tracking-[0.06em]">ALL</span>
 			</button>
-		{/each}
-	</div>
-{:else}
-	<div class="legend flex flex-col gap-px" role="radiogroup" aria-label="Cloud layers">
-		<button
-			class="band all flex cursor-pointer items-center gap-2 py-[3px] pr-1.5 pl-1 text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100"
-			role="radio"
-			aria-checked={sky.focusBand === null}
-			onclick={() => (sky.focusBand = null)}
-		>
-			<span
-				class={[
-					'box h-2 w-2 flex-none shadow-[0_0_0_2px_white,1px_1px_0_2px_color-mix(in_srgb,var(--color-navy)_90%,transparent)]',
-					sky.focusBand === null && 'bg-sun-gold'
-				]}
-				aria-hidden="true"
-			></span>
-			<canvas
-				class="swatch drop-shadow-[1px_1px_0] drop-shadow-navy/60 [image-rendering:pixelated]"
-				width="44"
-				height="18"
-				use:previewAll
-				aria-hidden="true"
-			></canvas>
-			<span class="label text-xs tracking-[0.06em]">ALL</span>
-		</button>
-		{#each BANDS as b (b.band)}
+			{#each BANDS as b (b.band)}
+				<button
+					class={[
+						'band flex cursor-pointer items-center gap-[5px] px-1 py-px text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100',
+						sky.focusBand === b.band ? 'pixel-frame-gold bg-sun-gold/18' : 'pixel-frame-white',
+						sky.focusBand !== null && sky.focusBand !== b.band && 'opacity-40'
+					]}
+					role="radio"
+					aria-checked={sky.focusBand === b.band}
+					onclick={() => (sky.focusBand = sky.focusBand === b.band ? null : b.band)}
+				>
+					<canvas
+						class="swatch h-auto w-[30px] drop-shadow-[1px_1px_0] drop-shadow-navy/60 [image-rendering:pixelated]"
+						width="44"
+						height="18"
+						use:preview={b.band}
+						aria-hidden="true"
+					></canvas>
+					<span class="label text-xs tracking-[0.06em]">{b.short}</span>
+				</button>
+			{/each}
+		</div>
+		{#if rain}
+			<span class="divider h-4 w-px flex-none bg-white/20" aria-hidden="true"></span>
 			<button
 				class={[
-					'band flex cursor-pointer items-center gap-2 py-[3px] pr-1.5 pl-1 text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100',
-					sky.focusBand !== null && sky.focusBand !== b.band && 'opacity-40'
+					'band rain flex cursor-pointer items-center gap-[5px] px-1 py-px text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100',
+					sky.rainOn ? 'pixel-frame-gold bg-sun-gold/18' : 'pixel-frame-white opacity-45'
 				]}
+				role="switch"
+				aria-checked={sky.rainOn}
+				aria-label={sky.rainOn ? 'Hide rain' : 'Show rain'}
+				onclick={toggleRain}
+			>
+				<canvas
+					class="swatch h-auto w-[30px] drop-shadow-[1px_1px_0] drop-shadow-navy/60 [image-rendering:pixelated]"
+					width="44"
+					height="18"
+					use:rainSwatch
+					aria-hidden="true"
+				></canvas>
+				<span class="label text-xs tracking-[0.06em]">RAIN</span>
+			</button>
+		{/if}
+	</div>
+{:else}
+	<div class="legend flex flex-col gap-px">
+		<div class="flex flex-col gap-px" role="radiogroup" aria-label="Cloud layers">
+			<button
+				class="band all flex cursor-pointer items-center gap-2 py-[3px] pr-1.5 pl-1 text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100"
 				role="radio"
-				aria-checked={sky.focusBand === b.band}
-				onclick={() => (sky.focusBand = sky.focusBand === b.band ? null : b.band)}
+				aria-checked={sky.focusBand === null}
+				onclick={() => (sky.focusBand = null)}
 			>
 				<span
 					class={[
 						'box h-2 w-2 flex-none shadow-[0_0_0_2px_white,1px_1px_0_2px_color-mix(in_srgb,var(--color-navy)_90%,transparent)]',
-						sky.focusBand === b.band && 'bg-sun-gold'
+						sky.focusBand === null && 'bg-sun-gold'
 					]}
 					aria-hidden="true"
 				></span>
@@ -136,11 +160,67 @@
 					class="swatch drop-shadow-[1px_1px_0] drop-shadow-navy/60 [image-rendering:pixelated]"
 					width="44"
 					height="18"
-					use:preview={b.band}
+					use:previewAll
 					aria-hidden="true"
 				></canvas>
-				<span class="label text-xs tracking-[0.06em]">{b.label}</span>
+				<span class="label text-xs tracking-[0.06em]">ALL</span>
 			</button>
-		{/each}
+			{#each BANDS as b (b.band)}
+				<button
+					class={[
+						'band flex cursor-pointer items-center gap-2 py-[3px] pr-1.5 pl-1 text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100',
+						sky.focusBand !== null && sky.focusBand !== b.band && 'opacity-40'
+					]}
+					role="radio"
+					aria-checked={sky.focusBand === b.band}
+					onclick={() => (sky.focusBand = sky.focusBand === b.band ? null : b.band)}
+				>
+					<span
+						class={[
+							'box h-2 w-2 flex-none shadow-[0_0_0_2px_white,1px_1px_0_2px_color-mix(in_srgb,var(--color-navy)_90%,transparent)]',
+							sky.focusBand === b.band && 'bg-sun-gold'
+						]}
+						aria-hidden="true"
+					></span>
+					<canvas
+						class="swatch drop-shadow-[1px_1px_0] drop-shadow-navy/60 [image-rendering:pixelated]"
+						width="44"
+						height="18"
+						use:preview={b.band}
+						aria-hidden="true"
+					></canvas>
+					<span class="label text-xs tracking-[0.06em]">{b.label}</span>
+				</button>
+			{/each}
+		</div>
+		{#if rain}
+			<span class="divider mx-1 my-[3px] h-px bg-white/20" aria-hidden="true"></span>
+			<button
+				class={[
+					'band rain flex cursor-pointer items-center gap-2 py-[3px] pr-1.5 pl-1 text-white transition-[opacity,background-color] duration-120 text-shadow-sky hover:bg-white/12 hover:opacity-100',
+					!sky.rainOn && 'opacity-45'
+				]}
+				role="switch"
+				aria-checked={sky.rainOn}
+				aria-label={sky.rainOn ? 'Hide rain' : 'Show rain'}
+				onclick={toggleRain}
+			>
+				<span
+					class={[
+						'box h-2 w-2 flex-none shadow-[0_0_0_2px_white,1px_1px_0_2px_color-mix(in_srgb,var(--color-navy)_90%,transparent)]',
+						sky.rainOn && 'bg-sun-gold'
+					]}
+					aria-hidden="true"
+				></span>
+				<canvas
+					class="swatch drop-shadow-[1px_1px_0] drop-shadow-navy/60 [image-rendering:pixelated]"
+					width="44"
+					height="18"
+					use:rainSwatch
+					aria-hidden="true"
+				></canvas>
+				<span class="label text-xs tracking-[0.06em]">RAIN</span>
+			</button>
+		{/if}
 	</div>
 {/if}

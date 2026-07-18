@@ -10,7 +10,15 @@
 
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import { Application, Container, Graphics, Sprite, type Texture, type Ticker } from 'pixi.js';
+	import {
+		Application,
+		CanvasTextMetrics,
+		Container,
+		Graphics,
+		Sprite,
+		type Texture,
+		type Ticker
+	} from 'pixi.js';
 	import type { FeatureCollection } from 'geojson';
 	import type { StationsManifest } from '$lib/types';
 	import { CELL, SKY, skyMode, skyPhase, UI, type BandKey } from '$lib/theme';
@@ -401,14 +409,20 @@
 		buildPlaces();
 	}
 
+	// Re-measure text once the web font resolves: PIXI caches the mono-fallback metrics
+	// under the real font's key, so purge them and force a re-layout. Idempotent.
+	function refreshFonts() {
+		if (destroyed || !app) return;
+		CanvasTextMetrics.clearMetrics();
+		title?.invalidateFonts();
+		drawTitle();
+		buildPlaces();
+	}
+
 	function markFontsReady() {
 		if (fontsReady || destroyed) return;
 		fontsReady = true;
-
-		if (app) {
-			drawTitle();
-			buildPlaces();
-		}
+		refreshFonts();
 	}
 
 	// --- "you are here" marker ----------------------------------------------
@@ -459,13 +473,16 @@
 	async function init() {
 		if (!host) return;
 
-		Promise.race([
-			Promise.allSettled([
-				document.fonts.load("400 10px 'Ships Whistle'"),
-				document.fonts.load("700 10px 'Ships Whistle'")
-			]),
-			new Promise((r) => setTimeout(r, 2500))
-		]).then(markFontsReady);
+		const fontLoad = Promise.allSettled([
+			document.fonts.load("400 10px 'Ships Whistle'"),
+			document.fonts.load("700 10px 'Ships Whistle'")
+		]);
+		// Paint within 2.5s even if the font is slow, but re-measure whenever it truly
+		// lands — a font arriving after the timeout would otherwise stay mono until reload.
+		Promise.race([fontLoad, new Promise((r) => setTimeout(r, 2500))]).then(markFontsReady);
+		fontLoad.then(() => {
+			if (!destroyed) refreshFonts();
+		});
 
 		const application = new Application();
 		const appReady = application

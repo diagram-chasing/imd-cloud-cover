@@ -5,12 +5,14 @@
 	import CitySkyExplorer from '$lib/components/city/CitySkyExplorer.svelte';
 	import SkyBarcode from '$lib/components/city/SkyBarcode.svelte';
 	import cloudsUrl from '$lib/assets/clouds.jpg';
-	import { fetchCities } from '$lib/api/r2';
+	import { fetchCities, R2_BASE } from '$lib/api/r2';
 	import { citySky } from '$lib/state/citySky.svelte';
 
 	let { manifest = undefined, india = undefined } = $props();
 
 	let cities = $state(null);
+	// live satellite illustration is absent in sample mode; hide the figure on 404
+	let skyImgOk = $state(true);
 	$effect(() => {
 		fetchCities()
 			.then((d) => (cities = d))
@@ -135,9 +137,28 @@ Below are {cities ? Object.keys(cities.cities).length : 536} of these stations, 
 {/if}
 
 <section class="methodology">
-	<h2>How we analyze meteograms</h2>
-	<p>We extract daily cloud coverage data by analysing meteograms for each weather station. Because the charts use a standard layout, we could isolate the cloud-cover section and sample 80 evenly spaced intervals across the timeline. The chart divides the sky into high, middle, and low altitude layers, representing cloud density with the height of white shading. By measuring how high this shading reaches in each band, we calculate the percentage of cloud cover. To an observer on the ground, the sky looks overcast if even one layer is full, so we define a station’s overall cloudiness using the highest percentage among its three recorded layers. Due to the nature of this data collection and also the meteogram itself, these figures represent a forecasted expectation rather than exact satellite imagery.</p>
+	<h2>Methodology</h2>
+	<p>We extract daily cloud coverage data by analysing meteograms for each weather station. Because the charts use a standard layout, we could isolate the cloud-cover section and sample 80 evenly spaced intervals across the timeline. The chart divides the sky into high, middle, and low altitude layers, representing cloud density with the height of white shading. By measuring how high this shading reaches in each band, we calculate the percentage of cloud cover. To an observer on the ground, the sky looks overcast if even one layer is full, so we define a station’s overall cloudiness using the highest percentage among its three recorded layers.</p>
+	{#if skyImgOk}
+	<figure class="method-figure">
+		<img
+			src={`${R2_BASE}/latest/sky.png`}
+			alt="India's current cloud cover as seen by the INSAT-3DS satellite"
+			loading="lazy"
+			onerror={() => (skyImgOk = false)}
+			class="block w-full bg-white leading-none shadow-[4px_4px_0] shadow-cloud-block border-2 border-ink"
+		/>
+		<figcaption>Clouds over India within the last hour, via ISRO’s INSAT-3DS satellite</figcaption>
+	</figure>
+	{/if}
+	<p>Reading pixels from one chart can only get so close, so we check our numbers against other IMD sources. The rain on the map comes from the IMD’s own numeric forecasts, which we also use to catch and correct bad pixel readings. For "today’s sky", the map is refreshed every hour with real observations from the INSAT-3DS weather satellite and IMD’s ground observers. However, past days remain forecasts and are not corrected.</p>
 	<p>Finally, to match distant stations with similar weather trends, we tracked how each station’s daily cloud cover shifted compared to its average, pairing locations at least 400 kilometres apart and in different states whose skies cleared and clouded similarly.</p>
+	<p>Data and code for this project is available for reuse on <a href="https://github.com/diagram-chasing/imd-meteograms/">our Github</a>.</p>
+</section>
+
+<section class="methodology -mt-10">
+	<h2>AI Declaration</h2>
+	<p>No prose was written by AI. Nor were any graphics generated. For example, the cloud glyphs on the map were drawn pixel-by-pixel into <a href="https://www.asciiart.eu/ascii-draw-studio/app">ASCII Draw Studio</a> and then rendered here. The author did use Claude for coding help, so the internal logic, algorithms, and the scripts that turn charts into data and then the data into charts again may be partly LLM-written.</p>
 </section>
 
 <div class="support-band">

@@ -21,7 +21,6 @@
 	import MapShell from '$lib/components/MapShell.svelte';
 	import TimeDock from '$lib/components/TimeDock.svelte';
 	import BandToggle from '$lib/components/BandToggle.svelte';
-	import RainToggle from '$lib/components/RainToggle.svelte';
 	import StationTooltip from '$lib/components/StationTooltip.svelte';
 	import StationSearch from '$lib/components/StationSearch.svelte';
 	import StationDetails from '$lib/components/StationDetails.svelte';
@@ -289,21 +288,15 @@
 			<div
 				class="lane dock flex min-w-0 flex-col items-start gap-2 justify-self-center max-md:w-full max-md:items-stretch"
 			>
-				<!-- phones: legend compresses to one row; fit key is in top-right -->
-				<div class="mobile-row relative hidden items-center justify-center gap-2 max-md:flex">
-					<BandToggle horizontal />
-					{#if hasRain}
-						<RainToggle />
-					{/if}
+				<!-- phones: legend scrolls horizontally (masked) when it overruns the width -->
+				<div class="mobile-row relative hidden items-center gap-2 max-md:flex">
+					<BandToggle horizontal rain={hasRain} />
 				</div>
 				<TimeDock dates={activeRollup?.dates ?? null} available={dayAvailable} />
 			</div>
 			<!-- tablets + desktop: vertical legend on the right, dock centred -->
 			<div class="lane where flex min-w-0 items-center gap-2 justify-self-end max-md:hidden">
-				{#if hasRain}
-					<RainToggle />
-				{/if}
-				<BandToggle />
+				<BandToggle rain={hasRain} />
 			</div>
 		</div>
 
@@ -377,6 +370,37 @@
 {/if}
 
 <style>
+	/* phones: one-line legend that scrolls sideways when it overflows, with the
+	   scrollbar hidden and both edges fading out to hint there's more off-screen */
+	.mobile-row {
+		max-width: 100%;
+		overflow-x: auto;
+		scrollbar-width: none;
+		-webkit-overflow-scrolling: touch;
+		-webkit-mask-image: linear-gradient(
+			to right,
+			transparent,
+			#000 18px,
+			#000 calc(100% - 18px),
+			transparent
+		);
+		mask-image: linear-gradient(
+			to right,
+			transparent,
+			#000 18px,
+			#000 calc(100% - 18px),
+			transparent
+		);
+	}
+	.mobile-row::-webkit-scrollbar {
+		display: none;
+	}
+	/* the legend itself must keep its natural width so the row actually overflows */
+	.mobile-row :global(.legend) {
+		flex: none;
+		padding-inline: 2px;
+	}
+
 	.shore-waves {
 		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='10'%3E%3Cpath d='M1 7h10v1H1z M2 5h1v2H2z M3 4h1v1H3z M16 6h10v1H16z M16 4h1v2H16z M17 2h1v2H17z M18 0h1v2H18z M31 7h10v1H31z M31 5h1v2H31z M32 3h1v2H32z M33 1h1v2H33z M34 5h1v2H34z M35 4h1v1H35z M45 6h10v1H45z M45 4h1v2H45z M46 2h1v2H46z M47 0h1v2H47z M48 4h1v2H48z M49 2h1v2H49z M50 0h1v2H50z' fill='%230b1d3a'/%3E%3C/svg%3E");
 	}

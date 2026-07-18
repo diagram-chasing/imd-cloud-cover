@@ -147,7 +147,8 @@
 	   re-establish the article's heading/paragraph treatment they'd otherwise lose
 	   by no longer being direct children of .article. */
 	.article > :where(.methodology) {
-		font-size: 0.9em;
+		font-size: 0.8em;
+		display: flow-root; /* contain the floated satellite figure within the section */
 	}
 	.methodology > :where(h2) {
 		margin: calc(2 * var(--leading)) 0 calc(0.5 * var(--leading));
@@ -156,13 +157,34 @@
 		line-height: calc(1.1* var(--leading));
 		letter-spacing: 0.01em;
 	}
-	.methodology > :where(p) {
-		margin-bottom: var(--leading);
-		line-height: 1.6em;
+	.methodology :where(p) {
+		margin-bottom: calc(0.85 * var(--leading));
+		line-height: 1.35em;
 		text-wrap: pretty;
 	}
 	.methodology > :where(p:last-child) {
 		margin-bottom: 0;
+	}
+
+	/* The live satellite image floats into the methodology so the prose wraps
+	   around it and the section stays short (the section's flow-root contains
+	   the float). On narrow screens the image drops to full width and the text
+	   stacks above/below it. */
+	.methodology :where(.method-figure) {
+		margin: 0 0 calc(0.85 * var(--leading));
+	}
+	.methodology :where(.method-figure figcaption) {
+		margin-top: calc(0.5 * var(--leading));
+		font-size: 0.85em;
+		line-height: 1.4em;
+		opacity: 0.75;
+	}
+	@media (min-width: 34rem) {
+		.methodology :where(.method-figure) {
+			float: right;
+			width: 50%;
+			margin: 0.15em 0 var(--leading) var(--leading);
+		}
 	}
 
 	.article > :where(p) {
@@ -228,9 +250,10 @@
 	.article :where(figcaption) {
 		margin-top: calc(0.5 * var(--leading));
 		font-size: calc(var(--ms--1) * 1em);
-		line-height: var(--leading);
+		line-height: var(--leading-snug);
 		font-style: italic;
-		text-align: center;
+		text-align: pretty;
+
 	}
 
 	/* Code: same face (the site is one typeface), set apart on a mist chip. */
