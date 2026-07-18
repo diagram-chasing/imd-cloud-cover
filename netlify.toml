@@ -3,11 +3,6 @@
   command = "pnpm build"
   publish = "build"
 
-[build.environment]
-  NODE_VERSION = "22"
-  VITE_R2_PUBLIC_URL = "https://imd-clouds.diagramchasing.fun"
-  FONTS_URL = "https://pub-57f73e0399dd4d548042da0b0e925712.r2.dev/Ships-Whistle"
-
 [[headers]]
   for = "/*"
     [headers.values]
