@@ -158,7 +158,7 @@ Below are {cities ? Object.keys(cities.cities).length : 536} of these stations, 
 	</figure>
 	{/if}
 	<p>Reading pixels from one chart can only get so close, so we check our numbers against other IMD sources. The rain on the map comes from the IMD’s own numeric forecasts, which we also use to catch and correct bad pixel readings. For "today’s sky", the map is refreshed every hour with real observations from the INSAT-3DS weather satellite and IMD’s ground observers. However, past days remain forecasts and are not corrected.</p>
-	<p>Finally, to match distant stations with similar weather trends, we tracked how each station’s daily cloud cover shifted compared to its average, pairing locations at least 400 kilometres apart and in different states whose skies cleared and clouded similarly.</p>
+	<p>Finally, to match distant stations with similar weather trends, we tracked how each station’s daily cloud cover shifted compared to its average, pairing locations at least 400 kilometres apart whose skies cleared and clouded similarly.</p>
 	<p>Data and code for this project is available for reuse on <a href="https://github.com/diagram-chasing/imd-meteograms/">our Github</a>.</p>
 </section>
 
