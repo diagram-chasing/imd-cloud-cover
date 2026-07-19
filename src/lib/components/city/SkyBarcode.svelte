@@ -3,7 +3,7 @@
 	import { coverTier } from '$lib/theme';
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { ShuffleIcon, ArrowRight01Icon } from '@hugeicons/core-free-icons';
+	import { ShuffleIcon } from '@hugeicons/core-free-icons';
 	interface Props {
 		/** Calendar dates, one per column (the rollup's `dates`). */
 		dates: string[];
@@ -23,7 +23,20 @@
 	// quantize into 4 tiers; tier 0 (clear) draws nothing, track shows through
 	const TIER_OPACITY = [0, 0.32, 0.56, 0.8, 1];
 	const TRACK = '#164a7c';
-	const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+	const MONTHS = [
+		'JAN',
+		'FEB',
+		'MAR',
+		'APR',
+		'MAY',
+		'JUN',
+		'JUL',
+		'AUG',
+		'SEP',
+		'OCT',
+		'NOV',
+		'DEC'
+	];
 
 	const ROW_H = 26;
 	const AXIS_H = 18; // px — tick + month label
@@ -67,15 +80,28 @@
 		</div>
 	{/if}
 
-	<div
-		class="mb-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm font-bold tracking-wide uppercase"
-	>
-		<span class="pixel-chip" style="background:{TRACK}">Clear</span>
-		<HugeiconsIcon icon={ArrowRight01Icon} size={16} strokeWidth={2.5} class="opacity-70" aria-hidden="true" />
-		<span class="pixel-chip text-navy" style="background:#ffffff">Overcast</span>
+	<!-- Legend reads as a scale, not a sequence: one label per end of a gradient key,
+	     with a caption naming what the shade encodes, so nobody reads it as
+	     "clear now, overcast next". -->
+	<div class="mb-4 flex flex-col items-center gap-1.5">
+		<div class="flex items-center gap-2 text-sm font-bold tracking-wide uppercase">
+			<span>Clear</span>
+			<span class="flex h-3 w-28 [shape-rendering:crispEdges] sm:w-40" aria-hidden="true">
+				{#each TIER_OPACITY as op, i (i)}
+					<span class="relative flex-1" style="background:{TRACK}">
+						{#if op > 0}
+							<span class="absolute inset-0" style="background:#ffffff; opacity:{op}"></span>
+						{/if}
+					</span>
+				{/each}
+			</span>
+			<span>Overcast</span>
+		</div>
 	</div>
 
-	<div class="flex flex-col gap-y-3 sm:grid sm:grid-cols-[minmax(0,7rem)_1fr] sm:items-center sm:gap-x-4 sm:gap-y-2.5">
+	<div
+		class="flex flex-col gap-y-3 sm:grid sm:grid-cols-[minmax(0,7rem)_1fr] sm:items-center sm:gap-x-4 sm:gap-y-2.5"
+	>
 		{#each rows as row (row.id)}
 			<!-- Label stacks above the strip on mobile so the chart gets full width; the
 				sm grid places it back beside the strip. `contents` lets both children join
@@ -85,47 +111,47 @@
 					{row.name}
 				</span>
 				<div class="w-full" bind:clientWidth={w}>
-				<svg
-					width={w}
-					height={ROW_H}
-					viewBox="0 0 {w} {ROW_H}"
-					class="block [shape-rendering:crispEdges]"
-					aria-hidden="true"
-				>
-					<defs>
-						<pattern
-							id="nd-{row.id}"
-							width="7"
-							height="7"
-							patternUnits="userSpaceOnUse"
-							patternTransform="rotate(45)"
-						>
-							<rect width="7" height="7" fill="#2b3a4d" />
-							<rect width="3.5" height="7" fill="#55637b" />
-						</pattern>
-					</defs>
-					<rect x="0" y="0" width={w} height={ROW_H} fill={TRACK} />
-					{#each row.e as v, i (i)}
-						{#if v == null}
-							<rect
-								x={edge(i)}
-								y="0"
-								width={edge(i + 1) - edge(i)}
-								height={ROW_H}
-								fill="url(#nd-{row.id})"
-							/>
-						{:else if coverTier(v) > 0}
-							<rect
-								x={edge(i)}
-								y="0"
-								width={edge(i + 1) - edge(i)}
-								height={ROW_H}
-								fill="#ffffff"
-								opacity={TIER_OPACITY[coverTier(v)]}
-							/>
-						{/if}
-					{/each}
-				</svg>
+					<svg
+						width={w}
+						height={ROW_H}
+						viewBox="0 0 {w} {ROW_H}"
+						class="block [shape-rendering:crispEdges]"
+						aria-hidden="true"
+					>
+						<defs>
+							<pattern
+								id="nd-{row.id}"
+								width="7"
+								height="7"
+								patternUnits="userSpaceOnUse"
+								patternTransform="rotate(45)"
+							>
+								<rect width="7" height="7" fill="#2b3a4d" />
+								<rect width="3.5" height="7" fill="#55637b" />
+							</pattern>
+						</defs>
+						<rect x="0" y="0" width={w} height={ROW_H} fill={TRACK} />
+						{#each row.e as v, i (i)}
+							{#if v == null}
+								<rect
+									x={edge(i)}
+									y="0"
+									width={edge(i + 1) - edge(i)}
+									height={ROW_H}
+									fill="url(#nd-{row.id})"
+								/>
+							{:else if coverTier(v) > 0}
+								<rect
+									x={edge(i)}
+									y="0"
+									width={edge(i + 1) - edge(i)}
+									height={ROW_H}
+									fill="#ffffff"
+									opacity={TIER_OPACITY[coverTier(v)]}
+								/>
+							{/if}
+						{/each}
+					</svg>
 				</div>
 			</div>
 		{/each}
@@ -176,7 +202,6 @@
 </figure>
 
 <style>
-	.pixel-chip,
 	.pixel-swatch {
 		--pixel-clip: polygon(
 			0 4px,
@@ -201,9 +226,6 @@
 			0 calc(100% - 4px)
 		);
 		clip-path: var(--pixel-clip);
-	}
-	.pixel-chip {
-		padding: 0.15em 0.6em;
 	}
 	/* The swatch element is the white outline; the hatch sits on top via ::before,
 		inset 1px, so a 1px white ring shows on every edge and notched corner. A plain

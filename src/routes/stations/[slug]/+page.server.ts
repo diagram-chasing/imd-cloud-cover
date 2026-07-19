@@ -6,6 +6,7 @@ import type { AllStations, CitiesRollup, Forecast, StationsManifest, Summary } f
 import { citySlugs } from '$lib/stations/slug.js';
 import { haversineKm } from '$lib/stations/distance';
 import { titleCase } from '$lib/format';
+import { withStateTag } from '$lib/stations/labels';
 import { readView, readViewOpt, miniLatest } from '$lib/server/views';
 
 export const prerender = true;
@@ -50,9 +51,7 @@ export const load: PageServerLoad = ({ params }) => {
 		km: lat === null ? Infinity : Math.round(haversineKm(lat, lon as number, s.lat, s.lon)),
 		primary: c === code
 	}));
-	const nearby = scored
-		.filter((s) => s.primary || s.km <= RADIUS_KM)
-		.sort((a, b) => a.km - b.km);
+	const nearby = scored.filter((s) => s.primary || s.km <= RADIUS_KM).sort((a, b) => a.km - b.km);
 	// cap at MAP_CAP so header count matches what's plotted
 	const stations = nearby.slice(0, MAP_CAP);
 	const stationCount = stations.length;
@@ -76,7 +75,7 @@ export const load: PageServerLoad = ({ params }) => {
 	const stationLookup = Object.fromEntries(
 		codes.filter((c) => manifest.stations[c]).map((c) => [c, manifest.stations[c]])
 	);
-	const history = { dates: cities.dates, name: city.name, e: city.e };
+	const history = { dates: cities.dates, name: withStateTag(city.name, city.state), e: city.e };
 
 	return {
 		slug: params.slug,

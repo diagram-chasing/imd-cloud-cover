@@ -19,8 +19,18 @@
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 	const STEPS = HOUR_LABELS.length;
 	const MONTHS = [
-		'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-		'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'
+		'JAN',
+		'FEB',
+		'MAR',
+		'APR',
+		'MAY',
+		'JUN',
+		'JUL',
+		'AUG',
+		'SEP',
+		'OCT',
+		'NOV',
+		'DEC'
 	];
 
 	// One continuous timeline: every 3-hour step across every day is one position.
@@ -30,13 +40,17 @@
 	let nowStep = $derived(liveDay * STEPS + liveTime);
 	let nowFrac = $derived(total > 1 ? nowStep / (total - 1) : 0);
 
-	// Day gridlines: labelled with day-of-month, current day highlighted.
+	// Day gridlines: labelled with day-of-month, current day highlighted. The first
+	// day of the strip and every month rollover also carry a month name, so the rail
+	// reads unmistakably as a run of dates (not clock hours).
 	let dayTicks = $derived(
 		days.map((iso, i) => {
-			const [, , d] = iso.split('-').map(Number);
+			const [, m, d] = iso.split('-').map(Number);
+			const prevM = i > 0 ? Number(days[i - 1].split('-')[1]) : null;
 			return {
 				i,
 				dom: String(d ?? '').padStart(2, '0'),
+				mon: m && (i === 0 || m !== prevM) ? MONTHS[m - 1] : null,
 				frac: total > 1 ? (i * STEPS) / (total - 1) : 0
 			};
 		})
@@ -130,11 +144,16 @@
 			></span>
 			<span
 				class={[
-					'absolute top-[24px] -translate-x-1/2 text-xs tabular-nums',
+					'absolute top-[23px] flex -translate-x-1/2 flex-col items-center leading-none',
 					t.i === dayIndex ? 'font-bold opacity-100' : 'opacity-55'
 				]}
-				style="left: {t.frac * 100}%">{t.dom}</span
+				style="left: {t.frac * 100}%"
 			>
+				<span class="text-xs tabular-nums">{t.dom}</span>
+				{#if t.mon}
+					<span class="mt-0.5 text-[9px] tracking-[0.08em]">{t.mon}</span>
+				{/if}
+			</span>
 		{/each}
 
 		<!-- live-now marker (hidden when the handle already sits on it) -->

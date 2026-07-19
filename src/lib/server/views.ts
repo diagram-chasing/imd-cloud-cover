@@ -3,6 +3,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { AllStations } from '$lib/types';
+import { normalizeStationsManifest, normalizeCities } from '$lib/stations/labels';
 
 const DIRS = ['static/baked', 'static/sample'];
 
@@ -14,17 +15,24 @@ function find(rel: string): string | null {
 	return null;
 }
 
+// Repair display names/state strings on the way out, once, for every reader.
+function normalize<T>(rel: string, view: T): T {
+	if (rel === 'meta/stations.json') return normalizeStationsManifest(view as never) as T;
+	if (rel === 'rollups/cities.json') return normalizeCities(view as never) as T;
+	return view;
+}
+
 /** Read a required view; throws if absent in both baked and sample. */
 export function readView<T>(rel: string): T {
 	const p = find(rel);
 	if (!p) throw new Error(`missing data view ${rel} (baked & sample)`);
-	return JSON.parse(readFileSync(p, 'utf8')) as T;
+	return normalize(rel, JSON.parse(readFileSync(p, 'utf8')) as T);
 }
 
 /** Read an optional view; returns null if absent (e.g. unbaked tail files). */
 export function readViewOpt<T>(rel: string): T | null {
 	const p = find(rel);
-	return p ? (JSON.parse(readFileSync(p, 'utf8')) as T) : null;
+	return p ? normalize(rel, JSON.parse(readFileSync(p, 'utf8')) as T) : null;
 }
 
 /** Narrow the national `latest` view to just `codes`. The reading card + map

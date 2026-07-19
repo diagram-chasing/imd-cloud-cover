@@ -11,6 +11,7 @@ import type {
 	Forecast,
 	ObsLatest
 } from '$lib/types';
+import { normalizeStationsManifest, normalizeCities } from '$lib/stations/labels';
 
 const REMOTE = (import.meta.env.VITE_R2_PUBLIC_URL || '').replace(/\/$/, '');
 // local views live under `base` (site is a subpath); REMOTE is absolute
@@ -34,11 +35,13 @@ async function getTail<T>(path: string): Promise<T> {
 }
 
 // homepage preloads these exact URLs - keep them query-free
-export const fetchStations = () => getJSON<StationsManifest>(CORE, 'meta/stations.json');
+export const fetchStations = () =>
+	getJSON<StationsManifest>(CORE, 'meta/stations.json').then(normalizeStationsManifest);
 export const fetchLatest = () => getJSON<AllStations>(CORE, 'latest/all-stations.json');
 export const fetchSummary = () => getJSON<Summary>(CORE, 'latest/summary.json');
 
-export const fetchCities = () => getJSON<CitiesRollup>(CORE, 'rollups/cities.json');
+export const fetchCities = () =>
+	getJSON<CitiesRollup>(CORE, 'rollups/cities.json').then(normalizeCities);
 
 /** Live observations sidecar, refreshed every ~30 min by a separate CI job.
  *  Always remote (bakes are daily; obs must be fresher). Null when absent —

@@ -14,6 +14,7 @@ import type {
 } from '$lib/types';
 import { citySlugs } from '$lib/stations/slug.js';
 import { haversineKm } from '$lib/stations/distance';
+import { withStateTag } from '$lib/stations/labels';
 import { readView, readViewOpt, miniLatest } from '$lib/server/views';
 
 export const prerender = true;
@@ -90,7 +91,7 @@ export const load: PageServerLoad = ({ params }) => {
 	const stationLookup = Object.fromEntries(
 		codes.filter((c) => manifest.stations[c]).map((c) => [c, manifest.stations[c]])
 	);
-	const history = buildHistory(code, station.name);
+	const history = buildHistory(code, withStateTag(station.name, station.state));
 
 	return {
 		code,

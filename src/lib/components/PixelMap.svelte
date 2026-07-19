@@ -139,7 +139,13 @@
 		else setTimeout(cb, 1);
 	};
 
-	const night = () => skyMode(sky.timeIndex) === 'night';
+	// Day/night follows the clock only in the hourly 'today' view. The week/month
+	// scrubbers show daily means with no single hour, so holding a fixed timeIndex
+	// there would paint the whole span as night — force daylight instead.
+	const dayLocked = () => sky.view !== 'today';
+	const effMode = () => (dayLocked() ? 'day' : skyMode(sky.timeIndex));
+	const effPhase = () => (dayLocked() ? 'day' : skyPhase(sky.timeIndex));
+	const night = () => effMode() === 'night';
 
 	// --- camera application -------------------------------------------------
 
@@ -327,7 +333,7 @@
 
 	function drawSky() {
 		if (!skyGfx) return;
-		const pal = SKY[skyPhase(sky.timeIndex)];
+		const pal = SKY[effPhase()];
 		skyGfx.clear();
 		skyGfx.rect(0, 0, vw, vh).fill({ color: pal.top });
 	}
@@ -335,11 +341,11 @@
 	function updateGround() {
 		if (!groundSprite || !groundTex) return;
 		// off-mode texture may still be loading - keep stale until idle load lands
-		const t = groundTex[skyMode(sky.timeIndex)];
+		const t = groundTex[effMode()];
 		if (t) groundSprite.texture = t;
 		// dawn/dusk reuse the day texture (skyMode is 'day' at steps 2 & 6) warmed
 		// toward golden hour, giving a real intermediate between day and night
-		groundSprite.tint = skyPhase(sky.timeIndex) === 'twilight' ? TWILIGHT_TINT : 0xffffff;
+		groundSprite.tint = effPhase() === 'twilight' ? TWILIGHT_TINT : 0xffffff;
 	}
 
 	function metaText(): string {
@@ -368,11 +374,11 @@
 	// --- ambient layers -----------------------------------------------------
 
 	function styleAmbient() {
-		const mode = skyMode(sky.timeIndex);
+		const mode = effMode();
 		flights?.style(mode === 'night');
 		balloon?.style(mode === 'night');
 		field.setShadowMode(mode);
-		field.setRainMode(skyPhase(sky.timeIndex));
+		field.setRainMode(effPhase());
 		waves?.style(mode);
 	}
 
@@ -499,7 +505,7 @@
 				() => false
 			);
 
-		const mode = untrack(() => skyMode(sky.timeIndex));
+		const mode = untrack(() => effMode());
 		const [mask, groundNow] = await Promise.all([
 			loadGroundMask(groundMaskUrl).catch(() => undefined),
 			loadTex(mode === 'night' ? groundNightUrl : groundDayUrl)
@@ -539,7 +545,7 @@
 		world = new Container();
 		app.stage.addChild(world);
 
-		groundSprite = new Sprite(groundTex?.[skyMode(sky.timeIndex)] ?? groundNow);
+		groundSprite = new Sprite(groundTex?.[untrack(() => effMode())] ?? groundNow);
 		groundSprite.scale.set(geo.groundScale);
 		world.addChild(groundSprite);
 
@@ -846,6 +852,8 @@
 	});
 	$effect(() => {
 		void sky.timeIndex;
+		// view also drives day/night: week/month lock the map to daylight (see effMode)
+		void sky.view;
 		if (app) {
 			updateGround();
 			drawSky();

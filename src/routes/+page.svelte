@@ -183,7 +183,10 @@
 		openStation(code, at);
 	}
 
-	let night = $derived(skyMode(sky.timeIndex) === 'night');
+	// Only the hourly 'today' view carries a time of day; the week/month scrubbers show
+	// daily means, so they always render in daylight (a fixed hour would otherwise make
+	// the whole span read as night).
+	let night = $derived(sky.view === 'today' && skyMode(sky.timeIndex) === 'night');
 
 	function scrollToNotes() {
 		click('open');

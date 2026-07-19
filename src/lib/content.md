@@ -6,6 +6,7 @@
 	import SkyBarcode from '$lib/components/city/SkyBarcode.svelte';
 	import cloudsUrl from '$lib/assets/clouds.jpg';
 	import { fetchCities, R2_BASE } from '$lib/api/r2';
+	import { withStateTag } from '$lib/stations/labels';
 	import { citySky } from '$lib/state/citySky.svelte';
 
 	let { manifest = undefined, india = undefined } = $props();
@@ -45,7 +46,12 @@
 		const twinCode = city?.twin?.alltime?.code;
 		const twin = twinCode ? cities.cities[twinCode] : null;
 		return city && twin
-			? { city: city.name, twin: twin.name, cityE: city.e, twinE: twin.e }
+			? {
+					city: withStateTag(city.name, city.state),
+					twin: withStateTag(twin.name, twin.state),
+					cityE: city.e,
+					twinE: twin.e
+				}
 			: null;
 	});
 
@@ -102,17 +108,16 @@ What first drew me to these charts was the density of the visual organization, w
 	class="block w-full bg-white leading-none shadow-[6px_6px_0] shadow-cloud-block border-2 border-ink"
 />
 
-
 The cloud-cover panel is a stacked histogram split into three tiers: low clouds (cumulus, surface to 2 km), medium clouds (altocumulus, 2 to 7 km), and high clouds (cirrus, above 7 km). When a block of time is fully white, the station expects close to 100% coverage at that altitude. Because rain generally comes from the lowest tier, a dense white block there usually lines up with a spike in the precipitation bar below it.
 
 <CloudTiers />
-
 
 I love this visualization. It's charming that the person who wrote the software took complicated weather data and made it look like cloudy, fun pixel art. Every day since February 2026, I have been archiving these charts. I wrote a script that reads the pixels and turns the histogram images back into structured data, so I could plot a given slice of time onto a map. The mapping of India's clouds at the top of this page is the result of that daily collection and analysis.
 
 With {monthsLabel} of data, some patterns start to show. Every station here has a twin, or a distant station whose skies cloud over and clear in similar ways.
 
 {#if skyPair}
+
 <p>For example, <strong>{skyPair.city}</strong> and <strong>{skyPair.twin}</strong> are hundreds of kilometers apart, but the daily cloud strips below show that they move in sync.</p>
 
 <div class="breakout">
@@ -131,6 +136,7 @@ With {monthsLabel} of data, some patterns start to show. Every station here has 
 Below are {cities ? Object.keys(cities.cities).length : 536} of these stations, ordered from clear to cloudy. You can look up a station to see how cloudy it has been over time and today, and to see which faraway station the sky looks most like.
 
 {#if manifest && india}
+
 <div class="breakout full-bleed">
 	<CitySkyExplorer {manifest} {india} />
 </div>

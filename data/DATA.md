@@ -10,9 +10,12 @@ Please note:
 
 - These are forecast*values (the day-0 portion of that day's model run), not
   observations.
-- Coverage grows one day at a time from when the scraper first ran, and each
-  station keeps at most its last 400 days. A station shows up from the first
-  day its meteogram parsed successfully and around 1,245 are tracked.
+- Coverage grows one day at a time; each station keeps at most its last 400 days.
+
+| First day | Latest day | Stations tracked | Per-station retention |
+|-----------|------------|------------------|-----------------------|
+| 2026-02-15 | 2026-07-18 | ~1,245 | 400 days |
+
 - From July 2026 the pixel-extracted bands are *anchored* against IMD's
   MausamGram multi-model-ensemble total cloud (numeric, same 12 km grid) for
   days where that feed was reachable: when the two disagree by more than 20
@@ -22,7 +25,7 @@ Please note:
 
 ## Data dictionary
 
-### Cloud cover — daily ([cloud-cover-daily.parquet](cloud-cover-daily.parquet) · [cloud-cover-daily.csv.zip](cloud-cover-daily.csv.zip))
+### Cloud cover — daily ([cloud-cover-daily.parquet](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-daily.parquet) · [cloud-cover-daily.csv.zip](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-daily.csv.zip))
 
 One row per station per day. The four cloud values are means over the eight
 3-hourly steps of the day-0 slice.
@@ -37,7 +40,7 @@ One row per station per day. The four cloud values are means over the eight
 | low | int64 | Mean low-cloud cover, 0–100 (%) |
 | effective | int64 | Mean of the per-step max of the three bands, 0–100 (%) |
 
-### Cloud cover — 3-hourly ([cloud-cover-3hourly.parquet](cloud-cover-3hourly.parquet) · [cloud-cover-3hourly.csv.zip](cloud-cover-3hourly.csv.zip))
+### Cloud cover — 3-hourly ([cloud-cover-3hourly.parquet](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-3hourly.parquet) · [cloud-cover-3hourly.csv.zip](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-3hourly.csv.zip))
 
 Same data before the daily averaging: one row per station per 3-hour step.
 
@@ -49,7 +52,7 @@ Same data before the daily averaging: one row per station per 3-hour step.
 | station | string | Station name |
 | effective | int64 | Effective cloud cover for the step, 0–100 (%) |
 
-### Stations ([stations.parquet](stations.parquet) · [stations.csv](stations.csv))
+### Stations ([stations.parquet](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/stations.parquet) · [stations.csv](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/stations.csv))
 
 One row per station.
 
@@ -64,7 +67,7 @@ One row per station.
 | lon | float64 | Longitude (decimal degrees) |
 | canonical | bool | `false` when the station shares a place/name with another (e.g. a district-wide meteogram plus a point station in the same district); the canonical one represents the place in listings |
 
-### Places ([places.parquet](places.parquet) · [places.csv](places.csv))
+### Places ([places.parquet](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/places.parquet) · [places.csv](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/places.csv))
 
 Locations extracted from IMD to give stations readable names. Population and tier was arrived at by joining GeoNames.
 
@@ -80,6 +83,23 @@ Locations extracted from IMD to give stations readable names. Population and tie
 | lat | float64 | Latitude (decimal degrees) |
 | lon | float64 | Longitude (decimal degrees) |
 | canonical | bool | `false` for a station that duplicates another place; filter to `canonical = true` for one row per place |
+
+## Reproducing this dataset
+
+Everything here is regenerated from the scraper pipeline in
+[`../scraper`](../scraper) (see its [README](../scraper/README.md) for setup and
+the scheduled jobs). The public tables are the last step:
+
+```bash
+cd scraper
+pip install -r requirements.txt
+python main.py --out /tmp/run-results.json          # scrape + pixel-extract each meteogram
+python aggregate.py --results /tmp/run-results.json # build derived views (anchor bands, cities)
+python export.py                                    # flatten histories → ../data/*.{parquet,csv.zip}
+```
+
+`main.py` reads the day's charts from <https://nwp.imd.gov.in/>; each run appends
+one more day, so historical days can only be rebuilt from raws already collected.
 
 ## Source
 

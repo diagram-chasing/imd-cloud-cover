@@ -153,13 +153,13 @@
 
 	{#if webcam}
 		<a
-			class="webcam -mx-0.5 flex items-center gap-2 border-t border-border px-0.5 pt-2 text-xs tracking-[0.03em] text-ink uppercase no-underline hover:text-focus"
+			class="webcam -mx-0.5 flex items-center gap-2 border-t border-border px-0.5 pt-2 text-xs text-ink uppercase no-underline hover:text-focus"
 			href={webcam.url}
 			target="_blank"
 			rel="noopener noreferrer"
 		>
 			<HugeiconsIcon icon={CctvCameraIcon} size={15} strokeWidth={2} aria-hidden="true" />
-			<span class="flex-1">Live webcam · {webcam.source}</span>
+			<span>Live webcam</span>
 			<HugeiconsIcon icon={ArrowUpRight01Icon} size={13} strokeWidth={2.5} aria-hidden="true" />
 		</a>
 	{/if}

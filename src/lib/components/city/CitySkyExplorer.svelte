@@ -3,6 +3,7 @@
 	import type { FeatureCollection } from 'geojson';
 	import { fetchCities } from '$lib/api/r2';
 	import { citySlugs } from '$lib/stations/slug.js';
+	import { withStateTag } from '$lib/stations/labels';
 	import { haversineKm } from '$lib/stations/distance';
 	import { userGeo } from '$lib/state/geo.svelte';
 	import { citySky } from '$lib/state/citySky.svelte';
@@ -218,7 +219,7 @@
 										{...props}
 										class="block max-w-40 cursor-pointer truncate overflow-x-clip border-b-4 border-sun-gold p-0 px-1 text-left align-baseline font-bold text-ink uppercase transition-colors duration-120 hover:text-focus md:max-w-full"
 									>
-										{city.name}
+										{withStateTag(city.name, city.state)}
 										<HugeiconsIcon
 											icon={ArrowDown01Icon}
 											size={16}
@@ -278,9 +279,7 @@
 								align="start"
 								onselect={select}
 							/>
-							<span class="text-xs text-ink/85 uppercase">
-								or tap any cloud below
-							</span>
+							<span class="text-xs text-ink/85 uppercase"> or tap any cloud below </span>
 						{/if}
 					</div>
 				</div>

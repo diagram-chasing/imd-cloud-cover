@@ -62,8 +62,7 @@
 		for (let i = c.e.length - 1; i >= 0; i--) if (c.e[i] != null) return c.e[i] as number;
 		return c.mean;
 	}
-	const valueFor = (c: CityStats, m: 'today' | 'overall') =>
-		m === 'today' ? todayVal(c) : c.mean;
+	const valueFor = (c: CityStats, m: 'today' | 'overall') => (m === 'today' ? todayVal(c) : c.mean);
 
 	function sortedByValue(m: 'today' | 'overall'): [string, CityStats, number][] {
 		return Object.entries(data.cities)
@@ -98,7 +97,6 @@
 
 		const ghost = sortedByValue(mode === 'today' ? 'overall' : 'today').map((e) => e[2]);
 
-
 		const rawLo = Math.min(live[0], ghost[0] ?? live[0]);
 		const rawHi = Math.max(live[n - 1], ghost[ghost.length - 1] ?? live[n - 1]);
 		const pad = (rawHi - rawLo) * 0.06 || 1;
@@ -123,7 +121,6 @@
 				h
 			};
 		});
-
 
 		const spacing = narrow ? 22 : 36;
 		const step = Math.max(1, Math.round(n / Math.max(1, innerW / spacing)));
@@ -155,7 +152,6 @@
 		const rise = Math.min(narrow ? 56 : 96, Math.max(narrow ? 30 : 44, Math.abs(dx) * 0.22));
 		const TOPMIN = cell * 3;
 		const BOTMAX = layout.baseY - cell * 2;
-
 
 		const aboveSlack = minTop - TOPMIN;
 		const belowSlack = BOTMAX - maxBot;
@@ -233,7 +229,6 @@
 		}
 		arcCells = cells;
 	});
-
 
 	let arcP = $state(1);
 	$effect(() => {
@@ -329,7 +324,14 @@
 		draw();
 	});
 
-	function frame(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, h: number, color: string) {
+	function frame(
+		ctx: CanvasRenderingContext2D,
+		cx: number,
+		cy: number,
+		w: number,
+		h: number,
+		color: string
+	) {
 		const px = Math.max(2, cell);
 		const fx = Math.round(cx - w / 2) - px;
 		const fy = Math.round(cy - h / 2) - px;
@@ -397,7 +399,6 @@
 					if (SUN[r][c] === '#') ctx.fillRect(sx0 + c * su, sy0 + r * su, su, su);
 		}
 
-
 		if (lv.length > 1) {
 			const g0 = Math.ceil(MARGIN_X / cell);
 			const g1 = Math.floor((width - MARGIN_X) / cell);
@@ -414,7 +415,7 @@
 				}
 				const seg = Math.floor(gx / PW);
 				const amp = (1 + (fnv1a(`puff:${seg}`) % 3)) * cell;
-				yTop -= Math.sin(Math.PI * ((gx % PW) + 0.5) / PW) * amp;
+				yTop -= Math.sin((Math.PI * ((gx % PW) + 0.5)) / PW) * amp;
 
 				const gyTop = Math.min(gyBase, Math.round(yTop / cell));
 				ctx.fillStyle = 'rgba(255,255,255,0.92)';
@@ -447,14 +448,25 @@
 		for (const b of layout.crest) {
 			const p = renderPos.get(b.code) ?? b;
 
-			ctx.drawImage(b.sprite.canvas, Math.round(p.x - p.w / 2), Math.round(p.y - p.h / 2), p.w, p.h);
+			ctx.drawImage(
+				b.sprite.canvas,
+				Math.round(p.x - p.w / 2),
+				Math.round(p.y - p.h / 2),
+				p.w,
+				p.h
+			);
 		}
 		for (const b of [hovered, arc?.twinBox, sel]) {
 			if (!b) continue;
 			const p = renderPos.get(b.code) ?? b;
-			ctx.drawImage(b.sprite.canvas, Math.round(p.x - p.w / 2), Math.round(p.y - p.h / 2), p.w, p.h);
+			ctx.drawImage(
+				b.sprite.canvas,
+				Math.round(p.x - p.w / 2),
+				Math.round(p.y - p.h / 2),
+				p.w,
+				p.h
+			);
 		}
-
 
 		// narrow: stems carry the twin link; arc skipped (two elbowed lines reads as clutter)
 		if (!narrow && arcCells.length) {
@@ -472,7 +484,6 @@
 				ctx.fillRect(gx * cell, gy * cell, cell, cell);
 			}
 		}
-
 
 		if (narrow && !moving) {
 			for (const l of labels) {
@@ -503,7 +514,7 @@
 		}
 	}
 
-	function boxAt(ev: MouseEvent): Box | null {
+	function boxAt(ev: { clientX: number; clientY: number }): Box | null {
 		const rect = canvas!.getBoundingClientRect();
 		const x = ev.clientX - rect.left;
 		const y = ev.clientY - rect.top;
@@ -517,6 +528,40 @@
 
 		if (y < crestY - 36 || y > layout.baseY + cell) return null;
 		return boxes[idx];
+	}
+
+	// Pointer-only box by x (ignores the vertical band check) so a finger swipe keeps
+	// scrubbing even as it drifts off the cloud crest.
+	function boxAtX(clientX: number): Box | null {
+		const { boxes } = layout;
+		if (!boxes.length || !width) return null;
+		const rect = canvas!.getBoundingClientRect();
+		const innerW = Math.max(1, width - MARGIN_X * 2);
+		const t = Math.min(1, Math.max(0, (clientX - rect.left - MARGIN_X) / innerW));
+		return boxes[Math.min(boxes.length - 1, Math.max(0, Math.round(t * (boxes.length - 1))))];
+	}
+
+	// Tap to pick a single cloud; press-and-drag (mouse or finger) to scrub the
+	// selection across the front. touch-action: pan-y keeps vertical page scroll.
+	let scrubbing = false;
+	function onPointerDown(ev: PointerEvent) {
+		scrubbing = true;
+		try {
+			canvas!.setPointerCapture(ev.pointerId);
+		} catch {
+			/* capture unsupported — move events still fire */
+		}
+		const b = boxAt(ev) ?? boxAtX(ev.clientX);
+		if (b) onselect?.(b.code);
+	}
+	function onPointerMove(ev: PointerEvent) {
+		hovered = boxAt(ev);
+		if (!scrubbing) return;
+		const b = boxAtX(ev.clientX);
+		if (b && b.code !== selected) onselect?.(b.code);
+	}
+	function onPointerUp() {
+		scrubbing = false;
 	}
 
 	let selectedBox = $derived(layout.boxes.find((b) => b.code === selected) ?? null);
@@ -571,10 +616,16 @@
 			const w = cw(selectedBox.name, 12) + 24;
 			const cloudTop = selectedBox.y - selectedBox.h / 2;
 			raw.push({
-				key: 'sel', kind: 'sel', prio: 0, name: selectedBox.name,
-				x: clampCenter(selectedBox.x, w), w, h: H_HERO,
+				key: 'sel',
+				kind: 'sel',
+				prio: 0,
+				name: selectedBox.name,
+				x: clampCenter(selectedBox.x, w),
+				w,
+				h: H_HERO,
 				top: narrow ? TOP_ROW : cloudTop - cell - 8 - H_HERO,
-				anchorX: selectedBox.x, anchorY: cloudTop
+				anchorX: selectedBox.x,
+				anchorY: cloudTop
 			});
 		}
 
@@ -583,21 +634,48 @@
 			const w = Math.max(TWIN_CAP_W, cw(twinName, 9)) + 16;
 			const cloudTop = tb.y - tb.h / 2;
 			raw.push({
-				key: 'twin', kind: 'twin', prio: 1, name: twinName,
-				x: clampCenter(tb.x, w), w, h: H_TWIN,
+				key: 'twin',
+				kind: 'twin',
+				prio: 1,
+				name: twinName,
+				x: clampCenter(tb.x, w),
+				w,
+				h: H_TWIN,
 				top: narrow ? TOP_ROW : cloudTop - cell - 8 - H_TWIN,
-				anchorX: tb.x, anchorY: cloudTop
+				anchorX: tb.x,
+				anchorY: cloudTop
 			});
 		}
 
-		const at = (arr: number[], t: number) => ({ x: MARGIN_X + t * innerW, y: yFor(curveAt(arr, t)) });
+		const at = (arr: number[], t: number) => ({
+			x: MARGIN_X + t * innerW,
+			y: yFor(curveAt(arr, t))
+		});
 		const live = at(lv, 0.42);
-		raw.push({ key: 'end-live', kind: 'end', prio: 2, label: mode, solid: true,
-			x: clampCenter(live.x, cw(mode, 9) + 4), w: cw(mode, 9) + 4, h: H_END, top: Math.max(4, live.y - 36) });
+		raw.push({
+			key: 'end-live',
+			kind: 'end',
+			prio: 2,
+			label: mode,
+			solid: true,
+			x: clampCenter(live.x, cw(mode, 9) + 4),
+			w: cw(mode, 9) + 4,
+			h: H_END,
+			top: Math.max(4, live.y - 36)
+		});
 		if (gv.length > 1) {
 			const gh = at(gv, 0.6);
-			raw.push({ key: 'end-ghost', kind: 'end', prio: 3, label: ghostLabel, solid: false,
-				x: clampCenter(gh.x, cw(ghostLabel, 9) + 4), w: cw(ghostLabel, 9) + 4, h: H_END, top: Math.max(4, gh.y - 36) });
+			raw.push({
+				key: 'end-ghost',
+				kind: 'end',
+				prio: 3,
+				label: ghostLabel,
+				solid: false,
+				x: clampCenter(gh.x, cw(ghostLabel, 9) + 4),
+				w: cw(ghostLabel, 9) + 4,
+				h: H_END,
+				top: Math.max(4, gh.y - 36)
+			});
 		}
 
 		const placed: LabelItem[] = [];
@@ -661,7 +739,9 @@
 	let twinLabel = $derived(labels.find((l) => l.kind === 'twin') ?? null);
 	let endLabels = $derived(labels.filter((l) => l.kind === 'end'));
 
-	let coverLabel = $derived(mode === 'today' ? "today's cloud cover" : 'long-term mean cloud cover');
+	let coverLabel = $derived(
+		mode === 'today' ? "today's cloud cover" : 'long-term mean cloud cover'
+	);
 	let ariaLabel = $derived(
 		`Weather front of ${layout.boxes.length} cities sorted by ${coverLabel}, ` +
 			`rising from clear on the left to overcast on the right, one cloud per city. ` +
@@ -675,14 +755,15 @@
 	<p class="sr-only">{ariaLabel}</p>
 	<canvas
 		bind:this={canvas}
-		class="block w-full [image-rendering:pixelated]"
+		class="block w-full touch-pan-y [image-rendering:pixelated]"
 		style="height: {layout.height}px; cursor: {hovered ? 'pointer' : 'default'};"
 		aria-hidden="true"
-		onmousemove={(ev) => (hovered = boxAt(ev))}
-		onmouseleave={() => (hovered = null)}
-		onclick={(ev) => {
-			const b = boxAt(ev);
-			if (b) onselect?.(b.code);
+		onpointerdown={onPointerDown}
+		onpointermove={onPointerMove}
+		onpointerup={onPointerUp}
+		onpointercancel={onPointerUp}
+		onpointerleave={() => {
+			if (!scrubbing) hovered = null;
 		}}
 	></canvas>
 
@@ -694,7 +775,7 @@
 
 	{#each endLabels as l (l.key)}
 		<span
-			class="text-shadow-sky pointer-events-none absolute z-10 -translate-x-1/2 text-sm tracking-[0.14em] whitespace-nowrap text-white uppercase {l.solid
+			class="pointer-events-none absolute z-10 -translate-x-1/2 text-sm tracking-[0.14em] whitespace-nowrap text-white uppercase text-shadow-sky {l.solid
 				? 'font-bold'
 				: 'font-normal opacity-60'}"
 			style="left: {l.x}px; top: {l.top}px;"
@@ -747,7 +828,9 @@
 			<HugeiconsIcon icon={ArrowLeft01Icon} size={14} strokeWidth={2.5} aria-hidden="true" />
 			Clear
 		</span>
-		<span class="opacity-70 max-sm:hidden">{mode === 'today' ? "today's cloud cover" : 'mean cloud cover'}</span>
+		<span class="opacity-70 max-sm:hidden"
+			>{mode === 'today' ? "today's cloud cover" : 'mean cloud cover'}</span
+		>
 		<span class="flex items-center gap-1">
 			Overcast
 			<HugeiconsIcon icon={ArrowRight01Icon} size={14} strokeWidth={2.5} aria-hidden="true" />
@@ -756,7 +839,6 @@
 </div>
 
 <style>
-
 	.tag {
 		padding: 4px 8px;
 		background: color-mix(in srgb, var(--color-navy) 84%, transparent);
