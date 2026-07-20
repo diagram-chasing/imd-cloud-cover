@@ -2,11 +2,12 @@
 	import { CLOUD, RAIN, SKY } from '$lib/theme';
 	import { makePattern, rainPattern, MARK_ALPHA, TIER_ALPHA } from '$lib/map/sprites';
 
-
 	type Band = 'high' | 'middle' | 'low';
 
-
-	const SCENE: Record<Band, { tier: number; variant: number; left: string; top: string; cell: number }[]> = {
+	const SCENE: Record<
+		Band,
+		{ tier: number; variant: number; left: string; top: string; cell: number }[]
+	> = {
 		high: [
 			{ tier: 4, variant: 0, left: '18%', top: '22%', cell: 8 },
 			{ tier: 3, variant: 1, left: '6%', top: '48%', cell: 7 },
@@ -115,13 +116,6 @@
 			{#each SCENE[band] as c, i (i)}
 				{@render cloud(band, c.tier, c.variant, c.left, c.top, c.cell)}
 			{/each}
-			{#if band === 'low'}
-				{@render rainMark(2, 1, '6%', '80%', 7)}
-				<span class="tag rain-tag">
-					<span class="name">Rain</span>
-					<span class="alt">Streaks · mm per 3 h</span>
-				</span>
-			{/if}
 		</div>
 	{/each}
 	<div class="ground" aria-hidden="true"></div>
