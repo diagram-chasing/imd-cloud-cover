@@ -5,6 +5,7 @@
 	import CitySkyExplorer from '$lib/components/city/CitySkyExplorer.svelte';
 	import SkyBarcode from '$lib/components/city/SkyBarcode.svelte';
 	import cloudsUrl from '$lib/assets/clouds.jpg';
+	import weekCloudsUrl from '$lib/assets/week-clouds.gif';
 	import { fetchCities, R2_BASE } from '$lib/api/r2';
 	import { withStateTag } from '$lib/stations/labels';
 	import { citySky } from '$lib/state/citySky.svelte';
@@ -112,13 +113,22 @@ The cloud-cover panel is a stacked histogram split into three tiers: low clouds 
 
 <CloudTiers />
 
-I love this visualization. It's charming that the person who wrote the software took complicated weather data and made it look like cloudy, fun pixel art. Every day since February 2026, I have been archiving these charts. I wrote a script that reads the pixels and turns the histogram images back into structured data, so I could plot a given slice of time onto a map. The mapping of India's clouds at the top of this page is the result of that daily collection and analysis.
+I love this visualization. It's charming that the person who wrote the software took complicated weather data and made it look like cloudy, fun pixel art.
+
+<img
+	src={weekCloudsUrl}
+	alt="One station's cloud-cover panel over seven consecutive days, animated — the pixel sky shifting as each day's ten-day forecast is redrawn."
+	loading="lazy"
+	class="block w-full bg-white leading-none shadow-[6px_6px_0] shadow-cloud-block border-2 border-ink"
+/>
+
+Every day since February 2026, I have been archiving these charts. I wrote a script that reads the pixels and turns the histogram images back into structured data, so I could plot a given slice of time onto a map. The mapping of India's clouds at the top of this page is the result of that daily collection and analysis.
 
 With {monthsLabel} of data, some patterns start to show. Every station here has a twin, or a distant station whose skies cloud over and clear in similar ways.
 
 {#if skyPair}
 
-<p>For example, <strong>{skyPair.city}</strong> and <strong>{skyPair.twin}</strong> are hundreds of kilometers apart, but the daily cloud strips below show that they move in sync.</p>
+<p>For example, here are two cities that are hundreds of kilometers apart, but the daily cloud strips below show that they move in sync.</p>
 
 <div class="breakout">
 	<SkyBarcode

@@ -100,7 +100,7 @@
 	</div>
 
 	<div
-		class="flex flex-col gap-y-3 sm:grid sm:grid-cols-[minmax(0,7rem)_1fr] sm:items-center sm:gap-x-4 sm:gap-y-2.5"
+		class="flex flex-col gap-y-3 sm:grid sm:grid-cols-[minmax(0,8rem)_1fr] sm:items-center sm:gap-x-4 sm:gap-y-2.5"
 	>
 		{#each rows as row (row.id)}
 			<!-- Label stacks above the strip on mobile so the chart gets full width; the

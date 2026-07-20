@@ -249,12 +249,12 @@
 						{#if city}
 							<PixelButton
 								href={`${APP_BASE}/stations/${slugByCode[selected!] ?? ''}`}
-								cap="paper"
+								cap="gold"
 								size="xs"
 								class="text-sm!"
 							>
 								<span class="flex items-center gap-1">
-									{city.name} page
+									Go to page
 									<HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2.4} size={14} />
 								</span>
 							</PixelButton>
