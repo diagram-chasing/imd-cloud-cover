@@ -90,5 +90,5 @@ jobs:
   # manual production deploys go through the same single code path.
   deploy:
     needs: scrape
-    uses: ./.github/workflows/netlify-pages-preview.yaml
+    uses: ./.github/workflows/netlify-pages-publish.yaml
     secrets: inherit
