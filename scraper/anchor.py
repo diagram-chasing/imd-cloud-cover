@@ -9,11 +9,22 @@ and carry the MME's precip along as the rain channel.
 from common import c100
 
 BETA = 0.5      # blend toward the MME total (0.5 = split the difference)
+BETA_LOW_UP = 0.3  # ...but low is the loudest band, so damp its share of an up-scale
 TOL = 20        # agreement window in cover points
 EFF_FLOOR = 10  # below this the OCR shows essentially clear...
 TC_CLOUDY = 40  # ...and an MME total >= this means "inject missing cloud"
+S_MAX_UP = 2.5  # cap upward multiplier: a thin band mustn't explode to overcast
 RAIN_VISIBLE = 1.0     # mm/3h at which the map shows rain (theme.ts rainTier)
-RAIN_CLOUD_FLOOR = 30  # raining => there IS cloud; keep a low-band sprite visible
+RAIN_CLOUD_TRIGGER = 2.0  # ...but only real rain (not drizzle) floors cloud
+TC_RAIN_CLOUDY = 50    # and the MME total must agree there IS cloud before we floor
+RAIN_CLOUD_FLOOR = 25  # raining => keep a faint low sprite (just clears COVER_FLOOR=20)
+
+
+def _eff_at(bands, i):
+    """Effective cover at step i, mirroring the client's altitude weighting
+    (obs.ts): low counts full, mid 0.8, high 0.45. So low cloud added under an
+    existing mid/high sheet doesn't change what the eye already reads as cloudy."""
+    return max(bands["l"][i], 0.8 * bands["m"][i], 0.45 * bands["h"][i])
 
 
 def anchor_bands(bands, tc):
@@ -27,10 +38,13 @@ def anchor_bands(bands, tc):
         if abs(t - eff) <= TOL:
             continue
         if eff >= EFF_FLOOR:
-            s = max(0.25, min(4.0, t / eff))
+            s = max(0.25, min(S_MAX_UP, t / eff))
             for k in ("h", "m", "l"):
                 v = bands[k][i]
-                bands[k][i] = c100(v + BETA * (min(100, v * s) - v))
+                # MME total says nothing about altitude, so when it pushes cover
+                # up, let mid/high absorb more of it than the loud low band.
+                beta = BETA_LOW_UP if (k == "l" and s > 1) else BETA
+                bands[k][i] = c100(v + beta * (min(100, v * s) - v))
         elif t >= TC_CLOUDY:
             # OCR says clear, ensemble says cloudy — the classic failure mode.
             # Middle is the least assertive band: "cloud, altitude unknown".
@@ -53,8 +67,10 @@ def apply_anchoring(slices, numeric):
 
 
 def attach_rain(slices, numeric):
-    """Attach aligned MME precip as `r` (mm/3h), flooring the low band where
-    it rains so the map never draws streaks out of an empty sky."""
+    """Attach aligned MME precip as `r` (mm/3h), and only where it genuinely
+    rains *and* the MME agrees there is cloud, nudge the low band just past the
+    render floor so streaks never fall from an empty sky — without dumping low
+    cumulus across every drizzle cell (the old wholesale-floor behaviour)."""
     if not numeric:
         return
     for code, bands in slices.items():
@@ -64,6 +80,12 @@ def attach_rain(slices, numeric):
         n = len(bands["h"])
         r = [v or 0.0 for v in num["p"][:n]]
         bands["r"] = r + [0.0] * (n - len(r))
+        tc = num["tc"]
         for i, v in enumerate(r):
-            if v >= RAIN_VISIBLE and bands["l"][i] < RAIN_CLOUD_FLOOR:
+            if v < RAIN_CLOUD_TRIGGER:
+                continue
+            t = tc[i] if i < len(tc) else None
+            if t is None or t < TC_RAIN_CLOUDY:
+                continue  # no MME cloud to back the rain — don't floor blind
+            if _eff_at(bands, i) < RAIN_CLOUD_FLOOR:
                 bands["l"][i] = RAIN_CLOUD_FLOOR

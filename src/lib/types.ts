@@ -94,12 +94,16 @@ export interface ObsStation {
 	rr?: number;
 	r3?: number;
 	wx?: number;
+	/** OLR-derived dominant cloud layer, set only when the mask says cloudy. */
+	layer?: 'high' | 'mid' | 'low';
+	/** Raw neighbourhood-mean OLR, W/m^2 (QA / future fractional weights). */
+	ol?: number;
 }
 
 /** latest/obs.json — written every ~30 min by scraper/collect_obs.py. */
 export interface ObsLatest {
 	generated_at: string;
-	sources: { synop: string | null; cmk: string | null; hem: string | null };
+	sources: { synop: string | null; cmk: string | null; hem: string | null; olr: string | null };
 	stations: Record<string, ObsStation>;
 }
 

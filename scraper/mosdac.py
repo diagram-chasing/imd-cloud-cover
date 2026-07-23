@@ -25,8 +25,14 @@ W, H = 1360, 1280
 MAX_AGE = datetime.timedelta(hours=3)
 HEM_BANDS = 12
 HEM_MM_PER_BAND = 2.0
+# OLR (outgoing longwave radiation, W/m^2) is a cloud-top-temperature proxy:
+# cold tops (low OLR) are high/deep cloud, warm (high OLR) is clear or low cloud.
+# Thresholds validated against the CMK mask over a monsoon scene (2026-07-23).
+OLR_MIN, OLR_MAX = 100.0, 300.0  # greyscale range requested from ncWMS
+OLR_HIGH = 180  # < this => cold top => high/deep cloud
+OLR_MID = 240   # 180..240 => mid; > 240 => low/warm cloud
 
-_FILE_RE = re.compile(r"3SIMG_(\d{2})([A-Z]{3})(\d{4})_(\d{4})_L2B_(CMK|HEM)_\S+?\.h5")
+_FILE_RE = re.compile(r"3SIMG_(\d{2})([A-Z]{3})(\d{4})_(\d{4})_L2B_(CMK|HEM|OLR)_\S+?\.h5")
 _MONTHS = {m: i + 1 for i, m in enumerate(
     ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
      "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"])}
@@ -86,6 +92,17 @@ def fetch_hem_grid(filename):
     grey, valid = res
     bands = np.round(grey * (HEM_BANDS - 1) / 255.0)
     return np.where(valid, bands * HEM_MM_PER_BAND, np.nan)
+
+
+def fetch_olr_grid(filename):
+    """Outgoing-longwave-radiation grid in W/m^2 (nan = missing), or None.
+    Continuous greyscale decoding linearly onto [OLR_MIN, OLR_MAX]."""
+    res = _fetch_grid(filename, "OLR", f"{int(OLR_MIN)},{int(OLR_MAX)}")
+    if res is None:
+        return None
+    grey, valid = res
+    wm2 = OLR_MIN + grey / 255.0 * (OLR_MAX - OLR_MIN)
+    return np.where(valid, wm2, np.nan)
 
 
 def sample(grid, lat, lon, k=2):

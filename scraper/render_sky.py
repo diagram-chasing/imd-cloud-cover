@@ -23,9 +23,20 @@ PARTIAL = (0xB7, 0xCF, 0xEA)
 INK = (0x0B, 0x1D, 0x3A)
 PAPER = (0xFD, 0xFB, 0xF4)
 
+# Cloud-height shading from INSAT-3DS OLR (cloud-top temperature proxy): cold,
+# high/deep tops read bright white; warmer low cloud settles toward the sky, so
+# the field isn't a flat white slab. Used only when an OLR frame is supplied;
+# without one cloud falls back to flat CLOUD/PARTIAL. Stops are the W/m^2 upper
+# edges of each tier (cf. mosdac.OLR_HIGH/OLR_MID).
+CLOUD_MIDH = (0xE8, 0xEE, 0xF7)
+CLOUD_MID = (0xC6, 0xD7, 0xEC)
+CLOUD_LOW = (0xA8, 0xC2, 0xE0)
+OLR_STOPS = ((175, CLOUD), (205, CLOUD_MIDH), (235, CLOUD_MID))
+
 CELL_SRC = 10  # source px per cell -> 136x128 cells over the obs bbox
 SCALE = 6      # output px per cell
 FULL, SOME = 0.7, 0.35  # cell cloud fraction -> solid / partial block
+PARTIAL_MIX = 0.6  # partial cell blends its tone this far from sky toward cloud
 STAMP_SCALE = 2  # nearest-neighbour upscale of the bitmap font -> pixel type
 
 GEO = Path(__file__).resolve().parent.parent / "src/lib/assets/geo/india.json"
@@ -96,21 +107,53 @@ def _outer_arcs(topo):
     return [arcs[i] for i, n in use.items() if n == 1]
 
 
-def render_sky(cmk, cmk_filename=None):
+def _cellstack(grid, gh, gw):
+    """Reshape an (H,W) grid into (gh, gw, CELL_SRC*CELL_SRC) per-cell stacks."""
+    b = grid[: gh * CELL_SRC, : gw * CELL_SRC].reshape(gh, CELL_SRC, gw, CELL_SRC)
+    return b.transpose(0, 2, 1, 3).reshape(gh, gw, -1)
+
+
+def _blend(a, b, t):
+    """Linear blend of colours a->b by t in [0,1]."""
+    return tuple(int(round(a[i] + (b[i] - a[i]) * t)) for i in range(3))
+
+
+def _cloud_tone(o):
+    """Cloud colour from a cell's mean cloud-top OLR (W/m^2): cold high tops
+    bright, warm low cloud muted. NaN (no OLR under the cloud) -> flat CLOUD."""
+    if o is None or o != o:  # NaN
+        return CLOUD
+    for edge, col in OLR_STOPS:
+        if o < edge:
+            return col
+    return CLOUD_LOW
+
+
+def render_sky(cmk, cmk_filename=None, olr=None):
     """PNG bytes for the styled sky image, or None when cmk is unusable.
 
     cmk_filename, when given, is stamped onto the image as a pixel meta line.
+    olr, when given (same HxW grid), shades cloud by cloud-top height so the
+    field isn't a flat white slab; without it cloud renders flat CLOUD/PARTIAL.
     """
     if cmk is None or cmk.shape != (H, W):
         return None
     gh, gw = H // CELL_SRC, W // CELL_SRC
-    blocks = cmk[: gh * CELL_SRC, : gw * CELL_SRC].reshape(gh, CELL_SRC, gw, CELL_SRC)
-    blocks = blocks.transpose(0, 2, 1, 3).reshape(gh, gw, -1)
+    blocks = _cellstack(cmk, gh, gw)
     valid = np.count_nonzero(~np.isnan(blocks), axis=2)
     if valid.sum() < blocks.shape[2] * gh * gw / 2:
         return None  # mostly-missing frame: keep serving the previous image
     with np.errstate(invalid="ignore"):
         frac = np.where(valid > blocks.shape[2] / 2, np.nanmean(blocks, axis=2), 0.0)
+
+    # Per-cell mean OLR over the cloudy pixels only, to shade cloud by height.
+    omean = None
+    if olr is not None and olr.shape == (H, W):
+        oblocks = _cellstack(olr, gh, gw)
+        ocloud = np.where(blocks > 0.5, oblocks, np.nan)
+        has = np.count_nonzero(~np.isnan(ocloud), axis=2)
+        # nansum (not nanmean) so all-clear cells don't warn on an empty slice
+        omean = np.where(has > 0, np.nansum(ocloud, axis=2) / np.maximum(has, 1), np.nan)
 
     out_w, out_h = gw * SCALE, gh * SCALE
     img = Image.new("RGB", (out_w, out_h), SKY)
@@ -120,9 +163,14 @@ def render_sky(cmk, cmk_filename=None):
             f = frac[y, x]
             if f < SOME:
                 continue
+            if omean is not None:
+                base = _cloud_tone(omean[y, x])
+                col = base if f >= FULL else _blend(SKY, base, PARTIAL_MIX)
+            else:
+                col = CLOUD if f >= FULL else PARTIAL
             d.rectangle(
                 [x * SCALE, y * SCALE, (x + 1) * SCALE - 1, (y + 1) * SCALE - 1],
-                fill=CLOUD if f >= FULL else PARTIAL,
+                fill=col,
             )
 
     lon0, lat0, lon1, lat1 = BBOX

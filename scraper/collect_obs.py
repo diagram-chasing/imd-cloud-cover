@@ -20,6 +20,7 @@ load_dotenv()
 
 SYNOP_MAX_AGE = datetime.timedelta(hours=4.5)
 ARCHIVE_KEEP = 60  # snapshots per daily QA archive file
+LAYER_CLOUD_GATE = 40  # need CMK cloud >= this before OLR altitude is meaningful
 
 
 def build_obs(now):
@@ -27,6 +28,7 @@ def build_obs(now):
     cmk = mosdac.fetch_cmk_grid(files["CMK"]) if "CMK" in files else None
     cmk_file = files.get("CMK") if cmk is not None else None
     hem = mosdac.fetch_hem_grid(files["HEM"]) if "HEM" in files else None
+    olr = mosdac.fetch_olr_grid(files["OLR"]) if "OLR" in files else None
     syn = synop.fetch_synop()
 
     stations = {}
@@ -38,6 +40,14 @@ def build_obs(now):
         rr = mosdac.sample(hem, s["lat"], s["lon"])
         if rr:
             row["rr"] = round(rr, 1)
+
+        # OLR gives the cloud-top temperature; only classify altitude where the
+        # mask agrees there's cloud to place (CMK gates, OLR locates the layer).
+        ow = mosdac.sample(olr, s["lat"], s["lon"])
+        if ow is not None and row.get("sc", 0) >= LAYER_CLOUD_GATE:
+            row["ol"] = round(ow)
+            row["layer"] = ("high" if ow < mosdac.OLR_HIGH
+                            else "mid" if ow < mosdac.OLR_MID else "low")
 
         ob = syn.get(str(s.get("wmo"))) if syn and s.get("wmo") else None
         if ob and ob["t"] and now - ob["t"] <= SYNOP_MAX_AGE:
@@ -69,9 +79,10 @@ def build_obs(now):
             "synop": syn_t and syn_t.isoformat(timespec="seconds"),
             "cmk": files.get("CMK") if cmk is not None else None,
             "hem": files.get("HEM") if hem is not None else None,
+            "olr": files.get("OLR") if olr is not None else None,
         },
         "stations": stations,
-    }, cmk, cmk_file
+    }, cmk, cmk_file, olr
 
 
 def append_archive(store, doc, now):
@@ -89,10 +100,11 @@ def append_archive(store, doc, now):
         print(f"archive append failed (ignored): {e}")
 
 
-def put_sky(store, cmk, cmk_file):
-    """Best-effort styled sky image from the CMK grid already in hand."""
+def put_sky(store, cmk, cmk_file, olr=None):
+    """Best-effort styled sky image from the CMK grid already in hand, shaded by
+    OLR cloud-top height when that frame is available."""
     try:
-        png = render_sky(cmk, cmk_file)
+        png = render_sky(cmk, cmk_file, olr)
         if png:
             store.put_bytes("latest/sky.png", png, "image/png",
                             cache_control=SHORT)
@@ -103,12 +115,12 @@ def put_sky(store, cmk, cmk_file):
 
 def main():
     now = datetime.datetime.now(datetime.timezone.utc)
-    doc, cmk, cmk_file = build_obs(now)
+    doc, cmk, cmk_file, olr = build_obs(now)
     store = get_store()
     store.put_json("latest/obs.json", doc, cache_control="public, max-age=60")
     print(f"Wrote latest/obs.json: {len(doc['stations'])} stations, "
           f"sources {doc['sources']}")
-    put_sky(store, cmk, cmk_file)
+    put_sky(store, cmk, cmk_file, olr)
     append_archive(store, doc, now)
 
 

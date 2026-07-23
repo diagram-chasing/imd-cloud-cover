@@ -20,6 +20,11 @@ const rainingNow = (o: ObsStation) => (o.rr ?? 0) >= 2 || (o.r3 ?? 0) >= 1 || is
 const eff = (v: { h: number; m: number; l: number }) => Math.max(v.l, v.m * 0.8, v.h * 0.45);
 const c100 = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
 
+// Route an injected/topped-up correction to the OLR-observed layer. Mid is the
+// default (and the least assertive band) whenever OLR can't place the cloud.
+const LAYER_KEY = { high: 'h', mid: 'm', low: 'l' } as const;
+const injectKey = (o: ObsStation): 'h' | 'm' | 'l' => LAYER_KEY[o.layer ?? 'mid'];
+
 /** The current IST 3-h display step (0 = 00:00 … 7 = 21:00). */
 export const nowStepIST = (now = Date.now()) =>
 	Math.floor(new Date(now + 5.5 * 3600 * 1000).getUTCHours() / 3);
@@ -56,12 +61,13 @@ export function applyObs(
 					const s = (e + ws * gap) / e;
 					nv = { ...v, h: c100(v.h * s), m: c100(v.m * s), l: c100(v.l * s) };
 					// bands clamp at 100 (cirrus counts only 0.45), so scaling can
-					// undershoot; top up the mid sheet toward observed
-					if (gap > 0 && o.oc - eff(nv) > DISAGREE) nv.m = Math.max(nv.m, c100(ws * o.oc));
+					// undershoot; top up the observed layer (mid if unknown)
+					if (gap > 0 && o.oc - eff(nv) > DISAGREE)
+						nv[injectKey(o)] = Math.max(nv[injectKey(o)], c100(ws * o.oc));
 				} else {
 					// nothing to scale from a clear forecast; surface observed cloud
-					// as a mid-level sheet (the least assertive band)
-					nv = { ...v, m: Math.max(v.m, c100(ws * o.oc)) };
+					// at the OLR-indicated layer (mid when unknown — least assertive)
+					nv = { ...v, [injectKey(o)]: Math.max(v[injectKey(o)], c100(ws * o.oc)) };
 				}
 			}
 		}
