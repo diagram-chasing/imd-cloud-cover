@@ -12,11 +12,14 @@ import zipfile
 import pyarrow as pa
 import pyarrow.csv as pacsv
 import pyarrow.parquet as pq
+from dotenv import load_dotenv
 
 from bands import STEPS
 from common import here, load_manifest
 from histories import load_histories
 from storage import get_store
+
+load_dotenv()
 
 DAILY_FIELDS = ("h", "m", "l", "e")  # high, middle, low, effective
 

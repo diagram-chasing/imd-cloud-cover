@@ -154,7 +154,7 @@ Below are {cities ? Object.keys(cities.cities).length : 536} of these stations, 
 			onerror={() => (skyImgOk = false)}
 			class="block w-full bg-white leading-none shadow-[4px_4px_0] shadow-cloud-block border-2 border-ink"
 		/>
-		<figcaption>Clouds over India within the last hour, via ISRO’s INSAT-3DS satellite</figcaption>
+		<figcaption>Latest clouds over India, via ISRO’s INSAT-3DS satellite</figcaption>
 	</figure>
 	{/if}
 	<p>Reading pixels from one chart can only get so close, so we check our numbers against other IMD sources. The rain on the map comes from the IMD’s own numeric forecasts, which we also use to catch and correct bad pixel readings. For "today’s sky", the map is refreshed every hour with real observations from the INSAT-3DS weather satellite and IMD’s ground observers. However, past days remain forecasts and are not corrected.</p>
