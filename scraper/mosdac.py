@@ -15,9 +15,24 @@ from PIL import Image
 
 from common import insecure_get
 
+# Legacy file-index endpoint: returns full L2B filenames (incl. version suffix)
+# for 3SIMG in one shot. Deprecated on the live site in favour of INITIAL_URL
+# below, but still preferred here because it hands back the exact filename
+# rather than one we have to reconstruct. Both share one MySQL file index; when
+# that DB is unreachable every listing endpoint 500s (see latest_files).
 LATEST_URL = ("https://mosdac.gov.in/live/backend/satellite_latest.php"
               "?file_prefix=3SIMG&param=addlayer&timezone=local"
               "&timezone_formal=19800&file_ext=")
+# Current endpoint the live UI uses. Queried per product; returns a
+# semicolon-split "datetime-list;prefix" body (see _parse_initial), from which
+# we rebuild the filename. NOTE: response shape/params inferred from MOSDAC's
+# minified JS and unverified while the backend DB is down — the legacy path is
+# tried first, this is a fallback for if/when the old endpoint is retired.
+INITIAL_URL = ("https://mosdac.gov.in/live/backend/satellite_data_initial.php"
+               "?file_prefix=3SIMG&file_extension=L2B_{prod}&param=startlayer"
+               "&timezone=local&timezone_formal=-19800")
+L2B_PRODUCTS = ("CMK", "HEM", "OLR")
+L2B_SUFFIX = "V01R00"  # version/revision tag in the reconstructed filename
 WMS_BASE = "https://mosdac.gov.in/live_data/wms"
 
 BBOX = (66.0, 6.0, 100.0, 38.0)  # lon0, lat0, lon1, lat1 (~0.025 deg/px)
@@ -38,23 +53,87 @@ _MONTHS = {m: i + 1 for i, m in enumerate(
      "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"])}
 
 
-def latest_files(now):
-    """{"CMK": filename, "HEM": filename} for the newest fresh scan of each
-    product, or {} when the listing is unreachable. The listing dumps every
-    product unordered, so take the max timestamp per product."""
-    try:
-        text = insecure_get(LATEST_URL, timeout=45).decode("utf-8", "replace")
-    except Exception:  # noqa: BLE001
-        return {}
+def _fresh(filename, now):
+    """Parse an L2B filename's UTC timestamp; return it only if within MAX_AGE."""
+    m = _FILE_RE.match(filename)
+    if not m:
+        return None
+    day, mon, year, hhmm, _prod = m.groups()
+    dt = datetime.datetime(int(year), _MONTHS[mon], int(day),
+                           int(hhmm[:2]), int(hhmm[2:]),
+                           tzinfo=datetime.timezone.utc)
+    return dt if now - dt <= MAX_AGE else None
+
+
+def _latest_via_legacy(now):
+    """{prod: filename} from LATEST_URL, which dumps every product's real
+    filename unordered — take the max fresh timestamp per product. Raises on a
+    transport/HTTP error so the caller can log it and fall back."""
+    text = insecure_get(LATEST_URL, timeout=45).decode("utf-8", "replace")
     best = {}
     for m in _FILE_RE.finditer(text):
-        day, mon, year, hhmm, prod = m.groups()
-        dt = datetime.datetime(int(year), _MONTHS[mon], int(day),
-                               int(hhmm[:2]), int(hhmm[2:]),
-                               tzinfo=datetime.timezone.utc)
-        if now - dt <= MAX_AGE and (prod not in best or dt > best[prod][1]):
+        dt = _fresh(m.group(0), now)
+        prod = m.group(5)
+        if dt and (prod not in best or dt > best[prod][1]):
             best[prod] = (m.group(0), dt)
     return {prod: name for prod, (name, _) in best.items()}
+
+
+def _parse_initial(text, prod, now):
+    """Rebuild a filename from satellite_data_initial.php's "list;prefix" body.
+
+    The list is comma-separated "SRC*DDMONYYYY HHMM" entries; the trailing
+    field is the source prefix to keep. We take the newest matching entry and
+    reconstruct 3SIMG_<date>_<time>_L2B_<prod>_<suffix>.h5, then re-validate it
+    through the same freshness check. Returns a fresh filename or None."""
+    parts = text.split(";")
+    if len(parts) < 2:
+        return None
+    prefix = parts[1].strip()
+    entries = [e[e.index("*") + 1:].strip() for e in parts[0].split(",")
+               if "*" in e and (not prefix or prefix in e)]
+    for val in reversed(entries):  # newest last
+        date_part, _, time_part = val.partition(" ")
+        fn = f"3SIMG_{date_part.strip()}_{time_part.strip()}_L2B_{prod}_{L2B_SUFFIX}.h5"
+        if _fresh(fn, now):
+            return fn
+    return None
+
+
+def _latest_via_initial(now):
+    """{prod: filename} via the per-product current endpoint (INITIAL_URL).
+    Best-effort: any product whose request or parse fails is simply omitted."""
+    out = {}
+    for prod in L2B_PRODUCTS:
+        try:
+            text = insecure_get(INITIAL_URL.format(prod=prod), timeout=45)
+            fn = _parse_initial(text.decode("utf-8", "replace"), prod, now)
+        except Exception:  # noqa: BLE001
+            fn = None
+        if fn:
+            out[prod] = fn
+    return out
+
+
+def latest_files(now):
+    """{"CMK": filename, ...} for the newest fresh scan of each product, or {}
+    when every listing endpoint is unreachable.
+
+    Prefers the legacy endpoint (hands back exact filenames); on its failure —
+    typically the shared file-index DB being down — logs the reason and falls
+    back to reconstructing filenames from the current per-product endpoint."""
+    try:
+        files = _latest_via_legacy(now)
+        if files:
+            return files
+        print("mosdac: legacy listing returned no fresh products; trying fallback")
+    except Exception as e:  # noqa: BLE001
+        print(f"mosdac: legacy listing failed ({e!r}); trying fallback")
+    files = _latest_via_initial(now)
+    if not files:
+        print("mosdac: no listing endpoint yielded fresh L2B files "
+              "(MOSDAC file index likely down)")
+    return files
 
 
 def _fetch_grid(filename, layer, colorscalerange, numcolorbands=""):

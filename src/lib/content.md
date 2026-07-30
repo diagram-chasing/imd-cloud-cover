@@ -5,7 +5,7 @@
 	import CitySkyExplorer from '$lib/components/city/CitySkyExplorer.svelte';
 	import SkyBarcode from '$lib/components/city/SkyBarcode.svelte';
 	import cloudsUrl from '$lib/assets/clouds.jpg';
-	import { fetchCities, R2_BASE } from '$lib/api/r2';
+	import { fetchCities, fetchObs, R2_BASE } from '$lib/api/r2';
 	import { withStateTag } from '$lib/stations/labels';
 	import { citySky } from '$lib/state/citySky.svelte';
 
@@ -14,9 +14,27 @@
 	let cities = $state(null);
 	// live satellite illustration is absent in sample mode; hide the figure on 404
 	let skyImgOk = $state(true);
+	// sky.png is only re-rendered on an obs run that got a fresh INSAT-3DS cloud
+	// mask, so sources.cmk is our staleness signal: when it's missing or its
+	// embedded frame time is old (MOSDAC's live feed goes down for stretches),
+	// the served image is stale — hide it rather than pass off an old frame as
+	// "latest". Optimistic: shown until obs confirms staleness, to avoid a
+	// layout flash on the normal fresh path.
+	let skyStale = $state(false);
+	const MONTHS = 'JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'.split(' ');
+	const SKY_MAX_AGE_MS = 6 * 3600 * 1000;
+	function cmkStale(cmk) {
+		const m = cmk?.match(/_(\d{2})([A-Z]{3})(\d{4})_(\d{2})(\d{2})_/);
+		if (!m) return true;
+		const t = Date.UTC(+m[3], MONTHS.indexOf(m[2]), +m[1], +m[4], +m[5]);
+		return !(Date.now() - t <= SKY_MAX_AGE_MS);
+	}
 	$effect(() => {
 		fetchCities()
 			.then((d) => (cities = d))
+			.catch(() => {});
+		fetchObs()
+			.then((o) => (skyStale = cmkStale(o?.sources?.cmk)))
 			.catch(() => {});
 	});
 
@@ -145,7 +163,7 @@ Below are {cities ? Object.keys(cities.cities).length : 536} of these stations, 
 <section class="methodology">
 	<h2>Methodology</h2>
 	<p>We extract daily cloud coverage data by analysing meteograms for each weather station. Because the charts use a standard layout, we could isolate the cloud-cover section and sample 80 evenly spaced intervals across the timeline. The chart divides the sky into high, middle, and low altitude layers, representing cloud density with the height of white shading. By measuring how high this shading reaches in each band, we calculate the percentage of cloud cover. To an observer on the ground, the sky looks overcast if even one layer is full, so we define a station’s overall cloudiness using the highest percentage among its three recorded layers.</p>
-	{#if skyImgOk}
+	{#if skyImgOk && !skyStale}
 	<figure class="method-figure">
 		<img
 			src={`${R2_BASE}/latest/sky.png`}
