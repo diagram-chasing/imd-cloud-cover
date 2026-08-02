@@ -51,9 +51,13 @@ PALETTE_C = np.array([-80.0, -65.0, -50.0, -35.0], np.float32)
 SAT_CLOUD = 0.30  # saturation above which a pixel is a palette (cold-cloud) colour
 
 # Greyscale background = inverted brightness temperature (warm/clear dark, cold
-# cloud bright). Linear ramps, tune from tools/validate_sources.py.
-GREY_CLEAR, GREY_THICK = 130.0, 205.0   # brightness -> cloud fraction 0..1
-GREY_WARM_C, GREY_COLD_C = 30.0, -30.0  # brightness endpoints -> deg C (coarse)
+# cloud bright). Linear ramps, tune from tools/validate_sources.py. CLEAR is set
+# well above the warm-surface floor so only clearly-cold grey counts as cloud —
+# otherwise haze/warm-surface reads as a near-total overcast wash. Grey cloud is
+# by definition warmer than the palette's cold tops, so its temp range sits in
+# the mid/low band (the palette owns high).
+GREY_CLEAR, GREY_THICK = 178.0, 228.0   # brightness -> cloud fraction 0..1
+GREY_WARM_C, GREY_COLD_C = 10.0, -30.0  # brightness endpoints -> deg C (coarse)
 CLEAR_FRAC = 0.15  # cloud fraction below which a grey pixel is treated as clear
 
 # Cloud-top temperature (deg C) -> layer, matching obs.ts's high/mid/low routing.

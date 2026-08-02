@@ -28,14 +28,17 @@ PAPER = (0xFD, 0xFB, 0xF4)
 # the field isn't a flat white slab. Used only when a temperature frame is
 # supplied; without one cloud falls back to flat CLOUD/PARTIAL. Stops are the
 # (cold-side) temperature edges of each tier (cf. imd_sat.LAYER_HIGH_C/MID_C).
-CLOUD_MIDH = (0xE8, 0xEE, 0xF7)
-CLOUD_MID = (0xC6, 0xD7, 0xEC)
-CLOUD_LOW = (0xA8, 0xC2, 0xE0)
-TEMP_STOPS = ((-55, CLOUD), (-35, CLOUD_MIDH), (-15, CLOUD_MID))
+# High-contrast height ramp so layers read at a glance: sky -> faint low ->
+# medium mid -> pale mid-high -> white deep/high. Muted tiers washed out the
+# density, so these step down toward the sky more assertively.
+CLOUD_MIDH = (0xC6, 0xDC, 0xF2)
+CLOUD_MID = (0x8C, 0xB4, 0xDE)
+CLOUD_LOW = (0x5C, 0x98, 0xCE)
+TEMP_STOPS = ((-45, CLOUD), (-25, CLOUD_MIDH), (-8, CLOUD_MID))
 
 CELL_SRC = 10  # source px per cell -> 136x128 cells over the obs bbox
 SCALE = 6      # output px per cell
-FULL, SOME = 0.7, 0.35  # cell cloud fraction -> solid / partial block
+FULL, SOME = 0.8, 0.5  # cell cloud fraction -> solid / partial block
 PARTIAL_MIX = 0.6  # partial cell blends its tone this far from sky toward cloud
 STAMP_SCALE = 2  # nearest-neighbour upscale of the bitmap font -> pixel type
 
