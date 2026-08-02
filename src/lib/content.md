@@ -14,27 +14,23 @@
 	let cities = $state(null);
 	// live satellite illustration is absent in sample mode; hide the figure on 404
 	let skyImgOk = $state(true);
-	// sky.png is only re-rendered on an obs run that got a fresh INSAT-3DS cloud
-	// mask, so sources.cmk is our staleness signal: when it's missing or its
-	// embedded frame time is old (MOSDAC's live feed goes down for stretches),
-	// the served image is stale — hide it rather than pass off an old frame as
-	// "latest". Optimistic: shown until obs confirms staleness, to avoid a
-	// layout flash on the normal fresh path.
+	// sky.png is only re-rendered on an obs run that got a fresh INSAT CTBT
+	// frame, so sources.ctbt (an ISO timestamp) is our staleness signal: when
+	// it's missing or old (IMD's feed can lag), the served image is stale — hide
+	// it rather than pass off an old frame as "latest". Optimistic: shown until
+	// obs confirms staleness, to avoid a layout flash on the normal fresh path.
 	let skyStale = $state(false);
-	const MONTHS = 'JAN FEB MAR APR MAY JUN JUL AUG SEP OCT NOV DEC'.split(' ');
 	const SKY_MAX_AGE_MS = 6 * 3600 * 1000;
-	function cmkStale(cmk) {
-		const m = cmk?.match(/_(\d{2})([A-Z]{3})(\d{4})_(\d{2})(\d{2})_/);
-		if (!m) return true;
-		const t = Date.UTC(+m[3], MONTHS.indexOf(m[2]), +m[1], +m[4], +m[5]);
-		return !(Date.now() - t <= SKY_MAX_AGE_MS);
+	function skyFrameStale(ctbt) {
+		const t = Date.parse(ctbt ?? '');
+		return !(t > 0 && Date.now() - t <= SKY_MAX_AGE_MS);
 	}
 	$effect(() => {
 		fetchCities()
 			.then((d) => (cities = d))
 			.catch(() => {});
 		fetchObs()
-			.then((o) => (skyStale = cmkStale(o?.sources?.cmk)))
+			.then((o) => (skyStale = skyFrameStale(o?.sources?.ctbt)))
 			.catch(() => {});
 	});
 
@@ -167,15 +163,15 @@ Below are {cities ? Object.keys(cities.cities).length : 536} of these stations, 
 	<figure class="method-figure">
 		<img
 			src={`${R2_BASE}/latest/sky.png`}
-			alt="India's current cloud cover as seen by the INSAT-3DS satellite"
+			alt="India's current cloud cover as seen by the INSAT-3DR/3DS satellite"
 			loading="lazy"
 			onerror={() => (skyImgOk = false)}
 			class="block w-full bg-white leading-none shadow-[4px_4px_0] shadow-cloud-block border-2 border-ink"
 		/>
-		<figcaption>Latest clouds over India, via ISRO’s INSAT-3DS satellite</figcaption>
+		<figcaption>Latest clouds over India, via IMD’s INSAT-3DR/3DS satellite imagery</figcaption>
 	</figure>
 	{/if}
-	<p>Reading pixels from one chart can only get so close, so we check our numbers against other IMD sources. The rain on the map comes from the IMD’s own numeric forecasts, which we also use to catch and correct bad pixel readings. For "today’s sky", the map is refreshed every hour with real observations from the INSAT-3DS weather satellite and IMD’s ground observers. However, past days remain forecasts and are not corrected.</p>
+	<p>Reading pixels from one chart can only get so close, so we check our numbers against other IMD sources. The rain on the map comes from the IMD’s own numeric forecasts, which we also use to catch and correct bad pixel readings. For "today’s sky", the map is refreshed with real observations from the INSAT-3DR/3DS weather satellite and IMD’s ground observers. However, past days remain forecasts and are not corrected.</p>
 	<p>Finally, to match distant stations with similar weather trends, we tracked how each station’s daily cloud cover shifted compared to its average, pairing locations at least 400 kilometres apart whose skies cleared and clouded similarly.</p>
 	<p>Data and code for this project is available for reuse on <a href="https://github.com/diagram-chasing/imd-meteograms/">our Github</a>.</p>
 </section>

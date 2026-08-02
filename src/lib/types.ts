@@ -94,16 +94,19 @@ export interface ObsStation {
 	rr?: number;
 	r3?: number;
 	wx?: number;
-	/** OLR-derived dominant cloud layer, set only when the mask says cloudy. */
+	/** Cloud-top-temperature-derived dominant layer, set only where cloudy. */
 	layer?: 'high' | 'mid' | 'low';
-	/** Raw neighbourhood-mean OLR, W/m^2 (QA / future fractional weights). */
+	/** Raw neighbourhood-mean cloud-top temperature, deg C (QA; from CTBT, or
+	 *  W/m^2 OLR on the rare MOSDAC-fallback path). */
 	ol?: number;
 }
 
-/** latest/obs.json — written every ~30 min by scraper/collect_obs.py. */
+/** latest/obs.json — written every ~30 min by scraper/collect_obs.py.
+ *  `ctbt` is the IMD INSAT cloud/layer frame time (primary); `hem`/`olr` are the
+ *  MOSDAC rain/OLR frames, populated only when that dormant feed is alive. */
 export interface ObsLatest {
 	generated_at: string;
-	sources: { synop: string | null; cmk: string | null; hem: string | null; olr: string | null };
+	sources: { synop: string | null; ctbt: string | null; hem: string | null; olr: string | null };
 	stations: Record<string, ObsStation>;
 }
 

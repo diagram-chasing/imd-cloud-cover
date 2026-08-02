@@ -1,15 +1,19 @@
 """Build latest/obs.json — near-real-time observed cloud & rain per station.
 
 Runs every ~30 min (obs-refresh.yml), independent of the daily scrape. Each
-source is optional: INSAT-3DS CMK cloud mask + HEM rain (MOSDAC GetMap pixel
-sampling) and IMD synop (oktas, present weather, 3-h rain via the wmo join in
-stations.json). The map uses obs only to correct the current-time frame.
+source is optional. Cloud + cloud-top layer come from IMD's live INSAT-3DR/3DS
+CTBT product (imd_sat); MOSDAC INSAT-3DS (HEM rain + native OLR) is kept as a
+dormant best-effort secondary that auto-resumes if ISRO restores its ingest
+(frozen since 23 Jul 2026); IMD synop adds oktas, present weather and 3-h rain
+via the wmo join in stations.json. The map uses obs only to correct the
+current-time frame.
 """
 
 import datetime
 
 from dotenv import load_dotenv
 
+import imd_sat
 import mosdac
 import synop
 from common import c100, load_manifest
@@ -24,30 +28,44 @@ LAYER_CLOUD_GATE = 40  # need CMK cloud >= this before OLR altitude is meaningfu
 
 
 def build_obs(now):
-    files = mosdac.latest_files(now)
-    cmk = mosdac.fetch_cmk_grid(files["CMK"]) if "CMK" in files else None
-    cmk_file = files.get("CMK") if cmk is not None else None
-    hem = mosdac.fetch_hem_grid(files["HEM"]) if "HEM" in files else None
-    olr = mosdac.fetch_olr_grid(files["OLR"]) if "OLR" in files else None
+    # Primary satellite source: IMD's live INSAT CTBT (cloud fraction + cloud-top
+    # temperature, decoded and warped onto the same grid mosdac.sample() expects).
+    frame = imd_sat.latest_frame(now)
+    cloud, temp = imd_sat.grids(frame[0]) if frame else (None, None)
+    ctbt_dt = frame[1] if frame else None
+
+    # Secondary, best-effort: MOSDAC INSAT-3DS. Frozen since 23 Jul 2026, so this
+    # normally yields {}/None without failing the run; kept so live rain (HEM) and
+    # native OLR auto-resume the moment ISRO restores the pipeline.
+    mfiles = mosdac.latest_files(now)
+    hem = mosdac.fetch_hem_grid(mfiles["HEM"]) if "HEM" in mfiles else None
+    molr = mosdac.fetch_olr_grid(mfiles["OLR"]) if "OLR" in mfiles else None
     syn = synop.fetch_synop()
 
     stations = {}
     for code, s in load_manifest()["stations"].items():
         row = {}
-        sc = mosdac.sample(cmk, s["lat"], s["lon"])
+        sc = mosdac.sample(cloud, s["lat"], s["lon"])
         if sc is not None:
             row["sc"] = c100(sc * 100)
         rr = mosdac.sample(hem, s["lat"], s["lon"])
         if rr:
             row["rr"] = round(rr, 1)
 
-        # OLR gives the cloud-top temperature; only classify altitude where the
-        # mask agrees there's cloud to place (CMK gates, OLR locates the layer).
-        ow = mosdac.sample(olr, s["lat"], s["lon"])
-        if ow is not None and row.get("sc", 0) >= LAYER_CLOUD_GATE:
-            row["ol"] = round(ow)
-            row["layer"] = ("high" if ow < mosdac.OLR_HIGH
-                            else "mid" if ow < mosdac.OLR_MID else "low")
+        # Cloud-top height/layer, only where the mask agrees there's cloud to
+        # place. Prefer CTBT temperature (deg C); fall back to MOSDAC OLR (W/m^2)
+        # if that channel is alive.
+        if row.get("sc", 0) >= LAYER_CLOUD_GATE:
+            tc = mosdac.sample(temp, s["lat"], s["lon"])
+            if tc is not None:
+                row["ol"] = round(tc)
+                row["layer"] = imd_sat.layer_of(tc)
+            else:
+                ow = mosdac.sample(molr, s["lat"], s["lon"])
+                if ow is not None:
+                    row["ol"] = round(ow)
+                    row["layer"] = ("high" if ow < mosdac.OLR_HIGH
+                                    else "mid" if ow < mosdac.OLR_MID else "low")
 
         ob = syn.get(str(s.get("wmo"))) if syn and s.get("wmo") else None
         if ob and ob["t"] and now - ob["t"] <= SYNOP_MAX_AGE:
@@ -77,12 +95,12 @@ def build_obs(now):
         "generated_at": now.isoformat(timespec="seconds"),
         "sources": {
             "synop": syn_t and syn_t.isoformat(timespec="seconds"),
-            "cmk": files.get("CMK") if cmk is not None else None,
-            "hem": files.get("HEM") if hem is not None else None,
-            "olr": files.get("OLR") if olr is not None else None,
+            "ctbt": ctbt_dt and ctbt_dt.isoformat(timespec="seconds"),
+            "hem": mfiles.get("HEM") if hem is not None else None,
+            "olr": mfiles.get("OLR") if molr is not None else None,
         },
         "stations": stations,
-    }, cmk, cmk_file, olr
+    }, cloud, ctbt_dt, temp
 
 
 def append_archive(store, doc, now):
@@ -100,11 +118,11 @@ def append_archive(store, doc, now):
         print(f"archive append failed (ignored): {e}")
 
 
-def put_sky(store, cmk, cmk_file, olr=None):
-    """Best-effort styled sky image from the CMK grid already in hand, shaded by
-    OLR cloud-top height when that frame is available."""
+def put_sky(store, cloud, frame_dt, temp=None):
+    """Best-effort styled sky image from the CTBT cloud grid already in hand,
+    shaded by cloud-top temperature when that frame is available."""
     try:
-        png = render_sky(cmk, cmk_file, olr)
+        png = render_sky(cloud, frame_dt, temp)
         if png:
             store.put_bytes("latest/sky.png", png, "image/png",
                             cache_control=SHORT)
@@ -115,12 +133,12 @@ def put_sky(store, cmk, cmk_file, olr=None):
 
 def main():
     now = datetime.datetime.now(datetime.timezone.utc)
-    doc, cmk, cmk_file, olr = build_obs(now)
+    doc, cloud, frame_dt, temp = build_obs(now)
     store = get_store()
     store.put_json("latest/obs.json", doc, cache_control="public, max-age=60")
     print(f"Wrote latest/obs.json: {len(doc['stations'])} stations, "
           f"sources {doc['sources']}")
-    put_sky(store, cmk, cmk_file, olr)
+    put_sky(store, cloud, frame_dt, temp)
     append_archive(store, doc, now)
 
 

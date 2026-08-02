@@ -34,12 +34,19 @@ def to_float(v):
 def insecure_get(url, timeout):
     """GET returning bytes, skipping TLS verification — several IMD/MOSDAC
     endpoints serve broken certificate chains in CI."""
+    return insecure_get_meta(url, timeout)[0]
+
+
+def insecure_get_meta(url, timeout):
+    """Like insecure_get but also returns the response headers, so callers can
+    read Last-Modified (IMD's static satellite JPEGs are overwritten in place;
+    that header is the frame's timestamp)."""
     ctx = ssl.create_default_context()
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
-        return r.read()
+        return r.read(), r.headers
 
 
 def haversine_km(lat1, lon1, lat2, lon2):
