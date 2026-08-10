@@ -204,7 +204,7 @@
 </script>
 
 <SEO
-	seoTitle="Mapping India's Clouds — a daily pixel map of India's cloud cover"
+	seoTitle="Mapping India's Clouds"
 	seoDescription="A daily pixel map of cloud cover over India, read from IMD meteograms."
 	shareTitle="Mapping India's Clouds"
 	canonicalUrl={SITE_BASE}

@@ -55,7 +55,7 @@
 </script>
 
 <SEO
-	seoTitle="{data.name} — Mapping India's Clouds"
+	seoTitle="{data.name} - Mapping India's Clouds"
 	seoDescription="Daily cloud-cover reading for the {data.name} IMD station."
 	canonicalUrl="{SITE_BASE}/station/{data.code}"
 	shareImgPath="{SITE_BASE}/og/{data.code}.png"

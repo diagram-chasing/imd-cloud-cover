@@ -32,7 +32,7 @@
 </script>
 
 <svelte:head>
-	<title>{status} — Off the map</title>
+	<title>{status} - Off the map</title>
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
