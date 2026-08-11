@@ -57,6 +57,11 @@ jobs:
         working-directory: scraper
         run: python tools/validate_sources.py --date "$(date -u -d yesterday +%F)" || true
 
+      # Score obs.json vs airport METARs + Open-Meteo. Warn-only.
+      - name: Benchmark against external references
+        working-directory: scraper
+        run: python tools/benchmark_obs.py || true
+
       # Regenerate the public dataset (data/*.parquet, *.csv, *.csv.zip) from the
       # freshly-aggregated histories in R2, so the committed dataset tracks each
       # run. export.py writes to repo-root data/ by default.

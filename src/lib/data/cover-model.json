@@ -1,0 +1,12 @@
+{
+	"version": 1,
+	"fitted": null,
+	"opacity": { "l": 1.0, "m": 0.8, "h": 0.45 },
+	"edges": [13, 38, 63, 88],
+	"fit_meta": {
+		"date_range": null,
+		"n_station_hours": null,
+		"mae_vs_oktas": null,
+		"within1": null
+	}
+}

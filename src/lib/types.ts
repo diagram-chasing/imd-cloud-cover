@@ -102,11 +102,18 @@ export interface ObsStation {
 }
 
 /** latest/obs.json — written every ~30 min by scraper/collect_obs.py.
- *  `ctbt` is the IMD INSAT cloud/layer frame time (primary); `hem`/`olr` are the
- *  MOSDAC rain/OLR frames, populated only when that dormant feed is alive. */
+ *  `ctbt` is the IMD INSAT cloud/layer frame time; `hem`/`olr` are the MOSDAC
+ *  rain/OLR frames, populated when that feed is alive. */
 export interface ObsLatest {
 	generated_at: string;
-	sources: { synop: string | null; ctbt: string | null; hem: string | null; olr: string | null };
+	sources: {
+		synop: string | null;
+		ctbt: string | null;
+		hem: string | null;
+		olr: string | null;
+		/** Satellite-vs-observer check; ok=false ⇒ satellite may not erase cloud. */
+		sat?: { bias: number; mae: number; n: number; ok: boolean } | null;
+	};
 	stations: Record<string, ObsStation>;
 }
 

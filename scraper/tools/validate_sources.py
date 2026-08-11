@@ -29,8 +29,13 @@ from synop import is_raining_wx  # noqa: E402
 
 load_dotenv()
 
-# Same category edges as the frontend's skyCondition (format.ts).
-CONDITION_EDGES = (13, 38, 63, 88)
+# Same JSON the frontend's skyCondition/effectiveCover read — cannot drift.
+_MODEL_PATH = os.path.join(os.path.dirname(__file__),
+                           "../../src/lib/data/cover-model.json")
+with open(_MODEL_PATH) as _f:
+    COVER_MODEL = json.load(_f)
+CONDITION_EDGES = tuple(COVER_MODEL["edges"])
+OPACITY = COVER_MODEL["opacity"]
 TARGET_WITHIN1 = 0.70
 RAIN_FORECAST_MM = 1.0   # mm/3h; matches theme.ts rainTier's first bin
 RAIN_OBS_MM = 1.0        # synop 3-h accumulation that counts as raining
@@ -45,8 +50,10 @@ def category(cover):
 
 
 def display_eff(bands, mval):
-    """Effective cover as the frontend weighs it."""
-    return max(bands["l"][mval], bands["m"][mval] * 0.8, bands["h"][mval] * 0.45)
+    """Effective cover as the frontend weighs it (random overlap, format.ts)."""
+    return 100 * (1 - (1 - OPACITY["l"] * bands["l"][mval] / 100)
+                    * (1 - OPACITY["m"] * bands["m"][mval] / 100)
+                    * (1 - OPACITY["h"] * bands["h"][mval] / 100))
 
 
 def step_for(t_iso):

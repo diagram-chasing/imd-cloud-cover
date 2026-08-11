@@ -5,6 +5,7 @@
 // today view; every other frame passes through untouched.
 
 import type { BandValues, ObsLatest, ObsStation } from '$lib/types';
+import { effectiveCover as eff } from '$lib/format';
 
 const MAX_AGE_MS = 2 * 3600 * 1000; // ignore obs older than this (job stalled)
 const DISAGREE = 25; // cover-gap (points) below which the map is left alone
@@ -17,7 +18,6 @@ const SAT_ONLY = 0.5; // the binary satellite mask alone corrects at half streng
 const isRainWx = (wx?: number) => wx != null && ((wx >= 50 && wx <= 69) || wx >= 80);
 const rainingNow = (o: ObsStation) => (o.rr ?? 0) >= 2 || (o.r3 ?? 0) >= 1 || isRainWx(o.wx);
 
-const eff = (v: { h: number; m: number; l: number }) => Math.max(v.l, v.m * 0.8, v.h * 0.45);
 const c100 = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
 
 // Route an injected/topped-up correction to the OLR-observed layer. Mid is the
@@ -48,6 +48,10 @@ export function applyObs(
 	const w = W0 * (1 - lead / MAX_LEAD);
 	if (w <= 0) return values;
 
+	// Untrusted satellite (per collect_obs's observer check) may only add
+	// cloud at observer-less stations, never erase it.
+	const satTrusted = obs.sources?.sat?.ok === true;
+
 	const out: BandValues = {};
 	for (const [code, v] of Object.entries(values)) {
 		const o = obs.stations[code];
@@ -56,7 +60,7 @@ export function applyObs(
 			const ws = o.ok == null ? w * SAT_ONLY : w;
 			const e = eff(v);
 			const gap = o.oc - e;
-			if (Math.abs(gap) > DISAGREE) {
+			if (Math.abs(gap) > DISAGREE && !(gap < 0 && o.ok == null && !satTrusted)) {
 				if (e >= 5) {
 					const s = (e + ws * gap) / e;
 					nv = { ...v, h: c100(v.h * s), m: c100(v.m * s), l: c100(v.l * s) };

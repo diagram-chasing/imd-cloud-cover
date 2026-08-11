@@ -115,7 +115,7 @@
 			id: 'precip',
 			n: 8,
 			side: 'left',
-			anchorY: 92.5,
+			anchorY: 95.5,
 			title: 'PRECIPITATION',
 			note: 'Rain expected in each period, with green showing the total and red the share from thunderstorms.',
 			rect: { x: PLOT_X, y: 86.46, w: PLOT_W, h: 10 },
@@ -368,16 +368,13 @@
 					muted && 'bg-steel-500'
 				]}>{r.n}</span
 			>
-			<span
-				class={[
-					'card-title text-sm font-bold tracking-[0.08em] text-ink uppercase',
-					muted && 'text-steel-700'
-				]}>{r.title}</span
+			<span class={['card-title text-sm  font-extrabold  text-ink uppercase', muted && 'text-steel-700']}
+				>{r.title}</span
 			>
 		</span>
 		<span
 			class={[
-				'card-note text-sm leading-normal text-pretty text-muted-foreground',
+				'card-note text-base leading-normal text-pretty text-foreground',
 				muted && 'text-steel-600'
 			]}>{r.note}</span
 		>
@@ -452,7 +449,7 @@
 		</div>
 
 		<svg
-			class="leads pointer-events-none absolute inset-0 h-full w-full overflow-visible"
+			class="leads pointer-events-none absolute text-foreground! inset-0 h-full w-full overflow-visible"
 			bind:this={leadsEl}
 			aria-hidden="true"
 		></svg>
@@ -477,7 +474,7 @@
 		<button
 			type="button"
 			class={[
-				'plate-exit mx-auto mt-1 flex items-center gap-1.5 cursor-pointer appearance-none border-0 bg-ink px-2.5 py-1.5 text-xs leading-none font-bold tracking-[0.08em] text-paper',
+				'plate-exit mx-auto mt-1 flex cursor-pointer appearance-none items-center gap-1.5 border-0 bg-ink px-2.5 py-1.5 text-xs leading-none font-bold tracking-[0.08em] text-paper',
 				!dimming && 'invisible'
 			]}
 			onclick={exitSpotlight}

@@ -38,7 +38,7 @@ TEMP_STOPS = ((-45, CLOUD), (-25, CLOUD_MIDH), (-8, CLOUD_MID))
 
 CELL_SRC = 10  # source px per cell -> 136x128 cells over the obs bbox
 SCALE = 6      # output px per cell
-FULL, SOME = 0.8, 0.5  # cell cloud fraction -> solid / partial block
+FULL, SOME = 0.7, 0.35  # cell cloud fraction -> solid / partial block
 PARTIAL_MIX = 0.6  # partial cell blends its tone this far from sky toward cloud
 STAMP_SCALE = 2  # nearest-neighbour upscale of the bitmap font -> pixel type
 

@@ -1,7 +1,7 @@
 """INSAT-3DR/3DS cloud + cloud-top temperature from IMD's live CTBT product.
 
-Replaces the MOSDAC ncWMS path (whose INSAT ingest froze on 23 Jul 2026). One
-JPEG per run:
+One of the two live cloud sources (collect_obs combines this with MOSDAC's
+OLR grid, taking whichever shows more cloud at each point). One JPEG per run:
 
     https://mausam.imd.gov.in/Satellite/3Dasiasec_ctbt.jpg
 
@@ -50,13 +50,10 @@ PALETTE = np.array([[254, 0, 0], [161, 1, 199], [0, 254, 254], [0, 0, 254]], np.
 PALETTE_C = np.array([-80.0, -65.0, -50.0, -35.0], np.float32)
 SAT_CLOUD = 0.30  # saturation above which a pixel is a palette (cold-cloud) colour
 
-# Greyscale background = inverted brightness temperature (warm/clear dark, cold
-# cloud bright). Linear ramps, tune from tools/validate_sources.py. CLEAR is set
-# well above the warm-surface floor so only clearly-cold grey counts as cloud —
-# otherwise haze/warm-surface reads as a near-total overcast wash. Grey cloud is
-# by definition warmer than the palette's cold tops, so its temp range sits in
-# the mid/low band (the palette owns high).
-GREY_CLEAR, GREY_THICK = 178.0, 228.0   # brightness -> cloud fraction 0..1
+# Greyscale background = inverted brightness temperature (brighter = colder =
+# more cloud). CLEAR cutoff history: 130 read as all-overcast, 178 as all-clear;
+# 150 is the middle, and collect_obs's trust check guards both failure modes.
+GREY_CLEAR, GREY_THICK = 150.0, 215.0   # brightness -> cloud fraction 0..1
 GREY_WARM_C, GREY_COLD_C = 10.0, -30.0  # brightness endpoints -> deg C (coarse)
 CLEAR_FRAC = 0.15  # cloud fraction below which a grey pixel is treated as clear
 

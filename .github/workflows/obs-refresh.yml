@@ -1,11 +1,12 @@
 name: Obs Refresh
 
 # Lightweight companion to the daily scrape: every 30 minutes, sample
-# near-real-time observations (INSAT-3DS cloud mask + Hydro-Estimator rain via
-# MOSDAC's live WMS, IMD synop WFS) and write the small latest/obs.json sidecar
-# to R2. The site reads it live through the Worker — no rebuild or deploy.
-# ~4 upstream requests per run; every source is optional and a fully-failed run
-# still writes a valid (empty) document.
+# near-real-time observations (IMD INSAT CTBT image + MOSDAC OLR/HEM combined
+# into one cloud grid, IMD synop WFS for observer oktas/rain) and write the
+# small latest/obs.json sidecar + latest/sky.png to R2. The site reads it live
+# through the Worker — no rebuild or deploy. ~5 upstream requests per run;
+# every source is optional and a fully-failed run still writes a valid
+# (empty) document.
 
 on:
   schedule:

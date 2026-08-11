@@ -51,7 +51,8 @@ def day0(bands):
 
 
 def effective(b):
-    """Per-step effective cover: max of the three cloud bands."""
+    """Per-step effective cover: max of the three cloud bands. Feeds the baked
+    `e`/`t` series; intentionally simpler than the display formula (format.ts)."""
     return [max(b["h"][i], b["m"][i], b["l"][i]) for i in range(len(b["h"]))]
 
 

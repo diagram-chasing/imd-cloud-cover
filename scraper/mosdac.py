@@ -184,6 +184,14 @@ def fetch_olr_grid(filename):
     return np.where(valid, wm2, np.nan)
 
 
+def olr_to_frac(grid):
+    """OLR (W/m^2) -> cloud fraction 0..1, or None. Ramp endpoints from the
+    2026-07-23 CMK cross-check (cloudy median ~209, clear ~261)."""
+    if grid is None:
+        return None
+    return np.clip((265.0 - grid) / (265.0 - 200.0), 0.0, 1.0)
+
+
 def sample(grid, lat, lon, k=2):
     """Mean of the (2k+1)^2 neighbourhood (~13 km) at lat/lon, or None."""
     if grid is None:

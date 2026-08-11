@@ -11,28 +11,34 @@ export function prettyDate(iso?: string): string {
 }
 
 import { rainTier } from '$lib/theme';
+import coverModel from '$lib/data/cover-model.json';
 
-/** Effective cover: low counts fully, higher bands progressively less. The one
- *  canonical set of weights — the map's cloud shadows use it too. */
+// scraper/tools/validate_sources.py reads the same file — one source of truth.
+const { l: A_L, m: A_M, h: A_H } = coverModel.opacity;
+const EDGES = coverModel.edges;
+
+/** Effective total cover 0..100: random-overlap of the three layers,
+ *  cover = 1 − Π(1 − aᵢ·cᵢ), with opacity aᵢ discounting translucent decks
+ *  (see cover-model.json). The map's cloud shadows use it too. */
 export function effectiveCover(v: { h: number; m: number; l: number }): number {
-	return Math.max(v.l, v.m * 0.8, v.h * 0.45);
+	return (
+		100 * (1 - (1 - (A_L * v.l) / 100) * (1 - (A_M * v.m) / 100) * (1 - (A_H * v.h) / 100))
+	);
 }
 
 const RAIN_LABEL = ['', 'LIGHT RAIN', 'RAIN', 'HEAVY RAIN'];
+const COVER_LABEL = ['CLEAR', 'MOSTLY CLEAR', 'PARTLY CLOUDY', 'MOSTLY CLOUDY', 'OVERCAST'];
 
-/** Band values → sky-condition label (CLEAR … OVERCAST). Forecast rain, when
- *  the view carries it, overrides the cloud label — a raining "CLEAR" must
- *  never be shown. */
+/** Band values → sky-condition label. Edges are the NWS okta bins; rain,
+ *  when the view carries it, overrides — a raining "CLEAR" must never show. */
 export function skyCondition(v: { h: number; m: number; l: number; r?: number } | null): string {
 	if (!v) return '';
 	const rt = rainTier(v.r);
 	if (rt > 0) return RAIN_LABEL[rt];
 	const c = effectiveCover(v);
-	if (c < 13) return 'CLEAR';
-	if (c < 38) return 'MOSTLY CLEAR';
-	if (c < 63) return 'PARTLY CLOUDY';
-	if (c < 88) return 'MOSTLY CLOUDY';
-	return 'OVERCAST';
+	let i = 0;
+	while (i < EDGES.length && c >= EDGES[i]) i++;
+	return COVER_LABEL[i];
 }
 
 // --- Place labels (IMD strings are stored SHOUTY; fold to Title Case for display) ---

@@ -1,16 +1,16 @@
 """Build latest/obs.json — near-real-time observed cloud & rain per station.
 
 Runs every ~30 min (obs-refresh.yml), independent of the daily scrape. Each
-source is optional. Cloud + cloud-top layer come from IMD's live INSAT-3DR/3DS
-CTBT product (imd_sat); MOSDAC INSAT-3DS (HEM rain + native OLR) is kept as a
-dormant best-effort secondary that auto-resumes if ISRO restores its ingest
-(frozen since 23 Jul 2026); IMD synop adds oktas, present weather and 3-h rain
-via the wmo join in stations.json. The map uses obs only to correct the
-current-time frame.
+source is optional. Cloud = max of two satellite grids (IMD CTBT + MOSDAC OLR);
+IMD synop adds observer oktas, present weather and 3-h rain via the wmo join
+in stations.json. sources.sat carries a per-run satellite-vs-observer trust
+flag that obs.ts uses to gate corrections.
 """
 
 import datetime
+import statistics
 
+import numpy as np
 from dotenv import load_dotenv
 
 import imd_sat
@@ -24,7 +24,7 @@ load_dotenv()
 
 SYNOP_MAX_AGE = datetime.timedelta(hours=4.5)
 ARCHIVE_KEEP = 60  # snapshots per daily QA archive file
-LAYER_CLOUD_GATE = 40  # need CMK cloud >= this before OLR altitude is meaningful
+LAYER_CLOUD_GATE = 40  # need cloud % >= this before a cloud layer is meaningful
 
 
 def build_obs(now):
@@ -34,13 +34,18 @@ def build_obs(now):
     cloud, temp = imd_sat.grids(frame[0]) if frame else (None, None)
     ctbt_dt = frame[1] if frame else None
 
-    # Secondary, best-effort: MOSDAC INSAT-3DS. Frozen since 23 Jul 2026, so this
-    # normally yields {}/None without failing the run; kept so live rain (HEM) and
-    # native OLR auto-resume the moment ISRO restores the pipeline.
+    # Second satellite source, best-effort: MOSDAC INSAT-3DS (HEM rain + OLR).
     mfiles = mosdac.latest_files(now)
     hem = mosdac.fetch_hem_grid(mfiles["HEM"]) if "HEM" in mfiles else None
     molr = mosdac.fetch_olr_grid(mfiles["OLR"]) if "OLR" in mfiles else None
     syn = synop.fetch_synop()
+
+    # Each satellite misses different cloud; take whichever shows more.
+    olr_cloud = mosdac.olr_to_frac(molr)
+    if cloud is not None and olr_cloud is not None:
+        cloud = np.fmax(cloud, olr_cloud)
+    elif cloud is None:
+        cloud = olr_cloud
 
     stations = {}
     for code, s in load_manifest()["stations"].items():
@@ -98,9 +103,23 @@ def build_obs(now):
             "ctbt": ctbt_dt and ctbt_dt.isoformat(timespec="seconds"),
             "hem": mfiles.get("HEM") if hem is not None else None,
             "olr": mfiles.get("OLR") if molr is not None else None,
+            "sat": sat_trust(stations),
         },
         "stations": stations,
     }, cloud, ctbt_dt, temp
+
+
+def sat_trust(stations):
+    """Satellite-vs-observer check: {bias, mae, n, ok} or None. obs.ts only
+    lets the satellite erase forecast cloud when ok is true."""
+    diffs = [r["sc"] - r["ok"] / 8 * 100
+             for r in stations.values() if "sc" in r and "ok" in r]
+    if not diffs:
+        return None
+    bias = statistics.median(diffs)
+    mae = statistics.mean(abs(d) for d in diffs)
+    return {"bias": round(bias), "mae": round(mae), "n": len(diffs),
+            "ok": len(diffs) >= 30 and abs(bias) <= 20 and mae <= 30}
 
 
 def append_archive(store, doc, now):
