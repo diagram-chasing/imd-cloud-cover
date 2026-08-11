@@ -40,6 +40,7 @@
 	import { BalloonLayer } from '$lib/map/balloon';
 	import { WaveLayer } from '$lib/map/waves';
 	import { PlacesLayer } from '$lib/map/places';
+	import { YouMarker } from '$lib/map/you';
 	import { loadTex } from '$lib/map/textures';
 	import { buildQuadtree, nearest } from '$lib/map/hit';
 	import { createFlights, type FlightEngine } from '$lib/map/flights';
@@ -102,10 +103,7 @@
 	let skyGfx: Graphics | null = null;
 	let hoverGfx: Graphics | null = null;
 	let selGfx: Graphics | null = null;
-	let userLayer: Container | null = null;
-	let userMarker: Container | null = null;
-	let userPulse: Graphics | null = null;
-	let userOnMap = false;
+	let you: YouMarker | null = null;
 
 	const cam = new MapCamera();
 	const field = new CloudField();
@@ -156,6 +154,7 @@
 		if (lods.length) applyLod(lodForZoom(cam.zoom / cam.containZoom(), lodIndex));
 		updateScales();
 		placeLabels?.declutter(camView());
+		you?.onCamera(cam.zoomRatio());
 		title?.fade(cam.zoomRatio(), night());
 		emitLayout();
 		if (showDebug) {
@@ -186,7 +185,7 @@
 	}
 
 	function updateScales() {
-		if (userMarker) userMarker.scale.set(1 / cam.zoom);
+		you?.rescale(cam.zoom);
 		placeLabels?.rescale(cam.zoom);
 	}
 
@@ -377,6 +376,7 @@
 		const mode = effMode();
 		flights?.style(mode === 'night');
 		balloon?.style(mode === 'night');
+		you?.style(mode === 'night');
 		field.setShadowMode(mode);
 		field.setRainMode(effPhase());
 		waves?.style(mode);
@@ -421,6 +421,7 @@
 		if (destroyed || !app) return;
 		CanvasTextMetrics.clearMetrics();
 		title?.invalidateFonts();
+		you?.refreshFont();
 		drawTitle();
 		buildPlaces();
 	}
@@ -434,44 +435,17 @@
 	// --- "you are here" marker ----------------------------------------------
 
 	// pixel marker at IP location; hidden when off-map
-	function buildUserMarker() {
-		if (!world) return;
-		userLayer = new Container();
-		userLayer.eventMode = 'none';
-		userLayer.visible = false;
-		const m = new Container();
-		const pulse = new Graphics();
-		pulse.rect(-6, -6, 12, 12).stroke({ width: 1.5, color: UI.accent, alignment: 0.5 });
-		m.addChild(pulse);
-		userPulse = pulse;
-		const dot = new Graphics();
-		dot.rect(-4, -4, 8, 8).fill({ color: 0xffffff });
-		dot.rect(-2.5, -2.5, 5, 5).fill({ color: UI.accent });
-		m.addChild(dot);
-		userLayer.addChild(m);
-		userMarker = m;
-		world.addChild(userLayer);
-	}
-
 	function updateUserMarker() {
-		if (!userLayer || !geo) return;
+		if (!you || !geo) return;
 		const loc = userGeo.loc;
 		const p = loc ? geo.project(loc.lng, loc.lat) : null;
-		if (!p) {
-			userLayer.visible = false;
-			userOnMap = false;
+		if (!p || p[0] < -PAD || p[0] > geo.worldW + PAD || p[1] < -PAD || p[1] > geo.worldH + PAD) {
+			you.hide();
 			return;
 		}
-		const [x, y] = p;
-		if (x < -PAD || x > geo.worldW + PAD || y < -PAD || y > geo.worldH + PAD) {
-			userLayer.visible = false;
-			userOnMap = false;
-			return;
-		}
-		userLayer.position.set(x, y);
-		userLayer.visible = true;
-		userOnMap = true;
-		if (userMarker) userMarker.scale.set(1 / cam.zoom);
+		you.show(p[0], p[1]);
+		you.rescale(cam.zoom);
+		you.onCamera(cam.zoomRatio());
 	}
 
 	// --- init ---------------------------------------------------------------
@@ -563,7 +537,7 @@
 		world.addChild(selGfx);
 		hoverGfx = new Graphics();
 		world.addChild(hoverGfx);
-		buildUserMarker();
+		you = new YouMarker(world);
 
 		field.buildTextures(MARK_CELL);
 		field.grow(maxBins);
@@ -603,11 +577,7 @@
 		if (cam.tick(t.deltaMS)) applyCamera();
 		field.alphaTick(t.deltaMS, alphaTarget, reduced);
 		if (!reduced) title?.float(performance.now());
-		if (userPulse && userOnMap && !reduced) {
-			const g = (Math.sin(performance.now() / 500) + 1) * 0.5;
-			userPulse.scale.set(1 + g * 0.7);
-			userPulse.alpha = 1 - g;
-		}
+		you?.tick(t.deltaMS, reduced);
 		// Planes keep flying across every view (today / week / month) — they're a
 		// living-map motif, not a "right now" one. Only reduced-motion stills them.
 		if (!reduced) flights?.tick(t.deltaMS);
