@@ -8,11 +8,11 @@ import type { BandValues, ObsLatest, ObsStation } from '$lib/types';
 import { effectiveCover as eff } from '$lib/format';
 
 const MAX_AGE_MS = 2 * 3600 * 1000; // ignore obs older than this (job stalled)
-const DISAGREE = 25; // cover-gap (points) below which the map is left alone
+const DISAGREE = 15; // cover-gap (points) below which the map is left alone
 const W0 = 0.75; // trust in obs now, fading to 0 at MAX_LEAD steps
 const MAX_LEAD = 3;
 const RAIN_EFF_FLOOR = 45; // raining may not read "clear" (showers stay partly cloudy)
-const SAT_ONLY = 0.5; // the binary satellite mask alone corrects at half strength
+const SAT_ONLY = 0.5; // an UNTRUSTED satellite alone corrects at half strength
 
 // WMO 4677 present weather: drizzle/rain 50-69, showers/thunder 80-99 (70-79 is snow)
 const isRainWx = (wx?: number) => wx != null && ((wx >= 50 && wx <= 69) || wx >= 80);
@@ -57,17 +57,16 @@ export function applyObs(
 		const o = obs.stations[code];
 		let nv = v;
 		if (o?.oc != null) {
-			const ws = o.ok == null ? w * SAT_ONLY : w;
+			const ws = o.ok == null && !satTrusted ? w * SAT_ONLY : w;
 			const e = eff(v);
 			const gap = o.oc - e;
 			if (Math.abs(gap) > DISAGREE && !(gap < 0 && o.ok == null && !satTrusted)) {
 				if (e >= 5) {
 					const s = (e + ws * gap) / e;
 					nv = { ...v, h: c100(v.h * s), m: c100(v.m * s), l: c100(v.l * s) };
-					// bands clamp at 100 (cirrus counts only 0.45), so scaling can
-					// undershoot; top up the observed layer (mid if unknown)
-					if (gap > 0 && o.oc - eff(nv) > DISAGREE)
-						nv[injectKey(o)] = Math.max(nv[injectKey(o)], c100(ws * o.oc));
+					// concentrate added cloud in the observed layer (mid if unknown)
+					// so a cloudy reading shows one solid deck, not three faint ones
+					if (gap > 0) nv[injectKey(o)] = Math.max(nv[injectKey(o)], c100(ws * o.oc));
 				} else {
 					// nothing to scale from a clear forecast; surface observed cloud
 					// at the OLR-indicated layer (mid when unknown — least assertive)

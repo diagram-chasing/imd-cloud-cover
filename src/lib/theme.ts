@@ -84,9 +84,9 @@ export const UI = {
 } as const;
 
 // below this reads as clear; kills sub-scale wisps on lightly-clouded land
-const COVER_FLOOR = 20;
+const COVER_FLOOR = 12;
 // gamma > 1: marks stay faint until cover is real, then pop
-const COVER_GAMMA = 1.3;
+const COVER_GAMMA = 1.0;
 
 /** Cover % -> sprite tier (1-4). Cover < COVER_FLOOR -> 0 (no sprite). */
 export function coverTier(cover: number): 0 | 1 | 2 | 3 | 4 {
