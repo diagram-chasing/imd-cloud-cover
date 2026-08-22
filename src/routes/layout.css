@@ -165,6 +165,15 @@
 	--sidebar-ring: oklch(0.708 0 0);
 }
 
+/* Full-bleed breakouts use `width: 100vw`, which counts the scrollbar gutter and
+   spills a few px past the viewport. Clip (not hidden — that keeps sticky/scroll
+   anchoring intact) the stray horizontal overflow. It must sit on both html and
+   body: clip on either alone still leaves the page horizontally scrollable. */
+html,
+body {
+	overflow-x: clip;
+}
+
 html {
 	background: var(--paper);
 	color: var(--ink);

@@ -62,6 +62,7 @@
 		zoomOut: () => void;
 		zoomReset: () => void;
 		focusStation: (code: string) => { x: number; y: number } | null;
+		focusMyLocation: () => { x: number; y: number } | null;
 	}>();
 	let layout = $state({
 		gutter: 0,
@@ -183,12 +184,20 @@
 		openStation(code, at);
 	}
 
+	function focusMyLocation() {
+		click('open');
+		map?.focusMyLocation();
+	}
+
 	// Only the hourly 'today' view carries a time of day; the week/month scrubbers show
 	// daily means, so they always render in daylight (a fixed hour would otherwise make
 	// the whole span read as night).
 	let night = $derived(sky.view === 'today' && skyMode(sky.timeIndex) === 'night');
 
-	function scrollToNotes() {
+	function scrollToNotes(e?: Event) {
+		// The info button carries an href="#field-notes" fallback; when JS runs, take
+		// over so it smooth-scrolls like the field-notes button instead of jumping.
+		e?.preventDefault();
 		click('open');
 		const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		document
@@ -260,6 +269,7 @@
 					<StationSearch
 						manifest={core.manifest}
 						onselect={selectFromSearch}
+						onmylocation={focusMyLocation}
 						compact
 						side="bottom"
 						align="end"
@@ -270,7 +280,7 @@
 					href="#field-notes"
 					aria-label="About this map"
 					style="--pad: 4px 7px"
-					onclick={() => click('open')}
+					onclick={scrollToNotes}
 				>
 					<HugeiconsIcon icon={InformationCircleIcon} size={16} strokeWidth={2} />
 				</PixelButton>

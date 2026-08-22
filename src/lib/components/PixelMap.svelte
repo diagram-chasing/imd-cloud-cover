@@ -743,6 +743,29 @@
 			y: rect.top + (st.rpy - target.panY) * target.zoom
 		};
 	}
+	// Fly to the visitor's coarse location (resolved via the geo worker). No station
+	// selection — the point may sit between stations or off the observed network.
+	export function focusMyLocation(): { x: number; y: number } | null {
+		if (!geo || !app) return null;
+		const loc = userGeo.loc;
+		if (!loc) return null;
+		const p = geo.project(loc.lng, loc.lat);
+		if (!p) return null;
+		userMoved = true;
+		sky.selectedCode = null;
+		const target = cam.toCenter(p[0], p[1], cam.containZoom() * FOCUS_ZOOM_RATIO);
+		if (reduced) {
+			cam.jumpTo(target);
+			applyCamera();
+		} else {
+			cam.flyTo(target, 620);
+		}
+		const rect = app.canvas.getBoundingClientRect();
+		return {
+			x: rect.left + (p[0] - target.panX) * target.zoom,
+			y: rect.top + (p[1] - target.panY) * target.zoom
+		};
+	}
 	function zoomButton(dir: 1 | -1) {
 		userMoved = true;
 		const rect = app?.canvas.getBoundingClientRect();

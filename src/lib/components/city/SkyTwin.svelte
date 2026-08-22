@@ -11,8 +11,16 @@
 		india: FeatureCollection;
 		stations: Record<string, Station>;
 		mode?: 'today' | 'overall';
+		/** Twin-finding on/off — off shows just the focused city, no match. */
+		enabled?: boolean;
 	}
-	let { city, code, data, india, stations, mode = 'overall' }: Props = $props();
+	let { city, code, data, india, stations, mode = 'overall', enabled = true }: Props = $props();
+
+	// Latest reading in the daily series — same convention as the histogram.
+	function todayVal(c: CityStats): number {
+		for (let i = c.e.length - 1; i >= 0; i--) if (c.e[i] != null) return c.e[i] as number;
+		return c.mean;
+	}
 
 	function resolve(ref: { code: string } | null | undefined) {
 		if (!ref) return null;
@@ -21,7 +29,7 @@
 		return c && st ? { code: ref.code, name: c.name, lat: st.lat, lon: st.lon } : null;
 	}
 	let twin = $derived(
-		city ? resolve(mode === 'today' ? city.twin?.today : city.twin?.alltime) : null
+		enabled && city ? resolve(mode === 'today' ? city.twin?.today : city.twin?.alltime) : null
 	);
 
 	let pins = $derived.by(() => {
@@ -34,7 +42,12 @@
 </script>
 
 <div class="twin flex h-full w-[132px] flex-col text-white md:block md:w-[180px]">
-	<div class={['transition-[filter,opacity] duration-200', !twin && 'opacity-60 grayscale']}>
+	<div
+		class={[
+			'transition-[filter,opacity] duration-200',
+			(!city || (enabled && !twin)) && 'opacity-60 grayscale'
+		]}
+	>
 		<TwinMap {india} {pins} />
 	</div>
 	<p
@@ -42,10 +55,23 @@
 	>
 		{#if !city}
 			Pick a city to find its match.
+		{:else if !enabled && mode === 'today'}
+			{@const val = Math.round(todayVal(city))}
+			{@const diff = val - city.mean}
+			{#if diff > 8}
+				Cloudier than usual today at <span class="text-sun-gold">{val}%</span>.
+			{:else if diff < -8}
+				Clearer than usual today at <span class="text-sun-gold">{val}%</span>.
+			{:else}
+				A typical day for this place at <span class="text-sun-gold">{val}%</span>.
+			{/if}
+		{:else if !enabled}
+			Clouds cover <span class="text-sun-gold">{Math.round(city.mean)}%</span> of this place on an
+			average day.
 		{:else if twin && mode === 'today'}
-			Today, this sky matches <span class="text-sun-gold">{twin.name}</span>.
+			Today, this place matches <span class="text-sun-gold">{twin.name}</span>.
 		{:else if twin}
-			Over the last year, this sky's matched <span class="text-sun-gold">{twin.name}</span>.
+			Over the last year, this place matched <span class="text-sun-gold">{twin.name}</span>.
 		{:else if mode === 'today'}
 			No city matches {city.name}'s sky today.
 		{:else}

@@ -6,11 +6,14 @@
 	import { Popover, PopoverContent, PopoverTrigger } from '$lib/components/ui/popover';
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
-	import { SearchIcon } from '@hugeicons/core-free-icons';
+	import { SearchIcon, Location01Icon } from '@hugeicons/core-free-icons';
+	import { userGeo } from '$lib/state/geo.svelte';
 
 	interface Props {
 		manifest: StationsManifest;
 		onselect?: (code: string) => void;
+		/** Fly the map to the visitor's resolved location (shown as the first row). */
+		onmylocation?: () => void;
 		/** Icon-only square trigger (mobile top corner). */
 		compact?: boolean;
 		/** Which side of the trigger the palette opens on. */
@@ -27,6 +30,7 @@
 	let {
 		manifest,
 		onselect,
+		onmylocation,
 		compact = false,
 		side = 'bottom',
 		align = 'end',
@@ -127,6 +131,14 @@
 		open = false;
 		query = '';
 	}
+
+	// Only offered once the geo worker has resolved a usable point.
+	let hasLocation = $derived(onmylocation != null && userGeo.loc != null);
+	function pickLocation() {
+		onmylocation?.();
+		open = false;
+		query = '';
+	}
 </script>
 
 <Popover bind:open>
@@ -170,6 +182,18 @@
 				/>
 			</div>
 			<CommandPrimitive.List class="max-h-[300px] overflow-x-hidden overflow-y-auto p-1.5">
+				{#if hasLocation}
+					<CommandPrimitive.Item
+						value="__my-location__"
+						onSelect={pickLocation}
+						class="mb-1 flex cursor-pointer items-center gap-2 rounded-none border-b border-ink/10 px-2 py-1.5 pb-2 text-ink outline-none select-none data-selected:bg-cloud-block data-selected:text-ink"
+					>
+						<HugeiconsIcon icon={Location01Icon} strokeWidth={2} size={15} class="shrink-0 text-ink/55" />
+						<span class="min-w-0 flex-auto truncate text-sm tracking-wide uppercase text-ink"
+							>My location</span
+						>
+					</CommandPrimitive.Item>
+				{/if}
 				{#if results.length === 0}
 					<p class="py-6 text-center text-xs tracking-wider text-ink/55 uppercase">No match</p>
 				{:else}

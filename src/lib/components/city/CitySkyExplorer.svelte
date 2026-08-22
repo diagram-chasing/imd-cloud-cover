@@ -13,6 +13,7 @@
 	import PixelButton from '$lib/components/PixelButton.svelte';
 	import { TabSwitch } from '$lib/components/ui/switch';
 	import { fade } from 'svelte/transition';
+	import { SKY } from '$lib/theme';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Cancel01Icon, ArrowRight01Icon, ArrowDown01Icon } from '@hugeicons/core-free-icons';
 	import CloudHistogram from './CloudHistogram.svelte';
@@ -34,6 +35,9 @@
 	// a read-only alias to keep the template terse.
 	let selected = $derived(citySky.code);
 	let mode = $state<'today' | 'overall'>('overall');
+	// Twin-finding on/off — the switch lives on the twin box; off just spotlights
+	// the chosen city (no match on the map, no twin marker in the histogram).
+	let twinOn = $state(true);
 	let root = $state<HTMLElement>();
 
 	// Kick off the coarse (IP) location fetch as soon as the explorer mounts.
@@ -41,7 +45,7 @@
 		userGeo.ensure();
 	});
 
-	function nearestCity(lat: number, lng: number): string | null {
+	function nearestCity(lat: number, lng: number): { code: string; km: number } | null {
 		if (!data) return null;
 		let best: string | null = null;
 		let bestKm = Infinity;
@@ -54,7 +58,7 @@
 				best = code;
 			}
 		}
-		return best && bestKm <= NEAR_KM ? best : null;
+		return best ? { code: best, km: bestKm } : null;
 	}
 
 	function mostPopulous(): string | null {
@@ -114,8 +118,8 @@
 		const loc = userGeo.loc;
 		if (loc) {
 			const near = nearestCity(loc.lat, loc.lng);
-			if (near) {
-				citySky.suggest(near);
+			if (near && near.km <= NEAR_KM) {
+				citySky.suggest(near.code);
 				return;
 			}
 		}
@@ -138,10 +142,28 @@
 		citySky.clear();
 	}
 
+	function toggleTwin() {
+		click('select');
+		twinOn = !twinOn;
+	}
+
+	// "My location" in the search: an explicit ask, so skip the NEAR_KM cap and
+	// take the nearest city outright.
+	function selectNearest() {
+		const loc = userGeo.loc;
+		if (!loc) return;
+		const near = nearestCity(loc.lat, loc.lng);
+		if (near) select(near.code);
+	}
+
 	let city = $derived(selected && data ? (data.cities[selected] ?? null) : null);
 
 	let activeTwin = $derived(
-		city ? (mode === 'today' ? (city.twin?.today ?? null) : (city.twin?.alltime ?? null)) : null
+		twinOn && city
+			? mode === 'today'
+				? (city.twin?.today ?? null)
+				: (city.twin?.alltime ?? null)
+			: null
 	);
 	let cityCodes = $derived(data ? new Set(Object.keys(data.cities)) : undefined);
 	let slugByCode = $derived(data ? citySlugs(data.cities).slugByCode : {});
@@ -150,7 +172,7 @@
 <section
 	bind:this={root}
 	id="city-explorer"
-	class="scroll-mt-4 pt-2"
+	class="scroll-mt-4 overflow-x-clip pt-2"
 	aria-label="Station sky explorer"
 >
 	{#if failed}
@@ -173,7 +195,6 @@
 					<div class="mt-5 h-9 w-40 rounded-xs bg-ink/10"></div>
 					<div class="mt-4 flex gap-2">
 						<div class="h-8 w-28 rounded-xs bg-ink/10"></div>
-						<div class="h-8 w-20 rounded-xs bg-ink/10"></div>
 					</div>
 				</div>
 
@@ -192,7 +213,7 @@
 				</div>
 			</header>
 
-			<div class="h-[320px] w-full bg-day-sea sm:h-[400px]"></div>
+			<div class="h-[358px] w-full sm:h-[438px]" style="background: #3a88cc;"></div>
 		</div>
 	{:else}
 		<div in:fade={{ duration: 220 }}>
@@ -213,13 +234,20 @@
 								side="bottom"
 								align="start"
 								onselect={select}
+								onmylocation={selectNearest}
 							>
 								{#snippet trigger(props)}
+									{@const label = withStateTag(city.name, city.state)}
 									<button
 										{...props}
 										class="block max-w-40 cursor-pointer truncate overflow-x-clip border-b-4 border-sun-gold p-0 px-1 text-left align-baseline font-bold text-ink uppercase transition-colors duration-120 hover:text-focus md:max-w-full"
+										style={label.length > 24
+											? 'font-size: 0.58em'
+											: label.length > 16
+												? 'font-size: 0.74em'
+												: undefined}
 									>
-										{withStateTag(city.name, city.state)}
+										{label}
 										<HugeiconsIcon
 											icon={ArrowDown01Icon}
 											size={16}
@@ -258,18 +286,6 @@
 									<HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2.4} size={14} />
 								</span>
 							</PixelButton>
-							<PixelButton
-								cap="paper"
-								size="xs"
-								class="text-sm!"
-								onclick={clearCity}
-								aria-label="Clear the selected station"
-							>
-								<span class="flex items-center gap-1">
-									<HugeiconsIcon icon={Cancel01Icon} strokeWidth={2.4} size={13} />
-									Clear
-								</span>
-							</PixelButton>
 						{:else}
 							<StationSearch
 								{manifest}
@@ -278,6 +294,7 @@
 								side="bottom"
 								align="start"
 								onselect={select}
+								onmylocation={selectNearest}
 							/>
 							<span class="text-xs text-ink/85 uppercase"> or tap any cloud below </span>
 						{/if}
@@ -288,12 +305,108 @@
 					<div
 						class="flex bg-day-sea p-2.5 shadow-[3px_3px_0_rgba(11,29,58,0.35)] md:block md:px-4 md:pt-4 md:pb-3 md:shadow-[4px_4px_0_rgba(11,29,58,0.35)]"
 					>
-						<SkyTwin {city} code={selected} {mode} {data} {india} stations={manifest.stations} />
+						<SkyTwin
+							{city}
+							code={selected}
+							{mode}
+							{data}
+							{india}
+							stations={manifest.stations}
+							enabled={twinOn}
+						/>
 					</div>
 				</div>
 			</header>
 
+			<!-- Chart controls ride the chart itself, centered in a band that shares the
+			     canvas fill so it reads as extra sky. Always rendered (invisible without a
+			     city) so selecting/clearing never shifts the chart. -->
+			<div
+				class="flex items-center justify-center gap-4 pt-4 pb-1"
+				style="background: {SKY.day.top};"
+			>
+				<button
+					type="button"
+					class="chart-chip"
+					class:invisible={!city}
+					onclick={clearCity}
+					aria-label="Clear the selected station"
+				>
+					<HugeiconsIcon icon={Cancel01Icon} strokeWidth={2.6} size={12} aria-hidden="true" />
+					Clear
+				</button>
+				<button
+					type="button"
+					role="switch"
+					aria-checked={twinOn}
+					class="chart-chip"
+					class:invisible={!city}
+					onclick={toggleTwin}
+				>
+					Sky twin
+					<span class="track" aria-hidden="true"><span class="knob"></span></span>
+				</button>
+			</div>
 			<CloudHistogram {data} selected={selected ?? ''} {mode} twin={activeTwin} onselect={select} />
 		</div>
 	{/if}
 </section>
+
+<style>
+	/* Same recipe as the histogram's .tag chips, so the pair reads as part of the chart. */
+	.chart-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 5px 9px;
+		border: 0;
+		background: color-mix(in srgb, var(--color-navy) 84%, transparent);
+		box-shadow: 2px 2px 0 color-mix(in srgb, var(--color-navy) 35%, transparent);
+		color: #fff;
+		font-family: inherit;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		line-height: 1.15;
+		text-transform: uppercase;
+		cursor: pointer;
+		user-select: none;
+		touch-action: manipulation;
+		-webkit-tap-highlight-color: transparent;
+		transition: color 120ms ease;
+	}
+	.chart-chip:hover {
+		color: var(--sun-gold);
+	}
+	.track {
+		position: relative;
+		width: 26px;
+		height: 14px;
+		background: rgba(255, 255, 255, 0.28);
+		transition: background-color 160ms ease;
+	}
+	.knob {
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		width: 10px;
+		height: 10px;
+		background: #fff;
+		transition:
+			transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+			background-color 160ms ease;
+	}
+	.chart-chip[aria-checked='true'] .track {
+		background: var(--sun-gold);
+	}
+	.chart-chip[aria-checked='true'] .knob {
+		transform: translateX(12px);
+		background: var(--navy);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.track,
+		.knob {
+			transition: none;
+		}
+	}
+</style>
