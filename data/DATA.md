@@ -8,7 +8,7 @@ cloud fractions, and reducing them to the tables below.
 
 Please note:
 
-- These are forecast*values (the day-0 portion of that day's model run), not
+- These are forecast values (the day-0 portion of that day's model run), not
   observations.
 - Coverage grows one day at a time; each station keeps at most its last 400 days.
 
@@ -16,16 +16,10 @@ Please note:
 |-----------|------------|------------------|-----------------------|
 | 2026-02-15 | 2026-07-18 | ~1,245 | 400 days |
 
-- From July 2026 the pixel-extracted bands are *anchored* against IMD's
-  MausamGram multi-model-ensemble total cloud (numeric, same 12 km grid) for
-  days where that feed was reachable: when the two disagree by more than 20
-  points, the bands are pulled halfway toward the ensemble total. The raw
-  per-day extraction JSONs and the per-day `numeric.json` sidecars are both
-  kept, so any day is reproducible either way.
 
 ## Data dictionary
 
-### Cloud cover — daily ([cloud-cover-daily.parquet](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-daily.parquet) · [cloud-cover-daily.csv.zip](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-daily.csv.zip))
+### Cloud cover - daily ([cloud-cover-daily.parquet](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-daily.parquet) · [cloud-cover-daily.csv.zip](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-daily.csv.zip))
 
 One row per station per day. The four cloud values are means over the eight
 3-hourly steps of the day-0 slice.
@@ -40,7 +34,7 @@ One row per station per day. The four cloud values are means over the eight
 | low | int64 | Mean low-cloud cover, 0–100 (%) |
 | effective | int64 | Mean of the per-step max of the three bands, 0–100 (%) |
 
-### Cloud cover — 3-hourly ([cloud-cover-3hourly.parquet](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-3hourly.parquet) · [cloud-cover-3hourly.csv.zip](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-3hourly.csv.zip))
+### Cloud cover - 3-hourly ([cloud-cover-3hourly.parquet](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-3hourly.parquet) · [cloud-cover-3hourly.csv.zip](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-3hourly.csv.zip))
 
 Same data before the daily averaging: one row per station per 3-hour step.
 
@@ -69,7 +63,7 @@ One row per station.
 
 ### Places ([places.parquet](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/places.parquet) · [places.csv](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/places.csv))
 
-Locations extracted from IMD to give stations readable names. Population and tier was arrived at by joining GeoNames.
+Locations extracted from IMD to give stations readable names. Population and tier was obtained by joining with the GeoNames dataset.
 
 | Variable | Type | Description |
 |----------|------|-------------|
@@ -88,7 +82,7 @@ Locations extracted from IMD to give stations readable names. Population and tie
 
 Everything here is regenerated from the scraper pipeline in
 [`../scraper`](../scraper) (see its [README](../scraper/README.md) for setup and
-the scheduled jobs). The public tables are the last step:
+the scheduled jobs).
 
 ```bash
 cd scraper
