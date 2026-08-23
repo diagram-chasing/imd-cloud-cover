@@ -430,8 +430,11 @@
 					muted && 'bg-steel-500'
 				]}>{r.n}</span
 			>
-			<span class={['card-title text-sm  font-extrabold  text-ink uppercase', muted && 'text-steel-700']}
-				>{r.title}</span
+			<span
+				class={[
+					'card-title text-sm  font-extrabold  text-ink uppercase',
+					muted && 'text-steel-700'
+				]}>{r.title}</span
 			>
 		</span>
 		<span
@@ -513,7 +516,7 @@
 		</div>
 
 		<svg
-			class="leads pointer-events-none absolute text-foreground! inset-0 h-full w-full overflow-visible"
+			class="leads pointer-events-none absolute inset-0 h-full w-full overflow-visible text-foreground!"
 			bind:this={leadsEl}
 			aria-hidden="true"
 		></svg>
@@ -525,7 +528,7 @@
 		{#if showingNearest && nearest}
 			<!-- desktop carries this in the SVG span label; mobile drops that, so name the station here -->
 			<p class="mb-2 px-4 text-center text-xs font-bold tracking-[0.08em] text-steel-700 uppercase">
-				{nearest.name} · nearest station
+				{nearest.name}
 			</p>
 		{/if}
 		<Carousel.Root
