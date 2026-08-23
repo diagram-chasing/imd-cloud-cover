@@ -1,28 +1,20 @@
 # imd-cloud-cover
 
 The IMD publishes a forecast chart (a "meteogram") for each of its stations
-every day at [nwp.imd.gov.in](https://nwp.imd.gov.in/). There's no machine-readable
-feed behind it, just an image. So this dataset is built by reading the
-cloud-cover panel out of the image pixels, recovering the high / middle / low
-cloud fractions, and reducing them to the tables below.
+every day at [nwp.imd.gov.in](https://nwp.imd.gov.in/) as an image. This dataset is scraped out of image pixels from these charts and compiled to the tables below. These are forecast values (the day-0 portion of that day's model run), not observations and only the last 400 days per station is kept.
 
-Please note:
-
-- These are forecast values (the day-0 portion of that day's model run), not
-  observations.
-- Coverage grows one day at a time; each station keeps at most its last 400 days.
-
-| First day | Latest day | Stations tracked | Per-station retention |
-|-----------|------------|------------------|-----------------------|
-| 2026-02-15 | 2026-07-18 | ~1,245 | 400 days |
-
+<!-- coverage:start (auto-updated by scraper/export.py — do not edit by hand) -->
+| First day | Latest day | Stations tracked |
+|-----------|------------|----------------|
+| 2026-02-15 | 2026-08-22 | ~1,245 |
+<!-- coverage:end -->
 
 ## Data dictionary
 
 ### Cloud cover - daily ([cloud-cover-daily.parquet](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-daily.parquet) · [cloud-cover-daily.csv.zip](https://raw.githubusercontent.com/diagram-chasing/imd-meteograms/main/data/cloud-cover-daily.csv.zip))
 
 One row per station per day. The four cloud values are means over the eight
-3-hourly steps of the day-0 slice.
+3-hourly steps of the day-0 part of the forecast.
 
 | Variable | Type | Description |
 |----------|------|-------------|
@@ -92,9 +84,6 @@ python aggregate.py --results /tmp/run-results.json # build derived views (ancho
 python export.py                                    # flatten histories → ../data/*.{parquet,csv.zip}
 ```
 
-`main.py` reads the day's charts from <https://nwp.imd.gov.in/>; each run appends
-one more day, so historical days can only be rebuilt from raws already collected.
-
 ## Source
 
 - **Cloud cover** from IMD Numerical Weather Prediction meteograms,
@@ -105,4 +94,4 @@ one more day, so historical days can only be rebuilt from raws already collected
   station layers (real names by coordinate match), via
   <https://reactjs.imd.gov.in/geoserver/imd/wfs>.
 - **Population / tier** from [GeoNames](https://www.geonames.org/) (CC BY 4.0), joined to
-  each station's IMD district (district-headline settlement).
+  each station's IMD district.

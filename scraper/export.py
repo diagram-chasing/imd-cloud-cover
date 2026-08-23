@@ -116,6 +116,28 @@ def three_hourly_table(stations, histories, codes):
     return pa.table(cols)
 
 
+def update_coverage(out_dir, daily, n_stations):
+    """Rewrite the coverage table in data/DATA.md between the coverage markers."""
+    path = os.path.join(out_dir, "DATA.md")
+    if daily.num_rows == 0 or not os.path.exists(path):
+        return
+    dates = daily.column("date").to_pylist()
+    table = (
+        "| First day | Latest day | Stations tracked |\n"
+        "|-----------|------------|----------------|\n"
+        f"| {min(dates)} | {max(dates)} | ~{n_stations:,} |"
+    )
+    start, end = "<!-- coverage:start", "<!-- coverage:end -->"
+    with open(path) as f:
+        text = f.read()
+    i, j = text.find(start), text.find(end)
+    if i == -1 or j == -1:
+        print(f"  (coverage markers not found in {path}; table not updated)")
+        return
+    with open(path, "w") as f:
+        f.write(text[: text.index("\n", i) + 1] + table + "\n" + text[j:])
+
+
 def export(store, out_dir):
     manifest = load_manifest()
     stations = manifest["stations"]
@@ -123,12 +145,14 @@ def export(store, out_dir):
     print(f"Loading {len(codes)} station histories...")
     histories = load_histories(store, set(codes))
 
+    daily = daily_table(stations, histories, codes)
     n_st = write_table(out_dir, "stations", stations_table(stations, codes), zip_csv=False)
     n_pl = write_table(out_dir, "places", places_table(stations, codes), zip_csv=False)
-    n_day = write_table(out_dir, "cloud-cover-daily", daily_table(stations, histories, codes), zip_csv=True)
+    n_day = write_table(out_dir, "cloud-cover-daily", daily, zip_csv=True)
     n_3h = write_table(out_dir, "cloud-cover-3hourly", three_hourly_table(stations, histories, codes), zip_csv=True)
 
     with_history = sum(1 for c in codes if (histories.get(c) or {}).get("days"))
+    update_coverage(out_dir, daily, with_history)
     print(f"Wrote {out_dir}:")
     print(f"  stations              {n_st} stations")
     print(f"  places                {n_pl} places")
