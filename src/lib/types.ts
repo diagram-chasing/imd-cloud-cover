@@ -1,4 +1,4 @@
-// Schema types mirroring the pipeline's R2 outputs (scraper/aggregate.py).
+// Schema types mirroring the pipeline's R2 outputs (scraper/pipeline.py).
 
 export interface Station {
 	name: string;
@@ -101,7 +101,7 @@ export interface ObsStation {
 	ol?: number;
 }
 
-/** latest/obs.json — written every ~30 min by scraper/collect_obs.py.
+/** latest/obs.json — written every ~30 min by scraper/obs.py.
  *  `ctbt` is the IMD INSAT cloud/layer frame time; `hem`/`olr` are the MOSDAC
  *  rain/OLR frames, populated when that feed is alive. */
 export interface ObsLatest {

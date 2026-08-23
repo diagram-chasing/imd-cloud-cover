@@ -1,6 +1,6 @@
 # IMD Meteogram Pipeline
 
-Pipeline for processing IMD's meteogram PNGs into data. We download the charts, pixel-extract the cloud-cover panel, and build the static data for the frontend. Run once daily via Github Actions.
+Pipeline for processing IMD's meteogram charts into data. We download the charts, pixel-extract the cloud-cover panel, and build the static data for the frontend. Run once daily via Github Actions.
 
 ## Setup
 
@@ -15,76 +15,50 @@ those and just set `LOCAL_MODE=1`.
 ## Daily Run
 
 ```bash
-python main.py --out /tmp/run-results.json          # scrape + extract + upload
-python aggregate.py --results /tmp/run-results.json # build derived views
-python export.py                                    # write public dataset to ../data
+python pipeline.py scrape --out /tmp/run-results.json     # scrape + extract + upload
+python pipeline.py numeric                                # MausamGram MME sidecar
+python pipeline.py aggregate --results /tmp/run-results.json  # build derived views
+python pipeline.py export                                 # public dataset to ../data
 ```
 
-`main.py` downloads every station's meteogram, checks the chart geometry looks right, extracts the day-0 slice, and uploads
-`{date}/{CODE}-meteogram.{webp,json}`.
+`scrape` downloads every station's meteogram, checks the chart geometry looks
+right, extracts the forecast slice, and uploads `{date}/{CODE}-meteogram.{webp,json}`.
+`numeric` writes the `{date}/numeric.json` MME sidecar that anchors the OCR
+bands and supplies forecast rain. `aggregate` builds the frontend views listed
+below, and `export` flattens the histories into the public CSV/Parquet dataset
+in [`../data`](../data). Please see [DATA.md](../data/DATA.md) for what's in it.
 
-`aggregate.py` then reads those day-0 slices and writes the frontend view listed below. `export.py` flattens the histories into the public CSV/Parquet
-dataset in [`../data`](../data). Please see [DATA.md](../data/DATA.md) for what's in it.
-
-Two more jobs run on their own schedules: `collect_numeric.py` writes the
-MausamGram MME sidecar `{date}/numeric.json` (used by aggregate to anchor the
-OCR bands and supply forecast rain), and `collect_obs.py` refreshes
-`latest/obs.json` every ~30 min from INSAT-3DS + IMD synop.
+A second job runs on its own schedule: `obs.py` refreshes `latest/obs.json`
+(and `latest/sky.png`) every ~30 min from INSAT-3DS + IMD synop.
 
 ## Layout
 
-Entry points, one per scheduled job:
-
-| script | job |
+| file | owns |
 | --- | --- |
-| `main.py` | scrape meteogram GIFs, OCR the cloud panel (`extract_data.py`), upload raws |
-| `collect_numeric.py` | fetch the MausamGram MME sidecar (`mausamgram.py`) |
-| `collect_obs.py` | near-real-time observations (`mosdac.py`, `synop.py`) |
-| `aggregate.py` | build all derived views (`anchor.py`, `cities.py`) |
-| `export.py` | public CSV/Parquet dataset |
+| `pipeline.py` | the daily flow: scrape/extract, MME sidecar, derived views, dataset export |
+| `obs.py` | near-real-time observations: INSAT CTBT + MOSDAC decoding, synop join, sky.png |
+| `forecast.py` | the forecast domain model: band parsing, daily means, MME anchoring, histories, city explorer |
+| `storage.py` | R2/local byte store + shared helpers (manifest, insecure fetches) |
 
-Shared modules (nothing imports an entry point):
-
-| module | owns |
-| --- | --- |
-| `bands.py` | the day-0 band model: parse raw slices, daily means, effective cover |
-| `histories.py` | `history/{CODE}.json` documents + the 400-day retention policy |
-| `cities.py` | the city-explorer view and sky-twin assignment |
-| `anchor.py` | anchoring OCR bands to the MME total; attaching rain |
-| `storage.py` | R2/local byte store + concurrent store-op helper |
-| `common.py` | manifest access and small shared utilities |
-
-## Occasionally useful
-
-Re-seed the station manifest from the IMD page. This grabs the code + lat/lon,
-then enriches each station with IMD geography data: state/district/subdivision
-by point-in-polygon against IMD's `imd:india_districts`, a real name by coordinate
-match against IMD station layers.
-
-```bash
-python tools/fetch_imd_gazetteer.py     # caches scraper/data/imd/*.json
-python tools/seed_stations.py --merge   # reads scraper/data/imd + geonames-places.json
-```
-
-`--merge` keeps any field whose `*_source` is `"manual"` (hand edits). The
-GeoNames input (`scraper/data/geonames-places.json`) is distilled by
-`node scripts/build-places.mjs` from `src/lib/assets/IN.zip`.
 If the derived views ever get out of sync, rebuild everything from the dated
 files already in the store:
 
 ```bash
-python aggregate.py --rebuild
+python pipeline.py aggregate --rebuild
 ```
 
 ## R2 layout
 
 ```
 {date}/{CODE}-meteogram.{webp,json}   raw per-station forecast (immutable)
+{date}/numeric.json                   MausamGram MME sidecar (immutable)
 meta/stations.json                    station manifest
 meta/dates.json                       { dates:[...], latest }
 latest/all-stations.json              today's 8-step day-0 slice per station
 latest/summary.json                   national means, cloudiest/clearest, streaks
+latest/obs.json, latest/sky.png       near-real-time observations
 history/{CODE}.json                   per-day daily means (h,m,l,e), cap 400 days
 rollups/7d.json, rollups/30d.json     per-station daily-mean series over window
+rollups/cities.json                   city explorer view
 reports/{date}.json                   run report (succeeded/failed/suspicious/unmapped)
 ```

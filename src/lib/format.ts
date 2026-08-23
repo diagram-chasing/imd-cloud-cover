@@ -13,7 +13,6 @@ export function prettyDate(iso?: string): string {
 import { rainTier } from '$lib/theme';
 import coverModel from '$lib/data/cover-model.json';
 
-// scraper/tools/validate_sources.py reads the same file — one source of truth.
 const { l: A_L, m: A_M, h: A_H } = coverModel.opacity;
 const EDGES = coverModel.edges;
 

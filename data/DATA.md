@@ -3,7 +3,7 @@
 The IMD publishes a forecast chart (a "meteogram") for each of its stations
 every day at [nwp.imd.gov.in](https://nwp.imd.gov.in/) as an image. This dataset is scraped out of image pixels from these charts and compiled to the tables below. These are forecast values (the day-0 portion of that day's model run), not observations and only the last 400 days per station is kept.
 
-<!-- coverage:start (auto-updated by scraper/export.py — do not edit by hand) -->
+<!-- coverage:start (auto-updated by `pipeline.py export` — do not edit by hand) -->
 | First day | Latest day | Stations tracked |
 |-----------|------------|----------------|
 | 2026-02-15 | 2026-08-22 | ~1,245 |
@@ -79,9 +79,9 @@ the scheduled jobs).
 ```bash
 cd scraper
 pip install -r requirements.txt
-python main.py --out /tmp/run-results.json          # scrape + pixel-extract each meteogram
-python aggregate.py --results /tmp/run-results.json # build derived views (anchor bands, cities)
-python export.py                                    # flatten histories → ../data/*.{parquet,csv.zip}
+python pipeline.py scrape --out /tmp/run-results.json          # scrape + pixel-extract each meteogram
+python pipeline.py aggregate --results /tmp/run-results.json   # build derived views (anchor bands, cities)
+python pipeline.py export                                      # flatten histories → ../data/*.{parquet,csv.zip}
 ```
 
 ## Source

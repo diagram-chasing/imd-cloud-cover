@@ -51,7 +51,7 @@ export function applyObs(
 	const w = W0 * (1 - lead / MAX_LEAD);
 	if (w <= 0) return values;
 
-	// Untrusted satellite (per collect_obs's observer check) may only add
+	// Untrusted satellite (per obs.py's observer check) may only add
 	// cloud at observer-less stations, never erase it.
 	const satTrusted = obs.sources?.sat?.ok === true;
 

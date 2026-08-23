@@ -1,15 +1,23 @@
-"""Storage abstraction: R2Store (production via boto3) and LocalStore (LOCAL_MODE=1).
-Pick one with get_store().
+"""Byte store keyed by path-like strings — R2Store (production, boto3) or
+LocalStore (LOCAL_MODE=1, plain directory) — plus the small helpers every
+script shares: station manifest access, numeric coercion, geo distance, and
+fetching from govt endpoints with broken TLS. Pick a store with get_store().
 """
 
 import json
+import math
 import os
+import ssl
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 
-# The store's per-object ops are network round-trips; run them concurrently.
-# boto3 clients are thread-safe for distinct calls (main.py relies on this too).
 MAX_WORKERS = 16
+
+# Cache-Control policy by key prefix: dated snapshots never change,
+# rolling/latest views change daily and get a short TTL.
+IMMUTABLE = "public, max-age=31536000, immutable"
+SHORT = "public, max-age=300"
 
 
 def pmap(fn, items):
@@ -21,23 +29,14 @@ def pmap(fn, items):
         return list(ex.map(fn, items))
 
 
-# Cache-Control policy by key prefix. Dated snapshots never change;
-# rolling/latest views change daily and are served with a short TTL.
-IMMUTABLE = "public, max-age=31536000, immutable"
-SHORT = "public, max-age=300"
-
-
-def cache_control_for(key: str) -> str:
+def cache_control_for(key):
     head = key.split("/", 1)[0]
     if head in ("latest", "meta", "rollups", "summary", "reports"):
         return SHORT
-    # Dated snapshots: "2026-07-06/BNG-meteogram.json"
     return IMMUTABLE
 
 
 class Store:
-    """Abstract byte store keyed by path-like strings."""
-
     def get_bytes(self, key):
         raise NotImplementedError
 
@@ -48,13 +47,8 @@ class Store:
         raise NotImplementedError
 
     def list_prefixes(self, prefix="", delimiter="/"):
-        """immediate subdirectory names under prefix; cheaper than list_keys for date dirs."""
         raise NotImplementedError
 
-    def exists(self, key):
-        return self.get_bytes(key) is not None
-
-    # --- JSON convenience helpers ---
     def get_json(self, key):
         raw = self.get_bytes(key)
         if raw is None:
@@ -92,11 +86,8 @@ class LocalStore(Store):
             f.write(data)
 
     def list_keys(self, prefix):
-        base = self._path(prefix)
         out = []
-        # prefix may be a partial path; walk from root and filter.
-        search_root = self.root
-        for dirpath, _dirs, files in os.walk(search_root):
+        for dirpath, _dirs, files in os.walk(self.root):
             for name in files:
                 full = os.path.join(dirpath, name)
                 rel = os.path.relpath(full, self.root).replace(os.sep, "/")
@@ -113,9 +104,6 @@ class LocalStore(Store):
             if os.path.isdir(os.path.join(search, name)):
                 out.append(f"{prefix}{name}{delimiter}")
         return sorted(out)
-
-    def exists(self, key):
-        return os.path.exists(self._path(key))
 
 
 class R2Store(Store):
@@ -173,15 +161,6 @@ class R2Store(Store):
                 break
         return prefixes
 
-    def exists(self, key):
-        from botocore.exceptions import ClientError
-
-        try:
-            self.s3.head_object(Bucket=self.bucket, Key=key)
-            return True
-        except ClientError:
-            return False
-
 
 def make_r2_client():
     import boto3
@@ -198,9 +177,56 @@ def make_r2_client():
 
 
 def get_store():
-    """LocalStore when LOCAL_MODE is truthy, else R2Store from env creds."""
     if os.getenv("LOCAL_MODE") in ("1", "true", "True", "yes"):
         return LocalStore(os.getenv("LOCAL_DIR", "weather_data"))
     client = make_r2_client()
     bucket = os.getenv("R2_BUCKET_NAME")
     return R2Store(client, bucket)
+
+
+def here(*parts):
+    return os.path.join(os.path.dirname(__file__), *parts)
+
+
+def load_manifest():
+    with open(here("stations.json")) as f:
+        return json.load(f)
+
+
+def c100(v):
+    """Clamp to an integer cover percentage 0..100."""
+    return max(0, min(100, round(v)))
+
+
+def to_float(v):
+    """float(v) with junk and NaN coerced to None."""
+    try:
+        f = float(v)
+        return None if math.isnan(f) else f
+    except (TypeError, ValueError):
+        return None
+
+
+def insecure_get(url, timeout):
+    return insecure_get_meta(url, timeout)[0]
+
+
+def insecure_get_meta(url, timeout):
+    """GET returning (bytes, headers), skipping TLS verification — several
+    IMD/MOSDAC endpoints serve broken certificate chains in CI. Headers matter
+    because IMD's satellite JPEGs are overwritten in place; Last-Modified is
+    the frame timestamp."""
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=timeout, context=ctx) as r:
+        return r.read(), r.headers
+
+
+def haversine_km(lat1, lon1, lat2, lon2):
+    rlat1, rlat2 = math.radians(lat1), math.radians(lat2)
+    a = (math.sin((rlat2 - rlat1) / 2) ** 2
+         + math.cos(rlat1) * math.cos(rlat2)
+         * math.sin(math.radians(lon2 - lon1) / 2) ** 2)
+    return 6371 * 2 * math.asin(math.sqrt(a))

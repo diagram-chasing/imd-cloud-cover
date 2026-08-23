@@ -5,11 +5,6 @@ on:
     - cron: '30 5 * * *'  # Runs at 11:00 AM IST daily (5:30 AM UTC)
   workflow_dispatch:  # Allows manual triggering
 
-# Grant the token the permissions the reusable deploy workflow requires. A
-# reusable workflow can never request more than its caller, so the caller must
-# declare `deployments: write` here (the repo default is `deployments: none`).
-# `contents: write` lets the scrape job commit the regenerated public dataset
-# (data/) back to the repo.
 permissions:
   contents: write
   deployments: write
@@ -38,36 +33,19 @@ jobs:
 
       - name: Scrape meteograms
         working-directory: scraper
-        run: python main.py --out /tmp/run-results.json
+        run: python pipeline.py scrape --out /tmp/run-results.json
 
-      # Numeric MME sidecar used to anchor the pixel-extracted bands and to
-      # supply forecast rain. MausamGram being down is non-fatal: the script
-      # exits 0 without writing and aggregation falls back to pure meteograms.
       - name: Fetch MausamGram numerics
         working-directory: scraper
-        run: python collect_numeric.py
+        run: python pipeline.py numeric
 
       - name: Aggregate derived views
         working-directory: scraper
-        run: python aggregate.py --results /tmp/run-results.json
+        run: python pipeline.py aggregate --results /tmp/run-results.json
 
-      # Score yesterday's displayed forecast against the obs archive (synop
-      # oktas, present weather) collected by obs-refresh.yml. Warn-only.
-      - name: Validate against observations
-        working-directory: scraper
-        run: python tools/validate_sources.py --date "$(date -u -d yesterday +%F)" || true
-
-      # Score obs.json vs airport METARs + Open-Meteo. Warn-only.
-      - name: Benchmark against external references
-        working-directory: scraper
-        run: python tools/benchmark_obs.py || true
-
-      # Regenerate the public dataset (data/*.parquet, *.csv, *.csv.zip) from the
-      # freshly-aggregated histories in R2, so the committed dataset tracks each
-      # run. export.py writes to repo-root data/ by default.
       - name: Export public dataset
         working-directory: scraper
-        run: python export.py
+        run: python pipeline.py export
 
       - name: Commit regenerated dataset
         run: |
@@ -89,10 +67,6 @@ jobs:
           path: /tmp/run-results.json
           if-no-files-found: ignore
 
-  # Once fresh data has landed in R2, hand off to the production deploy
-  # workflow. It runs `pnpm build`, which re-bakes the core views from R2, so
-  # the deployed site is exactly as fresh as this run — and both scheduled and
-  # manual production deploys go through the same single code path.
   deploy:
     needs: scrape
     uses: ./.github/workflows/netlify-pages-publish.yaml
