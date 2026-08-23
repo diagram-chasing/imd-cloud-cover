@@ -9,8 +9,24 @@
 	import methodImg from '$lib/assets/method-meteogram.webp';
 	import * as Carousel from '$lib/components/ui/carousel/index.js';
 	import type { CarouselAPI } from '$lib/components/ui/carousel/context.js';
+	import type { StationsManifest } from '$lib/types';
+	import { userGeo } from '$lib/state/geo.svelte';
+	import { haversineKm } from '$lib/stations/distance';
+	import { meteogramImageUrl } from '$lib/api/r2';
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { Cancel01Icon } from '@hugeicons/core-free-icons';
+
+	// When we know where the reader is, the specimen becomes *their* nearest
+	// station's real meteogram instead of the Bangalore sample. Every IMD gram is
+	// the same 1100×1100 template, so the numbered overlays stay pixel-aligned.
+	interface Props {
+		manifest?: StationsManifest;
+		/** Day-0 / issue date — the folder the raw meteogram files live under. */
+		date?: string;
+	}
+	let { manifest = undefined, date = undefined }: Props = $props();
+
+	const NEAR_KM = 250;
 
 	type Rect = { x: number; y: number; w: number; h: number };
 	type Region = {
@@ -26,7 +42,53 @@
 		anchorY: number;
 	};
 
-	const SRC = methodImg;
+	const SAMPLE = methodImg;
+
+	$effect(() => {
+		userGeo.ensure();
+	});
+
+	// Nearest station to the visitor, if one sits within reach (otherwise the
+	// sample stands in — e.g. a reader outside India, or sample/dev mode where
+	// geo never resolves).
+	let nearest = $derived.by(() => {
+		const loc = userGeo.loc;
+		if (!loc || !manifest) return null;
+		let best: { code: string; name: string } | null = null;
+		let bestKm = Infinity;
+		for (const [code, st] of Object.entries(manifest.stations)) {
+			const km = haversineKm(loc.lat, loc.lng, st.lat, st.lon);
+			if (km < bestKm) {
+				bestKm = km;
+				best = { code, name: st.name };
+			}
+		}
+		return best && bestKm <= NEAR_KM ? best : null;
+	});
+	let candidate = $derived(nearest && date ? meteogramImageUrl(date, nearest.code) : null);
+
+	// Preload before swapping so a 404 or slow fetch never blanks the plate: only
+	// a fully decoded gram promotes over the sample.
+	let loadedSrc = $state<string | null>(null);
+	$effect(() => {
+		const url = candidate;
+		loadedSrc = null;
+		if (!url) return;
+		const img = new Image();
+		img.onload = () => (loadedSrc = url);
+		img.src = url;
+		return () => {
+			img.onload = null;
+		};
+	});
+
+	const SRC = $derived(loadedSrc ?? SAMPLE);
+	let showingNearest = $derived(!!loadedSrc && !!nearest);
+	let spanLabel = $derived(
+		showingNearest && nearest
+			? `10-DAY FORECAST FOR ${nearest.name.toUpperCase()}`
+			: '10-DAY FORECAST WITH 3 HOUR INTERVALS'
+	);
 
 	const PLOT_X = 10.91;
 	const PLOT_W = 88.18;
@@ -215,7 +277,7 @@
 			type: annotationXYThreshold,
 			disable: ['connector'],
 			subject: { x1: bx0, x2: bx1 },
-			note: { label: '10-DAY FORECAST WITH 3 HOUR INTERVALS', align: 'middle', wrap: 600 }
+			note: { label: spanLabel, align: 'middle', wrap: 600 }
 		};
 		const sel = select(svg);
 		sel.selectAll('*').remove();
@@ -397,7 +459,9 @@
 			<img
 				class="plate block h-auto w-full"
 				src={SRC}
-				alt="Sample IMD GFS meteogram for Bangalore: eight stacked forecast panels, described in the numbered notes."
+				alt={showingNearest && nearest
+					? `IMD GFS meteogram for ${nearest.name}, the station nearest you: eight stacked forecast panels, described in the numbered notes.`
+					: 'Sample IMD GFS meteogram for Bangalore: eight stacked forecast panels, described in the numbered notes.'}
 			/>
 			{#each REGIONS as r (r.id)}
 				<button
@@ -458,6 +522,12 @@
 	<div
 		class="legend mt-4 hidden max-[1099px]:relative max-[1099px]:left-1/2 max-[1099px]:block max-[1099px]:w-screen max-[1099px]:-translate-x-1/2"
 	>
+		{#if showingNearest && nearest}
+			<!-- desktop carries this in the SVG span label; mobile drops that, so name the station here -->
+			<p class="mb-2 px-4 text-center text-xs font-bold tracking-[0.08em] text-steel-700 uppercase">
+				{nearest.name} · nearest station
+			</p>
+		{/if}
 		<Carousel.Root
 			opts={{ align: 'center', containScroll: false }}
 			setApi={(api) => (deckApi = api)}

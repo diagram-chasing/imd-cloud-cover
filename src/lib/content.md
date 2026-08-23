@@ -1,5 +1,6 @@
 <script>
 	import CloudTiers from '$lib/components/CloudTiers.svelte';
+	import SkyWindow from '$lib/components/SkyWindow.svelte';
 	import MeteogramAtlas from '$lib/components/MeteogramAtlas.svelte';
 	import SupportCTA from '$lib/components/SupportCTA.svelte';
 	import CitySkyExplorer from '$lib/components/city/CitySkyExplorer.svelte';
@@ -9,7 +10,7 @@
 	import { withStateTag } from '$lib/stations/labels';
 	import { citySky } from '$lib/state/citySky.svelte';
 
-	let { manifest = undefined, india = undefined } = $props();
+	let { manifest = undefined, india = undefined, nowValues = undefined, date = undefined } = $props();
 
 	let cities = $state(null);
 	// live satellite illustration is absent in sample mode; hide the figure on 404
@@ -105,15 +106,15 @@
 
 <p class="byline">by <a href="https://diagramchasing.fun" target="_blank" rel="noopener">Aman Bhargava</a></p>
 
-Every morning, the India Meteorological Department publishes a meteogram for each of its ~1,200 weather stations. It is a 10-day forecast broken into three-hour intervals and stacked into vertical panels for temperature, humidity, pressure, wind, cloud and rain. At first it looks like a wall of lines. But start with one panel you can read, such as the daily rise and fall of temperature, and the others become easier to follow, since a change in one usually corresponds to a change in another.
+Every morning, the India Meteorological Department publishes a meteogram for each of its ~1,200 weather stations. It is a 10-day forecast broken into three-hour intervals and stacked into vertical panels for temperature, humidity, pressure, wind, cloud and rain. When you read these panels together, you can see both the weather you might experience that day and the conditions that make it possible. This is because changes in one panel, like cloud cover, usually cause changes in another, like the chance of rain.
 
-Read together, the panels show both the weather you will feel that day and the atmospheric conditions behind it. Multiply that by all the stations and the IMD can map the country's weather at a remarkably granular level.
+A daily graphic like this is made by each weather station, and some of the bigger cities, like Mumbai and Delhi, have more than one station that predicts the weather. However, as they are only forecasts, the weather on that particular day may differ, and the forecasts become less precise over time.
 
 <div class="breakout mb-4!">
-	<MeteogramAtlas />
+	<MeteogramAtlas {manifest} {date} />
 </div>
 
-What first drew me to these charts was the density of the visual organization, which you rarely see in the data visualization we usually come across. But the detail that caught my eye was the cloud-cover panel. Look closely, and you can see it is drawn to resemble an actual cloudy sky!
+What first drew me to these charts was the density of the visual organization, which you rarely see in the data visualization we usually come across in our daily lives. But the detail that caught my eye was the cloud-cover panel. Look closely, and you can see it is drawn to resemble an actual cloudy sky!
 
 <img
 	src={cloudsUrl}
@@ -122,17 +123,23 @@ What first drew me to these charts was the density of the visual organization, w
 	class="block w-full bg-white leading-none shadow-[6px_6px_0] shadow-cloud-block border-2 border-ink"
 />
 
-The cloud-cover panel is a stacked histogram split into three tiers: low clouds (cumulus, surface to 2 km), medium clouds (altocumulus, 2 to 7 km), and high clouds (cirrus, above 7 km). When a block of time is fully white, the station expects close to 100% coverage at that altitude. Because rain generally comes from the lowest tier, a dense white block there usually lines up with a spike in the precipitation bar below it.
+The cloud-cover panel is a stacked histogram split into three tiers: low clouds (cumulus, surface to 2 km), medium clouds (altocumulus, 2 to 7 km), and high clouds (cirrus, above 7 km). When a block of time is fully white, the station expects close to 100% coverage at that altitude.
 
 <CloudTiers />
 
 I love this visualization. It's charming that the person who wrote the software took complicated weather data and made it look like cloudy, fun pixel art. Every day since February 2026, I have been archiving these charts. I wrote a script that reads the pixels and turns the histogram images back into structured data, so I could plot a given slice of time onto a map. The mapping of India's clouds at the top of this page is the result of that daily collection and analysis.
 
-With {monthsLabel} of data, some patterns start to show. Every station here has a twin, or a distant station whose skies cloud over and clear in similar ways.
+What does this percentage value next to each altitude mean? Meteorologists measure cloud cover by dividing the visible sky into eight equal slices, called "oktas." When the reading is 40%, which means that clouds cover about three of the eight slices, and we say that it is "partly cloudy." So, if you look up at a sky with 40% cumulus clouds, you will see a sky with just enough cumulus clouds to block a little less than half of your view.
+
+<div class="breakout clear-both">
+	<SkyWindow {manifest} values={nowValues} />
+</div>
+
+With {monthsLabel} of data, some patterns start to show. Every station here has a 'twin', or a distant station whose skies get cloudy and or clear in similar ways.
 
 {#if skyPair}
 
-<p>For example, here are two cities that are hundreds of kilometers apart, but the daily cloud strips below show that they move in sync.</p>
+<p>For example, here are two cities that are hundreds of kilometers apart, but the daily cloud strips below show that their cloudiness patterns have been similar.</p>
 
 <div class="breakout">
 	<SkyBarcode

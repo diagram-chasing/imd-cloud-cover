@@ -10,7 +10,7 @@
 	import { userGeo } from '$lib/state/geo.svelte';
 	import { skyMode, rainTier } from '$lib/theme';
 	import { computeValues, rollupForView, resolveActiveDay } from '$lib/data';
-	import { applyObs, istToday } from '$lib/obs';
+	import { applyObs, istToday, nowStepIST } from '$lib/obs';
 	import { fetchObs } from '$lib/api/r2';
 	import type { ObsLatest } from '$lib/types';
 	import { click } from '$lib/feedback';
@@ -146,6 +146,18 @@
 
 	// the rain toggle only earns its spot when this frame has rain to mute
 	let hasRain = $derived(Object.values(values).some((v) => rainTier(v.r) > 0));
+
+	// "Right now" frame for the field-notes SkyWindow: pinned to the current IST
+	// step regardless of the scrubber, so its MY SKY chip always means now. The
+	// 15-min obs poll retriggers this, keeping nowStepIST() fresh enough.
+	let nowValues = $derived(
+		applyObs(
+			computeValues('today', core?.latest, undefined, nowStepIST(), 0, activeDay?.index ?? 0),
+			obs,
+			activeDay?.date === istToday(),
+			nowStepIST()
+		)
+	);
 
 	const HOUR_LABELS = ['00', '03', '06', '09', '12', '15', '18', '21'];
 	let activeDate = $derived.by(() => {
@@ -352,7 +364,7 @@
 </div>
 
 <article class="article scroll-mt-4" id="field-notes">
-	<FieldNotes manifest={core?.manifest} india={core?.india} />
+	<FieldNotes manifest={core?.manifest} india={core?.india} {nowValues} date={core?.latest?.date} />
 </article>
 
 <SiteFooter />
