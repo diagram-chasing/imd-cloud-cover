@@ -5,8 +5,7 @@
 	import { WORLD_W, WORLD_H } from '$lib/map/camera';
 
 	interface Pin {
-		// unique station code — keys the each; two cities can share a display label
-		// (e.g. the two Aurangabads), so the label is not safe as a key.
+
 		code: string;
 		label: string;
 		lat: number;

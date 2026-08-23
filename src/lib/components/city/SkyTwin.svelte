@@ -63,19 +63,19 @@
 			{:else if diff < -8}
 				Clearer than usual today at <span class="text-sun-gold">{val}%</span>.
 			{:else}
-				A typical day for this place at <span class="text-sun-gold">{val}%</span>.
+				A typical day for this city at <span class="text-sun-gold">{val}%</span>.
 			{/if}
 		{:else if !enabled}
-			Clouds cover <span class="text-sun-gold">{Math.round(city.mean)}%</span> of this place on an
+			Clouds cover <span class="text-sun-gold">{Math.round(city.mean)}%</span> of this city on an
 			average day.
 		{:else if twin && mode === 'today'}
-			Today, this place matches <span class="text-sun-gold">{twin.name}</span>.
+			Today, this city matches <span class="text-sun-gold">{twin.name}</span>.
 		{:else if twin}
-			Over the last year, this place matched <span class="text-sun-gold">{twin.name}</span>.
+			Over the last year, this city matched <span class="text-sun-gold">{twin.name}</span>.
 		{:else if mode === 'today'}
 			No city matches {city.name}'s sky today.
 		{:else}
-			No sky twin for {city.name}.
+			No twin for {city.name}.
 		{/if}
 	</p>
 </div>
