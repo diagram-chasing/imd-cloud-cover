@@ -25,22 +25,17 @@
 	}
 	let { manifest, india }: Props = $props();
 
-	// Max distance (km) from the visitor to their nearest city for us to default to
-	// it — beyond this (e.g. an overseas visitor) we fall back to the biggest city.
 	const NEAR_KM = 250;
 
 	let data = $state<CitiesRollup | null>(null);
 	let failed = $state(false);
-	// Focus lives in shared state so the intro barcode stays in sync; `selected` is
-	// a read-only alias to keep the template terse.
+
 	let selected = $derived(citySky.code);
 	let mode = $state<'today' | 'overall'>('overall');
-	// Twin-finding on/off — the switch lives on the twin box; off just spotlights
-	// the chosen city (no match on the map, no twin marker in the histogram).
-	let twinOn = $state(true);
+
+	let twinOn = $state(false);
 	let root = $state<HTMLElement>();
 
-	// Kick off the coarse (IP) location fetch as soon as the explorer mounts.
 	$effect(() => {
 		userGeo.ensure();
 	});
@@ -70,11 +65,6 @@
 		return best;
 	}
 
-	// Prefetch the city record during idle right after mount — well before the reader
-	// scrolls down — so the explorer is ready when it enters view rather than showing
-	// a placeholder and fetching on demand. The timeout guarantees it fires even if
-	// the map keeps the main thread busy; an IntersectionObserver still short-circuits
-	// the wait if the reader scrolls straight down.
 	let fetchStarted = false;
 	function loadCities() {
 		if (fetchStarted || data || failed) return;
@@ -95,7 +85,6 @@
 		if (w.requestIdleCallback) idleId = w.requestIdleCallback(loadCities, { timeout: 1500 });
 		else timer = setTimeout(loadCities, 500);
 
-		// Reader reached it before the idle prefetch fired: fetch immediately.
 		const io = root
 			? new IntersectionObserver(
 					(entries) => {
@@ -135,8 +124,6 @@
 		citySky.pick(code);
 	}
 
-	// Drop the highlighted city so the reader sees the whole front on its own; the
-	// graph still plots every city and a cloud-click (or the search) re-selects one.
 	function clearCity() {
 		click('select');
 		citySky.clear();
@@ -146,9 +133,6 @@
 		click('select');
 		twinOn = !twinOn;
 	}
-
-	// "My location" in the search: an explicit ask, so skip the NEAR_KM cap and
-	// take the nearest city outright.
 	function selectNearest() {
 		const loc = userGeo.loc;
 		if (!loc) return;
@@ -180,9 +164,6 @@
 			Couldn't load the station record — try again later.
 		</p>
 	{:else if !data}
-		<!-- Skeleton mirrors the loaded layout box-for-box. The twin-map box (right) drives
-		     the header height via the same aspect ratio, and the histogram uses the same
-		     fixed height, so swapping in the real content causes zero layout shift. -->
 		<div class="motion-safe:animate-pulse" aria-hidden="true">
 			<header
 				class="mx-auto mb-7 grid max-w-2xl grid-cols-[minmax(0,1fr)_auto] items-stretch gap-x-6 gap-y-6 px-5 md:items-center md:gap-x-8"
@@ -318,9 +299,6 @@
 				</div>
 			</header>
 
-			<!-- Chart controls ride the chart itself, centered in a band that shares the
-			     canvas fill so it reads as extra sky. Always rendered (invisible without a
-			     city) so selecting/clearing never shifts the chart. -->
 			<div
 				class="flex items-center justify-center gap-4 pt-4 pb-1"
 				style="background: {SKY.day.top};"
@@ -343,7 +321,7 @@
 					class:invisible={!city}
 					onclick={toggleTwin}
 				>
-					Sky twin
+					Twin
 					<span class="track" aria-hidden="true"><span class="knob"></span></span>
 				</button>
 			</div>
@@ -353,7 +331,6 @@
 </section>
 
 <style>
-	/* Same recipe as the histogram's .tag chips, so the pair reads as part of the chart. */
 	.chart-chip {
 		display: inline-flex;
 		align-items: center;
