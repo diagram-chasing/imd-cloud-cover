@@ -5,7 +5,10 @@ export function defaultTimeIndex(): number {
 	const nowUtcMs = Date.now();
 	const istMs = nowUtcMs + 5.5 * 3600 * 1000;
 	const istHour = new Date(istMs).getUTCHours() + new Date(istMs).getUTCMinutes() / 60;
-	return Math.round(istHour / 3) % 8;
+	// floor, matching obs.ts nowStepIST: the default frame is the step in
+	// progress (lead 0, full correction weight); round used to overshoot to the
+	// next step and, after 22:30, wrap to a past midnight with no correction.
+	return Math.floor(istHour / 3) % 8;
 }
 
 class SkyState {

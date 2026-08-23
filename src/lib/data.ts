@@ -1,4 +1,5 @@
 import type { AllStations, BandValues, Rollup, StationBands, ViewMode } from '$lib/types';
+import { rainLowFloor } from '$lib/theme';
 
 const DAY_STEPS = 8;
 
@@ -65,11 +66,13 @@ export function computeValues(
 	if (view === 'today') {
 		if (!latest) return out;
 		for (const [code, b] of Object.entries(stationsForDay(latest, dayIndex))) {
+			const r = b.r?.[timeIndex] ?? 0;
 			out[code] = {
 				h: b.h[timeIndex] ?? 0,
 				m: b.m[timeIndex] ?? 0,
-				l: b.l[timeIndex] ?? 0,
-				r: b.r?.[timeIndex] ?? 0
+				// forecast rain must fall from forecast cumulus, however h-heavy the bands
+				l: Math.max(b.l[timeIndex] ?? 0, rainLowFloor(r)),
+				r
 			};
 		}
 		return out;

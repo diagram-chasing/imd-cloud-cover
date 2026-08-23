@@ -6,12 +6,12 @@
 
 import type { BandValues, ObsLatest, ObsStation } from '$lib/types';
 import { effectiveCover as eff } from '$lib/format';
+import { rainLowFloor } from '$lib/theme';
 
 const MAX_AGE_MS = 2 * 3600 * 1000; // ignore obs older than this (job stalled)
 const DISAGREE = 15; // cover-gap (points) below which the map is left alone
 const W0 = 0.75; // trust in obs now, fading to 0 at MAX_LEAD steps
 const MAX_LEAD = 3;
-const RAIN_EFF_FLOOR = 45; // raining may not read "clear" (showers stay partly cloudy)
 const SAT_ONLY = 0.5; // an UNTRUSTED satellite alone corrects at half strength
 
 // WMO 4677 present weather: drizzle/rain 50-69, showers/thunder 80-99 (70-79 is snow)
@@ -22,8 +22,11 @@ const c100 = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
 
 // Route an injected/topped-up correction to the OLR-observed layer. Mid is the
 // default (and the least assertive band) whenever OLR can't place the cloud.
+// A cold cloud top WHILE raining is cumulonimbus, not cirrus: route the
+// observed deck to low so the correction is visible at full cumulus weight.
 const LAYER_KEY = { high: 'h', mid: 'm', low: 'l' } as const;
-const injectKey = (o: ObsStation): 'h' | 'm' | 'l' => LAYER_KEY[o.layer ?? 'mid'];
+const injectKey = (o: ObsStation): 'h' | 'm' | 'l' =>
+	rainingNow(o) ? 'l' : LAYER_KEY[o.layer ?? 'mid'];
 
 /** The current IST 3-h display step (0 = 00:00 … 7 = 21:00). */
 export const nowStepIST = (now = Date.now()) =>
@@ -75,11 +78,8 @@ export function applyObs(
 			}
 		}
 		if (o && rainingNow(o)) {
-			nv = {
-				...nv,
-				l: eff(nv) < RAIN_EFF_FLOOR ? RAIN_EFF_FLOOR : nv.l,
-				r: Math.max(nv.r ?? 0, Math.round(Math.max((o.rr ?? 0) * 3, o.r3 ?? 0, 1) * 10) / 10)
-			};
+			const r = Math.max(nv.r ?? 0, Math.round(Math.max((o.rr ?? 0) * 3, o.r3 ?? 0, 1) * 10) / 10);
+			nv = { ...nv, r, l: Math.max(nv.l, rainLowFloor(r)) };
 		}
 		out[code] = nv;
 	}

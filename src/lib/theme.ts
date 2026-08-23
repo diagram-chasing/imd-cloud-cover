@@ -71,6 +71,16 @@ export function rainTier(mm3h: number | undefined): 0 | 1 | 2 | 3 {
 	return 3;
 }
 
+// raining => cumulus: minimum low-band cover per rain tier, so streaks always
+// hang from convective cloud. Values land rain tier n in cover tier n+1
+// (coverTier boundaries: >34 → 2, >56 → 3, >78 → 4).
+const RAIN_LOW_FLOOR = [0, 45, 65, 85] as const;
+
+/** Rain (mm/3h) -> the least low-band cover a raining sky may show. */
+export function rainLowFloor(mm3h: number | undefined): number {
+	return RAIN_LOW_FLOOR[rainTier(mm3h)];
+}
+
 export type BandKey = 'high' | 'middle' | 'low';
 
 export const UI = {
