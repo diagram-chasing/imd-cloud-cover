@@ -2,10 +2,12 @@
 plus the styled latest/sky.png and a daily QA archive. Runs every ~30 min
 (obs-refresh.yml), independent of the daily pipeline: python obs.py
 
-Each source is optional. Cloud = max of two satellite grids (IMD INSAT CTBT +
-MOSDAC OLR); IMD synop adds observer oktas, present weather and 3-h rain via
-the wmo join in stations.json. Both satellite decoders emit onto one shared
-equirectangular (BBOX, W, H) grid so sample() and render_sky consume either.
+Each source is optional. Cloud = max of three satellite grids (EUMETSAT
+Meteosat-9 IODC cloud mask, the primary; IMD INSAT CTBT, the fallback that
+also supplies cold-top temperatures; MOSDAC OLR, dormant secondary); IMD synop
+adds observer oktas, present weather and 3-h rain via the wmo join in
+stations.json. Every satellite decoder emits onto one shared equirectangular
+(BBOX, W, H) grid so sample() and render_sky consume any of them.
 """
 
 import datetime
@@ -327,6 +329,80 @@ def grids(jpeg_bytes):
     return cloud, temp
 
 
+# EUMETSAT Meteosat-9 IODC (45.5E, Indian Ocean sector) via the open EUMETView
+# WMS: the operational NWC SAF cloud mask, 15-min cadence. Primary cloud source
+# since 2026-08-24 — the CTBT grey ramp misses most warm-topped monsoon cloud
+# (verified vs this mask: south India 94% cloudy where CTBT decoded ~10%).
+# EUMETView is a visualization service: keep it to one GetCapabilities + one
+# GetMap per run, and treat any failure as a soft fall-back to CTBT.
+EUMET_WMS = "https://view.eumetsat.int/geoserver/wms"
+EUMET_CLM_LAYER = "msg_iodc:clm"
+EUMET_MAX_AGE = datetime.timedelta(hours=2)
+# Mask-only cloud (invisible to the CTBT cold ramp) is warm-topped by
+# definition; this synthetic top routes/renders it as low cloud.
+EUMET_LOW_C = 5.0
+
+# "<start>/<end>/PT15M" time dimension on the clm layer; the end is the frame.
+_EUMET_TIME_RE = re.compile(
+    r"<Name>" + re.escape(EUMET_CLM_LAYER) + r"</Name>.{0,6000}?"
+    r'<Dimension name="time"[^>]*>[^<]*/([0-9TZ:.+-]+)/PT\d+M</Dimension>',
+    re.S)
+
+
+def eumet_latest(now):
+    """Frame datetime (utc) of the newest IODC cloud-mask scan, or None when
+    the service is unreachable or the frame is older than EUMET_MAX_AGE."""
+    url = EUMET_WMS + "?service=WMS&version=1.3.0&request=GetCapabilities"
+    try:
+        text = insecure_get(url, timeout=90).decode("utf-8", "replace")
+    except Exception as e:  # noqa: BLE001
+        print(f"eumet: capabilities fetch failed ({e!r})")
+        return None
+    m = _EUMET_TIME_RE.search(text)
+    if not m:
+        print("eumet: clm time dimension missing from capabilities")
+        return None
+    try:
+        dt = datetime.datetime.fromisoformat(m.group(1).replace("Z", "+00:00"))
+    except ValueError:
+        print(f"eumet: unparseable frame time {m.group(1)!r}")
+        return None
+    dt = dt.astimezone(datetime.timezone.utc)
+    if now - dt > EUMET_MAX_AGE:
+        print(f"eumet: clm frame stale ({dt.isoformat()})")
+        return None
+    return dt
+
+
+def fetch_clm_grid(frame_dt):
+    """Cloud mask (1.0 cloud, 0.0 clear, nan no-data) on the BBOX grid, or
+    None. Rendered palette: white = cloud, green = clear land, blue = clear
+    sea; anything else (incl. transparent off-disk fill) is treated as
+    missing."""
+    lon0, lat0, lon1, lat1 = BBOX
+    url = (f"{EUMET_WMS}?service=WMS&version=1.3.0&request=GetMap"
+           f"&layers={EUMET_CLM_LAYER}&styles="
+           f"&crs=EPSG:4326&bbox={lat0},{lon0},{lat1},{lon1}"  # 1.3.0: lat first
+           f"&width={W}&height={H}&format=image/png&transparent=true"
+           f"&time={frame_dt:%Y-%m-%dT%H:%M}:00.000Z")
+    try:
+        a = np.asarray(Image.open(io.BytesIO(insecure_get(url, timeout=120)))
+                       .convert("RGBA"), np.float32)
+    except Exception as e:  # noqa: BLE001
+        print(f"eumet: clm GetMap failed ({e!r})")
+        return None
+    r, g, b, alpha = a[..., 0], a[..., 1], a[..., 2], a[..., 3]
+    cloudy = (r > 200) & (g > 200) & (b > 200)
+    clear = ((g > 150) & (r < 120) & (b < 120)) | ((b > 150) & (r < 120) & (g < 120))
+    out = np.full((H, W), np.nan, np.float32)
+    out[(alpha > 0) & clear] = 0.0
+    out[(alpha > 0) & cloudy] = 1.0
+    if np.isnan(out).mean() > 0.5:
+        print("eumet: clm render mostly unrecognised colours; ignoring frame")
+        return None
+    return out
+
+
 SYNOP_URL = "https://reactjs.imd.gov.in/geoserver/imd/wfs?" + urlencode({
     "service": "WFS", "version": "1.0.0", "request": "GetFeature",
     "typeName": "imd:synop_data_layer", "outputFormat": "application/json",
@@ -391,12 +467,12 @@ GEO = Path(__file__).resolve().parent.parent / "src/lib/assets/geo/india.json"
 IST_OFFSET = datetime.timedelta(hours=5, minutes=30)
 
 
-def _stamp_text(frame_dt):
+def _stamp_text(frame_dt, label="INSAT-3DR/3DS"):
     if frame_dt is None:
         return None
     utc = frame_dt.astimezone(datetime.timezone.utc).replace(tzinfo=None)
     ist = utc + IST_OFFSET
-    return (f"INSAT-3DR/3DS · {ist:%d %b %Y}".upper()
+    return (f"{label} · {ist:%d %b %Y}".upper()
             + f" · {ist:%H:%M} IST ({utc:%H:%M} UTC)")
 
 
@@ -462,7 +538,7 @@ def _cloud_tone(o):
     return CLOUD_LOW
 
 
-def render_sky(cloud, frame_dt=None, temp=None):
+def render_sky(cloud, frame_dt=None, temp=None, label="INSAT-3DR/3DS"):
     """PNG bytes for the styled sky image, or None when the cloud grid is
     unusable. temp (same HxW grid, deg C) shades cloud by cloud-top height."""
     if cloud is None or cloud.shape != (H, W):
@@ -510,7 +586,7 @@ def render_sky(cloud, frame_dt=None, temp=None):
     for pts in _outer_arcs(topo):
         d.line([proj(*p) for p in pts], fill=INK, width=3)
 
-    stamp = _stamp_text(frame_dt)
+    stamp = _stamp_text(frame_dt, label)
     if stamp:
         _draw_stamp(img, stamp)
 
@@ -529,10 +605,27 @@ def build_obs(now):
     cloud, temp = grids(frame[0]) if frame else (None, None)
     ctbt_dt = frame[1] if frame else None
 
+    eumet_dt = eumet_latest(now)
+    clm = fetch_clm_grid(eumet_dt) if eumet_dt else None
+    if clm is None:
+        eumet_dt = None
+
     mfiles = latest_files(now)
     hem = fetch_hem_grid(mfiles["HEM"]) if "HEM" in mfiles else None
     molr = fetch_olr_grid(mfiles["OLR"]) if "OLR" in mfiles else None
     syn = fetch_synop()
+
+    # The mask is the authoritative "cloud present"; CTBT keeps the sub-mask
+    # texture and cold-top temperatures. Mask cloud the CTBT ramp missed gets
+    # the warm synthetic top.
+    if clm is not None:
+        if cloud is None:
+            cloud = clm
+            temp = np.where(clm > 0.5, EUMET_LOW_C, np.nan).astype(np.float32)
+        else:
+            cloud = np.fmax(cloud, clm)
+            if temp is not None:
+                temp = np.where((clm > 0.5) & np.isnan(temp), EUMET_LOW_C, temp)
 
     # Each satellite misses different cloud; take whichever shows more.
     olr_cloud = olr_to_frac(molr)
@@ -593,13 +686,22 @@ def build_obs(now):
         "generated_at": now.isoformat(timespec="seconds"),
         "sources": {
             "synop": syn_t and syn_t.isoformat(timespec="seconds"),
+            "eumet": eumet_dt and eumet_dt.isoformat(timespec="seconds"),
             "ctbt": ctbt_dt and ctbt_dt.isoformat(timespec="seconds"),
             "hem": mfiles.get("HEM") if hem is not None else None,
             "olr": mfiles.get("OLR") if molr is not None else None,
             "sat": sat_trust(stations),
         },
         "stations": stations,
-    }, cloud, ctbt_dt, temp
+    }, cloud, (eumet_dt or ctbt_dt), temp, _sat_label(eumet_dt, ctbt_dt)
+
+
+def _sat_label(eumet_dt, ctbt_dt):
+    if eumet_dt and ctbt_dt:
+        return "MET-9 IODC + INSAT-3DR/3DS"
+    if eumet_dt:
+        return "METEOSAT-9 IODC"
+    return "INSAT-3DR/3DS"
 
 
 def sat_trust(stations):
@@ -629,9 +731,9 @@ def append_archive(store, doc, now):
         print(f"archive append failed (ignored): {e}")
 
 
-def put_sky(store, cloud, frame_dt, temp=None):
+def put_sky(store, cloud, frame_dt, temp=None, label="INSAT-3DR/3DS"):
     try:
-        png = render_sky(cloud, frame_dt, temp)
+        png = render_sky(cloud, frame_dt, temp, label)
         if png:
             store.put_bytes("latest/sky.png", png, "image/png",
                             cache_control=SHORT)
@@ -642,12 +744,12 @@ def put_sky(store, cloud, frame_dt, temp=None):
 
 def main():
     now = datetime.datetime.now(datetime.timezone.utc)
-    doc, cloud, frame_dt, temp = build_obs(now)
+    doc, cloud, frame_dt, temp, label = build_obs(now)
     store = get_store()
     store.put_json("latest/obs.json", doc, cache_control="public, max-age=60")
     print(f"Wrote latest/obs.json: {len(doc['stations'])} stations, "
           f"sources {doc['sources']}")
-    put_sky(store, cloud, frame_dt, temp)
+    put_sky(store, cloud, frame_dt, temp, label)
     append_archive(store, doc, now)
 
 
