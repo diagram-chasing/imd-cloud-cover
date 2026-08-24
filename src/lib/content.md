@@ -131,7 +131,7 @@ The cloud-cover panel is a stacked histogram split into three tiers: low clouds 
 
 I love this visualization. It's charming that the person who wrote the software took complicated weather data and made it look like cloudy, fun pixel art. Every day since February 2026, I have been archiving these charts. I wrote a script that reads the pixels and turns the histogram images back into structured data, so I could plot a given slice of time onto a map. The mapping of India's clouds at the top of this page is the result of that daily collection and analysis.
 
-What does this percentage value next to each altitude mean? Meteorologists measure cloud cover by dividing the visible sky into eight equal slices, called "oktas." When the reading is 40%, which means that clouds cover about three of the eight slices, and we say that it is "partly cloudy." So, if you look up at a sky with 40% cumulus clouds, you will see a sky with just enough cumulus clouds to block a little less than half of your view.
+What does this percentage value next to each altitude mean? Meteorologists measure cloud cover by dividing the visible sky into eight equal slices, called "oktas." When the reading is 40%, which means that clouds cover about three of the eight slices, and we say that it is "partly cloudy."
 
 <div class="breakout clear-both">
 	<SkyWindow {manifest} values={nowValues} />
