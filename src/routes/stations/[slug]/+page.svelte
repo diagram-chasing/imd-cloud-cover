@@ -1,7 +1,10 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { indiaFeatures } from '$lib/map/india';
 	import { resolveActiveDay, computeValues } from '$lib/data';
+	import { applyObs, istToday } from '$lib/obs';
+	import { liveObs } from '$lib/state/obs.svelte';
 	import { SITE_BASE } from '$lib/site';
 	import SEO from '$lib/components/SEO.svelte';
 	import PlacePage from '$lib/components/place/PlacePage.svelte';
@@ -31,8 +34,13 @@
 
 	let viewDate = $derived(days[dayIndex] ?? activeDay.date);
 	let whenLabel = $derived(`${HOUR_LABELS[timeIndex]}:00 IST`);
-	let values = $derived(computeValues('today', latest, undefined, timeIndex, 0, dayIndex));
+	// same silent obs correction as the homepage map (see $lib/obs): only the
+	// current IST day's frames move; other days/steps pass through untouched
+	let forecastValues = $derived(computeValues('today', latest, undefined, timeIndex, 0, dayIndex));
+	let values = $derived(applyObs(forecastValues, liveObs.data, viewDate === istToday(), timeIndex));
 	let todayValues = $derived(values[data.code] ?? null);
+
+	onMount(() => liveObs.use());
 
 	let dateline = $derived(
 		[

@@ -6,9 +6,10 @@
 	import CitySkyExplorer from '$lib/components/city/CitySkyExplorer.svelte';
 	import SkyBarcode from '$lib/components/city/SkyBarcode.svelte';
 	import cloudsUrl from '$lib/assets/clouds.jpg';
-	import { fetchCities, fetchObs, R2_BASE } from '$lib/api/r2';
+	import { fetchCities, R2_BASE } from '$lib/api/r2';
 	import { withStateTag } from '$lib/stations/labels';
 	import { citySky } from '$lib/state/citySky.svelte';
+	import { liveObs } from '$lib/state/obs.svelte';
 
 	let { manifest = undefined, india = undefined, nowValues = undefined, date = undefined } = $props();
 
@@ -20,20 +21,19 @@
 	// (ISO timestamps) is our staleness signal: when both are missing or old
 	// (either feed can lag), the served image is stale — hide it rather than
 	// pass off an old frame as "latest". Optimistic: shown until obs confirms
-	// staleness, to avoid a layout flash on the normal fresh path.
-	let skyStale = $state(false);
+	// staleness, to avoid a layout flash on the normal fresh path. Obs comes
+	// from the shared liveObs store (the page subscribes), so the check also
+	// refreshes with its 15-min poll.
 	const SKY_MAX_AGE_MS = 6 * 3600 * 1000;
 	function skyFrameStale(sources) {
 		const times = [sources?.eumet, sources?.ctbt].map((s) => Date.parse(s ?? '')).filter((n) => n > 0);
 		const t = Math.max(0, ...times);
 		return !(t > 0 && Date.now() - t <= SKY_MAX_AGE_MS);
 	}
+	let skyStale = $derived(liveObs.data ? skyFrameStale(liveObs.data.sources) : false);
 	$effect(() => {
 		fetchCities()
 			.then((d) => (cities = d))
-			.catch(() => {});
-		fetchObs()
-			.then((o) => (skyStale = skyFrameStale(o?.sources)))
 			.catch(() => {});
 	});
 

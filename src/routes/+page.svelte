@@ -11,8 +11,7 @@
 	import { skyMode, rainTier } from '$lib/theme';
 	import { computeValues, rollupForView, resolveActiveDay } from '$lib/data';
 	import { applyObs, istToday, nowStepIST } from '$lib/obs';
-	import { fetchObs } from '$lib/api/r2';
-	import type { ObsLatest } from '$lib/types';
+	import { liveObs } from '$lib/state/obs.svelte';
 	import { click } from '$lib/feedback';
 	import { SITE_BASE } from '$lib/site';
 	import SEO from '$lib/components/SEO.svelte';
@@ -93,13 +92,6 @@
 			.catch(() => {});
 	}
 
-	// Live observations, refreshed every 15 min; corrects the current-time
-	// frame silently (see $lib/obs).
-	let obs = $state<ObsLatest | null>(null);
-	function refreshObs() {
-		fetchObs().then((o) => (obs = o ?? obs));
-	}
-
 	onMount(() => {
 		userGeo.ensure(); // coarse visitor location for the "you are here" map marker
 		pixelMapImport
@@ -109,9 +101,9 @@
 		if (w.requestIdleCallback) w.requestIdleCallback(ensureDeferred);
 		else setTimeout(ensureDeferred, 200);
 
-		refreshObs();
-		const obsTimer = setInterval(refreshObs, 15 * 60 * 1000);
-		return () => clearInterval(obsTimer);
+		// Live observations, polled by the shared store; correct the current-time
+		// frame silently (see $lib/obs).
+		return liveObs.use();
 	});
 
 	$effect(() => {
@@ -138,7 +130,7 @@
 	let values = $derived(
 		applyObs(
 			forecastValues,
-			obs,
+			liveObs.data,
 			sky.view === 'today' && activeDay?.date === istToday(),
 			sky.timeIndex
 		)
@@ -153,7 +145,7 @@
 	let nowValues = $derived(
 		applyObs(
 			computeValues('today', core?.latest, undefined, nowStepIST(), 0, activeDay?.index ?? 0),
-			obs,
+			liveObs.data,
 			activeDay?.date === istToday(),
 			nowStepIST()
 		)

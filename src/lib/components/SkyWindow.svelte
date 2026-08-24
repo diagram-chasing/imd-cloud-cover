@@ -222,6 +222,14 @@
 		setSliders(Math.round(v.h), Math.round(v.m), Math.round(v.l));
 		return true;
 	}
+	// A picked station tracks live data: `values` is replaced by the obs poll
+	// (and by the obs correction landing after first paint), so re-sync rather
+	// than freeze the pick-time snapshot — else this reads a different sky than
+	// the map for the same station. A manual slide clears `station`, ending it.
+	$effect(() => {
+		const v = station ? values?.[station.code] : undefined;
+		if (v) setSliders(Math.round(v.h), Math.round(v.m), Math.round(v.l));
+	});
 	function pickStation(code: string) {
 		touched = true;
 		if (setStation(code)) {

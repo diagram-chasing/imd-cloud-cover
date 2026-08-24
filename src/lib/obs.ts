@@ -10,7 +10,7 @@ import { rainLowFloor } from '$lib/theme';
 
 const MAX_AGE_MS = 2 * 3600 * 1000; // ignore obs older than this (job stalled)
 const DISAGREE = 15; // cover-gap (points) below which the map is left alone
-const W0 = 0.75; // trust in obs now, fading to 0 at MAX_LEAD steps
+const W0 = 0.9; // trust in obs now, fading to 0 at MAX_LEAD steps
 const MAX_LEAD = 3;
 const SAT_ONLY = 0.5; // an UNTRUSTED satellite alone corrects at half strength
 
