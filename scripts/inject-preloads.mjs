@@ -50,6 +50,13 @@ if (wanted.size === 0) {
 }
 
 const links = [];
+// Standard.site (AT Protocol) pointers for the Diagram Chasing publication.
+// Injected post-build because SvelteKit's prerender crawler tries to resolve
+// every <link href> and chokes on at:// URIs (TypeError: Invalid URL).
+links.push(
+	'<link rel="site.standard.publication" href="at://did:plc:pbzkofwfyokqzouibm2bcfo4/site.standard.publication/3mv3cvvqd72hd">',
+	'<link rel="site.standard.document" href="at://did:plc:pbzkofwfyokqzouibm2bcfo4/site.standard.document/3mv3cvxrsvkhb">'
+);
 for (const file of wanted.keys()) links.push(`<link href="${BASE}/${file}" rel="modulepreload">`);
 // CSS and PNG assets referenced by the preloaded chunks
 const seenExtra = new Set();
