@@ -6,7 +6,7 @@ every day at [nwp.imd.gov.in](https://nwp.imd.gov.in/) as an image. This dataset
 <!-- coverage:start (auto-updated by `pipeline.py export` — do not edit by hand) -->
 | First day | Latest day | Stations tracked |
 |-----------|------------|----------------|
-| 2026-02-15 | 2026-09-10 | ~1,245 |
+| 2026-02-15 | 2026-09-11 | ~1,245 |
 <!-- coverage:end -->
 
 ## Data dictionary
